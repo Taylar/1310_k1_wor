@@ -43,8 +43,7 @@
 /* Board Header files */
 #include "Board.h"
 
-#include "NodeRadioTask.h"
-#include "NodeTask.h"
+#include "pass_through/interface.h"
 
 #include "display/led_drv.h"
 
@@ -57,12 +56,9 @@ int main(void)
     Board_initGeneral();
     //Display_init();
 
-    Led_io_init();
-    for(;;);
 
     /* Initialize sensor node tasks */
-    //NodeRadioTask_init();
-    //NodeTask_init();
+    InterfaceTaskCreate();
 
     /* Start BIOS */
     BIOS_start();
