@@ -49,24 +49,43 @@ const UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
 const uint_least8_t UART_count = CC1310_LAUNCHXL_UARTCOUNT;
 /***************************************************************************/
 
-static UART_Callback    UartCbRegister[CC1310_LAUNCHXL_UARTCOUNT];
 static UART_Handle      uarthandle[CC1310_LAUNCHXL_UARTCOUNT];
-
-
-
-static void UartReceiveIsrCb(UART_Handle handle, void *buf, size_t count)
+static uint8_t recBuf[32];          //1310 hardware uart rec len is 16 which take from testing
+static void (*Uart0IsrCb)(uint8_t *databuf, uint8_t len);
+void uart0Isr(void)
 {
-    uint8_t         dataBuf;
-    UART_read(handle, &dataBuf, 1);
-    UartCbRegister[CC1310_LAUNCHXL_UART0](UART_0, &dataBuf, 1);
+    uint32_t               intStatus;
+    uint8_t                 i;
+    i = 0;
+    intStatus       = UARTIntStatus(UART0_BASE, true);
+    UARTIntClear(UART0_BASE,intStatus);
+
+    if(intStatus & UART_INT_RX || intStatus & UART_INT_RT)
+    {
+        while(1)
+        if(!(HWREG(UART0_BASE + UART_O_FR) & UART_FR_RXFE))
+        {
+            // Read and return the next character.
+
+            recBuf[i] = (HWREG(UART0_BASE + UART_O_DR));
+            i++;
+        }
+        else
+        {
+            break;
+        }
+        Uart0IsrCb(recBuf, i);
+    }
 }
 
+
+uint8_t testkk[20] = "text zxt";
 //***********************************************************************************
 //
 // UART0/1 init, use USCI_A0/1.
 //
 //***********************************************************************************
-void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_Callback callback)
+void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb)
 {
 
     if (uartPort >= UART_MAX) {
@@ -83,20 +102,24 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_Callback callback)
     uartParams.writeMode      = UART_MODE_BLOCKING;
     uartParams.readTimeout    = UART_WAIT_FOREVER;
     uartParams.writeTimeout   = UART_WAIT_FOREVER;
-    uartParams.readCallback   = UartReceiveIsrCb;
+    uartParams.readCallback   = NULL;
     uartParams.writeCallback  = NULL;
-    uartParams.readReturnMode = UART_RETURN_NEWLINE;
+    uartParams.readReturnMode = UART_RETURN_FULL;
     uartParams.readDataMode   = UART_DATA_BINARY;
-    uartParams.writeDataMode  = UART_DATA_TEXT;
+    uartParams.writeDataMode  = UART_DATA_BINARY;
     uartParams.readEcho       = UART_ECHO_OFF;
-    uartParams.baudRate       = 115200;
+    uartParams.baudRate       = baudrate;
     uartParams.dataLength     = UART_LEN_8;
     uartParams.stopBits       = UART_STOP_ONE;
     uartParams.parityType     = UART_PAR_NONE;
 
-    UartCbRegister[uartPort]  = callback;
+    Uart0IsrCb                = Cb;
 
     uarthandle[uartPort]      = UART_open(CC1310_LAUNCHXL_UART0, &uartParams);
+
+    // enable the uart int
+    UART_read(uarthandle[CC1310_LAUNCHXL_UART0], (uint8_t *)&baudrate, 1);
+
 }
 
 void UartClose(UART_PORT uartPort)
@@ -110,7 +133,7 @@ void UartClose(UART_PORT uartPort)
 
 
 
-void UartSendDatas(UART_PORT uartPort, void *buf, size_t count)
+void UartSendDatas(UART_PORT uartPort, uint8_t *buf, uint8_t count)
 {
     if (uartPort >= UART_MAX) {
         return;
