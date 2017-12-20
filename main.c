@@ -54,7 +54,6 @@ int main(void)
 {
     /* Call driver init functions. */
     Board_initGeneral();
-    //Display_init();
 
 
     /* Initialize sensor node tasks */
