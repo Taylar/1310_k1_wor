@@ -23,6 +23,15 @@
 #define RADIO_ADDR_LEN                  8
 
 
+/***** Type declarations *****/
+struct RadioOperation {
+    EasyLink_TxPacket easyLinkTxPacket;
+    uint8_t retriesDone;
+    uint8_t maxNumberOfRetries;
+    uint32_t ackTimeoutMs;
+    enum RadioOperationStatus result;
+};
+
 
 /***** Variable declarations *****/
 static Task_Params passRadioTaskParams;
@@ -45,14 +54,6 @@ static struct RadioOperation currentRadioOperation;
 
 static EasyLink_RxPacket radioRxPacket;
 
-/***** Type declarations *****/
-struct RadioOperation {
-    EasyLink_TxPacket easyLinkTxPacket;
-    uint8_t retriesDone;
-    uint8_t maxNumberOfRetries;
-    uint32_t ackTimeoutMs;
-    enum RadioOperationStatus result;
-};
 
 /***** Prototypes *****/
 
@@ -60,6 +61,7 @@ void PassRadioTaskFxn(void);
 
 static void RxDoneCallback(EasyLink_RxPacket * rxPacket, EasyLink_Status status);
 
+void RadioResendPacket(void);
 
 
 
@@ -83,7 +85,7 @@ static void RadioDefaultParaInit(void)
 void PassRadioTaskCreate(void) 
 {
 
-    /* Create semaphore used for exclusive radio access */
+    /* Create semaphore used for exclusive radio access */ 
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);
     Semaphore_construct(&radioAccessSem, 1, &semParam);
@@ -105,6 +107,26 @@ void PassRadioTaskCreate(void)
 }
 
 
+void RadioSendPacket2(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs)
+{
+    /* Set destination address in EasyLink API */
+    memcpy(currentRadioOperation.easyLinkTxPacket.dstAddr, dstRadioAddr, dstAddrLen);
+
+    currentRadioOperation.easyLinkTxPacket.len      = len;
+    memcpy(currentRadioOperation.easyLinkTxPacket.payload, dataP, len);
+
+    /* Copy ADC packet to payload
+     * Note that the EasyLink API will implcitily both add the length byte and the destination address byte. */
+
+    /* Setup retries */
+    currentRadioOperation.maxNumberOfRetries = maxNumberOfRetries;
+    currentRadioOperation.ackTimeoutMs = ackTimeoutMs;
+    currentRadioOperation.retriesDone = 0;
+
+    EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+
+}
+
 void PassRadioTaskFxn(void)
 {
     if(EasyLink_init(RADIO_EASYLINK_MODULATION) != EasyLink_Status_Success) {
@@ -116,13 +138,16 @@ void PassRadioTaskFxn(void)
      * the below API
      * EasyLink_setFrequency(868000000);
      */
-
+    // radioMode       = RADIOMODE_RECEIVEPORT;
     
     /* Set the filter to the generated random address */
     if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
     {
         System_abort("EasyLink_enableRxAddrFilter failed");
     }
+
+    if(radioMode == RADIOMODE_RECEIVEPORT)
+        EasyLink_receiveAsync(RxDoneCallback, 0);
 
     for(;;)
     {
@@ -131,21 +156,36 @@ void PassRadioTaskFxn(void)
         if (events & RADIO_EVT_RX)
         {
             // protocol distribute
-            InterfaceSend(radioRxPacket.payload, radioRxPacket.len);
+
 
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
-                RadioSendPacket(radioRxPacket.payload, radioRxPacket.len, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS);                
+                RadioSendPacket(radioRxPacket.payload, radioRxPacket.len, 0, 0);
+                // RadioSendPacket2(radioRxPacket.payload, radioRxPacket.len, 0, 0);
             }
+            else
+            {
+                InterfaceSend(radioRxPacket.payload, radioRxPacket.len);
+            }
+
+            if(radioMode == RADIOMODE_RECEIVEPORT)
+                EasyLink_receiveAsync(RxDoneCallback, 0);
         }
 
         if (events & RADIO_EVT_TX)
         {
+            // stop receive radio, otherwise couldn't send successful
+            EasyLink_abort();
             EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
-
             if(radioMode == RADIOMODE_SENDPORT)
             {
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
+                EasyLink_receiveAsync(RxDoneCallback, 0);
+            }
+
+            if(radioMode == RADIOMODE_RECEIVEPORT)
+            {
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }
         }
@@ -153,10 +193,16 @@ void PassRadioTaskFxn(void)
 
         if (events & RADIO_EVT_TOUT)
         {
-            EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
-            
-            if(radioMode == RADIOMODE_SENDPORT)
-                EasyLink_receiveAsync(RxDoneCallback, 0);
+            /* If we haven't resent it the maximum number of times yet, then resend packet */
+            if (currentRadioOperation.retriesDone < currentRadioOperation.maxNumberOfRetries)
+            {
+                RadioResendPacket();
+            }
+            else
+            {
+                /* Else return send fail */
+                Event_post(radioOperationEventHandle, RADIO_EVT_FAIL);
+            }
             
         }
 
@@ -187,8 +233,22 @@ void RadioSendPacket(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, ui
     currentRadioOperation.ackTimeoutMs = ackTimeoutMs;
     currentRadioOperation.retriesDone = 0;
 
-    Event_post(radioOperationEventHandle, RADIO_EVT_RX);
+    Event_post(radioOperationEventHandle, RADIO_EVT_TX);
 
+}
+
+
+
+
+
+void RadioResendPacket(void)
+{
+    EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+            
+    if(radioMode == RADIOMODE_SENDPORT)
+        EasyLink_receiveAsync(RxDoneCallback, 0);
+
+    currentRadioOperation.retriesDone++;
 }
 
 

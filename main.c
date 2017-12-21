@@ -44,6 +44,7 @@
 #include "Board.h"
 
 #include "pass_through/interface.h"
+#include "pass_through/pass_radio_task.h"
 
 #include "display/led_drv.h"
 
@@ -56,9 +57,12 @@ int main(void)
     Board_initGeneral();
 
 
-    /* Initialize sensor node tasks */
+    /* Initialize interface tasks */
     InterfaceTaskCreate();
 
+    /* Initialize radio tasks */
+    PassRadioTaskCreate();
+    
     /* Start BIOS */
     BIOS_start();
 

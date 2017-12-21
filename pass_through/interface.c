@@ -1,4 +1,5 @@
 #include "../general.h"
+#include "pass_radio_task.h"
 #include "interface.h"
 
 /***** Defines *****/
@@ -35,8 +36,8 @@ static uint8_t     interfaceRecBuf[INTERFACE_DATA_MAX_LEN];
 static uint8_t     interfaceIsrRecBuf[INTERFACE_DATA_MAX_LEN];
 static uint8_t     interfaceSendBuf[INTERFACE_DATA_MAX_LEN];
 
-static uint8_t     recLen;
-static uint8_t     sendLen;
+uint8_t     recLen;
+uint8_t     sendLen;
 static uint8_t     recIsrLen;
 
 void InterfaceTaskFxn(void);
@@ -76,7 +77,7 @@ void InterfaceReceiveCb(uint8_t *datap, uint8_t len)
 
 void InterfaceSend(uint8_t * datap, uint8_t len)
 {
-    sendLen =  len > INTERFACE_DATA_MAX_LEN? INTERFACE_STACK_SIZE: len;
+    sendLen =  len > INTERFACE_DATA_MAX_LEN? INTERFACE_DATA_MAX_LEN: len;
     memcpy(interfaceSendBuf, datap, sendLen);
     Event_post(interfaceEvtHandle, INTERFACE_EVT_TX);    
 }
@@ -102,7 +103,7 @@ uint32_t HwInterfaceInit(INTERFACE_TYPE type, uint32_t baudRate, UART_CB_T cb)
 
 
 // this may occur a rec error when InterfaceReceiveCb syn occur, this function shouldn't be interrupt
-// by InterfaceReceiveCb
+// by InterfaceReceiveCb, add the bi lock maybe will occur error
 void InterfaceRecTimeroutCb(UArg arg0)
 {
     recLen    = recIsrLen;
@@ -167,6 +168,8 @@ void InterfaceTaskFxn(void)
         if(eventId & INTERFACE_EVT_RX)
         {
             InterfaceSend(interfaceRecBuf, recLen);
+            RadioSendPacket(interfaceRecBuf, recLen, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS);
+
         }
 
         if(eventId & INTERFACE_EVT_TX)
