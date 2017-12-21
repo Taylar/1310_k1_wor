@@ -107,26 +107,6 @@ void PassRadioTaskCreate(void)
 }
 
 
-void RadioSendPacket2(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs)
-{
-    /* Set destination address in EasyLink API */
-    memcpy(currentRadioOperation.easyLinkTxPacket.dstAddr, dstRadioAddr, dstAddrLen);
-
-    currentRadioOperation.easyLinkTxPacket.len      = len;
-    memcpy(currentRadioOperation.easyLinkTxPacket.payload, dataP, len);
-
-    /* Copy ADC packet to payload
-     * Note that the EasyLink API will implcitily both add the length byte and the destination address byte. */
-
-    /* Setup retries */
-    currentRadioOperation.maxNumberOfRetries = maxNumberOfRetries;
-    currentRadioOperation.ackTimeoutMs = ackTimeoutMs;
-    currentRadioOperation.retriesDone = 0;
-
-    EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
-
-}
-
 void PassRadioTaskFxn(void)
 {
     if(EasyLink_init(RADIO_EASYLINK_MODULATION) != EasyLink_Status_Success) {
@@ -209,7 +189,7 @@ void PassRadioTaskFxn(void)
 
         if (events & RADIO_EVT_FAIL)
         {
-            
+
         }
 
 

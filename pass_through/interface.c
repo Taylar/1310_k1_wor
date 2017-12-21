@@ -159,7 +159,8 @@ void InterfaceTaskFxn(void)
     HwInterfaceInit(INTERFACE_UART, 115200, InterfaceReceiveCb);
     Semaphore_post(interfaceSemHandle);
 
-
+    // UartClose(UART_0);
+    // HwInterfaceInit(INTERFACE_UART, 115200, InterfaceReceiveCb);
 
     for(;;)
     {

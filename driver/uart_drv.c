@@ -46,6 +46,7 @@ const UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
     },
 };
 
+
 const uint_least8_t UART_count = CC1310_LAUNCHXL_UARTCOUNT;
 /***************************************************************************/
 
@@ -92,6 +93,7 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb)
         return;
     }
 
+
     UART_init();
 
     UART_Params uartParams;
@@ -102,7 +104,7 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb)
     uartParams.writeMode      = UART_MODE_BLOCKING;
     uartParams.readTimeout    = UART_WAIT_FOREVER;
     uartParams.writeTimeout   = UART_WAIT_FOREVER;
-    uartParams.readCallback   = NULL;
+    uartParams.readCallback   = (UART_Callback)uart0Isr;
     uartParams.writeCallback  = NULL;
     uartParams.readReturnMode = UART_RETURN_FULL;
     uartParams.readDataMode   = UART_DATA_BINARY;
@@ -128,6 +130,7 @@ void UartClose(UART_PORT uartPort)
         return;
     }
 
+    UART_readCancel(uarthandle[CC1310_LAUNCHXL_UART0]);
     UART_close(uarthandle[uartPort]);
 }
 
@@ -138,6 +141,5 @@ void UartSendDatas(UART_PORT uartPort, uint8_t *buf, uint8_t count)
     if (uartPort >= UART_MAX) {
         return;
     }
-
     UART_write(uarthandle[uartPort], buf, count);
 }

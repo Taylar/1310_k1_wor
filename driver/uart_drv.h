@@ -42,6 +42,7 @@ typedef struct {
 
 #define	UartSend(bufp, count)		UartSendDatas(UART_0, bufp, count)
 
+
 void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T callback);
 
 void UartClose(UART_PORT uartPort);
