@@ -54,6 +54,8 @@ ErrorStatus I2c_init(void)
 {
     I2C_Params i2cParams;
 
+    I2C_init();
+
     I2C_Params_init(&i2cParams);
     i2cParams.bitRate = I2C_400kHz;
 	i2cParams.transferMode = I2C_MODE_BLOCKING;
