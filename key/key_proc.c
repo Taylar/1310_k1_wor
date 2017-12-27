@@ -29,6 +29,9 @@ const PIN_Config keyPinTable[] = {
 static PIN_State   keyState;
 static PIN_Handle  keyHandle;
 
+
+
+static void (*AppIsrCb)(void);
 //***********************************************************************************
 //
 // Led_io_init.
@@ -63,7 +66,7 @@ static void Key_scan_stop(void)
 //***********************************************************************************
 static void Key_scanFxn(UArg arg0)
 {
-    if (GPIO_read(Board_BUTTON0) == KEY_PRESSED) {
+    if (PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED) {
         // Power key pressed.
         if (rKeyTask.action != KEY_0_PRESS) {
             rKeyTask.holdTime = 0;
@@ -78,7 +81,7 @@ static void Key_scanFxn(UArg arg0)
         } else if (rKeyTask.shortPress == 1 && rKeyTask.holdTime == TIME_KEY0_LONG) {
             rKeyTask.shortPress = 0;
             rKeyTask.code = _VK_POWER;
-//            Sys_event_post(SYS_EVT_KEY);
+            AppIsrCb();
             Key_scan_stop();
         }
         rKeyTask.action = KEY_0_PRESS;
@@ -124,7 +127,7 @@ static void Key_scanFxn(UArg arg0)
             rKeyTask.shortPress = 0;
             if (rKeyTask.action == KEY_0_PRESS) {
                 rKeyTask.code = _VK_SELECT;
-//                Sys_event_post(SYS_EVT_KEY);
+                AppIsrCb();
                 Key_scan_stop();
             }
         } else {
@@ -150,7 +153,7 @@ static void Key_isrFxn(UInt index)
 // Key init.
 //
 //***********************************************************************************
-void Key_init(void)
+void Key_init(void (*Cb)(void))
 {
     rKeyTask.holdTime = 0;
     rKeyTask.doublePressTime = 0;
@@ -171,6 +174,7 @@ void Key_init(void)
     /* install Button callback */
     Key_io_init((PIN_IntCb)Key_isrFxn);
 
+    AppIsrCb        = Cb;
 }
 
 //***********************************************************************************

@@ -55,7 +55,7 @@ typedef struct {
 
 
 
-void Key_init(void);
+void Key_init(void (*Cb)(void));
 uint8_t Key_get(void);
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */
