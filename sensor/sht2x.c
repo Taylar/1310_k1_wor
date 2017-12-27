@@ -12,6 +12,16 @@
 #ifdef SUPPORT_SHT2X
 #include "sht2x.h"
 
+
+
+
+typedef struct{
+    int16_t temp;
+    uint16_t humi;
+} SensorData_t;
+
+
+static SensorData_t rSensorData[MODULE_SENSOR_MAX];
 //***********************************************************************************
 //
 // SHT2x check crc.
@@ -83,16 +93,10 @@ static void SHT2x_init(uint8_t chNum)
 {
     uint8_t buff[1];
 
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X
-        && rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
 
-        //GPIO_setOutputHighOnPin(rSensorHWAttrs[chNum].port, rSensorHWAttrs[chNum].pin);
-        buff[0] = SOFT_RESET;
-        I2c_write(Board_SHT2x_ADDR, buff, 1);
-        //GPIO_setOutputLowOnPin(rSensorHWAttrs[chNum].port, rSensorHWAttrs[chNum].pin);
-        Task_sleep(25 * CLOCK_UNIT_MS);
-
-    }
+    buff[0] = SOFT_RESET;
+    I2c_write(Board_SHT2x_ADDR, buff, 1);
+    Task_sleep(25 * CLOCK_UNIT_MS);
 }
 
 //***********************************************************************************
@@ -105,65 +109,58 @@ static void SHT2x_measure(uint8_t chNum)
     uint8_t userReg;
     uint8_t buff[3];
 
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X
-        && rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
 
-        //GPIO_setOutputHighOnPin(rSensorHWAttrs[chNum].port, rSensorHWAttrs[chNum].pin);
-        if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
-            I2c_regRead(Board_SHT2x_ADDR, USER_REG_R, &userReg, 1);
-            userReg &= ~SHT2x_RES_MASK;
+    I2c_regRead(Board_SHT2x_ADDR, USER_REG_R, &userReg, 1);
+    userReg &= ~SHT2x_RES_MASK;
 
-            //Set temperature measure resolution.
-            buff[0] = USER_REG_W; 
-            buff[1] = userReg | SHT2x_RES_8_12BIT; 
-            I2c_write(Board_SHT2x_ADDR, buff, 2);
-            //Start temperature measure.
-            buff[0] = TRIG_T_MEASURE_POLL; 
-            I2c_write(Board_SHT2x_ADDR, buff, 1);
-            //Wait temperature measure finish.
-            // 11ms for 11bit, 22ms for 12bit, 43ms for 13bit, 85ms for 14bit.
-            Task_sleep(25 * CLOCK_UNIT_MS);
-            I2c_read(Board_SHT2x_ADDR, buff, 3);
-            //Check crc.
-            if (SHT2x_check_crc(buff, 2, buff[2]) == ES_SUCCESS) {
-                //clear bits [1..0] (status bits)
-                buff[1] &= ~0x03;
+    //Set temperature measure resolution.
+    buff[0] = USER_REG_W; 
+    buff[1] = userReg | SHT2x_RES_8_12BIT; 
+    I2c_write(Board_SHT2x_ADDR, buff, 2);
+    //Start temperature measure.
+    buff[0] = TRIG_T_MEASURE_POLL; 
+    I2c_write(Board_SHT2x_ADDR, buff, 1);
+    //Wait temperature measure finish.
+    // 11ms for 11bit, 22ms for 12bit, 43ms for 13bit, 85ms for 14bit.
+    Task_sleep(25 * CLOCK_UNIT_MS);
+    I2c_read(Board_SHT2x_ADDR, buff, 3);
+    //Check crc.
+    if (SHT2x_check_crc(buff, 2, buff[2]) == ES_SUCCESS) {
+        //clear bits [1..0] (status bits)
+        buff[1] &= ~0x03;
 
-                HIBYTE(rSensorData[chNum].temp) = buff[0];
-                LOBYTE(rSensorData[chNum].temp) = buff[1];
-            } else {
-                rSensorData[chNum].temp = 0;
-            }
-
-            //Set humidity measure resolution.
-            buff[0] = USER_REG_W; 
-            buff[1] = userReg | SHT2x_RES_10_13BIT; 
-            I2c_write(Board_SHT2x_ADDR, buff, 2);
-            //Start humidity measure.
-            buff[0] = TRIG_H_MEASURE_POLL; 
-            I2c_write(Board_SHT2x_ADDR, buff, 1);
-            //Wait humidity measure finish.
-            // 4ms for 8bit, 9ms for 10bit, 15ms for 11bit, 29ms for 12bit.
-            Task_sleep(12 * CLOCK_UNIT_MS);
-            I2c_read(Board_SHT2x_ADDR, buff, 3);
-            //Check crc.
-            if (SHT2x_check_crc(buff, 2, buff[2]) == ES_SUCCESS) {
-                //clear bits [1..0] (status bits)
-                buff[1] &= ~0x03;
-
-                HIBYTE(rSensorData[chNum].humi) = buff[0];
-                LOBYTE(rSensorData[chNum].humi) = buff[1];
-            } else {
-                rSensorData[chNum].humi = 0;
-            }
-
-            //convert rawdata to temperature
-            rSensorData[chNum].temp = SHT2x_calc_temperatureC(rSensorData[chNum].temp );
-            //convert rawdata to humidty
-            rSensorData[chNum].humi= SHT2x_calc_humidty(rSensorData[chNum].humi);
-        }
-        //GPIO_setOutputLowOnPin(rSensorHWAttrs[chNum].port, rSensorHWAttrs[chNum].pin);
+        HIBYTE(rSensorData[chNum].temp) = buff[0];
+        LOBYTE(rSensorData[chNum].temp) = buff[1];
+    } else {
+        rSensorData[chNum].temp = 0;
     }
+
+    //Set humidity measure resolution.
+    buff[0] = USER_REG_W; 
+    buff[1] = userReg | SHT2x_RES_10_13BIT; 
+    I2c_write(Board_SHT2x_ADDR, buff, 2);
+    //Start humidity measure.
+    buff[0] = TRIG_H_MEASURE_POLL; 
+    I2c_write(Board_SHT2x_ADDR, buff, 1);
+    //Wait humidity measure finish.
+    // 4ms for 8bit, 9ms for 10bit, 15ms for 11bit, 29ms for 12bit.
+    Task_sleep(12 * CLOCK_UNIT_MS);
+    I2c_read(Board_SHT2x_ADDR, buff, 3);
+    //Check crc.
+    if (SHT2x_check_crc(buff, 2, buff[2]) == ES_SUCCESS) {
+        //clear bits [1..0] (status bits)
+        buff[1] &= ~0x03;
+
+        HIBYTE(rSensorData[chNum].humi) = buff[0];
+        LOBYTE(rSensorData[chNum].humi) = buff[1];
+    } else {
+        rSensorData[chNum].humi = 0;
+    }
+
+    //convert rawdata to temperature
+    rSensorData[chNum].temp = SHT2x_calc_temperatureC(rSensorData[chNum].temp );
+    //convert rawdata to humidty
+    rSensorData[chNum].humi= SHT2x_calc_humidty(rSensorData[chNum].humi);
 }
 
 //***********************************************************************************
@@ -173,14 +170,11 @@ static void SHT2x_measure(uint8_t chNum)
 //***********************************************************************************
 static int32_t SHT2x_get_value(uint8_t chNum, SENSOR_FUNCTION function)
 {
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X
-        && rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
 
-        if(function & SENSOR_TEMP){
-            return rSensorData[chNum].temp;
-        } else if(function & SENSOR_HUMI){
-            return rSensorData[chNum].humi;
-    	}
+    if(function & SENSOR_TEMP){
+        return rSensorData[chNum].temp;
+    } else if(function & SENSOR_HUMI){
+        return rSensorData[chNum].humi;
     }
 
     return TEMPERATURE_OVERLOAD;

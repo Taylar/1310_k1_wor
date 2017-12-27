@@ -11,6 +11,34 @@
 #ifndef __ZKSIOT_SHT2X_H__
 #define __ZKSIOT_SHT2X_H__
 
+
+typedef enum {
+    SEN_I2C_CH0 = 0,
+    SEN_I2C_CH1,
+    SEN_I2C_CH2,
+    SEN_I2C_MAX,
+} SENSOR_CH_NUM;
+
+typedef enum {
+    SENSOR_NONE = 0x00,
+    SENSOR_TEMP = 0x01,
+    SENSOR_HUMI = 0x02,
+} SENSOR_FUNCTION;
+
+
+typedef void (*Sensor_initFxn) (uint8_t chNum);
+typedef void (*Sensor_measureFxn)(uint8_t chNum);
+typedef int32_t (*Sensor_getValueFxn)(uint8_t chNum, SENSOR_FUNCTION function);
+
+typedef struct Sensor_FxnTable {
+    uint32_t  function;
+    Sensor_initFxn  initFxn;
+    Sensor_measureFxn  measureFxn;  
+    Sensor_getValueFxn getValueFxn;
+} Sensor_FxnTable;
+
+
+
 #ifdef SUPPORT_SHT2X
 
 #define Board_SHT2x_ADDR            (0x80 >> 1)
@@ -49,6 +77,8 @@ typedef enum {
     SHT2x_HEATER_MASK = 0x04, // Mask for Heater bit(2) in user reg.
 } SHT2X_HEATER;
 
+
+extern const Sensor_FxnTable  SHT2X_FxnTable;
 
 // CRC algorithm
 #define POLYNOMIAL                  0x131 //P(x)=x^8+x^5+x^4+1 = 100110001
