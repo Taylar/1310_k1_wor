@@ -79,7 +79,8 @@ const SPI_Config SPI_config[CC1310_LAUNCHXL_SPICOUNT] = {
 const uint_least8_t SPI_count = CC1310_LAUNCHXL_SPICOUNT;
 
 
-
+Semaphore_Struct spiSemStruct;
+Semaphore_Handle spiSemHandle;
 
 
 //Master spi handle.
@@ -94,6 +95,8 @@ ErrorStatus Spi_init(void)
 {
     SPI_Params mSpiParams;
 
+    SPI_init();
+
     SPI_Params_init(&mSpiParams);
     mSpiParams.mode = SPI_MASTER;
     mSpiParams.bitRate = SPI_4MHz;
@@ -102,6 +105,10 @@ ErrorStatus Spi_init(void)
         System_printf("SPI Master was not opened\n");
         return ES_ERROR;
     }
+
+    Semaphore_Params semParams;
+    Semaphore_construct(&spiSemStruct, 1, &semParams);
+    spiSemHandle = Semaphore_handle(&spiSemStruct);
 
     return ES_SUCCESS;
 }

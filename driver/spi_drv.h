@@ -23,6 +23,9 @@ typedef enum CC1310_LAUNCHXL_SPIName {
 } CC1310_LAUNCHXL_SPIName;
 
 
+extern Semaphore_Handle spiSemHandle;
+
+
 #define SPI_4MHz        4000000
 
 extern ErrorStatus Spi_init(void);
