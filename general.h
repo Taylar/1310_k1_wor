@@ -33,6 +33,8 @@
 #include <ti/sysbios/knl/Swi.h>
 #include <ti/sysbios/hal/Hwi.h>
 
+#include <ti/devices/cc13x0/driverlib/aon_batmon.h>
+
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/I2C.h>
@@ -41,11 +43,11 @@
 
 
 
-#ifdef VARIABLES_DEFINE
+// #ifdef VARIABLES_DEFINE
 #define EXTERN_ATTR
-#else
-#define EXTERN_ATTR extern
-#endif
+// #else
+// #define EXTERN_ATTR extern
+// #endif
 
 //***********************************************************************************
 //
@@ -139,11 +141,7 @@
 //
 //***********************************************************************************
 #define MODULE_SENSOR_MAX       1
-typedef enum {
-    SEN_TYPE_NONE = 0,
-    SEN_TYPE_SHT2X,
-    SEN_TYPE_MAX
-} SENSOR_TYPE;
+
 
 //***********************************************************************************
 //
@@ -256,14 +254,16 @@ typedef struct {
 #include "Board.h"
 #include "function.h"
 // #include "driver/adc_drv.h"
-// #include "driver/rtc_drv.h"
+#include "driver/rtc_drv.h"
 #include "driver/i2c_drv.h"
 #include "driver/spi_drv.h"
 #include "driver/uart_drv.h"
-// #include "flash/flash.h"
+#include "flash/extflash.h"
 #include "key/key_proc.h"
-#include "sensor/sensor.h"
+#include "sensor/sht2x.h"
+// #include "sensor/sensor.h"
 #include "display/led_drv.h"
+#include "easylink/EasyLink.h"
 
 
 //***********************************************************************************
@@ -271,7 +271,7 @@ typedef struct {
 //	Global variable define
 //
 //***********************************************************************************
-EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
+extern ConfigInfo_t g_rSysConfigInfo;
 
 
 

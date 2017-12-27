@@ -43,10 +43,10 @@
 /* Board Header files */
 #include "Board.h"
 
-#include "pass_through/interface.h"
-#include "pass_through/pass_radio_task.h"
+#include "interface_app/interface.h"
+#include "radio_app/radio_app.h"
+#include "app/systemApp.h"
 
-#include "display/led_drv.h"
 
 /*
  *  ======== main ========
@@ -61,8 +61,11 @@ int main(void)
     InterfaceTaskCreate();
 
     /* Initialize radio tasks */
-    PassRadioTaskCreate();
+    RadioAppTaskCreate();
     
+    /* Initialize System Application tasks */
+    SysAppTaskCreate();
+
     /* Start BIOS */
     BIOS_start();
 
