@@ -3,22 +3,25 @@
 #include "../APP/nodeApp.h"
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
+#include "../APP/concenterApp.h"
 #include "../radio_app/node_strategy.h"
 #include "../radio_app/radio_app.h"
 
-EasyLink_RxPacket *protocalRxPacket;
 
 radio_protocal_t   protocalTxBuf;
-//***********************************************************************************
-// brief:   set the node protocal event
-// 
-// parameter: 
-//***********************************************************************************
-void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket)
-{
-	protocalRxPacket		= rxPacket;
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RADIO_NODE);
-}
+
+static uint8_t     concenterRemainderCache;
+
+// //***********************************************************************************
+// // brief:   set the node protocal event
+// // 
+// // parameter: 
+// //***********************************************************************************
+// void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket)
+// {
+// 	protocalRxPacket		= rxPacket;
+//     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RADIO_NODE);
+// }
 
 
 
@@ -27,7 +30,7 @@ void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket)
 // 
 // parameter: 
 //***********************************************************************************
-void NodeProtocalDispath(void)
+void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	uint8_t len, lenTemp, baseAddr;
 	uint32_t	temp;
@@ -43,7 +46,7 @@ void NodeProtocalDispath(void)
 	{
 		// the receive data is not integrated
 		if((bufTemp->len > len) || (bufTemp->len == 0))
-			return;
+			goto NodeDispath;
 		
 		// the resever length
 		len 	-= bufTemp->len;
@@ -63,9 +66,15 @@ void NodeProtocalDispath(void)
 			calendarTemp.min   = bufTemp->load[4];
 			calendarTemp.sec   = bufTemp->load[5];
 			Rtc_set_calendar(&calendarTemp);
+			NodeStopBroadcast();
+			NodeCollectStart();
+			NodeUploadStart();
 			break;
 
 			case RADIO_PRO_CMD_SYN_TIME_REQ:
+			NodeStopBroadcast();
+			NodeCollectStart();
+			NodeUploadStart();
 			break;
 
 			case RADIO_PRO_CMD_SET_PARA:
@@ -77,7 +86,7 @@ void NodeProtocalDispath(void)
 				{
 					case PARASETTING_COLLECT_INTERVAL:
 					if(lenTemp < 5)
-						return;
+						goto NodeDispath;
 					temp = ((uint32_t)bufTemp->load[baseAddr+4] << 24) + 
 						   ((uint32_t)bufTemp->load[baseAddr+3] << 16) +
 						   ((uint32_t)bufTemp->load[baseAddr+2] << 8) +
@@ -85,12 +94,13 @@ void NodeProtocalDispath(void)
 					lenTemp -= 5;
 					NodeCollectStop();
 					NodeCollectPeriodSet(temp * CLOCK_UNIT_S);
-					NodeCollectStart();
+					if(temp)
+						NodeCollectStart();
 					break;
 
 					case PARASETTING_UPLOAD_INTERVAL:
 					if(lenTemp < 5)
-						return;
+						goto NodeDispath;
 					temp = ((uint32_t)bufTemp->load[baseAddr+4] << 24) + 
 						   ((uint32_t)bufTemp->load[baseAddr+3] << 16) +
 						   ((uint32_t)bufTemp->load[baseAddr+2] << 8) +
@@ -99,12 +109,21 @@ void NodeProtocalDispath(void)
 
 					NodeUploadStop();
 					NodeUploadPeriodSet(temp * CLOCK_UNIT_S);
-					NodeUploadStart();
+					if(temp)
+					{
+						NodeStopBroadcast();
+						NodeUploadStart();
+					}
+					else
+					{
+						NodeStartBroadcast();
+					}
+
 					break;
 
 					case PARASETTING_LOW_TEMP_ALARM:
 					if(lenTemp < 4)
-						return;
+						goto NodeDispath;
 					
 					NodeLowTemperatureSet(bufTemp->load[baseAddr+1], 
 						((uint16_t)bufTemp->load[baseAddr+2] << 8) + bufTemp->load[baseAddr+3]);
@@ -114,7 +133,7 @@ void NodeProtocalDispath(void)
 
 					case PARASETTING_HIGH_TEMP_ALARM:
 					if(lenTemp < 4)
-						return;
+						goto NodeDispath;
 					
 					NodeHighTemperatureSet(bufTemp->load[baseAddr+1], 
 						((uint16_t)bufTemp->load[baseAddr+2] << 8) + bufTemp->load[baseAddr+3]);
@@ -124,7 +143,7 @@ void NodeProtocalDispath(void)
 
 					default:
 					// error setting parameter
-					return;
+					goto NodeDispath;
 				}
 			}
 				
@@ -143,21 +162,24 @@ void NodeProtocalDispath(void)
 		// point to new message the head
 		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
 	}
+
+NodeDispath:
+	NodeBroadcasting();
 }
 
 
 
 
-//***********************************************************************************
-// brief:   set the Concenter protocal event
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterProtocalEvtSet(EasyLink_RxPacket *rxPacket)
-{
-	protocalRxPacket		= rxPacket;
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RADIO_CONCENTER);
-}
+// //***********************************************************************************
+// // brief:   set the Concenter protocal event
+// // 
+// // parameter: 
+// //***********************************************************************************
+// void ConcenterProtocalEvtSet(EasyLink_RxPacket *rxPacket)
+// {
+// 	protocalRxPacket		= rxPacket;
+//     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RADIO_CONCENTER);
+// }
 
 
 
@@ -166,13 +188,16 @@ void ConcenterProtocalEvtSet(EasyLink_RxPacket *rxPacket)
 // 
 // parameter: 
 //***********************************************************************************
-void ConcenterProtocalDispath(void)
+void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	uint8_t len;
 	radio_protocal_t	*bufTemp;
 
-	len			= protocalRxPacket->len;
-	bufTemp		= (radio_protocal_t *)protocalRxPacket->payload;
+	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
+	len                     = protocalRxPacket->len;
+	bufTemp                 = (radio_protocal_t *)protocalRxPacket->payload;
+
+
 
 	while(len)
 	{
@@ -189,18 +214,20 @@ void ConcenterProtocalDispath(void)
 
 			// there may be several sensordata
 			// send the ack
-
+			ConcenterRadioSendSensorDataAck(bufTemp->dstAddr, bufTemp->srcAddr, ES_SUCCESS);
 
 			// save the data to flash
-
-
+			// updata the rssi
+			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
+			ConcenterSensorDataSave(bufTemp->load, bufTemp->load[0]+1);
+			ConcenterUploadEventSet();
 			break;
 
 
 			case RADIO_PRO_CMD_SYN_TIME_REQ:
-
 			// send the time
-
+			ConcenterRadioSendSynTime(bufTemp->dstAddr, bufTemp->srcAddr);
+			// ConcenterRadioSendParaSet(bufTemp->dstAddr, bufTemp->srcAddr);
 			break;
 
 
@@ -225,6 +252,9 @@ void ConcenterProtocalDispath(void)
 		// point to new message the head
 		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
 	}
+
+	// receive several cmd in one radio packet, must return in one radio packet;
+	RadioSend();
 }
 
 //***********************************************************************************
@@ -311,7 +341,8 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorSt
 	protocalTxBuf.load[0]	= (uint8_t)(status);
 
 	SetRadioDstAddr(dstAddr);
-	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
+    concenterRemainderCache -= protocalTxBuf.len;
 }
 
 
@@ -341,8 +372,11 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.load[4]	= calendarTemp.min;
 	protocalTxBuf.load[5]	= calendarTemp.sec;
 
+
+
 	SetRadioDstAddr(dstAddr);
-	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
+    concenterRemainderCache -= protocalTxBuf.len;
 }
 
 
@@ -369,5 +403,6 @@ void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr, uint8_t *data
 	memcpy(protocalTxBuf.load, dataP, length);
 
 	SetRadioDstAddr(dstAddr);
-	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
+    concenterRemainderCache -= protocalTxBuf.len;
 }

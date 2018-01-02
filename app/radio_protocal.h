@@ -53,13 +53,13 @@ typedef struct {
 
 /***** Prototypes *****/
 
-void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket);
+// void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket);
 
-void NodeProtocalDispath(void);
+void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket);
 
-void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket);
+// void ConcenterProtocalEvtSet(EasyLink_RxPacket *rxPacket);
 
-void ConcenterProtocalDispath(void);
+void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket);
 
 bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length);
 
@@ -72,7 +72,6 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorSt
 void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr);
 
 void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr, uint8_t *dataP, uint8_t length);
-
 
 
 #endif      // __RADIO_PROTOCAL_H__
