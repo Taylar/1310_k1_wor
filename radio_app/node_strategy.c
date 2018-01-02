@@ -27,11 +27,8 @@ typedef struct {
 
 /* Clock for node period sending */
 
-static Clock_Struct nodeStrategyPeriodClock;     /* not static so you can see in ROV */
-static Clock_Handle nodeStrategyPeriodClockHandle;
-
-static Clock_Struct nodeStrategyStartClock;     /* not static so you can see in ROV */
-static Clock_Handle nodeStrategyStartClockHandle;
+Clock_Struct nodeStrategyStartClock;     /* not static so you can see in ROV */
+Clock_Handle nodeStrategyStartClockHandle;
 
 
 
@@ -44,24 +41,11 @@ static node_strategy_t      nodeStrategy;
 static void (*NodeStrategyPeriodCb)(void);
 /***** Function definitions *****/
 
-//***********************************************************************************
-// brief:   the node period send Cb Event
-// 
-// parameter: none
-//***********************************************************************************
-static void NodeStrategyPeriodClockCb(UArg arg0)
-{
-    if((NodeStrategyPeriodCb != NULL) && (nodeStrategy.busy == true) && (nodeStrategy.success == true))
-        NodeStrategyPeriodCb();
-}
-
 
 static void NodeStrategyStartCb(UArg arg0)
 {
-    if((NodeStrategyPeriodCb != NULL) && (nodeStrategy.busy == false))
+    if((NodeStrategyPeriodCb != NULL) && nodeStrategy.busy)
         NodeStrategyPeriodCb();
-
-    Clock_start(nodeStrategyPeriodClockHandle);
 }
 
 
@@ -78,6 +62,8 @@ void NodeStrategyInit(void (*Cb)(void))
         nodeStrategy.init    = true;
         nodeStrategy.success = false;
         nodeStrategy.busy    = false;
+        nodeStrategy.period  = 60;
+
 
         nodeStrategy.remainderCache       = EASYLINK_MAX_DATA_LENGTH;
 
@@ -87,11 +73,6 @@ void NodeStrategyInit(void (*Cb)(void))
         Clock_construct(&nodeStrategyStartClock, NodeStrategyStartCb, 1, &clkParams);
         nodeStrategyStartClockHandle = Clock_handle(&nodeStrategyStartClock);
 
-
-        clkParams.period    = 0;
-        clkParams.startFlag = FALSE;
-        Clock_construct(&nodeStrategyPeriodClock, NodeStrategyPeriodClockCb, 1, &clkParams);
-        nodeStrategyPeriodClockHandle = Clock_handle(&nodeStrategyPeriodClock);
 
 
         NodeStrategyPeriodCb        = Cb;       
@@ -106,7 +87,8 @@ void NodeStrategyInit(void (*Cb)(void))
 //***********************************************************************************
 void NodeStrategySetPeriod(uint32_t period)
 {
-    Clock_setPeriod(nodeStrategyPeriodClockHandle, period);
+    nodeStrategy.period         = period;
+    Clock_setPeriod(nodeStrategyStartClockHandle, period);
 }
 
 
@@ -115,8 +97,8 @@ static void NodeStrategyStart(void)
 {
     uint32_t randomNum;
 
-    if(Clock_isActive(nodeStrategyPeriodClockHandle))
-        Clock_stop(nodeStrategyPeriodClockHandle);
+    if(Clock_isActive(nodeStrategyStartClockHandle))
+        Clock_stop(nodeStrategyStartClockHandle);
 
 
     /* Use the True Random Number Generator to generate sensor node address randomly */;
@@ -139,6 +121,7 @@ static void NodeStrategyStart(void)
     Power_releaseDependency(PowerCC26XX_PERIPH_TRNG);
 
     Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % nodeStrategy.period);
+    Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period);
     Clock_start(nodeStrategyStartClockHandle);
 }
 
@@ -149,6 +132,7 @@ static void NodeStrategyStart(void)
 //***********************************************************************************
 void NodeStrategyReceiveTimeoutProcess(void)
 {
+    NodeStrategyStart();
     nodeStrategy.success    = false;
 }
 
