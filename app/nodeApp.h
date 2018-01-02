@@ -10,7 +10,7 @@
 
 
 
-void NodeAppInit(void);
+void NodeAppInit(void (*Cb)(void));
 
 void NodeUploadStart(void);
 
@@ -32,7 +32,11 @@ void NodeLowTemperatureSet(uint8_t num, uint16_t alarmTemp);
 
 void NodeHighTemperatureSet(uint8_t num, uint16_t alarmTemp);
 
+void NodeBroadcasting(void);
 
+void NodeStartBroadcast(void);
+
+void NodeStopBroadcast(void);
 
 
 #endif			// __NODEAPP_H__

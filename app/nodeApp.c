@@ -1,24 +1,35 @@
 #include "../general.h"
 
+#include "../radio_app/radio_app.h"
+#include "../radio_app/node_strategy.h"
 #include "../APP/nodeApp.h"
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 /***** Defines *****/
+#define NODE_BROADCASTING_TIME         10
+
 
 /***** Type declarations *****/
+typedef struct 
+{
+    uint32_t collectPeriod;
+    uint32_t uploadPeriod;
+    uint16_t serialNum;
+    bool     broadcasting;
+}node_para_t;
 
+static node_para_t nodeParameter;
 
 /***** Variable declarations *****/
 
 /* Clock for node period collect */
 
-static Clock_Struct nodeCollectPeriodClock;     /* not static so you can see in ROV */
+Clock_Struct nodeCollectPeriodClock;     /* not static so you can see in ROV */
 static Clock_Handle nodeCollectPeriodClockHandle;
 
-static Clock_Struct nodeUploadPeriodClock;     /* not static so you can see in ROV */
+Clock_Struct nodeUploadPeriodClock;     /* not static so you can see in ROV */
 static Clock_Handle nodeUploadPeriodClockHandle;
 
-static uint16_t nodeSensorDataSerialNum;
 
 /***** Prototypes *****/
 
@@ -52,21 +63,33 @@ static void NodeCollectPeriodCb(UArg arg0)
 // 
 // parameter: 
 //***********************************************************************************
-void NodeAppInit(void)
+void NodeAppInit(void (*Cb)(void))
 {
+
+    nodeParameter.serialNum     = 0;
+    nodeParameter.uploadPeriod  = NODE_BROADCASTING_TIME * CLOCK_UNIT_S;
+    nodeParameter.collectPeriod = NODE_BROADCASTING_TIME * CLOCK_UNIT_S;
+    nodeParameter.broadcasting  = true;
+
     Clock_Params clkParams;
     clkParams.period    = 0;
     clkParams.startFlag = FALSE;
     Clock_construct(&nodeUploadPeriodClock, NodeUploadPeriodCb, 1, &clkParams);
     nodeUploadPeriodClockHandle = Clock_handle(&nodeUploadPeriodClock);
-
+    NodeUploadPeriodSet(nodeParameter.uploadPeriod);
 
     clkParams.period    = 0;
     clkParams.startFlag = FALSE;
     Clock_construct(&nodeCollectPeriodClock, NodeCollectPeriodCb, 1, &clkParams);
     nodeCollectPeriodClockHandle = Clock_handle(&nodeCollectPeriodClock);
+    NodeCollectPeriodSet(nodeParameter.collectPeriod);
 
-    nodeSensorDataSerialNum = 0;
+    NodeStrategyInit(Cb);
+
+    NodeStrategySetPeriod(nodeParameter.uploadPeriod);
+
+    NodeStartBroadcast();
+    NodeBroadcasting();
 }
 
 
@@ -77,7 +100,8 @@ void NodeAppInit(void)
 //***********************************************************************************
 void NodeUploadStart(void)
 {
-    if(Clock_isActive(nodeUploadPeriodClockHandle) == false)
+
+    if((Clock_isActive(nodeUploadPeriodClockHandle) == false) && (nodeParameter.uploadPeriod))
         Clock_start(nodeUploadPeriodClockHandle);
 }
 
@@ -101,7 +125,11 @@ void NodeUploadStop(void)
 //***********************************************************************************
 void NodeUploadPeriodSet(uint32_t period)
 {
-    Clock_setPeriod(nodeUploadPeriodClockHandle, period * CLOCK_UNIT_MS);
+    nodeParameter.uploadPeriod      = period;
+    if(period == 0)
+        Clock_stop(nodeUploadPeriodClockHandle);
+    else
+        Clock_setPeriod(nodeUploadPeriodClockHandle, period);
 }
 
 
@@ -127,6 +155,8 @@ void NodeUploadProcess(void)
             return;
         }
     }
+
+
 }
 //***********************************************************************************
 // brief:   when the sensor data upload, recover the extflash store
@@ -173,7 +203,11 @@ void NodeCollectStop(void)
 //***********************************************************************************
 void NodeCollectPeriodSet(uint32_t period)
 {
-    Clock_setPeriod(nodeCollectPeriodClockHandle, period);
+    nodeParameter.collectPeriod         = period;
+    if(period == 0)
+        Clock_stop(nodeCollectPeriodClockHandle);
+    else
+        Clock_setPeriod(nodeCollectPeriodClockHandle, period);
 }
 
 
@@ -187,34 +221,30 @@ void NodeCollectPeriodSet(uint32_t period)
 void NodeCollectProcess(void)
 {
     uint8_t     data[24];
-    uint32_t    voltageTemp, humiTemp, temperatureTemp;
+    uint32_t    temp;
     Calendar    calendarTemp;
 
 
     // save the sht2x data
     SHT2X_FxnTable.measureFxn(SEN_I2C_CH0);
     
-    temperatureTemp = SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_TEMP);
-    humiTemp        = SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_HUMI);
     
-    voltageTemp     = HWREG(AON_BATMON_BASE + AON_BATMON_O_BAT);//AONBatMonBatteryVoltageGet();
-
-    voltageTemp     = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/255;
 
     calendarTemp    = Rtc_get_calendar();
-    // length
-    data[0] = 22;
+    // length, note:do not include length self
+    data[0] = 21;
     // rssi
     data[1] = 0;
     // deceive ID
-    data[2] = 0;
-    data[3] = 0;
-    data[4] = 0;
-    data[5] = 0;
+    temp    = GetRadioSrcAddr();
+    data[2] = (uint8_t)(temp>>24);
+    data[3] = (uint8_t)(temp>>16);
+    data[4] = (uint8_t)(temp>>8);
+    data[5] = (uint8_t)(temp);
     
     // serial num
-    data[6] = (uint8_t)(nodeSensorDataSerialNum>>8);
-    data[7] = (uint8_t)nodeSensorDataSerialNum;
+    data[6] = (uint8_t)(nodeParameter.serialNum>>8);
+    data[7] = (uint8_t)nodeParameter.serialNum;
     
     // collect time
     data[8] = (uint8_t)(calendarTemp.year - 2000);
@@ -225,8 +255,10 @@ void NodeCollectProcess(void)
     data[13] = (uint8_t)(calendarTemp.sec);
 
     // voltage
-    data[14] = (uint8_t)(voltageTemp >> 8);
-    data[15] = (uint8_t)(voltageTemp);
+    temp     = AONBatMonBatteryVoltageGet();
+    temp     = ((temp&0xff00)>>8)*1000 +1000*(temp&0xff)/256;
+    data[14] = (uint8_t)(temp >> 8);
+    data[15] = (uint8_t)(temp);
 
     // sensor id
     data[16] = 0;
@@ -235,12 +267,18 @@ void NodeCollectProcess(void)
     data[17] = PARATYPE_TEMP_HUMI_SHT20;
 
     // sensor data
-    data[18] = (uint8_t)(temperatureTemp >> 8);
-    data[19] = (uint8_t)(temperatureTemp);
-    data[20] = (uint8_t)(humiTemp >> 8);
-    data[21] = (uint8_t)(humiTemp);
+    temp     = SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_TEMP);
+    data[18] = (uint8_t)(temp >> 8);
+    data[19] = (uint8_t)(temp);
 
-    Flash_store_sensor_data(data, 22);
+
+    temp     = SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_HUMI);
+    data[20] = (uint8_t)(temp >> 8);
+    data[21] = (uint8_t)(temp);
+
+    Flash_store_sensor_data(data, data[0]+1);
+
+    nodeParameter.serialNum++;
 }
 
 
@@ -267,7 +305,29 @@ void NodeHighTemperatureSet(uint8_t num, uint16_t alarmTemp)
     
 }
 
+//***********************************************************************************
+// brief:   if the upload period is 0, start broadcasting 
+// 
+// parameter: 
+//***********************************************************************************
+void NodeBroadcasting(void)
+{
+    if(nodeParameter.broadcasting)
+    {
+        NodeStrategySetPeriod(NODE_BROADCASTING_TIME*CLOCK_UNIT_S);
+        NodeRadioSendSynReq();
+    }
+}
 
 
+void NodeStartBroadcast(void)
+{
+    nodeParameter.broadcasting      = true;
+}
+
+void NodeStopBroadcast(void)
+{
+    nodeParameter.broadcasting      = false;
+}
 
 
