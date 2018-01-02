@@ -3,8 +3,9 @@
 #include "radio_app.h"
 #include "node_strategy.h"
 #include "../interface_app/interface.h"
-
-
+#include "../app/radio_protocal.h"
+#include "../app/concenterApp.h"
+#include "../app/nodeApp.h"
 
 
 /***** Defines *****/
@@ -33,7 +34,7 @@ static Task_Params passRadioTaskParams;
 Task_Struct passRadioTask;        /* not static so you can see in ROV */
 static uint8_t nodeRadioTaskStack[PASSRADIO_TASK_STACK_SIZE];
 Semaphore_Struct radioAccessSem;  /* not static so you can see in ROV */
-//static Semaphore_Handle radioAccessSemHandle;
+static Semaphore_Handle radioAccessSemHandle;
 Event_Struct radioOperationEvent; /* not static so you can see in ROV */
 static Event_Handle radioOperationEventHandle;
 
@@ -81,11 +82,10 @@ void RadioAppTaskCreate(void)
 {
 
     /* Create semaphore used for exclusive radio access */ 
-    /*
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);
     Semaphore_construct(&radioAccessSem, 1, &semParam);
-    radioAccessSemHandle = Semaphore_handle(&radioAccessSem); */
+    radioAccessSemHandle = Semaphore_handle(&radioAccessSem); 
 
 
     /* Create event used internally for state changes */
@@ -127,8 +127,12 @@ void RadioAppTaskFxn(void)
     RadioDefaultParaInit();
     // radioMode       = RADIOMODE_RECEIVEPORT;
 
-    NodeStrategyInit(RadioSend);
+    if(radioMode == RADIOMODE_SENDPORT)
+        NodeAppInit(RadioSend);
+    else
+        ConcenterAppInit();
     
+
     /* Set the filter to the generated random address */
     if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
     {
@@ -144,21 +148,17 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_RX)
         {
-            // protocol distribute
-            NodeStrategyReceiveReceiveSuccess();
-
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
-                RadioSendPacket(radioRxPacket.payload, radioRxPacket.len, 0, 0);
+                ConcenterProtocalDispath(&radioRxPacket);
             }
-            else
+
+            if(radioMode == RADIOMODE_SENDPORT)
             {
-
-                // InterfaceSend(radioRxPacket.payload, radioRxPacket.len);
+                NodeStrategyReceiveReceiveSuccess();
+                NodeProtocalDispath(&radioRxPacket);
             }
 
-            if(radioMode == RADIOMODE_RECEIVEPORT)
-                EasyLink_receiveAsync(RxDoneCallback, 0);
         }
 
         if (events & RADIO_EVT_TX)
@@ -182,7 +182,10 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TOUT)
         {
-            NodeStrategyReceiveTimeoutProcess();
+            if(radioMode == RADIOMODE_SENDPORT)
+            {
+                NodeStrategyReceiveTimeoutProcess();
+            }
             
             /* If we haven't resent it the maximum number of times yet, then resend packet */
             if (currentRadioOperation.retriesDone < currentRadioOperation.maxNumberOfRetries)
@@ -327,6 +330,9 @@ void SetRadioSrcAddr(uint32_t addr)
 
     EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1);
 }
+
+
+
 
 void SetRadioDstAddr(uint32_t addr)
 {
