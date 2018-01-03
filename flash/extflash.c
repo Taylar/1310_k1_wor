@@ -5,33 +5,46 @@
 
 
 
-#define FLASH_POWER_PIN         IOID_8
-#define FLASH_SPI_CS_PIN        IOID_9
-#define FLASH_WP_PIN            IOID_11
-#define FLASH_HOLD_PIN          IOID_5
+#define FLASH_POWER_PIN_NODE         IOID_8
+#define FLASH_SPI_CS_PIN_NODE        IOID_9
+#define FLASH_WP_PIN_NODE            IOID_11
+#define FLASH_HOLD_PIN_NODE          IOID_5
+
+#define FLASH_SPI_CS_PIN_GATEWAY        IOID_24
+#define FLASH_WP_PIN_GATEWAY            IOID_19
+#define FLASH_HOLD_PIN_GATEWAY          IOID_18
 
 
 
-const PIN_Config extFlashPinTable[] = {
-    FLASH_POWER_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    FLASH_HOLD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /* LED GND initially off          */
+
+const PIN_Config extFlashPinTable_node[] = {
+    FLASH_POWER_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,      /*          */
+    FLASH_SPI_CS_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
+    FLASH_WP_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
+    FLASH_HOLD_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
     PIN_TERMINATE
 };
 
+const PIN_Config extFlashPinTable_gateway[] = {
+    FLASH_SPI_CS_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
+    FLASH_WP_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
+    FLASH_HOLD_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
+    PIN_TERMINATE
+};
 
 static PIN_State   extFlashPinState;
 static PIN_Handle  extFlashPinHandle;
 
 
-#define Flash_spi_enable()      PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0)
-#define Flash_spi_disable()     PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1)
+#define Flash_spi_enable()      PIN_setOutputValue(extFlashPinHandle, extflashCsPin, 0)
+#define Flash_spi_disable()     PIN_setOutputValue(extFlashPinHandle, extflashCsPin, 1)
 
 
 //QueueDef rFlashGnssQueue;
 static FlashSensorData_t rFlashSensorData;
 
+
+static PIN_Id extflashCsPin;
 //***********************************************************************************
 
 
@@ -219,14 +232,14 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
 //***********************************************************************************
 static const uint8_t test[16] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80};
 
-static ErrorStatus Flash_external_Selftest(void)
+ErrorStatus Flash_external_Selftest(void)
 {
     uint8_t zxtTest[16], i;
     Flash_external_erase(FLASH_EXTERNAL_SELFTEST_ADDR, FLASH_EXT_SECTOR_ERASE);
     Flash_external_read(FLASH_EXTERNAL_SELFTEST_ADDR, zxtTest, 16);
     for(i = 0; i < 16; i++)
     {
-       // System_printf("%d, ", zxtTest[i]);
+       System_printf("%d, ", zxtTest[i]);
         if(zxtTest[i] != 0xff)
             return ES_ERROR;
     }
@@ -234,7 +247,7 @@ static ErrorStatus Flash_external_Selftest(void)
     Flash_external_read(FLASH_EXTERNAL_SELFTEST_ADDR, zxtTest, 16);
     for(i = 0; i < 16; i++)
     {
-        //System_printf("%d, ", zxtTest[i]);
+        System_printf("%d, ", zxtTest[i]);
 
         if(zxtTest[i] != test[i])
             return ES_ERROR;
@@ -346,7 +359,16 @@ void Flash_init(void)
 {
     FlashSysInfo_t sysInfo;
 
-    extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable);
+    if(devicesType == DEVICES_TYPE_GATEWAY)
+    {
+        extflashCsPin     = FLASH_SPI_CS_PIN_GATEWAY;
+        extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable_gateway);
+    }
+    else
+    {
+        extflashCsPin     = FLASH_SPI_CS_PIN_NODE;
+        extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable_node);
+    }
 
     // Time delay before write instruction.
     Task_sleep(6 * CLOCK_UNIT_MS);
@@ -366,7 +388,7 @@ void Flash_init(void)
 	Semaphore_post(spiSemHandle);
 
 
-    //Flash_external_Selftest();
+    Flash_external_Selftest();
 
 }
 

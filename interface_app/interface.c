@@ -102,14 +102,18 @@ uint32_t HwInterfaceInit(INTERFACE_TYPE type, uint32_t baudRate, UART_CB_T cb)
 }
 
 
-// this may occur a rec error when InterfaceReceiveCb syn occur, this function shouldn't be interrupt
-// by InterfaceReceiveCb, add the bi lock maybe will occur error
 void InterfaceRecTimeroutCb(UArg arg0)
 {
+    UInt key;
+
+    /* Disable preemption. */
+    key = Hwi_disable();
+
     recLen    = recIsrLen;
     recIsrLen = 0;
-
     memcpy(interfaceRecBuf, interfaceIsrRecBuf, recLen);
+
+    Hwi_restore(key);
     Event_post(interfaceEvtHandle, INTERFACE_EVT_RX);
 }
 

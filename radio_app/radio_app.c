@@ -19,6 +19,22 @@
 #define RADIO_ADDR_LEN                  4
 
 
+
+#define RADIO_CSD_PIN                       IOID_7      // 0:sleep    1:wake up
+#define RADIO_CTX_PIN                       IOID_6      // 0:Rx       1:Tx
+
+
+#define     RadioFrontTxEnable()    if(devicesType == DEVICES_TYPE_GATEWAY){    \
+                                    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1); \
+                                    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 1);}
+
+#define     RadioFrontRxEnable()    if(devicesType == DEVICES_TYPE_GATEWAY){    \
+                                    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1); \
+                                    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);}
+
+#define     RadioFrontDisable()     if(devicesType == DEVICES_TYPE_GATEWAY){    \
+                                    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 0); \
+                                    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);}
 /***** Type declarations *****/
 struct RadioOperation {
     EasyLink_TxPacket easyLinkTxPacket;
@@ -51,6 +67,16 @@ static struct RadioOperation currentRadioOperation;
 EasyLink_RxPacket radioRxPacket;
 
 
+const PIN_Config radioPinTable_gateway[] = {
+    RADIO_CSD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+    RADIO_CTX_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+    PIN_TERMINATE
+};
+
+
+
+static PIN_State   radioPinState;
+static PIN_Handle  radioPinHandle;
 /***** Prototypes *****/
 
 void RadioAppTaskFxn(void);
@@ -71,7 +97,6 @@ static void RadioDefaultParaInit(void)
     srcAddrLen      = RADIO_ADDR_LEN;
     dstAddrLen      = RADIO_ADDR_LEN;
 
-    radioMode       = RADIOMODE_SENDPORT;
     // set the radio addr length
     EasyLink_setCtrl(EasyLink_Ctrl_AddSize, RADIO_ADDR_LEN);
 }
@@ -120,6 +145,19 @@ void RadioModeSet(RadioOperationMode modeSet)
 
 void RadioAppTaskFxn(void)
 {
+    if(devicesType == DEVICES_TYPE_GATEWAY)
+    {
+        radioMode = RADIOMODE_RECEIVEPORT;
+        radioPinHandle = PIN_open(&radioPinState, radioPinTable_gateway);
+
+    }
+    else
+    {
+        radioMode = RADIOMODE_SENDPORT;
+    }
+
+
+
     if(EasyLink_init(RADIO_EASYLINK_MODULATION) != EasyLink_Status_Success) {
         System_abort("EasyLink_init failed");
     }
@@ -140,7 +178,10 @@ void RadioAppTaskFxn(void)
     }
 
     if(radioMode == RADIOMODE_RECEIVEPORT)
+    {
+        RadioFrontRxEnable();
         EasyLink_receiveAsync(RxDoneCallback, 0);
+    }
 
     for(;;)
     {
@@ -164,6 +205,7 @@ void RadioAppTaskFxn(void)
         if (events & RADIO_EVT_TX)
         {
             // stop receive radio, otherwise couldn't send successful
+            RadioFrontTxEnable();
             EasyLink_abort();
             EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
             if(radioMode == RADIOMODE_SENDPORT)
@@ -174,6 +216,7 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
+                RadioFrontRxEnable();
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }

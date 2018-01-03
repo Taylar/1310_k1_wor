@@ -14,15 +14,24 @@
  */
 
 /* SPI Board */
-#define CC1310_LAUNCHXL_SPI0_MISO             IOID_10
-#define CC1310_LAUNCHXL_SPI0_MOSI             IOID_7
-#define CC1310_LAUNCHXL_SPI0_CLK              IOID_6
-#define CC1310_LAUNCHXL_SPI0_CSN              PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_MISO             PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_MOSI             PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_CLK              PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_CSN              PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI0_MISO_NODE             IOID_10
+#define CC1310_LAUNCHXL_SPI0_MOSI_NODE             IOID_7
+#define CC1310_LAUNCHXL_SPI0_CLK_NODE              IOID_6
+#define CC1310_LAUNCHXL_SPI0_CSN_NODE              PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_MISO_NODE             PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_MOSI_NODE             PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_CLK_NODE              PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_CSN_NODE              PIN_UNASSIGNED
 
+
+#define CC1310_LAUNCHXL_SPI0_MISO_GATEWAY             IOID_25
+#define CC1310_LAUNCHXL_SPI0_MOSI_GATEWAY             IOID_27
+#define CC1310_LAUNCHXL_SPI0_CLK_GATEWAY              IOID_26
+#define CC1310_LAUNCHXL_SPI0_CSN_GATEWAY              PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_MISO_GATEWAY             PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_MOSI_GATEWAY             PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_CLK_GATEWAY              PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_CSN_GATEWAY              PIN_UNASSIGNED
 
 /*
  *  =============================== SPI DMA ===============================
@@ -32,7 +41,7 @@
 
 SPICC26XXDMA_Object spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPICOUNT];
 
-const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
+const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPICOUNT] = {
     {
         .baseAddr           = SSI0_BASE,
         .intNum             = INT_SSI0_COMB,
@@ -42,10 +51,10 @@ const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
         .defaultTxBufValue  = 0,
         .rxChannelBitMask   = 1<<UDMA_CHAN_SSI0_RX,
         .txChannelBitMask   = 1<<UDMA_CHAN_SSI0_TX,
-        .mosiPin            = CC1310_LAUNCHXL_SPI0_MOSI,
-        .misoPin            = CC1310_LAUNCHXL_SPI0_MISO,
-        .clkPin             = CC1310_LAUNCHXL_SPI0_CLK,
-        .csnPin             = CC1310_LAUNCHXL_SPI0_CSN
+        .mosiPin            = CC1310_LAUNCHXL_SPI0_MOSI_NODE,
+        .misoPin            = CC1310_LAUNCHXL_SPI0_MISO_NODE,
+        .clkPin             = CC1310_LAUNCHXL_SPI0_CLK_NODE,
+        .csnPin             = CC1310_LAUNCHXL_SPI0_CSN_NODE
     },
     {
         .baseAddr           = SSI1_BASE,
@@ -56,23 +65,54 @@ const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
         .defaultTxBufValue  = 0,
         .rxChannelBitMask   = 1<<UDMA_CHAN_SSI1_RX,
         .txChannelBitMask   = 1<<UDMA_CHAN_SSI1_TX,
-        .mosiPin            = CC1310_LAUNCHXL_SPI1_MOSI,
-        .misoPin            = CC1310_LAUNCHXL_SPI1_MISO,
-        .clkPin             = CC1310_LAUNCHXL_SPI1_CLK,
-        .csnPin             = CC1310_LAUNCHXL_SPI1_CSN
+        .mosiPin            = CC1310_LAUNCHXL_SPI1_MOSI_NODE,
+        .misoPin            = CC1310_LAUNCHXL_SPI1_MISO_NODE,
+        .clkPin             = CC1310_LAUNCHXL_SPI1_CLK_NODE,
+        .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_NODE
     }
 };
 
-const SPI_Config SPI_config[CC1310_LAUNCHXL_SPICOUNT] = {
+const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPICOUNT] = {
+    {
+        .baseAddr           = SSI0_BASE,
+        .intNum             = INT_SSI0_COMB,
+        .intPriority        = ~0,
+        .swiPriority        = 0,
+        .powerMngrId        = PowerCC26XX_PERIPH_SSI0,
+        .defaultTxBufValue  = 0,
+        .rxChannelBitMask   = 1<<UDMA_CHAN_SSI0_RX,
+        .txChannelBitMask   = 1<<UDMA_CHAN_SSI0_TX,
+        .mosiPin            = CC1310_LAUNCHXL_SPI0_MOSI_GATEWAY,
+        .misoPin            = CC1310_LAUNCHXL_SPI0_MISO_GATEWAY,
+        .clkPin             = CC1310_LAUNCHXL_SPI0_CLK_GATEWAY,
+        .csnPin             = CC1310_LAUNCHXL_SPI0_CSN_GATEWAY
+    },
+    {
+        .baseAddr           = SSI1_BASE,
+        .intNum             = INT_SSI1_COMB,
+        .intPriority        = ~0,
+        .swiPriority        = 0,
+        .powerMngrId        = PowerCC26XX_PERIPH_SSI1,
+        .defaultTxBufValue  = 0,
+        .rxChannelBitMask   = 1<<UDMA_CHAN_SSI1_RX,
+        .txChannelBitMask   = 1<<UDMA_CHAN_SSI1_TX,
+        .mosiPin            = CC1310_LAUNCHXL_SPI1_MOSI_GATEWAY,
+        .misoPin            = CC1310_LAUNCHXL_SPI1_MISO_GATEWAY,
+        .clkPin             = CC1310_LAUNCHXL_SPI1_CLK_GATEWAY,
+        .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_GATEWAY
+    }
+};
+
+SPI_Config SPI_config[CC1310_LAUNCHXL_SPICOUNT] = {
     {
          .fxnTablePtr = &SPICC26XXDMA_fxnTable,
          .object      = &spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPI0],
-         .hwAttrs     = &spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPI0]
+         .hwAttrs     = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI0]
     },
     {
          .fxnTablePtr = &SPICC26XXDMA_fxnTable,
          .object      = &spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPI1],
-         .hwAttrs     = &spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPI1]
+         .hwAttrs     = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI1]
     },
 };
 
@@ -94,6 +134,17 @@ SPI_Handle mSpiHandle;
 ErrorStatus Spi_init(void)
 {
     SPI_Params mSpiParams;
+
+    if(DEVICES_TYPE_GATEWAY == devicesType)
+    {
+        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPI0];
+        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPI1];
+    }
+    else
+    {
+        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI0];
+        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI1];
+    }
 
     SPI_init();
 

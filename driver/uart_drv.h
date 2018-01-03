@@ -49,5 +49,10 @@ void UartClose(UART_PORT uartPort);
 
 void UartSendDatas(UART_PORT uartPort, uint8_t *buf, uint8_t count);
 
+void Uart_send_burst_data(UART_PORT uartPort, uint8_t *pData, uint16_t length);
+
+void Uart_send_string(UART_PORT uartPort, uint8_t *string);
+
+
 #endif	/* __ZKSIOT_UART_DRV_H__ */
 

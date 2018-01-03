@@ -43,11 +43,16 @@
 /* Board Header files */
 #include "Board.h"
 
+#include "general.h"
 #include "interface_app/interface.h"
 #include "radio_app/radio_app.h"
 #include "app/systemApp.h"
+#include "network/network.h"
 
 
+uint8_t devicesType;
+
+ConfigInfo_t g_rSysConfigInfo;
 /*
  *  ======== main ========
  */
@@ -57,6 +62,9 @@ int main(void)
     Board_initGeneral();
 
 
+
+    if(devicesType == DEVICES_TYPE_GATEWAY)
+        Nwk_task_create();
     /* Initialize interface tasks */
     InterfaceTaskCreate();
 

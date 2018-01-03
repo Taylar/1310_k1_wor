@@ -104,6 +104,8 @@
 #endif
 
 //Sensor define
+#define SUPPORT_DEEPTEMP
+
 #define SUPPORT_SENSOR
 #ifdef SUPPORT_SENSOR
 #define SUPPORT_SHT2X
@@ -113,7 +115,11 @@
 
 //Radio define
 
-
+//Network define
+#define SUPPORT_NETWORK
+#ifdef SUPPORT_NETWORK
+#define SUPPORT_GSM
+#endif
 
 
 //Queue function define
@@ -140,6 +146,19 @@
 //MODULE define.
 //
 //***********************************************************************************
+//No MODULE
+#define MODULE_NULL             0
+#define MODULE_GSM              0x0001
+#define MODULE_WIFI             0x0002
+#define MODULE_LAN              0x0004
+#define MODULE_LORA             0x0008
+#define MODULE_CC1310           0x0010
+#define MODULE_GPS              0x0020
+#define MODULE_BTP              0x0040
+
+#define MODULE_NWK              (MODULE_GSM | MODULE_WIFI | MODULE_LAN)
+#define MODULE_RADIO            (MODULE_LORA| MODULE_CC1310)
+
 #define MODULE_SENSOR_MAX       1
 
 
@@ -148,7 +167,9 @@
 //Status define.
 //
 //***********************************************************************************
-
+// devices type
+#define         DEVICES_TYPE_GATEWAY            0
+#define         DEVICES_TYPE_NODE               1
 
 //***********************************************************************************
 //
@@ -264,7 +285,7 @@ typedef struct {
 // #include "sensor/sensor.h"
 #include "display/led_drv.h"
 #include "easylink/EasyLink.h"
-
+#include "network/network.h"
 
 //***********************************************************************************
 //
@@ -273,7 +294,7 @@ typedef struct {
 //***********************************************************************************
 extern ConfigInfo_t g_rSysConfigInfo;
 
-
+extern uint8_t devicesType;
 
 
 #endif	/* __ZKSIOT_GENERAL_H__ */

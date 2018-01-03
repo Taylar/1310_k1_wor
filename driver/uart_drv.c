@@ -10,8 +10,8 @@
 #include "../general.h"
 
 /* UART Board */
-#define CC1310_LAUNCHXL_UART_RX               IOID_2          /* RXD */
-#define CC1310_LAUNCHXL_UART_TX               IOID_3          /* TXD */
+#define CC1310_LAUNCHXL_UART_RX               IOID_5          /* RXD */
+#define CC1310_LAUNCHXL_UART_TX               IOID_4          /* TXD */
 #define CC1310_LAUNCHXL_UART_CTS              IOID_19         /* CTS */
 #define CC1310_LAUNCHXL_UART_RTS              IOID_18         /* RTS */
 
@@ -142,4 +142,31 @@ void UartSendDatas(UART_PORT uartPort, uint8_t *buf, uint8_t count)
         return;
     }
     UART_write(uarthandle[uartPort], buf, count);
+}
+
+
+//***********************************************************************************
+//
+// UART0/1 send burst byte, use USCI_A0/1.
+//
+//***********************************************************************************
+void Uart_send_burst_data(UART_PORT uartPort, uint8_t *pData, uint16_t length)
+{
+    uint16_t i;
+
+    for (i = 0; i < length; i++) {
+        UART_write(uarthandle[uartPort], pData+i, 1);
+    }
+}
+
+//***********************************************************************************
+//
+// UART0/1 send string, use USCI_A0/1.
+//
+//***********************************************************************************
+void Uart_send_string(UART_PORT uartPort, uint8_t *string)
+{
+    while (*string != '\0') {
+        UART_write(uarthandle[uartPort], string++, 1);
+    }
 }

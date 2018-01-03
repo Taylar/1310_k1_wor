@@ -49,20 +49,35 @@
 //External flash sensor data pointer store position
 #define FLASH_SENSOR_PTR_POS            (FLASH_SYS_POS + FLASH_SYS_AREA_SIZE)
 //External flash sensor data pointer size
-#define FLASH_SENSOR_PTR_SIZE           16
+#define FLASH_SENSOR_PTR_SIZE           8
 //External flash sensor data pointer number
-#define FLASH_SENSOR_PTR_NUMBER         1024L
+#define FLASH_SENSOR_PTR_NUMBER         6144L           // 12*4096
 //External flash sensor data pointer position offset
 #define FLASH_SENSOR_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)
 
 //External flash sensor data store position
 #define FLASH_SENSOR_DATA_POS           (FLASH_SENSOR_PTR_POS + FLASH_SENSOR_PTR_AREA_SIZE)
 //External flash sensor data size
-#define FLASH_SENSOR_DATA_SIZE          128
+#define FLASH_SENSOR_DATA_SIZE          32
 //External flash sensor data number
-#define FLASH_SENSOR_DATA_NUMBER        (1888L)         // the max store data
+#define FLASH_SENSOR_DATA_NUMBER        (6144L)         // the max store data   //48 *4096
 //External flash sensor data position offset
 #define FLASH_SENSOR_DATA_AREA_SIZE     (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER)
+
+
+//External flash NODE_PARA data pointer store position
+#define FLASH_NODE_PARA_PTR_POS              (FLASH_SENSOR_DATA_POS + FLASH_SENSOR_DATA_AREA_SIZE)
+//External flash NODE_PARA data pointer size
+#define FLASH_NODE_PARA_PTR_SIZE             8
+//External flash NODE_PARA data pointer number
+#define FLASH_NODE_PARA_PTR_NUMBER           1024           // 4096 * 2 
+//External flash NODE_PARA data pointer position offset
+#define FLASH_NODE_PARA_PTR_AREA_SIZE        (FLASH_GNSS_PTR_SIZE * FLASH_GNSS_PTR_NUMBER)
+
+
+
+
+
 
 #ifdef SUPPORT_GNSS
 //External flash GNSS data pointer store position

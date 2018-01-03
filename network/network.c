@@ -140,7 +140,8 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPacket)
         packet.buff[packet.length++] = 0x01;
         //终端电压
 #ifdef SUPPORT_BATTERY
-        value = Battery_get_voltage();
+        value = AONBatMonBatteryVoltageGet();
+        value = ((value&0xff00)>>8)*1000 +1000*(value&0xff)/256;
 #endif
         packet.buff[packet.length++] = HIBYTE(value);
         packet.buff[packet.length++] = LOBYTE(value);
@@ -181,7 +182,7 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPacket)
     packet.buff[packet.length++] = CheckCode8(&packet.buff[0], packet.length);
 
     //进行转义
-    pPacket->length = Protocol_escape(&pPacket->buff[1], &packet.buff[0], packet.length);
+    //pPacket->length = Protocol_escape(&pPacket->buff[1], &packet.buff[0], packet.length); //disable by debug
     //消息标志位
     pPacket->buff[0] = PROTOCOL_TOKEN;
     pPacket->buff[pPacket->length + 1] = PROTOCOL_TOKEN;
@@ -243,7 +244,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
        length -= package_length;
 
         //Recover transferred meaning
-        package_length = Protocol_recover_escape(&rxData[0], &rxData[1], package_length - 2);
+       // package_length = Protocol_recover_escape(&rxData[0], &rxData[1], package_length - 2); disable by debug
         if (package_length <= 1)
             break;
 
@@ -294,7 +295,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
     			}
                 
 #ifdef FLASH_INTERNAL
-                Flash_store_config();
+                //Flash_store_config();   // disable by debug
 #endif
                 //send ack to server
                 rNwkMsgPacket.buff[0] = rxData[10];
@@ -308,6 +309,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     
                 break;
             case NMI_RX_ALARM:
+                /*
                 index = NWK_MSG_BODY_START;
                 HIBYTE(HIWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
                 LOBYTE(HIWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
@@ -339,7 +341,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 
                 g_bAlarmSensorFlag = 0x100;
                 Sys_event_post(SYS_EVT_ALARM);
-
+*/
                 //send ack to server
                 rNwkMsgPacket.buff[0] = rxData[10];
                 rNwkMsgPacket.buff[1] = rxData[11];
@@ -354,13 +356,13 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
             case NMI_RX_NTP:
     			if (package_length >= 18) {
                     index = NWK_MSG_BODY_START;
-    	            calendar.Year = rxData[index++] + CALENDAR_BASE_YEAR;
-    	            calendar.Month = rxData[index++];
-    	            calendar.DayOfMonth = rxData[index++];
-    	            calendar.Hours = rxData[index++];
-    	            calendar.Minutes = rxData[index++];
-    	            calendar.Seconds = rxData[index++];
-    	            Rtc_set_calendar(calendar);
+    	            calendar.year = rxData[index++] + CALENDAR_BASE_YEAR;
+    	            calendar.month = rxData[index++];
+    	            calendar.day = rxData[index++];
+    	            calendar.hour = rxData[index++];
+    	            calendar.min = rxData[index++];
+    	            calendar.sec = rxData[index++];
+    	            Rtc_set_calendar(&calendar);
     	            rNwkObject.ntp = 1;
     			}
                 break;
@@ -578,9 +580,9 @@ void Nwk_poweron(void)
     if (!(g_rSysConfigInfo.module & MODULE_NWK))
         return;
 
-    if (g_rSysConfigInfo.status & STATUS_GSM_TEST)
-        Nwk_event_post(NWK_EVT_POWERON | NWK_EVT_TEST);
-    else
+//    if (g_rSysConfigInfo.status & STATUS_GSM_TEST)
+//        Nwk_event_post(NWK_EVT_POWERON | NWK_EVT_TEST);
+//    else
         Nwk_event_post(NWK_EVT_POWERON | NWK_EVT_DATA_UPLOAD);
 }
 

@@ -72,10 +72,10 @@ static void AT_send_data(uint8_t *pData, uint16_t length)
 
     /* Disable preemption. */
     key = Hwi_disable();
-    g_rUart1RxData.length = 0;
+//    g_rUart1RxData.length = 0;
     Hwi_restore(key);
 
-    Uart_send_burst_data(UART_1, pData, length);
+    Uart_send_burst_data(UART_0, pData, length);
 }
 
 //***********************************************************************************
@@ -89,10 +89,10 @@ static void AT_send_cmd(uint8_t *string)
 
     /* Disable preemption. */
     key = Hwi_disable();
-    g_rUart1RxData.length = 0;
+ //   g_rUart1RxData.length = 0;
     Hwi_restore(key);
 
-    Uart_send_string(UART_1, string);
+    Uart_send_string(UART_0, string);
 }
 
 //***********************************************************************************
@@ -422,7 +422,7 @@ static UInt Gsm_wait_ack(uint32_t timeout)
     eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN | GSM_EVT_CMD_OK | GSM_EVT_CMD_ERROR, timeout * CLOCK_UNIT_MS);
 
     rGsmObject.cmdType = AT_CMD_NULL;
-    g_rUart1RxData.length = 0;
+//    g_rUart1RxData.length = 0;
 
     return eventId;
 }
@@ -1132,8 +1132,8 @@ static void Gsm_rxSwiFxn(void)
 
     /* Disable preemption. */
     key = Hwi_disable();
-    tempRx.length = g_rUart1RxData.length;
-    memcpy((char *)tempRx.buff, (char *)g_rUart1RxData.buff, tempRx.length);
+//    tempRx.length = g_rUart1RxData.length;
+//    memcpy((char *)tempRx.buff, (char *)g_rUart1RxData.buff, tempRx.length);
     Hwi_restore(key);
     tempRx.buff[tempRx.length] = '\0';
 
@@ -1143,7 +1143,7 @@ static void Gsm_rxSwiFxn(void)
         rxLen = atoi(ptr + 3);
         if ((tempRx.length - index) > rxLen && rxLen < 128) {
             //Second 0x7e
-            g_rUart1RxData.length = index;
+//            g_rUart1RxData.length = index;
             ptr = strstr((char *)ptr, "\x7e");
             rGsmObject.dataProcCallbackFxn((uint8_t *)ptr, rxLen);
         } else {
@@ -1329,7 +1329,7 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         default:
-            g_rUart1RxData.length = 0;
+//            g_rUart1RxData.length = 0;
             break;
     }
 }
@@ -1339,12 +1339,13 @@ static void Gsm_rxSwiFxn(void)
 // Gsm hwi isr callback function.
 //
 //***********************************************************************************
-static void Gsm_hwiIntCallback(void)
-{
+static void Gsm_hwiIntCallback(uint8_t *dataP, uint8_t len)
+{/*
     if ((g_rUart1RxData.buff[g_rUart1RxData.length - 1] == '\n'
                 && g_rUart1RxData.buff[g_rUart1RxData.length - 2] == '\r')
         || g_rUart1RxData.buff[g_rUart1RxData.length - 1] == '>'
-        || g_rUart1RxData.buff[g_rUart1RxData.length - 1] == 0x7e) {
+        || g_rUart1RxData.buff[g_rUart1RxData.length - 1] == 0x7e)*/
+    {
         Swi_post(gsmRxSwiHandle);
     }
 }
@@ -1366,12 +1367,12 @@ static void Gsm_event_post(UInt event)
 //***********************************************************************************
 static void Gsm_init(Nwk_Params *params)
 {
-    g_rUart1RxData.length = 0;
+//    g_rUart1RxData.length = 0;
 
     Gsm_io_init();
 
     //Init UART.
-    Uart_init(UART_1, 38400, Gsm_hwiIntCallback);
+    UartHwInit(UART_0, 38400, Gsm_hwiIntCallback);
 
     rGsmObject.isOpen = 0;
     rGsmObject.actPDPCnt = 0;
