@@ -21,7 +21,7 @@ typedef struct{
 } SensorData_t;
 
 
-static SensorData_t rSensorData[MODULE_SENSOR_MAX];
+static SensorData_t rSensorData[SHT2X_I2C_MAX];
 //***********************************************************************************
 //
 // SHT2x check crc.
@@ -168,20 +168,21 @@ static void SHT2x_measure(uint8_t chNum)
 // SHT2x calculate humidty.
 //
 //***********************************************************************************
-static int32_t SHT2x_get_value(uint8_t chNum, SENSOR_FUNCTION function)
+static int32_t SHT2x_get_value(uint8_t chNum, SHT2X_FUNCTION function)
 {
+    if(chNum >= SHT2X_I2C_MAX)
+        return TEMPERATURE_OVERLOAD;
 
-    if(function & SENSOR_TEMP){
+    if(function & SHT2X_TEMP){
         return rSensorData[chNum].temp;
-    } else if(function & SENSOR_HUMI){
+    } else if(function & SHT2X_HUMI){
         return rSensorData[chNum].humi;
     }
 
     return TEMPERATURE_OVERLOAD;
 }
 
-const Sensor_FxnTable  SHT2X_FxnTable = {
-	SENSOR_TEMP | SENSOR_HUMI,
+const Sht2x_FxnTable  SHT2X_FxnTable = {
 	SHT2x_init,
     SHT2x_measure,
 	SHT2x_get_value,

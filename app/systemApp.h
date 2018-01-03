@@ -11,8 +11,9 @@
 #define			SYSTEMAPP_EVT_SENSOR					Event_Id_04
 #define			SYSTEMAPP_EVT_RTC						Event_Id_05
 #define			SYSTEMAPP_EVT_UPLOAD					Event_Id_06
-#define			SYSTEMAPP_EVT_COLLECT					Event_Id_07
-#define			SYSTEMAPP_EVT_TIMER						Event_Id_08
+#define			SYSTEMAPP_EVT_COLLECT					Event_Id_08
+#define			SYSTEMAPP_EVT_NET_UPLOAD				Event_Id_09
+#define			SYSTEMAPP_EVT_TIMER						Event_Id_10
 #define			SYSTEMAPP_EVT_ALL						0xffff
 
 

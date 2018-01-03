@@ -13,29 +13,26 @@
 
 
 typedef enum {
-    SEN_I2C_CH0 = 0,
-    SEN_I2C_CH1,
-    SEN_I2C_CH2,
-    SEN_I2C_MAX,
-} SENSOR_CH_NUM;
+    SHT2X_I2C_CH0 = 0,
+    SHT2X_I2C_MAX,
+} SHT2X_CH_NUM;
 
 typedef enum {
-    SENSOR_NONE = 0x00,
-    SENSOR_TEMP = 0x01,
-    SENSOR_HUMI = 0x02,
-} SENSOR_FUNCTION;
+    SHT2X_NONE = 0x00,
+    SHT2X_TEMP = 0x01,
+    SHT2X_HUMI = 0x02,
+} SHT2X_FUNCTION;
 
 
-typedef void (*Sensor_initFxn) (uint8_t chNum);
-typedef void (*Sensor_measureFxn)(uint8_t chNum);
-typedef int32_t (*Sensor_getValueFxn)(uint8_t chNum, SENSOR_FUNCTION function);
+typedef void (*Sht2x_initFxn) (uint8_t chNum);
+typedef void (*Sht2x_measureFxn)(uint8_t chNum);
+typedef int32_t (*Sht2x_getValueFxn)(uint8_t chNum, SHT2X_FUNCTION function);
 
-typedef struct Sensor_FxnTable {
-    uint32_t  function;
-    Sensor_initFxn  initFxn;
-    Sensor_measureFxn  measureFxn;  
-    Sensor_getValueFxn getValueFxn;
-} Sensor_FxnTable;
+typedef struct Sht2x_FxnTable {
+    Sht2x_initFxn  initFxn;
+    Sht2x_measureFxn  measureFxn;  
+    Sht2x_getValueFxn getValueFxn;
+} Sht2x_FxnTable;
 
 
 
@@ -78,7 +75,7 @@ typedef enum {
 } SHT2X_HEATER;
 
 
-extern const Sensor_FxnTable  SHT2X_FxnTable;
+extern const Sht2x_FxnTable  SHT2X_FxnTable;
 
 // CRC algorithm
 #define POLYNOMIAL                  0x131 //P(x)=x^8+x^5+x^4+1 = 100110001

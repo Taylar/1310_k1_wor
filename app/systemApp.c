@@ -1,5 +1,7 @@
 #include "../general.h"
 #include "systemApp.h"
+#include "../app/nodeApp.h"
+#include "../app/concenterApp.h"
 
 /***** Defines *****/
 #define         SYSTEM_APP_STACK_SIZE        1024
@@ -7,11 +9,11 @@
 // **************************************************************************
 
 
-/* Clock for the fast report timeout */
+// /* Clock for the fast report timeout */
 
-static Clock_Struct sysTimerClock;     /* not static so you can see in ROV */
+// static Clock_Struct sysTimerClock;     /* not static so you can see in ROV */
 
-static Clock_Handle sysTimerClockHandle;
+// static Clock_Handle sysTimerClockHandle;
 
 
 // **************************************************************************
@@ -47,6 +49,7 @@ void SysTimerCb(UArg arg0)
 
 void RtcEventSet(void)
 {
+    Led_toggle(LED_R);
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RTC);
 }
 
@@ -57,11 +60,12 @@ void SysAppTaskCreate(void)
     Error_init(&eb);
 
 	/* Create clock object which is used for fast report timeout */
-    Clock_Params clkParams;
-    clkParams.period = 1000;
-    clkParams.startFlag = FALSE;
-    Clock_construct(&sysTimerClock, SysTimerCb, 1, &clkParams);
-    sysTimerClockHandle = Clock_handle(&sysTimerClock);
+    
+    // Clock_Params clkParams;
+    // clkParams.period = 1000;
+    // clkParams.startFlag = FALSE;
+    // Clock_construct(&sysTimerClock, SysTimerCb, 1, &clkParams);
+    // sysTimerClockHandle = Clock_handle(&sysTimerClock); 
 
 	/* Construct system application Task threads */
     Task_Params taskParams;
@@ -78,7 +82,7 @@ void SysAppTaskCreate(void)
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
-
+    // uint32_t	voltageTemp;
     /* Construct system process Event */
     Event_construct(&systemAppEvtStruct, NULL);
     /* Obtain event instance handle */
@@ -91,7 +95,7 @@ void SystemAppTaskFxn(void)
 
 	Flash_init();
 
-	SHT2X_FxnTable.initFxn(SEN_I2C_CH0);
+	SHT2X_FxnTable.initFxn(SHT2X_I2C_CH0);
 
 	Key_init(SystemKeyEventPostIsr);
 
@@ -101,27 +105,17 @@ void SystemAppTaskFxn(void)
 
 	RtcStart();	
 
+	// voltageTemp = Clock_getTicks();
+	// Clock_setTimeout(sysTimerClockHandle, 0);
 	// Clock_start(sysTimerClockHandle);
+
 
 	for(;;)
 	{
         eventId = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL, BIOS_WAIT_FOREVER);
 	
-		if(eventId &SYSTEMAPP_EVT_KEY0)
-		{
-			Led_toggle(LED_R);
-			Led_toggle(LED_G);
-			SHT2X_FxnTable.measureFxn(SEN_I2C_CH0);
-			System_printf("the temperature : %d\n", SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_TEMP));
-			System_printf("the humi : %d\n", SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_HUMI));
-		}
 
-		if(eventId &SYSTEMAPP_EVT_INTERFACE)
-		{
-
-		}
-
-		if(eventId &SYSTEMAPP_EVT_RADIO_NODE)
+        if(eventId &SYSTEMAPP_EVT_RADIO_NODE)
 		{
 
 		}
@@ -131,6 +125,24 @@ void SystemAppTaskFxn(void)
 
 		}
 
+
+
+		if(eventId &SYSTEMAPP_EVT_KEY0)
+		{
+			// Led_toggle(LED_R);
+			// Led_toggle(LED_G);
+			// SHT2X_FxnTable.measureFxn(SEN_I2C_CH0);
+			// System_printf("the temperature : %d\n", SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_TEMP));
+			// System_printf("the humi : %d\n", SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_HUMI));
+		}
+
+		if(eventId &SYSTEMAPP_EVT_INTERFACE)
+		{
+
+		}
+
+		
+
 		if(eventId &SYSTEMAPP_EVT_SENSOR)
 		{
 
@@ -138,17 +150,33 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
-
+			// voltageTemp = AONBatMonBatteryVoltageGet();
+			// voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
+			// System_printf("voltage: %d mV\n", voltageTemp);
 		}
 
-		if(eventId &SYSTEMAPP_EVT_ALL)
+		if(eventId & SYSTEMAPP_EVT_UPLOAD)
+		{
+		    NodeUploadProcess();
+		}
+
+
+		if(eventId & SYSTEMAPP_EVT_COLLECT)
+		{
+			NodeCollectProcess();
+		}
+
+
+		if(eventId & SYSTEMAPP_EVT_NET_UPLOAD)
 		{
 
 		}
+
 
 		if(eventId & SYSTEMAPP_EVT_TIMER)
 		{
-			
+		    // System_printf("start time: %d \n", voltageTemp);
+		    // System_printf("period time: %d \n", b);
 		}
 
 	}

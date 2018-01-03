@@ -2,6 +2,9 @@
 #define			__RTC_DRV_H__
 
 
+#define CALENDAR_BASE_YEAR              2000
+
+
 typedef struct Calendar
 {
     //! Seconds of minute between 0-59
