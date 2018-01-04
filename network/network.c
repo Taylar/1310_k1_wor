@@ -182,7 +182,7 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPacket)
     packet.buff[packet.length++] = CheckCode8(&packet.buff[0], packet.length);
 
     //进行转义
-    //pPacket->length = Protocol_escape(&pPacket->buff[1], &packet.buff[0], packet.length); //disable by debug
+    pPacket->length = Protocol_escape(&pPacket->buff[1], &packet.buff[0], packet.length);
     //消息标志位
     pPacket->buff[0] = PROTOCOL_TOKEN;
     pPacket->buff[pPacket->length + 1] = PROTOCOL_TOKEN;
@@ -244,7 +244,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
        length -= package_length;
 
         //Recover transferred meaning
-       // package_length = Protocol_recover_escape(&rxData[0], &rxData[1], package_length - 2); disable by debug
+       package_length = Protocol_recover_escape(&rxData[0], &rxData[1], package_length - 2);
         if (package_length <= 1)
             break;
 
@@ -295,7 +295,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
     			}
                 
 #ifdef FLASH_INTERNAL
-                //Flash_store_config();   // disable by debug
+                InternalFlashStoreConfig();
 #endif
                 //send ack to server
                 rNwkMsgPacket.buff[0] = rxData[10];
@@ -356,12 +356,12 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
             case NMI_RX_NTP:
     			if (package_length >= 18) {
                     index = NWK_MSG_BODY_START;
-    	            calendar.year = rxData[index++] + CALENDAR_BASE_YEAR;
-    	            calendar.month = rxData[index++];
-    	            calendar.day = rxData[index++];
-    	            calendar.hour = rxData[index++];
-    	            calendar.min = rxData[index++];
-    	            calendar.sec = rxData[index++];
+                    calendar.year  = rxData[index++] + CALENDAR_BASE_YEAR;
+                    calendar.month = rxData[index++];
+                    calendar.day   = rxData[index++];
+                    calendar.hour  = rxData[index++];
+                    calendar.min   = rxData[index++];
+                    calendar.sec   = rxData[index++];
     	            Rtc_set_calendar(&calendar);
     	            rNwkObject.ntp = 1;
     			}

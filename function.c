@@ -10,6 +10,71 @@
 #include "general.h"
 
 
+
+
+//***********************************************************************************
+//
+// Protocol transferred meaning.
+//
+//***********************************************************************************
+uint16_t Protocol_escape(uint8_t *pObj, uint8_t *pSou, uint16_t length)
+{
+    uint8_t i;
+    uint16_t len = 0;
+
+    for (i = 0; i < length; i++) {
+        if (*pSou == PROTOCOL_TOKEN) {
+            *pObj = PROTOCOL_TRANSFER;
+            pObj++;
+            len++;
+            *pObj = 0x02;
+        } else if (*pSou == PROTOCOL_TRANSFER) {
+            *pObj = PROTOCOL_TRANSFER;
+            pObj++;
+            len++;
+            *pObj = 0x01;
+        } else {
+            *pObj = *pSou;
+        }
+        pSou++;
+        pObj++;
+        len++;
+    }
+
+    return len;
+}
+
+//***********************************************************************************
+//
+// Protocol recover transferred meaning.
+//
+//***********************************************************************************
+uint16_t Protocol_recover_escape(uint8_t *pObj, uint8_t *pSou, uint16_t length)
+{
+    uint8_t i;
+    uint16_t len = 0;
+
+    for (i = 0; i < length; i++) {
+        if (*pSou == PROTOCOL_TRANSFER) {
+            pSou++;
+            i++;
+            if (*pSou == 0x01) {
+                *pObj = PROTOCOL_TRANSFER;
+            } else if (*pSou == 0x02) {
+                *pObj = PROTOCOL_TOKEN;
+            }
+        } else {
+            *pObj = *pSou;
+        }
+        pSou++;
+        pObj++;
+        len++;
+    }
+
+    return len;
+}
+
+
 #ifdef SUPPORT_CRC16
 //***********************************************************************************
 //

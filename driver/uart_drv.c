@@ -48,6 +48,14 @@ const UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
 
 
 const uint_least8_t UART_count = CC1310_LAUNCHXL_UARTCOUNT;
+
+
+
+UartRxData_t     uart0RxData;
+UartRxData_t     uart0IsrRxData;
+UartRxData_t     uart0TxData;
+
+
 /***************************************************************************/
 
 static UART_Handle      uarthandle[CC1310_LAUNCHXL_UARTCOUNT];

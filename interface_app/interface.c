@@ -32,17 +32,14 @@ static Clock_Handle interfaceRecTimeoutClockHandle;
 
 // **************************************************************************
 // variable
-static uint8_t     interfaceRecBuf[INTERFACE_DATA_MAX_LEN];
-static uint8_t     interfaceIsrRecBuf[INTERFACE_DATA_MAX_LEN];
-static uint8_t     interfaceSendBuf[INTERFACE_DATA_MAX_LEN];
+UartRxData_t     uart0RxData;
+UartRxData_t     uart0IsrRxData;
+UartRxData_t     uart0TxData;
 
-uint8_t     recLen;
-uint8_t     sendLen;
-static uint8_t     recIsrLen;
 
 void InterfaceTaskFxn(void);
 
-// 
+// call back in uart isr 
 void InterfaceReceiveCb(uint8_t *datap, uint8_t len)
 {
     uint8_t  datapLen;
@@ -58,17 +55,17 @@ void InterfaceReceiveCb(uint8_t *datap, uint8_t len)
     while(len)
     {
         len--;
-        interfaceIsrRecBuf[recIsrLen] = datap[datapLen];
+        uart0IsrRxData.buff[uart0IsrRxData.length] = datap[datapLen];
         datapLen++;
-        recIsrLen++;
+        uart0IsrRxData.length++;
 
-        if(recIsrLen >= INTERFACE_DATA_MAX_LEN)
+        if(uart0IsrRxData.length >= UART_BUFF_SIZE)
         {
-            recLen    = recIsrLen;
-            recIsrLen = 0;
+            uart0RxData.length    = uart0IsrRxData.length;
+            uart0IsrRxData.length = 0;
             datapLen  = 0;
 
-            memcpy(interfaceRecBuf, interfaceIsrRecBuf, recLen);
+            memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0RxData.length);
             Event_post(interfaceEvtHandle, INTERFACE_EVT_RX);
         }
     }
@@ -77,8 +74,8 @@ void InterfaceReceiveCb(uint8_t *datap, uint8_t len)
 
 void InterfaceSend(uint8_t * datap, uint8_t len)
 {
-    sendLen =  len > INTERFACE_DATA_MAX_LEN? INTERFACE_DATA_MAX_LEN: len;
-    memcpy(interfaceSendBuf, datap, sendLen);
+    uart0TxData.length =  len > UART_BUFF_SIZE? UART_BUFF_SIZE: len;
+    memcpy(uart0TxData.buff, datap, uart0TxData.length);
     Event_post(interfaceEvtHandle, INTERFACE_EVT_TX);    
 }
 
@@ -109,9 +106,9 @@ void InterfaceRecTimeroutCb(UArg arg0)
     /* Disable preemption. */
     key = Hwi_disable();
 
-    recLen    = recIsrLen;
-    recIsrLen = 0;
-    memcpy(interfaceRecBuf, interfaceIsrRecBuf, recLen);
+    uart0RxData.length    = uart0IsrRxData.length;
+    uart0IsrRxData.length = 0;
+    memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0RxData.length);
 
     Hwi_restore(key);
     Event_post(interfaceEvtHandle, INTERFACE_EVT_RX);
@@ -172,15 +169,15 @@ void InterfaceTaskFxn(void)
 
         if(eventId & INTERFACE_EVT_RX)
         {
-            InterfaceSend(interfaceRecBuf, recLen);
-            RadioSendPacket(interfaceRecBuf, recLen, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS);
+            InterfaceSend(uart0RxData.buff, uart0RxData.length);
+            RadioSendPacket(uart0RxData.buff, uart0RxData.length, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS);
 
         }
 
         if(eventId & INTERFACE_EVT_TX)
         {
             Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
-            UartSend(interfaceSendBuf, sendLen);
+            UartSend(uart0TxData.buff, uart0TxData.length);
             Semaphore_post(interfaceSemHandle);
         }
     }

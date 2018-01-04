@@ -61,7 +61,7 @@ int main(void)
     /* Call driver init functions. */
     Board_initGeneral();
 
-
+    InternalFlashStoreConfig();
 
     if(devicesType == DEVICES_TYPE_GATEWAY)
         Nwk_task_create();

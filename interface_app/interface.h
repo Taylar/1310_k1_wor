@@ -1,7 +1,6 @@
 #ifndef			__INTERFACE_H__
 #define			__INTERFACE_H__
 
-#define			INTERFACE_DATA_MAX_LEN					128
 
 
 typedef	enum 

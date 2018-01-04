@@ -49,8 +49,8 @@ struct RadioOperation {
 static Task_Params passRadioTaskParams;
 Task_Struct passRadioTask;        /* not static so you can see in ROV */
 static uint8_t nodeRadioTaskStack[PASSRADIO_TASK_STACK_SIZE];
-Semaphore_Struct radioAccessSem;  /* not static so you can see in ROV */
-static Semaphore_Handle radioAccessSemHandle;
+//Semaphore_Struct radioAccessSem;  /* not static so you can see in ROV */
+//static Semaphore_Handle radioAccessSemHandle;
 Event_Struct radioOperationEvent; /* not static so you can see in ROV */
 static Event_Handle radioOperationEventHandle;
 
@@ -107,11 +107,12 @@ void RadioAppTaskCreate(void)
 {
 
     /* Create semaphore used for exclusive radio access */ 
+    /*
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);
     Semaphore_construct(&radioAccessSem, 1, &semParam);
     radioAccessSemHandle = Semaphore_handle(&radioAccessSem); 
-
+    */
 
     /* Create event used internally for state changes */
     Event_Params eventParam;

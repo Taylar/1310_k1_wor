@@ -374,7 +374,7 @@ void Flash_init(void)
     Task_sleep(6 * CLOCK_UNIT_MS);
 
 	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-#ifdef FLASH_W25Q256FV
+#ifdef FLASH_W25Q256FVk
     Flash_external_address_mode(0);
 #endif
     sysInfo.printRecordAddr.start = 0;
