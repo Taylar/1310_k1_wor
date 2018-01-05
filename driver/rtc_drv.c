@@ -132,16 +132,7 @@ void RtcInit(void (*Cb)(void))
     clkParams.startFlag = FALSE;
     Clock_construct(&rtcSecondsClock, RtcSecondsIsrCb, 1, &clkParams);
     rtcSecondsClockHandle = Clock_handle(&rtcSecondsClock);
-
-
-    /* Construct the semparams for interface  */
-    Semaphore_Params semParams;
-    Semaphore_Params_init(&semParams);
-    semParams.mode = Semaphore_Mode_BINARY;
-    Semaphore_construct(&rtcSemStruct, 1, &semParams);
-    rtcSemHandle = Semaphore_handle(&rtcSemStruct);
-
-
+    
 
     rtc.year  = 2017;
     rtc.month = 12;
@@ -187,9 +178,11 @@ void RtcStop(void)
 //***********************************************************************************
 void Rtc_set_calendar(Calendar *currentTime)
 {
-    Semaphore_pend(rtcSemHandle, BIOS_WAIT_FOREVER);
+    UInt key;
+
+    key = Hwi_disable();
     memcpy(&rtc, currentTime, sizeof(Calendar));
-    Semaphore_post(rtcSemHandle);
+    Hwi_restore(key);
 }
 
 //***********************************************************************************

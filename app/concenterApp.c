@@ -7,6 +7,21 @@
 #include "../interface_app/interface.h"
 
 /***** Defines *****/
+//External flash sensor data pointer store position
+#define NODE_ADDR_FLASH_POS            (0X18000)            // base 
+//External flash sensor data pointer size
+#define NODE_ADDR_FLASH_SIZE                    8
+//External flash sensor data pointer number
+#define NODE_ADDR_FLASH_BLOCK_NUM               32
+//External flash sensor data pointer number
+#define NODE_ADDR_FLASH_BLOCK_SIZE              128
+//External flash sensor data pointer position offset
+#define NODE_ADDR_FLASH_AREA_SIZE      (NODE_ADDR_FLASH_BLOCK_SIZE * NODE_ADDR_FLASH_BLOCK_NUM * NODE_ADDR_FLASH_SIZE)
+
+
+
+
+
 #define     NODE_SETTING_CMD_LENGTH    10
 
 
@@ -17,6 +32,7 @@ typedef struct
     uint32_t nodeCollectPeriod;
     uint32_t nodeUploadPeriod;
     uint32_t uploadNetPeriod;
+    uint32_t nodeNum;
 }concenter_para_t;
 
 // static concenter_para_t concenterParameter;
@@ -67,6 +83,23 @@ void ConcenterAppInit(void)
     concenterUploadClockHandle = Clock_handle(&concenterUploadClock);
 
 }
+
+//***********************************************************************************
+// brief:   
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterAppHwInit(void)
+{
+    Spi_init();
+
+    // Flash_init();
+
+    Led_init();
+
+    DeepTemp_FxnTable.initFxn(MAX31855_SPI_CH0);
+}
+
 
 
 //***********************************************************************************
@@ -174,3 +207,25 @@ void ConcenterUploadEventSet(void)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_NET_UPLOAD);
 }
+
+
+//***********************************************************************************
+// brief:   make the concenter board into sleep mode
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterSleep(void)
+{
+    
+}
+
+//***********************************************************************************
+// brief:   make the Concenter board into work mode
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterWakeup(void)
+{
+
+}
+

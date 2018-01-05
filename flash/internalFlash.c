@@ -10,6 +10,7 @@
 
 
 /***** Variable declarations *****/
+ConfigInfo_t g_rSysConfigInfo;
 
 
 
@@ -20,6 +21,7 @@
 //***********************************************************************************
 // brief: store the config from the internal flash   
 // 
+// note: every sector is 4K
 // parameter: 
 //***********************************************************************************
 void InternalFlashStoreConfig(void)

@@ -388,7 +388,7 @@ void Flash_init(void)
 	Semaphore_post(spiSemHandle);
 
 
-    Flash_external_Selftest();
+    // Flash_external_Selftest();
 
 }
 

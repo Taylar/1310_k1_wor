@@ -59,20 +59,12 @@ void SysAppTaskCreate(void)
 
     Error_init(&eb);
 
-	/* Create clock object which is used for fast report timeout */
-    
-    // Clock_Params clkParams;
-    // clkParams.period = 1000;
-    // clkParams.startFlag = FALSE;
-    // Clock_construct(&sysTimerClock, SysTimerCb, 1, &clkParams);
-    // sysTimerClockHandle = Clock_handle(&sysTimerClock); 
-
 	/* Construct system application Task threads */
     Task_Params taskParams;
     Task_Params_init(&taskParams);
     taskParams.stackSize = SYSTEM_APP_STACK_SIZE;
     taskParams.stack = &systemAppTaskStack;
-    taskParams.priority = 2;
+    taskParams.priority = 1;
     Task_construct(&systemAppTaskStruct, (Task_FuncPtr)SystemAppTaskFxn, &taskParams, &eb);
 
 }
@@ -89,22 +81,22 @@ void SystemAppTaskFxn(void)
     systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
 
 
-	Spi_init();
-
-	I2c_init();
-
-	Flash_init();
-
-	SHT2X_FxnTable.initFxn(SHT2X_I2C_CH0);
+    if(devicesType == DEVICES_TYPE_GATEWAY)
+    {
+  	    ConcenterAppHwInit();
+    }
+    else
+    {
+        NodeAppHwInit();
+    }
 
 	Key_init(SystemKeyEventPostIsr);
 
-	Led_init();
-
 	RtcInit(RtcEventSet);
 
-	RtcStart();	
+	RtcStart();
 
+    
 	// voltageTemp = Clock_getTicks();
 	// Clock_setTimeout(sysTimerClockHandle, 0);
 	// Clock_start(sysTimerClockHandle);
@@ -131,9 +123,6 @@ void SystemAppTaskFxn(void)
 		{
 			// Led_toggle(LED_R);
 			// Led_toggle(LED_G);
-			// SHT2X_FxnTable.measureFxn(SEN_I2C_CH0);
-			// System_printf("the temperature : %d\n", SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_TEMP));
-			// System_printf("the humi : %d\n", SHT2X_FxnTable.getValueFxn(SEN_I2C_CH0, SENSOR_HUMI));
 		}
 
 		if(eventId &SYSTEMAPP_EVT_INTERFACE)
@@ -153,6 +142,9 @@ void SystemAppTaskFxn(void)
 			// voltageTemp = AONBatMonBatteryVoltageGet();
 			// voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
 			// System_printf("voltage: %d mV\n", voltageTemp);
+			// SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
+			// System_printf("the temperature : %d\n", SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SHT2X_TEMP));
+			// System_printf("the humi : %d\n", SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SHT2X_HUMI));
 		}
 
 		if(eventId & SYSTEMAPP_EVT_UPLOAD)

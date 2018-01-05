@@ -22,6 +22,8 @@
 /***** Prototypes *****/
 void ConcenterAppInit(void);
 
+void ConcenterAppHwInit(void);
+
 void ConcenterUploadStart(void);
 
 void ConcenterUploadStop(void);

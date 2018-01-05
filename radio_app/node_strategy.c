@@ -12,7 +12,14 @@
 #include DeviceFamily_constructPath(driverlib/aon_batmon.h)
 #include DeviceFamily_constructPath(driverlib/trng.h)
 /***** Defines *****/
+#define     INVALID_CHANNEL             0XFFFFFFFF
 
+#define     NODE_TIME_OFFSET_MAX_MS     (3) 
+
+
+#define     FAIL_CONNECT_MAX_NUM               10
+
+#define     FAIL_CONNECT_PERIOD_MAX_NUM        10
 
 /***** Type declarations *****/
 typedef struct {
@@ -20,7 +27,14 @@ typedef struct {
     bool        success;
     bool        busy;
     uint8_t     remainderCache;
+    uint8_t     failNum;
+    uint8_t     periodNum;
     uint32_t    period;
+    int32_t     offset;
+    uint32_t    channel;                // 
+    uint32_t    channelNum;
+    uint32_t    concenterAddr;
+    uint32_t    concenterNum;
 }node_strategy_t;
 
 /***** Variable declarations *****/
@@ -58,11 +72,19 @@ static void NodeStrategyStartCb(UArg arg0)
 void NodeStrategyInit(void (*Cb)(void))
 {
     if(nodeStrategy.init == false)
-    {
-        nodeStrategy.init    = true;
-        nodeStrategy.success = false;
-        nodeStrategy.busy    = false;
-        nodeStrategy.period  = 60;
+        {
+        nodeStrategy.init         = true;
+        nodeStrategy.success      = false;
+        nodeStrategy.busy         = false;
+        nodeStrategy.period       = 60;
+        nodeStrategy.offset       = 0;
+        nodeStrategy.channel      = INVALID_CHANNEL;
+        nodeStrategy.channelNum   = 3000;
+        nodeStrategy.failNum      = 0;
+        nodeStrategy.periodNum    = 0;
+        nodeStrategy.concenterNum = 0;
+
+
 
 
         nodeStrategy.remainderCache       = EASYLINK_MAX_DATA_LENGTH;
@@ -75,7 +97,7 @@ void NodeStrategyInit(void (*Cb)(void))
 
 
 
-        NodeStrategyPeriodCb        = Cb;       
+        NodeStrategyPeriodCb        = Cb;
     }
 }
 
@@ -91,12 +113,31 @@ void NodeStrategySetPeriod(uint32_t period)
     Clock_setPeriod(nodeStrategyStartClockHandle, period);
 }
 
+//***********************************************************************************
+// brief:   set the node strategy peirod
+// 
+// parameter: 
+// period:  the uint is ms
+//***********************************************************************************
+void NodeStrategyStop(void)
+{
+    if(Clock_isActive(nodeStrategyStartClockHandle))
+        Clock_stop(nodeStrategyStartClockHandle);
+    nodeStrategy.busy           = false;
+    nodeStrategy.success        = false;
+}
 
 
+//***********************************************************************************
+// brief:   select the random time to send the radio packet
+// 
+// parameter: none
+//***********************************************************************************
 static void NodeStrategyStart(void)
 {
     uint32_t randomNum;
-
+    uint32_t tickTemp;
+    uint32_t launchTime;
     if(Clock_isActive(nodeStrategyStartClockHandle))
         Clock_stop(nodeStrategyStartClockHandle);
 
@@ -125,6 +166,9 @@ static void NodeStrategyStart(void)
     Clock_start(nodeStrategyStartClockHandle);
 }
 
+
+
+
 //***********************************************************************************
 // brief:   adjust the time of the node sendout
 // 
@@ -132,8 +176,27 @@ static void NodeStrategyStart(void)
 //***********************************************************************************
 void NodeStrategyReceiveTimeoutProcess(void)
 {
-    NodeStrategyStart();
-    nodeStrategy.success    = false;
+    nodeStrategy.failNum++;
+    if(nodeStrategy.success == true)
+    {
+        if(nodeStrategy.failNum > FAIL_CONNECT_MAX_NUM)
+        {
+            nodeStrategy.periodNum++;
+            if(nodeStrategy.periodNum > FAIL_CONNECT_PERIOD_MAX_NUM)
+            {
+                nodeStrategy.periodNum = FAIL_CONNECT_PERIOD_MAX_NUM;
+            }
+            NodeStrategyStart();
+            nodeStrategy.success    = false;
+            nodeStrategy.failNum   = 0;
+        }
+    }
+    else
+    {
+        NodeStrategyStart();
+        nodeStrategy.success    = false;
+        nodeStrategy.failNum   = 0;
+    }
 }
 
 
@@ -144,10 +207,20 @@ void NodeStrategyReceiveTimeoutProcess(void)
 //***********************************************************************************
 void NodeStrategyReceiveReceiveSuccess(void)
 {
+    
     nodeStrategy.busy           = false;
-    nodeStrategy.success        = true;
     nodeStrategy.remainderCache = EASYLINK_MAX_DATA_LENGTH;
 
+    if(nodeStrategy.concenterNum)
+    {
+        if(nodeStrategy.concenterAddr != GetRadioDstAddr())
+            nodeStrategy.concenterNum = 2;
+    }
+    else
+    {
+        nodeStrategy.concenterAddr = GetRadioDstAddr();
+        nodeStrategy.concenterNum++;
+    }
 }
 
 
@@ -177,6 +250,11 @@ uint8_t NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
 
 
 
+//***********************************************************************************
+// brief:   
+// 
+// parameter: 
+//***********************************************************************************
 void NodeStrategyBusySet(bool boolFlag)
 {
     nodeStrategy.busy       = boolFlag;
@@ -185,16 +263,95 @@ void NodeStrategyBusySet(bool boolFlag)
 }
 
 
+//***********************************************************************************
+// brief:   
+// 
+// parameter: 
+//***********************************************************************************
 bool NodeStrategyBusyRead(void)
 {
     return nodeStrategy.busy;
 }
 
 
+//***********************************************************************************
+// brief:   
+// 
+// parameter: 
+//***********************************************************************************
 uint8_t NodeStrategyRemainderCache(void)
 {
     return nodeStrategy.remainderCache;
 }
 
 
+//***********************************************************************************
+// brief:   check the channel and the tick, adjust the channel and the peiriod of radio sending
+// 
+// parameter: 
+//***********************************************************************************
+void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, uint32_t channel)
+{
+    int32_t offsetTemp;
 
+    // 
+    if((nodeStrategy.periodNum >= FAIL_CONNECT_PERIOD_MAX_NUM) ||
+        (nodeStrategy.concenterNum > 2))
+        return;
+
+    // get the period tick
+    concenterTick %= (nodeStrategy.period * 1000 / Clock_tickPeriod);   
+    nodeTick      %= (nodeStrategy.period * 1000 / Clock_tickPeriod);
+
+    offsetTemp = concenterTick - nodeTick;
+
+
+    if(nodeStrategy.success)
+    {
+        if(channel != nodeStrategy.channel)
+        {
+            // readjust the timer
+            goto ReadjustChannel;
+        }
+
+        if((offsetTemp - nodeStrategy.offset) > 0)
+        {
+            if(((offsetTemp - nodeStrategy.offset) * Clock_tickPeriod / 1000) > (NODE_TIME_OFFSET_MAX_MS))
+            {
+                // readjust the timer
+                goto ReadjustChannel;
+            }
+
+        }
+        else
+        {
+            if(((nodeStrategy.offset - offsetTemp) * Clock_tickPeriod / 1000) > (NODE_TIME_OFFSET_MAX_MS))
+            {
+                // readjust the timer
+                goto ReadjustChannel;
+            }
+        }
+    }
+    else
+    {
+        // need to register the new channel
+ReadjustChannel:
+        nodeStrategy.success        = true;
+        nodeStrategy.offset         = offsetTemp;
+        nodeStrategy.channel        = channel;
+
+        // transform to ms
+        launchTime  = nodeStrategy.channel * nodeStrategy.period * 1000 / nodeStrategy.channelNum;
+        
+        if(concenterTick > launchTime)
+        {
+            Clock_setTimeout(nodeStrategyStartClockHandle, nodeStrategy.period - concenterTick  + launchTime);
+        }
+        else
+        {
+            Clock_setTimeout(nodeStrategyStartClockHandle, launchTime - concenterTick);
+        }
+        Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period);
+        Clock_start(nodeStrategyStartClockHandle);
+    }
+}

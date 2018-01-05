@@ -26,5 +26,6 @@ bool NodeStrategyBusyRead(void);
 
 uint8_t NodeStrategyRemainderCache(void);
 
+void NodeStrategyStop(void);
 
 #endif			// __NODE_STRATEGY_H__

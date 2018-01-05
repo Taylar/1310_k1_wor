@@ -12,6 +12,8 @@
 
 void NodeAppInit(void (*Cb)(void));
 
+void NodeAppHwInit(void);
+
 void NodeUploadStart(void);
 
 void NodeUploadStop(void);
@@ -38,5 +40,8 @@ void NodeStartBroadcast(void);
 
 void NodeStopBroadcast(void);
 
+void NodeSleep(void);
+
+void NodeWakeup(void);
 
 #endif			// __NODEAPP_H__

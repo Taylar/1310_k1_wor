@@ -190,6 +190,7 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_RX)
         {
+            SetRadioDstAddr(*((uint32_t *)radioRxPacket.dstAddr));
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
                 ConcenterProtocalDispath(&radioRxPacket);
@@ -197,7 +198,6 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_SENDPORT)
             {
-                NodeStrategyReceiveReceiveSuccess();
                 NodeProtocalDispath(&radioRxPacket);
             }
 

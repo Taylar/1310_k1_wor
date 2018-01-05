@@ -8,12 +8,14 @@
 /***** Defines *****/
 #define NODE_BROADCASTING_TIME         10
 
+#define DEFAULT_DST_ADDR                0
 
 /***** Type declarations *****/
 typedef struct 
 {
     uint32_t collectPeriod;
     uint32_t uploadPeriod;
+    uint32_t customId;
     uint16_t serialNum;
     bool     broadcasting;
 }node_para_t;
@@ -70,6 +72,7 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.uploadPeriod  = NODE_BROADCASTING_TIME * CLOCK_UNIT_S;
     nodeParameter.collectPeriod = NODE_BROADCASTING_TIME * CLOCK_UNIT_S;
     nodeParameter.broadcasting  = true;
+    nodeParameter.customId      = DEFAULT_DST_ADDR;
 
     Clock_Params clkParams;
     clkParams.period    = 0;
@@ -88,8 +91,25 @@ void NodeAppInit(void (*Cb)(void))
 
     NodeStrategySetPeriod(nodeParameter.uploadPeriod);
 
-    NodeStartBroadcast();
-    NodeBroadcasting();
+    
+}
+
+//***********************************************************************************
+// brief:   
+// 
+// parameter: 
+//***********************************************************************************
+void NodeAppHwInit(void)
+{
+    Spi_init();
+
+    I2c_init();
+
+    //Flash_init();
+
+    SHT2X_FxnTable.initFxn(SHT2X_I2C_CH0);
+
+    Led_init();
 }
 
 
@@ -306,7 +326,7 @@ void NodeHighTemperatureSet(uint8_t num, uint16_t alarmTemp)
 }
 
 //***********************************************************************************
-// brief:   if the upload period is 0, start broadcasting 
+// brief:   open the timer to send time syn request as broadcasting
 // 
 // parameter: 
 //***********************************************************************************
@@ -320,14 +340,63 @@ void NodeBroadcasting(void)
 }
 
 
+//***********************************************************************************
+// brief:   start broadcast
+// 
+// parameter: 
+//***********************************************************************************
 void NodeStartBroadcast(void)
 {
+    SetRadioDstAddr(nodeParameter.customId);
     nodeParameter.broadcasting      = true;
 }
 
+
+
+
+//***********************************************************************************
+// brief:   stop broadcast
+// 
+// parameter: 
+//***********************************************************************************
 void NodeStopBroadcast(void)
 {
     nodeParameter.broadcasting      = false;
+}
+
+
+//***********************************************************************************
+// brief:   make the node board into sleep mode
+// 
+// parameter: 
+//***********************************************************************************
+void NodeSleep(void)
+{
+    NodeStopBroadcast();
+    NodeCollectStop();
+    NodeUploadStop();
+    NodeStrategyStop();
+}
+
+//***********************************************************************************
+// brief:   make the node board into work mode
+// 
+// parameter: 
+//***********************************************************************************
+void NodeWakeup(void)
+{
+    NodeStartBroadcast();
+    NodeBroadcasting();
+}
+
+//***********************************************************************************
+// brief: set the custom id as the radio dst addr
+// 
+// parameter: 
+//***********************************************************************************
+void NodeSetCustomId(uint32_t id)
+{
+    nodeParameter.customId = id;
 }
 
 

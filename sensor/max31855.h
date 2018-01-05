@@ -51,6 +51,11 @@ typedef struct {
 extern void MAX31855_qsort(MAX31855_MeasureData md[], uint8_t nbrOfSample);
 extern signed char Max31855_delay(uint8_t cnt);
 extern double MAX31855_CalcTemp(double thermocouple, double junction);
+
+
+extern const Max31855_FxnTable  DeepTemp_FxnTable;
+
+
 #endif
 
 
