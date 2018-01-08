@@ -61,18 +61,18 @@ int main(void)
     Board_initGeneral();
 
     //InternalFlashStoreConfig();
-    //devicesType = DEVICES_TYPE_NODE;
+    devicesType = DEVICES_TYPE_NODE;
 
-    devicesType = DEVICES_TYPE_GATEWAY;
+    // devicesType = DEVICES_TYPE_GATEWAY;
 
     if(devicesType == DEVICES_TYPE_GATEWAY)
     {
-        // Nwk_task_create();
+        Nwk_task_create();
         // InterfaceTaskCreate();
     }
     
     /* Initialize radio tasks */
-   // RadioAppTaskCreate();
+    RadioAppTaskCreate();
     
     /* Initialize System Application tasks */
     SysAppTaskCreate();

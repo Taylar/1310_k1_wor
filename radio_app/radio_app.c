@@ -1,3 +1,9 @@
+/*
+* @Author: zxt
+* @Date:   2017-12-21 17:36:18
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-01-08 18:29:37
+*/
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
 #include "radio_app.h"
@@ -20,21 +26,7 @@
 
 
 
-#define RADIO_CSD_PIN                       IOID_7      // 0:sleep    1:wake up
-#define RADIO_CTX_PIN                       IOID_6      // 0:Rx       1:Tx
 
-
-#define     RadioFrontTxEnable()    if(devicesType == DEVICES_TYPE_GATEWAY){    \
-                                    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1); \
-                                    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 1);}
-
-#define     RadioFrontRxEnable()    if(devicesType == DEVICES_TYPE_GATEWAY){    \
-                                    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1); \
-                                    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);}
-
-#define     RadioFrontDisable()     if(devicesType == DEVICES_TYPE_GATEWAY){    \
-                                    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 0); \
-                                    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);}
 /***** Type declarations *****/
 struct RadioOperation {
     EasyLink_TxPacket easyLinkTxPacket;
@@ -67,16 +59,6 @@ static struct RadioOperation currentRadioOperation;
 EasyLink_RxPacket radioRxPacket;
 
 
-const PIN_Config radioPinTable_gateway[] = {
-    RADIO_CSD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    RADIO_CTX_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    PIN_TERMINATE
-};
-
-
-
-static PIN_State   radioPinState;
-static PIN_Handle  radioPinHandle;
 /***** Prototypes *****/
 
 void RadioAppTaskFxn(void);
@@ -149,8 +131,7 @@ void RadioAppTaskFxn(void)
     if(devicesType == DEVICES_TYPE_GATEWAY)
     {
         radioMode = RADIOMODE_RECEIVEPORT;
-        radioPinHandle = PIN_open(&radioPinState, radioPinTable_gateway);
-
+        RadioFrontInit();
     }
     else
     {
@@ -193,7 +174,11 @@ void RadioAppTaskFxn(void)
             SetRadioDstAddr(*((uint32_t *)radioRxPacket.dstAddr));
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
+                Led_toggle(LED_R);
+                Led_toggle(LED_B);
+                Led_toggle(LED_G);
                 ConcenterProtocalDispath(&radioRxPacket);
+                EasyLink_receiveAsync(RxDoneCallback, 0);
             }
 
             if(radioMode == RADIOMODE_SENDPORT)

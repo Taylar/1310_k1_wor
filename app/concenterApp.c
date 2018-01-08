@@ -1,3 +1,9 @@
+/*
+* @Author: zxt
+* @Date:   2017-12-28 10:09:45
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-01-08 17:00:00
+*/
 #include "../general.h"
 
 
@@ -6,17 +12,6 @@
 #include "../APP/radio_protocal.h"
 #include "../interface_app/interface.h"
 
-/***** Defines *****/
-//External flash sensor data pointer store position
-#define NODE_ADDR_FLASH_POS            (0X18000)            // base 
-//External flash sensor data pointer size
-#define NODE_ADDR_FLASH_SIZE                    8
-//External flash sensor data pointer number
-#define NODE_ADDR_FLASH_BLOCK_NUM               32
-//External flash sensor data pointer number
-#define NODE_ADDR_FLASH_BLOCK_SIZE              128
-//External flash sensor data pointer position offset
-#define NODE_ADDR_FLASH_AREA_SIZE      (NODE_ADDR_FLASH_BLOCK_SIZE * NODE_ADDR_FLASH_BLOCK_NUM * NODE_ADDR_FLASH_SIZE)
 
 
 
@@ -48,7 +43,7 @@ static Clock_Struct concenterUploadClock;     /* not static so you can see in RO
 static Clock_Handle concenterUploadClockHandle;
 
 
-
+uint32_t concenterChannelDispath;
 
 /***** Prototypes *****/
 
@@ -82,6 +77,7 @@ void ConcenterAppInit(void)
     Clock_construct(&concenterUploadClock, ConcenterUploadTimerCb, 1, &clkParams);
     concenterUploadClockHandle = Clock_handle(&concenterUploadClock);
 
+    concenterChannelDispath  = 0;
 }
 
 //***********************************************************************************
@@ -94,6 +90,8 @@ void ConcenterAppHwInit(void)
     Spi_init();
 
     // Flash_init();
+
+
 
     Led_init();
 
@@ -216,7 +214,9 @@ void ConcenterUploadEventSet(void)
 //***********************************************************************************
 void ConcenterSleep(void)
 {
-    
+    Nwk_poweroff();
+    EasyLink_abort();
+    RadioFrontDisable();
 }
 
 //***********************************************************************************
@@ -226,6 +226,30 @@ void ConcenterSleep(void)
 //***********************************************************************************
 void ConcenterWakeup(void)
 {
-
+    RadioFrontRxEnable();
+    Nwk_poweron();
+    RadioFrontRxEnable();
+    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
 }
 
+
+//***********************************************************************************
+// brief:   save the node addr and channel to the internal flash
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterSaveChannel(uint32_t nodeAddr)
+{
+    if(InternalFlashSaveNodeAddr(nodeAddr, concenterChannelDispath))
+        concenterChannelDispath++;
+}
+
+//***********************************************************************************
+// brief:   read the node channel from the internal flash according to the node addr
+// 
+// parameter: 
+//***********************************************************************************
+uint32_t ConcenterReadChannel(uint32_t nodeAddr)
+{
+    return InternalFlashReadNodeAddr(nodeAddr);
+}

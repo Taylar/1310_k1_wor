@@ -8,7 +8,7 @@
 
 
 
-
+void NodeStrategyReset(void);
 
 void NodeStrategyInit(void (*Cb)(void));
 
@@ -27,5 +27,7 @@ bool NodeStrategyBusyRead(void);
 uint8_t NodeStrategyRemainderCache(void);
 
 void NodeStrategyStop(void);
+
+void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, uint32_t channel);
 
 #endif			// __NODE_STRATEGY_H__

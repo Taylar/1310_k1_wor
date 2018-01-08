@@ -49,7 +49,6 @@ void SysTimerCb(UArg arg0)
 
 void RtcEventSet(void)
 {
-    Led_toggle(LED_R);
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RTC);
 }
 
@@ -121,8 +120,23 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
-			// Led_toggle(LED_R);
-			// Led_toggle(LED_G);
+			static uint8_t sleep = 1;
+			if(sleep)
+			{
+				sleep = !sleep;
+				Led_set(LED_R, 0);
+				Led_set(LED_G, 0);
+				Led_set(LED_B, 0);
+				NodeWakeup();
+			}
+			else
+			{
+				sleep = !sleep;
+				NodeSleep();
+				Led_set(LED_R, 1);
+				Led_set(LED_G, 1);
+				Led_set(LED_B, 1);
+			}
 		}
 
 		if(eventId &SYSTEMAPP_EVT_INTERFACE)

@@ -232,6 +232,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	SetRadioDstAddr(*((uint32_t*)(protocalRxPacket->dstAddr)));
 
+	ConcenterSaveChannel(*((uint32_t*)(protocalRxPacket->dstAddr)));
+
+
 	while(len)
 	{
 		// the receive data is not integrated
@@ -371,7 +374,16 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorSt
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
-	protocalTxBuf.len 		= 10 + 1;
+	protocalTxBuf.len 		= 10 + 9;
+
+
+
+	temp = ConcenterReadChannel(dstAddr);
+
+	protocalTxBuf.load[5]	= (uint8_t)(temp >> 24);
+	protocalTxBuf.load[6]	= (uint8_t)(temp >> 16);
+	protocalTxBuf.load[7]	= (uint8_t)(temp >> 8);
+	protocalTxBuf.load[8]	= (uint8_t)(temp);
 
 	temp = Clock_getTicks();
 
@@ -380,6 +392,7 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorSt
 	protocalTxBuf.load[2]	= (uint8_t)(temp >> 16);
 	protocalTxBuf.load[3]	= (uint8_t)(temp >> 8);
 	protocalTxBuf.load[4]	= (uint8_t)(temp);
+
 
 
 	SetRadioDstAddr(dstAddr);
@@ -404,10 +417,9 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
-	protocalTxBuf.len 		= 10+10;
+	protocalTxBuf.len 		= 10+14;
 
 	calendarTemp			= Rtc_get_calendar();
-	temp 					= Clock_getTicks();
 
 	protocalTxBuf.load[0]	= (uint8_t)(calendarTemp.year - 2000);
 	protocalTxBuf.load[1]	= calendarTemp.month;
@@ -416,7 +428,15 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.load[4]	= calendarTemp.min;
 	protocalTxBuf.load[5]	= calendarTemp.sec;
 
+	temp 					= ConcenterReadChannel(dstAddr);
+	protocalTxBuf.load[10]	= (uint8_t)(temp >> 24);
+	protocalTxBuf.load[11]	= (uint8_t)(temp >> 16);
+	protocalTxBuf.load[12]	= (uint8_t)(temp >> 8);
+	protocalTxBuf.load[13]	= (uint8_t)(temp);
 
+
+
+	temp 					= Clock_getTicks();
 
 	protocalTxBuf.load[6]	= (uint8_t)(temp >> 24);
 	protocalTxBuf.load[7]	= (uint8_t)(temp >> 16);

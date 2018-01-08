@@ -288,6 +288,7 @@ typedef struct {
 #include "display/led_drv.h"
 #include "easylink/EasyLink.h"
 #include "network/network.h"
+#include "easylink/radio_front.h"
 
 //***********************************************************************************
 //

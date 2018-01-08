@@ -60,14 +60,14 @@ static PIN_Handle  ledHandle;
 //***********************************************************************************
 void Led_io_init(void)
 {
-    if(devicesType == DEVICES_TYPE_GATEWAY)
-    {
-        ledHandle = PIN_open(&ledState, ledPinTable_gateway);
-        LED_ID_CONST[LED_R] = LED_R_PIN_GATEWAY;
-        LED_ID_CONST[LED_G] = LED_G_PIN_GATEWAY;
-        LED_ID_CONST[LED_B] = LED_B_PIN_GATEWAY;
-    }
-    else
+    // if(devicesType == DEVICES_TYPE_GATEWAY)
+    // {
+    //     ledHandle = PIN_open(&ledState, ledPinTable_gateway);
+    //     LED_ID_CONST[LED_R] = LED_R_PIN_GATEWAY;
+    //     LED_ID_CONST[LED_G] = LED_G_PIN_GATEWAY;
+    //     LED_ID_CONST[LED_B] = LED_B_PIN_GATEWAY;
+    // }
+    // else
     {
         ledHandle = PIN_open(&ledState, ledPinTable_node);
     }
@@ -129,6 +129,26 @@ void Led_toggle(uint8_t ledId)
     /* Unlock resource */
     Semaphore_post(ledSemHandle);
 }
+
+//***********************************************************************************
+//
+// Led toggle.
+//      id:     allow multi led
+//
+//***********************************************************************************
+void Led_set(uint8_t ledId, uint8_t status)
+{
+    /* Get access to resource */
+    Semaphore_pend(ledSemHandle, BIOS_WAIT_FOREVER);
+
+//    GPIO_toggleOutputOnPin(rLedHWAttrs[ledId].port, rLedHWAttrs[ledId].pin);
+    PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], status);
+
+    /* Unlock resource */
+    Semaphore_post(ledSemHandle);
+}
+
+
 
 //***********************************************************************************
 //

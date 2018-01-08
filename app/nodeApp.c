@@ -385,6 +385,7 @@ void NodeSleep(void)
 //***********************************************************************************
 void NodeWakeup(void)
 {
+    NodeStrategyReset();
     NodeStartBroadcast();
     NodeBroadcasting();
 }

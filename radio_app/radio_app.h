@@ -3,7 +3,7 @@
 
 #include "../easylink/EasyLink.h"
 
-/***** Defines *****/
+
 #define         RADIO_EVT_RX            Event_Id_00
 #define         RADIO_EVT_TX            Event_Id_01
 #define         RADIO_EVT_TOUT          Event_Id_02

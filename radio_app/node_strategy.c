@@ -1,6 +1,12 @@
+/*
+* @Author: zxt
+* @Date:   2017-12-26 14:22:11
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-01-08 18:21:19
+*/
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
-#include <ti/drivers/Power.h>
+//#include <ti/drivers/Power.h>
 #include <ti/drivers/power/PowerCC26XX.h>
 
 
@@ -26,10 +32,10 @@ typedef struct {
     bool        init;
     bool        success;
     bool        busy;
-    uint8_t     remainderCache;
-    uint8_t     failNum;
-    uint8_t     periodNum;
-    uint32_t    period;
+    uint8_t     remainderCache;             // 
+    uint8_t     failNum;                    // fail time
+    uint8_t     periodNum;                  // fail period time 
+    uint32_t    period;                     // the unit is sec
     int32_t     offset;
     uint32_t    channel;                // 
     uint32_t    channelNum;
@@ -72,22 +78,8 @@ static void NodeStrategyStartCb(UArg arg0)
 void NodeStrategyInit(void (*Cb)(void))
 {
     if(nodeStrategy.init == false)
-        {
-        nodeStrategy.init         = true;
-        nodeStrategy.success      = false;
-        nodeStrategy.busy         = false;
-        nodeStrategy.period       = 60;
-        nodeStrategy.offset       = 0;
-        nodeStrategy.channel      = INVALID_CHANNEL;
-        nodeStrategy.channelNum   = 3000;
-        nodeStrategy.failNum      = 0;
-        nodeStrategy.periodNum    = 0;
-        nodeStrategy.concenterNum = 0;
-
-
-
-
-        nodeStrategy.remainderCache       = EASYLINK_MAX_DATA_LENGTH;
+    {
+        NodeStrategyReset();
 
         Clock_Params clkParams;
         clkParams.period    = 0;
@@ -99,6 +91,30 @@ void NodeStrategyInit(void (*Cb)(void))
 
         NodeStrategyPeriodCb        = Cb;
     }
+}
+
+
+//***********************************************************************************
+// brief:   Reset the NodeStrategy parameter
+// 
+// parameter: 
+// Cb:      Init the send radio event
+//***********************************************************************************
+void NodeStrategyReset(void)
+{
+    nodeStrategy.init         = true;
+    nodeStrategy.success      = false;
+    nodeStrategy.busy         = false;
+    nodeStrategy.period       = 60;
+    nodeStrategy.offset       = 0;
+    nodeStrategy.channel      = INVALID_CHANNEL;
+    nodeStrategy.channelNum   = 3000;
+    nodeStrategy.failNum      = 0;
+    nodeStrategy.periodNum    = 0;
+    nodeStrategy.concenterNum = 0;
+
+
+    nodeStrategy.remainderCache       = EASYLINK_MAX_DATA_LENGTH;
 }
 
 //***********************************************************************************
@@ -136,8 +152,6 @@ void NodeStrategyStop(void)
 static void NodeStrategyStart(void)
 {
     uint32_t randomNum;
-    uint32_t tickTemp;
-    uint32_t launchTime;
     if(Clock_isActive(nodeStrategyStartClockHandle))
         Clock_stop(nodeStrategyStartClockHandle);
 
@@ -161,8 +175,8 @@ static void NodeStrategyStart(void)
     TRNGDisable();
     Power_releaseDependency(PowerCC26XX_PERIPH_TRNG);
 
-    Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % nodeStrategy.period);
-    Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period);
+    Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
+    Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
     Clock_start(nodeStrategyStartClockHandle);
 }
 
@@ -293,7 +307,7 @@ uint8_t NodeStrategyRemainderCache(void)
 void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, uint32_t channel)
 {
     int32_t offsetTemp;
-
+    int32_t launchTime;
     // 
     if((nodeStrategy.periodNum >= FAIL_CONNECT_PERIOD_MAX_NUM) ||
         (nodeStrategy.concenterNum > 2))
@@ -345,13 +359,13 @@ ReadjustChannel:
         
         if(concenterTick > launchTime)
         {
-            Clock_setTimeout(nodeStrategyStartClockHandle, nodeStrategy.period - concenterTick  + launchTime);
+            Clock_setTimeout(nodeStrategyStartClockHandle, (nodeStrategy.period * 1000 - concenterTick  + launchTime)*CLOCK_UNIT_MS);
         }
         else
         {
             Clock_setTimeout(nodeStrategyStartClockHandle, launchTime - concenterTick);
         }
-        Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period);
+        Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
         Clock_start(nodeStrategyStartClockHandle);
     }
 }

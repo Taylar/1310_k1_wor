@@ -10,8 +10,6 @@ static Clock_Handle rtcSecondsClockHandle;
 
 
 // semaphore 
-static Semaphore_Struct rtcSemStruct;
-static Semaphore_Handle rtcSemHandle;
 
 
 // rtc
@@ -83,8 +81,6 @@ uint8_t MonthMaxDay(uint16_t year_1, uint8_t month_1)
 
 void RtcSecondsIsrCb(UArg arg0)
 {
-    // Semaphore_pend(rtcSemHandle, BIOS_WAIT_FOREVER);
-
     rtc.sec++;
     if(rtc.sec >= 60){
         rtc.sec = 0;
@@ -110,8 +106,6 @@ void RtcSecondsIsrCb(UArg arg0)
             }
         }
     }
-    // Semaphore_post(rtcSemHandle);
-
     RtcSecIsbCB();
 }
 
@@ -134,10 +128,10 @@ void RtcInit(void (*Cb)(void))
     rtcSecondsClockHandle = Clock_handle(&rtcSecondsClock);
     
 
-    rtc.year  = 2017;
-    rtc.month = 12;
-    rtc.day   = 30;
-    rtc.week  = 6;
+    rtc.year  = 2018;
+    rtc.month = 1;
+    rtc.day   = 1;
+    rtc.week  = 1;
     rtc.hour  = 0;
     rtc.min   = 0;
     rtc.sec   = 0;
