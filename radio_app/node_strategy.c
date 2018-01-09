@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-08 18:21:19
+* @Last Modified time: 2018-01-09 18:02:49
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -121,19 +121,19 @@ void NodeStrategyReset(void)
 // brief:   set the node strategy peirod
 // 
 // parameter: 
-// period:  the uint is ms
+// period:  the uint is sec
 //***********************************************************************************
 void NodeStrategySetPeriod(uint32_t period)
 {
     nodeStrategy.period         = period;
-    Clock_setPeriod(nodeStrategyStartClockHandle, period);
+    Clock_setPeriod(nodeStrategyStartClockHandle, period * CLOCK_UNIT_S);
 }
 
 //***********************************************************************************
 // brief:   set the node strategy peirod
 // 
 // parameter: 
-// period:  the uint is ms
+// period:  the uint is sec
 //***********************************************************************************
 void NodeStrategyStop(void)
 {
@@ -313,9 +313,15 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
         (nodeStrategy.concenterNum > 2))
         return;
 
+    // transform to ms
+    concenterTick = concenterTick * Clock_tickPeriod / 1000;
+    nodeTick      = nodeTick * Clock_tickPeriod / 1000;
+
     // get the period tick
-    concenterTick %= (nodeStrategy.period * 1000 / Clock_tickPeriod);   
-    nodeTick      %= (nodeStrategy.period * 1000 / Clock_tickPeriod);
+
+
+    concenterTick %= (nodeStrategy.period * 1000);   
+    nodeTick      %= (nodeStrategy.period * 1000);
 
     offsetTemp = concenterTick - nodeTick;
 
@@ -330,7 +336,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
 
         if((offsetTemp - nodeStrategy.offset) > 0)
         {
-            if(((offsetTemp - nodeStrategy.offset) * Clock_tickPeriod / 1000) > (NODE_TIME_OFFSET_MAX_MS))
+            if((offsetTemp - nodeStrategy.offset) > (NODE_TIME_OFFSET_MAX_MS))
             {
                 // readjust the timer
                 goto ReadjustChannel;
@@ -339,7 +345,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
         }
         else
         {
-            if(((nodeStrategy.offset - offsetTemp) * Clock_tickPeriod / 1000) > (NODE_TIME_OFFSET_MAX_MS))
+            if((nodeStrategy.offset - offsetTemp) > (NODE_TIME_OFFSET_MAX_MS))
             {
                 // readjust the timer
                 goto ReadjustChannel;
@@ -357,13 +363,19 @@ ReadjustChannel:
         // transform to ms
         launchTime  = nodeStrategy.channel * nodeStrategy.period * 1000 / nodeStrategy.channelNum;
         
-        if(concenterTick > launchTime)
+        // updata the node tick and transform to ms
+        nodeTick    = Clock_getTicks() * Clock_tickPeriod;
+
+
+        nodeTick    %= nodeStrategy.period * 1000;
+
+        if(nodeTick > launchTime)
         {
-            Clock_setTimeout(nodeStrategyStartClockHandle, (nodeStrategy.period * 1000 - concenterTick  + launchTime)*CLOCK_UNIT_MS);
+            Clock_setTimeout(nodeStrategyStartClockHandle, (nodeStrategy.period * 1000 - nodeTick  + launchTime)*CLOCK_UNIT_MS);
         }
         else
         {
-            Clock_setTimeout(nodeStrategyStartClockHandle, launchTime - concenterTick);
+            Clock_setTimeout(nodeStrategyStartClockHandle, launchTime - nodeTick);
         }
         Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
         Clock_start(nodeStrategyStartClockHandle);

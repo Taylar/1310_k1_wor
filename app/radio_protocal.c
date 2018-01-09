@@ -1,3 +1,9 @@
+/*
+* @Author: zxt
+* @Date:   2017-12-26 16:36:20
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-01-09 19:04:19
+*/
 #include "../general.h"
 
 #include "../APP/nodeApp.h"
@@ -25,6 +31,29 @@ static uint8_t     concenterRemainderCache;
 
 
 
+static void AlineRadio_protocal_tStruct(radio_protocal_t *adjust)
+{
+	uint8_t*  addrTemp;
+
+	addrTemp = (uint8_t *)adjust + 2;
+	memcpy(addrTemp, (uint8_t*)(&adjust->dstAddr), RADIO_PROTOCAL_LOAD_MAX +8);
+	
+}
+
+static void AlineRadio_protocal_tStruct_Decompile(radio_protocal_t *adjust)
+{
+	uint8_t*  addrTemp;
+	uint8_t i;
+
+	addrTemp = (uint8_t *)adjust;
+
+	for (i = 0; i < (RADIO_PROTOCAL_LOAD_MAX + 6); i++)
+	{
+		addrTemp[RADIO_PROTOCAL_LOAD_MAX + 8 - 1 - i] =  addrTemp[RADIO_PROTOCAL_LOAD_MAX + 8 - 3 - i];
+	}
+}
+
+
 //***********************************************************************************
 // brief:   analysis the node protocal 
 // 
@@ -45,6 +74,11 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	// this buf may be include several message
 	bufTemp		= (radio_protocal_t *)protocalRxPacket->payload;
+
+	AlineRadio_protocal_tStruct_Decompile(bufTemp);
+
+	SetRadioDstAddr(bufTemp->srcAddr);
+
 	while(len)
 	{
 		// the receive data is not integrated
@@ -85,7 +119,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			
 			Rtc_set_calendar(&calendarTemp);
 			NodeStopBroadcast();
-			NodeCollectStart();
+			// NodeCollectStart();
 			NodeUploadStart();
 			break;
 
@@ -126,7 +160,8 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					lenTemp -= 5;
 
 					NodeUploadStop();
-					NodeUploadPeriodSet(temp * CLOCK_UNIT_S);
+					NodeUploadPeriodSet(temp);
+					NodeStrategySetPeriod(temp);
 					if(temp)
 					{
 						NodeStopBroadcast();
@@ -194,6 +229,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 		// point to new message the head
 		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
+		AlineRadio_protocal_tStruct_Decompile(bufTemp);
 	}
 
 NodeDispath:
@@ -226,14 +262,19 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	uint8_t len;
 	radio_protocal_t	*bufTemp;
 
-	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
-	len                     = protocalRxPacket->len;
-	bufTemp                 = (radio_protocal_t *)protocalRxPacket->payload;
+	
 
-	SetRadioDstAddr(*((uint32_t*)(protocalRxPacket->dstAddr)));
+
+
 
 	ConcenterSaveChannel(*((uint32_t*)(protocalRxPacket->dstAddr)));
 
+	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
+	len                     = protocalRxPacket->len;
+	bufTemp                 = (radio_protocal_t *)protocalRxPacket->payload;
+	AlineRadio_protocal_tStruct_Decompile(bufTemp);
+
+	SetRadioDstAddr(bufTemp->srcAddr);
 
 	while(len)
 	{
@@ -254,9 +295,10 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			// save the data to flash
 			// updata the rssi
-			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
-			ConcenterSensorDataSave(bufTemp->load, bufTemp->load[0]+1);
-			ConcenterUploadEventSet();
+
+			// bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
+			// ConcenterSensorDataSave(bufTemp->load, bufTemp->load[0]+1);
+			// ConcenterUploadEventSet();
 			break;
 
 
@@ -287,11 +329,14 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		}
 		// point to new message the head
 		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
+		AlineRadio_protocal_tStruct_Decompile(bufTemp);
 	}
 
 	// receive several cmd in one radio packet, must return in one radio packet;
 	RadioSend();
 }
+
+
 
 //***********************************************************************************
 // brief:   send the sensor data to the strategy process
@@ -306,15 +351,19 @@ bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length)
 		return false;
 
 	protocalTxBuf.len 		= length + 10;
+	protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
 
 	// the remainderCache is not satisfy length
 	if(NodeStrategyRemainderCache() < protocalTxBuf.len)
 		return false;
 
 
-	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
+	protocalTxBuf.command	= RADIO_PRO_CMD_SENSOR_DATA;
 
 	memcpy(protocalTxBuf.load, dataP, length);
+
+	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
 	NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 	return true;
@@ -329,12 +378,18 @@ bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length)
 void NodeRadioSendSynReq(void)
 {
 	protocalTxBuf.len = 10;
+	protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
 
 	// the remainderCache is not satisfy length
 	if(NodeStrategyRemainderCache() < protocalTxBuf.len)
 		return ;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME_REQ;
+
+
+	AlineRadio_protocal_tStruct(&protocalTxBuf);
+
 	NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
 
@@ -348,6 +403,9 @@ void NodeRadioSendSynReq(void)
 //***********************************************************************************
 void NodeRadioSendParaSetAck(ErrorStatus status)
 {
+	protocalTxBuf.command	= RADIO_PRO_CMD_SET_PARA_ACK;
+	protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
 	protocalTxBuf.len = 10 + 1;
 
 	// the remainderCache is not satisfy length
@@ -355,6 +413,9 @@ void NodeRadioSendParaSetAck(ErrorStatus status)
 		return ;
 
 	protocalTxBuf.load[0]		= (uint8_t)status;
+
+	AlineRadio_protocal_tStruct(&protocalTxBuf);
+
 	NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
 
@@ -371,7 +432,7 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorSt
 {
 	uint32_t temp;
 
-	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
+	protocalTxBuf.command	= RADIO_PRO_CMD_ACK;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
 	protocalTxBuf.len 		= 10 + 9;
@@ -396,6 +457,9 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorSt
 
 
 	SetRadioDstAddr(dstAddr);
+
+	AlineRadio_protocal_tStruct(&protocalTxBuf);
+
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
     concenterRemainderCache -= protocalTxBuf.len;
 }
@@ -445,6 +509,9 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 
 
 	SetRadioDstAddr(dstAddr);
+
+	AlineRadio_protocal_tStruct(&protocalTxBuf);
+
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
     concenterRemainderCache -= protocalTxBuf.len;
 }
@@ -465,7 +532,7 @@ void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr, uint8_t *data
 	if(length > RADIO_PROTOCAL_LOAD_MAX)
 		return;
 
-	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
+	protocalTxBuf.command	= RADIO_PRO_CMD_SET_PARA;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
 	protocalTxBuf.len 		= 16;
@@ -473,6 +540,9 @@ void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr, uint8_t *data
 	memcpy(protocalTxBuf.load, dataP, length);
 
 	SetRadioDstAddr(dstAddr);
+
+	AlineRadio_protocal_tStruct(&protocalTxBuf);
+
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
     concenterRemainderCache -= protocalTxBuf.len;
 }

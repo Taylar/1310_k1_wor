@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-08 18:29:37
+* @Last Modified time: 2018-01-09 18:02:18
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -74,8 +74,8 @@ void RadioResendPacket(void);
 static void RadioDefaultParaInit(void)
 {
 
-    memset(&srcRadioAddr, 0, sizeof(srcRadioAddr));
-    memset(&dstRadioAddr, 0, sizeof(dstRadioAddr));
+    // memset(&srcRadioAddr, 0, sizeof(srcRadioAddr));
+    // memset(&dstRadioAddr, 0, sizeof(dstRadioAddr));
     srcAddrLen      = RADIO_ADDR_LEN;
     dstAddrLen      = RADIO_ADDR_LEN;
 
@@ -171,7 +171,7 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_RX)
         {
-            SetRadioDstAddr(*((uint32_t *)radioRxPacket.dstAddr));
+
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
                 Led_toggle(LED_R);

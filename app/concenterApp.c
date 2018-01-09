@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-08 17:00:00
+* @Last Modified time: 2018-01-09 15:13:48
 */
 #include "../general.h"
 
@@ -78,6 +78,8 @@ void ConcenterAppInit(void)
     concenterUploadClockHandle = Clock_handle(&concenterUploadClock);
 
     concenterChannelDispath  = 0;
+
+    InternalFlashInit();
 }
 
 //***********************************************************************************

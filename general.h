@@ -289,7 +289,6 @@ typedef struct {
 #include "easylink/EasyLink.h"
 #include "network/network.h"
 #include "easylink/radio_front.h"
-
 //***********************************************************************************
 //
 //	Global variable define

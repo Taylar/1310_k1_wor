@@ -11,7 +11,7 @@
 #define         RADIO_EVT_ALL           0xffff
 
 
-#define PASSRADIO_ACK_TIMEOUT_TIME_MS (100)
+#define PASSRADIO_ACK_TIMEOUT_TIME_MS (50)
 
 #define RADIO_EASYLINK_MODULATION     EasyLink_Phy_Custom
 

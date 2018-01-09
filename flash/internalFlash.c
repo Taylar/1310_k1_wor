@@ -85,6 +85,8 @@ bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t nodeChannel)
 
 		FlashProgram((uint8_t*)(&nodeAddr), addrTemp + intFlashNodeWritenAddr[addrSector], 4);
 		FlashProgram((uint8_t*)(&nodeChannel), addrTemp + intFlashNodeWritenAddr[addrSector] + 4, 4);
+
+		intFlashNodeWritenAddr[addrSector] += NODE_ADDR_INT_FLASH_SIZE;
 		return true;
 	}
 
