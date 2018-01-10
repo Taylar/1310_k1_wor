@@ -2,11 +2,11 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-09 15:13:48
+* @Last Modified time: 2018-01-10 16:59:03
 */
 #include "../general.h"
 
-
+#include "../radio_app/radio_app.h"
 #include "../APP/concenterApp.h"
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
@@ -80,6 +80,8 @@ void ConcenterAppInit(void)
     concenterChannelDispath  = 0;
 
     InternalFlashInit();
+
+    SetRadioSrcAddr(DEFAULT_DST_ADDR);
 }
 
 //***********************************************************************************
@@ -157,11 +159,23 @@ void ConcenterSensorDataSave(uint8_t *dataP, uint8_t length)
 //***********************************************************************************
 void ConcenterSensorDataUpload(void)
 {
-    uint8_t dataBuf[32];
-    if(Flash_get_unupload_items())
+    uint8_t     data[24];
+    uint32_t    dataItems;
+    uint8_t     offsetUnit;
+    //reverse the buf to other command
+    offsetUnit = 0;
+    dataItems  = Flash_get_unupload_items();
+    
+    while(dataItems)
     {
-        Flash_load_sensor_data(dataBuf, 32);
-        InterfaceSend(dataBuf, 32);
+        Flash_load_sensor_data(data, 22, dataItems);
+
+        // upload the data to network 
+        
+        InterfaceSend(data, 32);
+        dataItems--;
+        offsetUnit++;
+        
     }
 }       
 
@@ -242,7 +256,7 @@ void ConcenterWakeup(void)
 //***********************************************************************************
 void ConcenterSaveChannel(uint32_t nodeAddr)
 {
-    if(InternalFlashSaveNodeAddr(nodeAddr, concenterChannelDispath))
+    if(InternalFlashSaveNodeAddr(nodeAddr, &concenterChannelDispath))
         concenterChannelDispath++;
 }
 

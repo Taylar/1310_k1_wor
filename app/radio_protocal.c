@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-09 19:04:19
+* @Last Modified time: 2018-01-10 16:36:33
 */
 #include "../general.h"
 
@@ -221,8 +221,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			NodeStrategySetOffset_Channel(temp, tickTemp, temp2);
 
 			if(bufTemp->load[0] == PROTOCAL_FAIL)
-				Flash_recovery_last_sensor_data();
-
+				NodeUploadFailProcess();
+			else
+				NodeUploadSucessProcess();
+			
 			break;
 
 		}
@@ -262,19 +264,13 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	uint8_t len;
 	radio_protocal_t	*bufTemp;
 
-	
-
-
-
-
-	ConcenterSaveChannel(*((uint32_t*)(protocalRxPacket->dstAddr)));
-
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
 	len                     = protocalRxPacket->len;
 	bufTemp                 = (radio_protocal_t *)protocalRxPacket->payload;
 	AlineRadio_protocal_tStruct_Decompile(bufTemp);
 
 	SetRadioDstAddr(bufTemp->srcAddr);
+    ConcenterSaveChannel(bufTemp->srcAddr);
 
 	while(len)
 	{
@@ -291,7 +287,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			// there may be several sensordata
 			// send the ack
-			ConcenterRadioSendSensorDataAck(bufTemp->dstAddr, bufTemp->srcAddr, ES_SUCCESS);
+			ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
 
 			// save the data to flash
 			// updata the rssi

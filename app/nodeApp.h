@@ -44,4 +44,8 @@ void NodeSleep(void);
 
 void NodeWakeup(void);
 
+void NodeUploadFailProcess(void);
+
+void NodeUploadSucessProcess(void);
+
 #endif			// __NODEAPP_H__

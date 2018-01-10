@@ -86,7 +86,7 @@ void Led_io_init(void)
 void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
 {
     /* Get access to resource */
-    //Semaphore_pend(ledSemHandle, BIOS_WAIT_FOREVER);
+    Semaphore_pend(ledSemHandle, BIOS_WAIT_FOREVER);
 
     PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], state);
 

@@ -397,29 +397,51 @@ void Flash_init(void)
 // Flash load sensor data.
 //
 //***********************************************************************************
-ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length)
+ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length, uint8_t offsetUnit)
 {
     if (length > FLASH_SENSOR_DATA_SIZE)
         return ES_ERROR;
 
 	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-    if (rFlashSensorData.ptrData.rearAddr == rFlashSensorData.ptrData.frontAddr) {
+    if (rFlashSensorData.ptrData.rearAddr == (rFlashSensorData.ptrData.frontAddr + offsetUnit * FLASH_SENSOR_DATA_SIZE)) {
         //Data queue empty.
     	Semaphore_post(spiSemHandle);
         return ES_ERROR;
     }
 
     //Data queue not empty, dequeue data.
-    Flash_external_read(rFlashSensorData.ptrData.frontAddr + FLASH_SENSOR_DATA_POS, pData, length);
+    Flash_external_read(rFlashSensorData.ptrData.frontAddr + FLASH_SENSOR_DATA_POS + offsetUnit * FLASH_SENSOR_DATA_SIZE, pData, length);
+    
+    //Data queue front pointer increase.
+    // rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
+    // rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    // Flash_store_sensor_ptr();
+	Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+
+//***********************************************************************************
+//
+// Flash data point front forward one unit.
+//
+//***********************************************************************************
+ErrorStatus  Falsh_prtpoint_forward(void)
+{
+    if (rFlashSensorData.ptrData.rearAddr == rFlashSensorData.ptrData.frontAddr)
+        return ES_ERROR;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
     //Data queue front pointer increase.
     rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
     rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
 
     //Store sensor ptrData.
     Flash_store_sensor_ptr();
-	Semaphore_post(spiSemHandle);
-
-    return ES_SUCCESS;
+    Semaphore_post(spiSemHandle);
 }
 
 

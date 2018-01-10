@@ -488,10 +488,13 @@ static void Nwk_taskFxn(void)
                 }
 #ifdef FLASH_EXTERNAL
                 //send data.
-                while (Flash_load_sensor_data(rNwkMsgPacket.buff, FLASH_SENSOR_DATA_SIZE) == ES_SUCCESS) {
+                while (Flash_load_sensor_data(rNwkMsgPacket.buff, FLASH_SENSOR_DATA_SIZE, 0) == ES_SUCCESS) {
                     Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
-                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
-                        Flash_recovery_last_sensor_data();
+                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == TRUE) {
+                        Falsh_prtpoint_forward();
+                    }
+                    else
+                    {
                         ret = FALSE;
                         break;
                     }

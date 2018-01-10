@@ -11,6 +11,8 @@
 #define         RADIO_EVT_ALL           0xffff
 
 
+#define DEFAULT_DST_ADDR                0x12121212
+
 #define PASSRADIO_ACK_TIMEOUT_TIME_MS (50)
 
 #define RADIO_EASYLINK_MODULATION     EasyLink_Phy_Custom
@@ -56,6 +58,9 @@ void SetRadioSrcAddr(uint32_t addr);
 
 void SetRadioDstAddr(uint32_t addr);
 
+uint32_t GetRadioSubSrcAddr(void);
+
+void SetRadioSubSrcAddr(uint32_t addr);
 
 
 #endif		// __RADIO_APP_H__

@@ -6,9 +6,9 @@
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 /***** Defines *****/
-#define NODE_BROADCASTING_TIME         10
+#define NODE_BROADCASTING_TIME         2
 
-#define DEFAULT_DST_ADDR                0
+
 
 /***** Type declarations *****/
 typedef struct 
@@ -74,8 +74,8 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.broadcasting  = true;
     nodeParameter.customId      = DEFAULT_DST_ADDR;
 
-    SetRadioSrcAddr(0x12345678);
-
+    SetRadioSrcAddr(0x87654321);
+    SetRadioDstAddr(DEFAULT_DST_ADDR);
     Clock_Params clkParams;
     clkParams.period    = 0;
     clkParams.startFlag = FALSE;
@@ -164,19 +164,24 @@ void NodeUploadPeriodSet(uint32_t period)
 void NodeUploadProcess(void)
 {
     uint8_t     data[24];
-
+    uint32_t    dataItems;
+    uint8_t     offsetUnit;
     //reverse the buf to other command
-    // while(Flash_get_unupload_items() < 32)
-    // {
-    //     Flash_load_sensor_data(data, 22);
+    offsetUnit = 0;
+    dataItems  = Flash_get_unupload_items();
+    
+    while(dataItems)
+    {
+        Flash_load_sensor_data(data, 22, dataItems);
 
-    //     // the radio buf is full 
-    //     if(NodeRadioSendSensorData(data, 22) == false)
-    //     {
-    //         Flash_recovery_last_sensor_data();
-    //         return;
-    //     }
-    // }
+        // the radio buf is full 
+        if(NodeRadioSendSensorData(data, 22) == false)
+        {
+            return;
+        }
+        dataItems--;
+        offsetUnit++;
+    }
 
 // for zxttest
     uint32_t temp;
@@ -206,17 +211,24 @@ void NodeUploadProcess(void)
 
 }
 //***********************************************************************************
-// brief:   when the sensor data upload, recover the extflash store
+// brief:   when the sensor data upload fail, needn't do everything
 // 
-// note:    this maybe make an error because the node would send several sensor data
-// in a radio packet and couldn't known which one was fail
 // parameter: 
 //***********************************************************************************
-// void NodeUploadFailProcess(void)
-// {
-//     Flash_recovery_last_sensor_data();
-// }
+void NodeUploadFailProcess(void)
+{
 
+}
+
+//***********************************************************************************
+// brief:   move the fornt data point forward one unit
+// 
+// parameter: 
+//***********************************************************************************
+void NodeUploadSucessProcess(void)
+{
+    Falsh_prtpoint_forward();
+}
 
 //***********************************************************************************
 // brief:   start the collect sensor timer

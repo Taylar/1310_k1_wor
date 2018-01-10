@@ -10,6 +10,8 @@
 #define 	PROTOCAL_FAIL				1
 
 
+
+
 // parameter type 
 #define     PARATYPE_TEMP_HUMI_SHT20    0x01
 #define     PARATYPE_NTC                0x02

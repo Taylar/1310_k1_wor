@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-09 18:02:18
+* @Last Modified time: 2018-01-10 14:44:32
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -23,6 +23,7 @@
 #define PASSRADIO_MAX_RETRIES           2
 
 #define RADIO_ADDR_LEN                  4
+#define RADIO_ADDR_LEN_MAX              8
 
 
 
@@ -46,7 +47,7 @@ static uint8_t nodeRadioTaskStack[PASSRADIO_TASK_STACK_SIZE];
 Event_Struct radioOperationEvent; /* not static so you can see in ROV */
 static Event_Handle radioOperationEventHandle;
 
-static uint8_t  srcRadioAddr[RADIO_ADDR_LEN];
+static uint8_t  srcRadioAddr[RADIO_ADDR_LEN_MAX];
 static uint8_t  srcAddrLen;
 static uint8_t  dstRadioAddr[RADIO_ADDR_LEN];
 static uint8_t  dstAddrLen;
@@ -78,7 +79,6 @@ static void RadioDefaultParaInit(void)
     // memset(&dstRadioAddr, 0, sizeof(dstRadioAddr));
     srcAddrLen      = RADIO_ADDR_LEN;
     dstAddrLen      = RADIO_ADDR_LEN;
-
     // set the radio addr length
     EasyLink_setCtrl(EasyLink_Ctrl_AddSize, RADIO_ADDR_LEN);
 }
@@ -174,9 +174,9 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
-                Led_toggle(LED_R);
-                Led_toggle(LED_B);
-                Led_toggle(LED_G);
+                // Led_toggle(LED_R);
+                // Led_toggle(LED_B);
+                // Led_toggle(LED_G);
                 ConcenterProtocalDispath(&radioRxPacket);
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }
@@ -343,12 +343,19 @@ uint32_t GetRadioSrcAddr(void)
     return *((uint32_t*)srcRadioAddr);
 }
 
+uint32_t GetRadioSubSrcAddr(void)
+{
+    return *((uint32_t*)(srcRadioAddr + 4));
+}
+
 
 uint32_t GetRadioDstAddr(void)
 {
     return *((uint32_t*)dstRadioAddr);
 }
 
+
+static uint8_t radioSubAddrFlag = 0;
 
 void SetRadioSrcAddr(uint32_t addr)
 {
@@ -357,7 +364,24 @@ void SetRadioSrcAddr(uint32_t addr)
     srcRadioAddr[2] = LOBYTE(HIWORD(addr));
     srcRadioAddr[3] = HIBYTE(HIWORD(addr));
 
-    EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1);
+    if(radioSubAddrFlag)
+        EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 2);
+    else
+        EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1);
+}
+
+
+
+void SetRadioSubSrcAddr(uint32_t addr)
+{
+    radioSubAddrFlag = 1;
+    
+    srcRadioAddr[4] = LOBYTE(LOWORD(addr));
+    srcRadioAddr[5] = HIBYTE(LOWORD(addr));
+    srcRadioAddr[6] = LOBYTE(HIWORD(addr));
+    srcRadioAddr[7] = HIBYTE(HIWORD(addr));
+
+    EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 2);
 }
 
 
@@ -370,3 +394,4 @@ void SetRadioDstAddr(uint32_t addr)
     dstRadioAddr[2] = LOBYTE(HIWORD(addr));
     dstRadioAddr[3] = HIBYTE(HIWORD(addr));
 }
+

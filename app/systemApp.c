@@ -74,16 +74,16 @@ void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
     // uint32_t	voltageTemp;
-    /* Construct system process Event */
-    Event_construct(&systemAppEvtStruct, NULL);
-    /* Obtain event instance handle */
-    systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
+	/* Construct system process Event */
+	Event_construct(&systemAppEvtStruct, NULL);
+	/* Obtain event instance handle */
+	systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
 
 
-    if(devicesType == DEVICES_TYPE_GATEWAY)
-    {
-  	    ConcenterAppHwInit();
-    }
+	if(devicesType == DEVICES_TYPE_GATEWAY)
+	{
+		ConcenterAppHwInit();
+	}
     else
     {
         NodeAppHwInit();
@@ -127,12 +127,12 @@ void SystemAppTaskFxn(void)
 				Led_set(LED_R, 0);
 				Led_set(LED_G, 0);
 				Led_set(LED_B, 0);
-				NodeWakeup();
+				// NodeWakeup();
 			}
 			else
 			{
 				sleep = !sleep;
-				NodeSleep();
+				// NodeSleep();
 				Led_set(LED_R, 1);
 				Led_set(LED_G, 1);
 				Led_set(LED_B, 1);
@@ -153,6 +153,10 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
+
+			Led_toggle(LED_R);
+			Led_toggle(LED_B);
+			Led_toggle(LED_G);
 			// voltageTemp = AONBatMonBatteryVoltageGet();
 			// voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
 			// System_printf("voltage: %d mV\n", voltageTemp);
@@ -163,7 +167,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_UPLOAD)
 		{
-		    NodeUploadProcess();
+			NodeUploadProcess();
 		}
 
 
@@ -181,8 +185,8 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_TIMER)
 		{
-		    // System_printf("start time: %d \n", voltageTemp);
-		    // System_printf("period time: %d \n", b);
+			// System_printf("start time: %d \n", voltageTemp);
+			// System_printf("period time: %d \n", b);
 		}
 
 	}

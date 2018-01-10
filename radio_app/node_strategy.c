@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-09 18:02:49
+* @Last Modified time: 2018-01-10 15:24:31
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -108,7 +108,7 @@ void NodeStrategyReset(void)
     nodeStrategy.period       = 60;
     nodeStrategy.offset       = 0;
     nodeStrategy.channel      = INVALID_CHANNEL;
-    nodeStrategy.channelNum   = 3000;
+    nodeStrategy.channelNum   = NODE_DECEIVE_MAX_NUM;
     nodeStrategy.failNum      = 0;
     nodeStrategy.periodNum    = 0;
     nodeStrategy.concenterNum = 0;
@@ -156,6 +156,8 @@ static void NodeStrategyStart(void)
         Clock_stop(nodeStrategyStartClockHandle);
 
 
+
+    // gennerate a ramdom num maybe waste almost 1sec
     /* Use the True Random Number Generator to generate sensor node address randomly */;
     Power_setDependency(PowerCC26XX_PERIPH_TRNG);
     TRNGEnable();
@@ -308,22 +310,19 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
 {
     int32_t offsetTemp;
     int32_t launchTime;
+    
     // 
     if((nodeStrategy.periodNum >= FAIL_CONNECT_PERIOD_MAX_NUM) ||
-        (nodeStrategy.concenterNum > 2))
+        (nodeStrategy.concenterNum > 2) ||
+        (channel >= nodeStrategy.channelNum))
         return;
 
     // transform to ms
     concenterTick = concenterTick * Clock_tickPeriod / 1000;
     nodeTick      = nodeTick * Clock_tickPeriod / 1000;
 
+    offsetTemp    = concenterTick - nodeTick;
     // get the period tick
-
-
-    concenterTick %= (nodeStrategy.period * 1000);   
-    nodeTick      %= (nodeStrategy.period * 1000);
-
-    offsetTemp = concenterTick - nodeTick;
 
 
     if(nodeStrategy.success)

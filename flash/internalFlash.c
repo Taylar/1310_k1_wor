@@ -50,7 +50,7 @@ bool InternalFlashCheckNodeAddr(uint32_t nodeAddr)
 	uint8_t  i;
 	oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
 
-	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_SIZE;
+	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
 
 
 	addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE; 
@@ -69,7 +69,7 @@ bool InternalFlashCheckNodeAddr(uint32_t nodeAddr)
 // parameter: true : save the node channel to internal flash
 // 			  false: this node channel has save in the internal flash
 //***********************************************************************************
-bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t nodeChannel)
+bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t *nodeChannel)
 {
 	if(InternalFlashCheckNodeAddr(nodeAddr)	== false)
 	{
@@ -79,14 +79,22 @@ bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t nodeChannel)
 
 		oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
 
-		addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_SIZE;
+		addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
 
 		addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE;
 
 		FlashProgram((uint8_t*)(&nodeAddr), addrTemp + intFlashNodeWritenAddr[addrSector], 4);
-		FlashProgram((uint8_t*)(&nodeChannel), addrTemp + intFlashNodeWritenAddr[addrSector] + 4, 4);
+		FlashProgram((uint8_t*)(nodeChannel), addrTemp + intFlashNodeWritenAddr[addrSector] + 4, 4);
 
 		intFlashNodeWritenAddr[addrSector] += NODE_ADDR_INT_FLASH_SIZE;
+		if((intFlashNodeWritenAddr[addrSector] / NODE_ADDR_INT_FLASH_SIZE) >= NODE_ADDR_INT_FLASH_BLOCK_SIZE)
+		{
+			// clear the channel num and erase the node addr and channel record
+			InternalFlashInit();
+			*nodeChannel = 0;
+			return false;
+		}
+
 		return true;
 	}
 
@@ -107,7 +115,7 @@ uint32_t InternalFlashReadNodeAddr(uint32_t nodeAddr)
 	uint8_t  i;
 	oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
 
-	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_SIZE;
+	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
 
 	addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE; 
 	for(i = 0; i < intFlashNodeWritenAddr[addrSector]; i++)

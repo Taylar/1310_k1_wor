@@ -61,9 +61,9 @@ int main(void)
     Board_initGeneral();
 
     //InternalFlashStoreConfig();
-    devicesType = DEVICES_TYPE_NODE;
+    // devicesType = DEVICES_TYPE_NODE;
 
-    // devicesType = DEVICES_TYPE_GATEWAY;
+    devicesType = DEVICES_TYPE_GATEWAY;
 
     if(devicesType == DEVICES_TYPE_GATEWAY)
     {

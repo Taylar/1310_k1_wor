@@ -40,7 +40,7 @@ void InternalFlashInit(void);
 
 bool InternalFlashCheckNodeAddr(uint32_t nodeAddr);
 
-bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t nodeChannel);
+bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t *nodeChannel);
 
 uint32_t InternalFlashReadNodeAddr(uint32_t nodeAddr);
 

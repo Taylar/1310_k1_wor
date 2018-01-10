@@ -128,7 +128,7 @@ typedef struct {
 
 
 extern void Flash_init(void);
-extern ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length);
+extern ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length, uint8_t offsetUnit);
 extern ErrorStatus Flash_load_sensor_data_history(uint8_t *pData, uint16_t length, uint16_t number);
 extern void Flash_store_sensor_data(uint8_t *pData, uint16_t length);
 extern void Flash_recovery_last_sensor_data(void);
@@ -137,6 +137,7 @@ extern FlashPrintRecordAddr_t Flash_get_record_addr(void);
 extern void Flash_get_record(uint32_t addr, uint8_t *pData, uint16_t length);
 extern uint32_t Flash_get_unupload_items(void);
 extern uint32_t Flash_get_record_items(void);
+extern ErrorStatus  Falsh_prtpoint_forward(void);
 
 
 #endif          // __EXTFLASH_H__
