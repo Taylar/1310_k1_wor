@@ -35,6 +35,7 @@
 
 #include <ti/devices/cc13x0/driverlib/aon_batmon.h>
 #include <ti/devices/cc13x0/driverlib/flash.h>
+#include <ti/devices/cc13x0/driverlib/aon_ioc.h>
 
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
@@ -281,6 +282,7 @@ typedef struct {
 #include "driver/spi_drv.h"
 #include "driver/uart_drv.h"
 #include "flash/extflash.h"
+#include "flash/extflash_ringq.h"
 #include "flash/internalFlash.h"
 #include "key/key_proc.h"
 #include "sensor/max31855.h"

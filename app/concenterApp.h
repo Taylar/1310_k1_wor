@@ -30,7 +30,9 @@ void ConcenterUploadStop(void);
 
 void ConcenterUploadPeriodSet(uint32_t period);
 
-void ConcenterSensorDataSave(uint8_t *dataP, uint8_t length);
+bool ConcenterSensorDataSaveToQueue(uint8_t *dataP, uint8_t length);
+
+void ConcenterSensorDataSave(void);
 
 void ConcenterSensorDataUpload(void);
 

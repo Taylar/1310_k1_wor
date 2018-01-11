@@ -61,7 +61,7 @@ int main(void)
     Board_initGeneral();
 
     //InternalFlashStoreConfig();
-    // devicesType = DEVICES_TYPE_NODE;
+    devicesType = DEVICES_TYPE_NODE;
 
     devicesType = DEVICES_TYPE_GATEWAY;
 
@@ -76,6 +76,10 @@ int main(void)
     
     /* Initialize System Application tasks */
     SysAppTaskCreate();
+
+    // test for 32K 
+    // IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);
+    // AONIOC32kHzOutputEnable();
 
     /* Start BIOS */
     BIOS_start();

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-10 16:59:03
+* @Last Modified time: 2018-01-11 11:51:31
 */
 #include "../general.h"
 
@@ -45,6 +45,8 @@ static Clock_Handle concenterUploadClockHandle;
 
 uint32_t concenterChannelDispath;
 
+
+extflash_queue_s extflashWriteQ;
 /***** Prototypes *****/
 
 
@@ -80,6 +82,8 @@ void ConcenterAppInit(void)
     concenterChannelDispath  = 0;
 
     InternalFlashInit();
+
+    ExtflashRingQueueInit(&extflashWriteQ);
 
     SetRadioSrcAddr(DEFAULT_DST_ADDR);
 }
@@ -139,16 +143,39 @@ void ConcenterUploadPeriodSet(uint32_t period)
 }
 
 
-
+//***********************************************************************************
+// brief:  store the sensor data to queue
+// 
+// parameter: 
+//***********************************************************************************
+bool ConcenterSensorDataSaveToQueue(uint8_t *dataP, uint8_t length)
+{
+    if(ExtflashRingQueuePush(&extflashWriteQ, dataP) == true)
+    {
+        Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 
 //***********************************************************************************
 // brief:  save the sensor data to extflash
 // 
 // parameter: 
 //***********************************************************************************
-void ConcenterSensorDataSave(uint8_t *dataP, uint8_t length)
+void ConcenterSensorDataSave(void)
 {
-    Flash_store_sensor_data(dataP, length);
+    uint8_t dataP[SENSOR_DATA_LENGTH_MAX];
+
+    if(ExtflashRingQueuePoll(&extflashWriteQ, dataP) == true)
+    {
+        Flash_store_sensor_data(dataP, SENSOR_DATA_LENGTH_MAX);
+        Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
+        Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_NET_UPLOAD);
+    }
 }
 
 

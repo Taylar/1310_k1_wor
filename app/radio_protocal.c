@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-10 16:36:33
+* @Last Modified time: 2018-01-11 11:55:11
 */
 #include "../general.h"
 
@@ -286,15 +286,24 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_SENSOR_DATA:
 
 			// there may be several sensordata
-			// send the ack
+			// 
 			ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
 
 			// save the data to flash
 			// updata the rssi
+			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
 
-			// bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
-			// ConcenterSensorDataSave(bufTemp->load, bufTemp->load[0]+1);
-			// ConcenterUploadEventSet();
+			// ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
+			
+			if(ConcenterSensorDataSaveToQueue(bufTemp->load, bufTemp->load[0]+1) == true)
+			{
+				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
+			}
+			else
+			{
+				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_ERROR);
+			}
+
 			break;
 
 

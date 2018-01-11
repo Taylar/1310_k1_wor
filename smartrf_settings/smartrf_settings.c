@@ -51,7 +51,7 @@ static uint32_t pOverrides[] =
     // override_use_patch_prop_genfsk.xml
     // PHY: Use MCE ROM bank 4, RFE RAM patch
     MCE_RFE_OVERRIDE(0,4,0,1,0,0),
-    // override_synth_prop_863_930_div5.xml
+    // override_synth_prop_430_510_div10.xml
     // Synth: Set recommended RTRIM to 7
     HW_REG_OVERRIDE(0x4038,0x0037),
     // Synth: Set Fref to 4 MHz
@@ -78,6 +78,11 @@ static uint32_t pOverrides[] =
     (uint32_t)0x00108463,
     // Synth: Increase synth programming timeout (0x04B0 RAT ticks = 300 us)
     (uint32_t)0x04B00243,
+    // override_synth_disable_bias_div10.xml
+    // Synth: Set divider bias to disabled
+    HW32_ARRAY_OVERRIDE(0x405C,1),
+    // Synth: Set divider bias to disabled (specific for loDivider=10)
+    (uint32_t)0x18000280,
     // override_phy_rx_aaf_bw_0xd.xml
     // Rx: Set anti-aliasing filter bandwidth to 0xD (in ADI0, set IFAMPCTL3[7:4]=0xD)
     ADI_HALFREG_OVERRIDE(0,61,0xF,0xD),
@@ -91,9 +96,9 @@ static uint32_t pOverrides[] =
     HW_REG_OVERRIDE(0x6088,0x411A),
     // Tx: Configure PA ramping setting
     HW_REG_OVERRIDE(0x608C,0x8213),
-    // override_phy_rx_rssi_offset_5db.xml
-    // Rx: Set RSSI offset to adjust reported RSSI by +5 dB
-    (uint32_t)0x00FB88A3,
+    // override_phy_rx_rssi_offset_neg2db.xml
+    // Rx: Set RSSI offset to adjust reported RSSI by -2 dB
+    (uint32_t)0x000288A3,
     // TX power override
     // Tx: Set PA trim to max (in ADI0, set PACTL0=0xF8)
     ADI_REG_OVERRIDE(0,12,0xF8),
@@ -102,6 +107,7 @@ static uint32_t pOverrides[] =
 
 
 // CMD_PROP_RADIO_DIV_SETUP
+// Proprietary Mode Radio Setup Command for All Frequency Bands
 rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup =
 {
     .commandNo = 0x3807,
@@ -130,14 +136,15 @@ rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup =
     .config.biasMode = 0x1,
     .config.analogCfgMode = 0x0,
     .config.bNoFsPowerUp = 0x0,
-    .txPower = 0xA73F,
+    .txPower = 0x003F,
     .pRegOverride = pOverrides,
-    .centerFreq = 0x0364,
+    .centerFreq = 0x01B2,
     .intFreq = 0x8000,
-    .loDivider = 0x05,
+    .loDivider = 0x0A,
 };
 
 // CMD_FS
+// Frequency Synthesizer Programming Command
 rfc_CMD_FS_t RF_cmdFs =
 {
     .commandNo = 0x0803,
@@ -150,8 +157,8 @@ rfc_CMD_FS_t RF_cmdFs =
     .startTrigger.pastTrig = 0x0,
     .condition.rule = 0x1,
     .condition.nSkip = 0x0,
-    .frequency = 0x0364,
-    .fractFreq = 0x0000,
+    .frequency = 0x01B1,
+    .fractFreq = 0xEB85,
     .synthConf.bTxMode = 0x0,
     .synthConf.refFreq = 0x0,
     .__dummy0 = 0x00,
@@ -161,6 +168,7 @@ rfc_CMD_FS_t RF_cmdFs =
 };
 
 // CMD_PROP_TX
+// Proprietary Mode Transmit Command
 rfc_CMD_PROP_TX_t RF_cmdPropTx =
 {
     .commandNo = 0x3801,
@@ -182,6 +190,7 @@ rfc_CMD_PROP_TX_t RF_cmdPropTx =
 };
 
 // CMD_PROP_RX
+// Proprietary Mode Receive Command
 rfc_CMD_PROP_RX_t RF_cmdPropRx =
 {
     .commandNo = 0x3802,

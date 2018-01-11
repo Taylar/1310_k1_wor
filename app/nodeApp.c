@@ -45,7 +45,7 @@ static Clock_Handle nodeUploadPeriodClockHandle;
 //***********************************************************************************
 static void NodeUploadPeriodCb(UArg arg0)
 {
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD);
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
 }
 
 //***********************************************************************************
@@ -55,7 +55,7 @@ static void NodeUploadPeriodCb(UArg arg0)
 //***********************************************************************************
 static void NodeCollectPeriodCb(UArg arg0)
 {
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_COLLECT);
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_COLLECT_NODE);
 }
 
 
@@ -167,21 +167,21 @@ void NodeUploadProcess(void)
     uint32_t    dataItems;
     uint8_t     offsetUnit;
     //reverse the buf to other command
-    offsetUnit = 0;
-    dataItems  = Flash_get_unupload_items();
+    // offsetUnit = 0;
+    // dataItems  = Flash_get_unupload_items();
     
-    while(dataItems)
-    {
-        Flash_load_sensor_data(data, 22, dataItems);
+    // while(dataItems)
+    // {
+    //     Flash_load_sensor_data(data, 22, dataItems);
 
-        // the radio buf is full 
-        if(NodeRadioSendSensorData(data, 22) == false)
-        {
-            return;
-        }
-        dataItems--;
-        offsetUnit++;
-    }
+    //     // the radio buf is full 
+    //     if(NodeRadioSendSensorData(data, 22) == false)
+    //     {
+    //         return;
+    //     }
+    //     dataItems--;
+    //     offsetUnit++;
+    // }
 
 // for zxttest
     uint32_t temp;

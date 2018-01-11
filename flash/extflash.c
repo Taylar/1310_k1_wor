@@ -442,6 +442,8 @@ ErrorStatus  Falsh_prtpoint_forward(void)
     //Store sensor ptrData.
     Flash_store_sensor_ptr();
     Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
 }
 
 

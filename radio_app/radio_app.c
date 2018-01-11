@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-10 14:44:32
+* @Last Modified time: 2018-01-10 18:44:45
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -144,6 +144,9 @@ void RadioAppTaskFxn(void)
         System_abort("EasyLink_init failed");
     }
 
+    //EasyLink_setFrequency(433000000);
+
+
     RadioDefaultParaInit();
     // radioMode       = RADIOMODE_RECEIVEPORT;
 
@@ -174,9 +177,9 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
-                // Led_toggle(LED_R);
-                // Led_toggle(LED_B);
-                // Led_toggle(LED_G);
+                Led_toggle(LED_R);
+                Led_toggle(LED_B);
+                Led_toggle(LED_G);
                 ConcenterProtocalDispath(&radioRxPacket);
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }
@@ -193,7 +196,9 @@ void RadioAppTaskFxn(void)
             // stop receive radio, otherwise couldn't send successful
             RadioFrontTxEnable();
             EasyLink_abort();
+
             EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+
             if(radioMode == RADIOMODE_SENDPORT)
             {
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));

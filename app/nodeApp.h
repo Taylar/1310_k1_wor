@@ -9,7 +9,6 @@
 
 
 
-
 void NodeAppInit(void (*Cb)(void));
 
 void NodeAppHwInit(void);

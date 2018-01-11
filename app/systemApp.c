@@ -154,9 +154,9 @@ void SystemAppTaskFxn(void)
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
 
-			Led_toggle(LED_R);
-			Led_toggle(LED_B);
-			Led_toggle(LED_G);
+			// Led_toggle(LED_R);
+			// Led_toggle(LED_B);
+			// Led_toggle(LED_G);
 			// voltageTemp = AONBatMonBatteryVoltageGet();
 			// voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
 			// System_printf("voltage: %d mV\n", voltageTemp);
@@ -165,13 +165,13 @@ void SystemAppTaskFxn(void)
 			// System_printf("the humi : %d\n", SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SHT2X_HUMI));
 		}
 
-		if(eventId & SYSTEMAPP_EVT_UPLOAD)
+		if(eventId & SYSTEMAPP_EVT_UPLOAD_NODE)
 		{
 			NodeUploadProcess();
 		}
 
 
-		if(eventId & SYSTEMAPP_EVT_COLLECT)
+		if(eventId & SYSTEMAPP_EVT_COLLECT_NODE)
 		{
 			NodeCollectProcess();
 		}
@@ -180,6 +180,11 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_NET_UPLOAD)
 		{
 
+		}
+
+		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)
+		{
+			ConcenterSensorDataSave();
 		}
 
 
