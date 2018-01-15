@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-10 18:44:45
+* @Last Modified time: 2018-01-12 17:11:07
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -162,11 +162,12 @@ void RadioAppTaskFxn(void)
         System_abort("EasyLink_enableRxAddrFilter failed");
     }
 
-    if(radioMode == RADIOMODE_RECEIVEPORT)
-    {
-        RadioFrontRxEnable();
-        EasyLink_receiveAsync(RxDoneCallback, 0);
-    }
+    // if(radioMode == RADIOMODE_RECEIVEPORT)
+    // {
+    //     RadioFrontRxEnable();
+    //     EasyLink_receiveAsync(RxDoneCallback, 0);
+    // }
+
 
     for(;;)
     {

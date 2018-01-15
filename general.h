@@ -173,6 +173,10 @@
 #define         DEVICES_TYPE_GATEWAY            0
 #define         DEVICES_TYPE_NODE               1
 
+// device power mode 
+#define         DEVICES_POWER_OFF               0
+#define         DEVICES_POWER_ON                1
+
 //***********************************************************************************
 //
 //system event define.

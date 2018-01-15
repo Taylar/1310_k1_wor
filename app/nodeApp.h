@@ -47,4 +47,9 @@ void NodeUploadFailProcess(void);
 
 void NodeUploadSucessProcess(void);
 
+void NodeShortKeyApp(void);
+
+void NodeLongKeyApp(void);
+
+
 #endif			// __NODEAPP_H__

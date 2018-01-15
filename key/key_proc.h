@@ -13,19 +13,10 @@
 
 // Define key action
 typedef enum {
-    KEY_NONE,
-    KEY_0_PRESS,
-    KEY_1_PRESS,
-    KEY_01_PRESS,
+    KEY_0_SHORT_PRESS,
+    KEY_0_LONG_PRESS,
     KEY_ACTION_MAX
 } KEY_ACTION;
-
-// Define key code.
-#define _VK_NULL                0xff
-#define _VK_POWER               0x01
-#define _VK_SELECT              0x02
-#define _VK_MENU                0x03
-#define _VK_MENU_DOWN           0x04
 
 
 // Define key pressed time, unit is 10ms.
@@ -43,20 +34,19 @@ typedef struct {
     uint16_t holdTime;
     // Key double press time count.
     uint16_t doublePressTime;
+    // Key Hold flag
+    uint8_t holdPress;
     // Key short press flag.
     uint8_t shortPress;
     // Key double press flag.
     uint8_t doublePress;
-    // key action.
-    uint8_t action;
-    // key code.
-    uint8_t code;
 } KeyTask_t;
 
 
 
-void Key_init(void (*Cb)(void));
-uint8_t Key_get(void);
+void KeyInit(void);
+
+void KeyRegister(void (*Cb)(void), KEY_ACTION action);
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */
 

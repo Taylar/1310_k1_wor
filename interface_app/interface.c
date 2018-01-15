@@ -161,7 +161,6 @@ void InterfaceTaskFxn(void)
     Semaphore_post(interfaceSemHandle);
 
     // UartClose(UART_0);
-    // HwInterfaceInit(INTERFACE_UART, 115200, InterfaceReceiveCb);
 
     for(;;)
     {
@@ -170,7 +169,6 @@ void InterfaceTaskFxn(void)
         if(eventId & INTERFACE_EVT_RX)
         {
             InterfaceSend(uart0RxData.buff, uart0RxData.length);
-            RadioSendPacket(uart0RxData.buff, uart0RxData.length, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS);
 
         }
 

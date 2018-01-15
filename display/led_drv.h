@@ -22,7 +22,7 @@ typedef enum {
 extern void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times);
 extern void Led_set(uint8_t ledId, uint8_t status);
 extern void Led_toggle(uint8_t ledId);
-extern void Led_init(void);
+extern void LedInit(void);
 
 #endif	/* __ZKSIOT_LED_DRV_H__ */
 

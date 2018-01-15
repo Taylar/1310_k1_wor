@@ -93,7 +93,7 @@ void NodeAppInit(void (*Cb)(void))
 
     NodeStrategySetPeriod(nodeParameter.uploadPeriod);
 
-    NodeWakeup();
+    // NodeWakeup();
 }
 
 //***********************************************************************************
@@ -111,7 +111,7 @@ void NodeAppHwInit(void)
 
     SHT2X_FxnTable.initFxn(SHT2X_I2C_CH0);
 
-    Led_init();
+    LedInit();
 }
 
 
@@ -440,3 +440,22 @@ void NodeSetCustomId(uint32_t id)
 }
 
 
+//***********************************************************************************
+// brief:the node short key application
+// 
+// parameter: 
+//***********************************************************************************
+void NodeShortKeyApp(void)
+{
+
+}
+
+//***********************************************************************************
+// brief:the node long key application
+// 
+// parameter: 
+//***********************************************************************************
+void NodeLongKeyApp(void)
+{
+    
+}

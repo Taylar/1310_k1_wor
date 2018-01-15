@@ -27,6 +27,10 @@ Task_Struct     systemAppTaskStruct;
 Event_Struct systemAppEvtStruct;
 Event_Handle systemAppEvtHandle;
 
+// system application extern variable
+uint8_t devicesType;
+uint8_t powerMode;
+
 
 
 /***** Prototypes *****/
@@ -80,6 +84,7 @@ void SystemAppTaskFxn(void)
 	systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
 
 
+
 	if(devicesType == DEVICES_TYPE_GATEWAY)
 	{
 		ConcenterAppHwInit();
@@ -88,8 +93,11 @@ void SystemAppTaskFxn(void)
     {
         NodeAppHwInit();
     }
+    
+    powerMode = DEVICES_POWER_OFF;
 
-	Key_init(SystemKeyEventPostIsr);
+    KeyInit();
+    KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
 
 	RtcInit(RtcEventSet);
 

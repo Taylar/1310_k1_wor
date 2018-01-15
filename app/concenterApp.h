@@ -42,4 +42,9 @@ uint32_t ConcenterReadChannel(uint32_t nodeAddr);
 
 void ConcenterSaveChannel(uint32_t nodeAddr);
 
+void ConcenterShortKeyApp(void);
+
+void ConcenterLongKeyApp(void);
+
+
 #endif			// _CONCENTERAPP_H__

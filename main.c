@@ -50,7 +50,7 @@
 #include "network/network.h"
 
 
-uint8_t devicesType;
+
 
 /*
  *  ======== main ========
@@ -63,7 +63,7 @@ int main(void)
     //InternalFlashStoreConfig();
     devicesType = DEVICES_TYPE_NODE;
 
-    devicesType = DEVICES_TYPE_GATEWAY;
+    // devicesType = DEVICES_TYPE_GATEWAY;
 
     if(devicesType == DEVICES_TYPE_GATEWAY)
     {

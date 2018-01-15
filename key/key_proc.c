@@ -1,12 +1,10 @@
-//***********************************************************************************
-// Copyright 2017, Zksiot Development Ltd.
-// Created by zhengxuntai, 2017.12.18
-// MCU: MSP430F5529
-// OS: TI-RTOS
-// Project:
-// File name: led_drv.c
-// Description: led process routine.
-//***********************************************************************************
+/*
+* @Author: zxt
+* @Date:   2017-12-21 17:36:18
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-01-12 15:50:29
+*/
+
 #include "../general.h"
 
 static Clock_Struct keyClkStruct;
@@ -31,14 +29,16 @@ static PIN_Handle  keyHandle;
 
 
 
-static void (*AppIsrCb)(void);
+typedef void (*AppKeyIsrCb_t)(void);
+
+static AppKeyIsrCb_t   AppKeyIsrCb[KEY_ACTION_MAX];
 //***********************************************************************************
 //
-// Led_io_init.
+// key Io Init.
 //      
 //
 //***********************************************************************************
-void Key_io_init(PIN_IntCb pCb)
+void KeyIoInit(PIN_IntCb pCb)
 {
     keyHandle = PIN_open(&keyState, keyPinTable);
     PIN_registerIntCb(keyHandle, pCb);
@@ -50,12 +50,10 @@ void Key_io_init(PIN_IntCb pCb)
 // Key stop scan.
 //
 //***********************************************************************************
-static void Key_scan_stop(void)
+static void KeyScanStop(void)
 {
-    rKeyTask.holdTime = 0;
-    rKeyTask.doublePressTime = 0;
-    rKeyTask.shortPress = 0;
-    rKeyTask.doublePress = 0;
+    rKeyTask.holdTime        = 0;
+    rKeyTask.holdPress       = 0;
     Clock_stop(keyClkHandle);
 }
 
@@ -64,76 +62,32 @@ static void Key_scan_stop(void)
 // Key scan callback function, use 10ms clock.
 //
 //***********************************************************************************
-static void Key_scanFxn(UArg arg0)
+static void KeyScanFxn(UArg arg0)
 {
-    if (PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED) {
-        // Power key pressed.
-        if (rKeyTask.action != KEY_0_PRESS) {
-            rKeyTask.holdTime = 0;
-            rKeyTask.shortPress = 0;
-            rKeyTask.doublePress = 0;
+    if (PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED)
+    {
+        if(rKeyTask.holdPress == 0)
+        {
+            rKeyTask.holdPress       = 1;
+            rKeyTask.holdTime        = 0;
         }
-        if (rKeyTask.holdTime <= TIME_KEY0_LONG)
+        else
+        {
             rKeyTask.holdTime++;
-        if (rKeyTask.shortPress == 0 && rKeyTask.holdTime == TIME_KEY_NEW) {
-            rKeyTask.holdTime = 0;
-            rKeyTask.shortPress = 1;
-        } else if (rKeyTask.shortPress == 1 && rKeyTask.holdTime == TIME_KEY0_LONG) {
-            rKeyTask.shortPress = 0;
-            rKeyTask.code = _VK_POWER;
-            AppIsrCb();
-            Key_scan_stop();
+            if(rKeyTask.holdTime > TIME_KEY0_LONG)
+            {
+                KeyScanStop();
+                if(AppKeyIsrCb[KEY_0_LONG_PRESS])
+                    AppKeyIsrCb[KEY_0_LONG_PRESS]();
+            }
         }
-        rKeyTask.action = KEY_0_PRESS;
-    } else {
+    }
+    else
+    {
         rKeyTask.holdTime = 0;
-#ifdef SUPPORT_DOUBLE_CLICK
-        rKeyTask.doublePressTime++;
-        // key release.
-        if (rKeyTask.shortPress == 1) {
-            // short press, clear short press flag.
-            rKeyTask.shortPress = 0;
-            // judge double press
-            if (rKeyTask.doublePress == 0) {
-                rKeyTask.doublePressTime = 0;
-                rKeyTask.doublePress = 1;
-            } else {
-                if (rKeyTask.doublePressTime < TIME_KEY_DOUBLE) {
-                    rKeyTask.doublePress = 0;
-                    if (rKeyTask.action == KEY_0_PRESS) {
-                        rKeyTask.code = _VK_NULL;
-                        Sys_event_post(SYS_EVT_KEY);
-                        Key_scan_stop();
-                    }
-                }
-            }
-        } else if (rKeyTask.doublePress == 1) {
-            // judge double press time
-            if (rKeyTask.doublePressTime >= TIME_KEY_DOUBLE) {
-                rKeyTask.doublePress = 0;
-                if (rKeyTask.action == KEY_0_PRESS) {
-                    rKeyTask.code = _VK_SELECT;
-                    Sys_event_post(SYS_EVT_KEY);
-                    Key_scan_stop();
-                }
-            }
-        } else {
-            Key_scan_stop();
-        }
-#else
-        // key release.
-        if (rKeyTask.shortPress == 1) {
-            // short press, clear short press flag.
-            rKeyTask.shortPress = 0;
-            if (rKeyTask.action == KEY_0_PRESS) {
-                rKeyTask.code = _VK_SELECT;
-                AppIsrCb();
-                Key_scan_stop();
-            }
-        } else {
-            Key_scan_stop();
-        }
-#endif
+        KeyScanStop();
+        if(AppKeyIsrCb[KEY_0_SHORT_PRESS])
+            AppKeyIsrCb[KEY_0_SHORT_PRESS]();
     }
 }
 
@@ -142,7 +96,7 @@ static void Key_scanFxn(UArg arg0)
 // Key gpio hwi callback function.
 //
 //***********************************************************************************
-static void Key_isrFxn(UInt index)
+static void KeyIsrFxn(UInt index)
 {
     if (Clock_isActive(keyClkHandle) == FALSE)
         Clock_start(keyClkHandle);
@@ -153,37 +107,36 @@ static void Key_isrFxn(UInt index)
 // Key init.
 //
 //***********************************************************************************
-void Key_init(void (*Cb)(void))
+void KeyInit(void)
 {
+    uint8_t i;
+
     rKeyTask.holdTime = 0;
     rKeyTask.doublePressTime = 0;
     rKeyTask.shortPress = 0;
     rKeyTask.doublePress = 0;
-    rKeyTask.action = KEY_NONE;
-    rKeyTask.code = _VK_NULL;
 
     /* Construct a 10ms periodic Clock Instance to scan key */
     Clock_Params clkParams;
     Clock_Params_init(&clkParams);
     clkParams.period = 10 * CLOCK_UNIT_MS;
     clkParams.startFlag = FALSE;
-    Clock_construct(&keyClkStruct, (Clock_FuncPtr)Key_scanFxn, 0, &clkParams);
+    Clock_construct(&keyClkStruct, (Clock_FuncPtr)KeyScanFxn, 0, &clkParams);
     /* Obtain clock instance handle */
     keyClkHandle = Clock_handle(&keyClkStruct);
 
-    /* install Button callback */
-    Key_io_init((PIN_IntCb)Key_isrFxn);
+    for(i = 0; i < KEY_ACTION_MAX; i++)
+    {
+        AppKeyIsrCb[i] = NULL;
+    }
 
-    AppIsrCb        = Cb;
+    /* install Button callback */
+    KeyIoInit((PIN_IntCb)KeyIsrFxn);
 }
 
-//***********************************************************************************
-//
-// Key process task function.
-//
-//***********************************************************************************
-uint8_t Key_get(void)
+void KeyRegister(void (*Cb)(void), KEY_ACTION action)
 {
-    return rKeyTask.code;
+    if(action < KEY_ACTION_MAX)
+        AppKeyIsrCb[action] = Cb;
 }
 

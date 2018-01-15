@@ -1,12 +1,9 @@
-//***********************************************************************************
-// Copyright 2017, Zksiot Development Ltd.
-// Created by zhengxuntai, 2017.12.18
-// MCU:	MSP430F5529
-// OS: TI-RTOS
-// Project:
-// File name: led_drv.c
-// Description: led process routine.
-//***********************************************************************************
+/*
+* @Author: zxt
+* @Date:   2017-12-21 17:36:18
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-01-12 16:04:09
+*/
 #include "../general.h"
 
 #ifdef SUPPORT_LED
@@ -54,20 +51,20 @@ static PIN_Handle  ledHandle;
 
 //***********************************************************************************
 //
-// Led_io_init.
+// LedIoInit.
 //      
 //
 //***********************************************************************************
-void Led_io_init(void)
+void LedIoInit(void)
 {
-    // if(devicesType == DEVICES_TYPE_GATEWAY)
-    // {
-    //     ledHandle = PIN_open(&ledState, ledPinTable_gateway);
-    //     LED_ID_CONST[LED_R] = LED_R_PIN_GATEWAY;
-    //     LED_ID_CONST[LED_G] = LED_G_PIN_GATEWAY;
-    //     LED_ID_CONST[LED_B] = LED_B_PIN_GATEWAY;
-    // }
-    // else
+    if(devicesType == DEVICES_TYPE_GATEWAY)
+    {
+        ledHandle = PIN_open(&ledState, ledPinTable_gateway);
+        LED_ID_CONST[LED_R] = LED_R_PIN_GATEWAY;
+        LED_ID_CONST[LED_G] = LED_G_PIN_GATEWAY;
+        LED_ID_CONST[LED_B] = LED_B_PIN_GATEWAY;
+    }
+    else
     {
         ledHandle = PIN_open(&ledState, ledPinTable_node);
     }
@@ -155,9 +152,9 @@ void Led_set(uint8_t ledId, uint8_t status)
 // Led init.
 //
 //***********************************************************************************
-void Led_init(void)
+void LedInit(void)
 {
-    Led_io_init();
+    LedIoInit();
 
     /* Construct a Semaphore object to be use as a resource lock, inital count 1 */
     Semaphore_Params ledSemParams;
@@ -178,7 +175,7 @@ void Led_toggle(uint8_t ledId)
 {
 }
 
-void Led_init(void)
+void LedInit(void)
 {
 }
 

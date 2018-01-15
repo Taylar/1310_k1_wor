@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-11 11:51:31
+* @Last Modified time: 2018-01-12 17:19:03
 */
 #include "../general.h"
 
@@ -86,6 +86,8 @@ void ConcenterAppInit(void)
     ExtflashRingQueueInit(&extflashWriteQ);
 
     SetRadioSrcAddr(DEFAULT_DST_ADDR);
+
+    ConcenterSleep();
 }
 
 //***********************************************************************************
@@ -101,7 +103,7 @@ void ConcenterAppHwInit(void)
 
 
 
-    Led_init();
+    LedInit();
 
     DeepTemp_FxnTable.initFxn(MAX31855_SPI_CH0);
 }
@@ -295,4 +297,26 @@ void ConcenterSaveChannel(uint32_t nodeAddr)
 uint32_t ConcenterReadChannel(uint32_t nodeAddr)
 {
     return InternalFlashReadNodeAddr(nodeAddr);
+}
+
+
+
+//***********************************************************************************
+// brief:the Concenter short key application
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterShortKeyApp(void)
+{
+    
+}
+
+//***********************************************************************************
+// brief:the Concenter long key application
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterLongKeyApp(void)
+{
+    
 }
