@@ -168,7 +168,7 @@ bool InternalFlashLoadConfig(void)
 //***********************************************************************************
 void InternalFlashConfigReset(void)
 {
-	uint8_t i;
+	// uint8_t i;
 
     g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
     g_rSysConfigInfo.swVersion = FW_VERSION;
@@ -181,7 +181,7 @@ void InternalFlashConfigReset(void)
 
     g_rSysConfigInfo.status = 0;
     g_rSysConfigInfo.module = MODULE_GSM;
-
+/*
     for (i = 0; i < MODULE_SENSOR_MAX; i++) {
         g_rSysConfigInfo.sensorModule[i] = SEN_TYPE_NONE;
         g_rSysConfigInfo.alarmTemp[i].high = ALARM_TEMP_HIGH;
@@ -191,7 +191,7 @@ void InternalFlashConfigReset(void)
     }
     
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
-
+*/
 
     g_rSysConfigInfo.collectPeriod = 60;   // 1min
 
@@ -207,7 +207,7 @@ void InternalFlashConfigReset(void)
 
     g_rSysConfigInfo.gnssPeriod = 10;  // 10sec
 
-    g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_LOW;
+    g_rSysConfigInfo.batLowVol = 3600;
 
     g_rSysConfigInfo.apnuserpwd[0] = 0;
 }

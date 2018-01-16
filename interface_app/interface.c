@@ -168,8 +168,8 @@ void InterfaceTaskFxn(void)
 
         if(eventId & INTERFACE_EVT_RX)
         {
-            InterfaceSend(uart0RxData.buff, uart0RxData.length);
-
+            
+            // InterfaceSend(uart0RxData.buff, uart0RxData.length);
         }
 
         if(eventId & INTERFACE_EVT_TX)

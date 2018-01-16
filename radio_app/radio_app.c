@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-12 17:11:07
+* @Last Modified time: 2018-01-16 19:35:42
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -132,6 +132,7 @@ void RadioAppTaskFxn(void)
     {
         radioMode = RADIOMODE_RECEIVEPORT;
         RadioFrontInit();
+        RadioFrontRxEnable();
     }
     else
     {

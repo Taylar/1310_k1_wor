@@ -401,17 +401,12 @@ static void Nwk_taskFxn(void)
 {
     UInt eventId;
 
-    /* Construct key process Event */
-    Event_construct(&nwkEvtStruct, NULL);
-    /* Obtain event instance handle */
-    nwkEvtHandle = Event_handle(&nwkEvtStruct);
-
     Nwk_init();
 
     while (1) {
-        Led_ctrl(LED_R, 0, 0, 0);
-        Led_ctrl(LED_G, 0, 0, 0);
-        Led_ctrl(LED_B, 0, 0, 0);
+        // Led_ctrl(LED_R, 0, 0, 0);
+        // Led_ctrl(LED_G, 0, 0, 0);
+        // Led_ctrl(LED_B, 0, 0, 0);
         eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_ALL, BIOS_WAIT_FOREVER);
 
         if (eventId & NWK_EVT_POWERON) {
@@ -541,6 +536,11 @@ void Nwk_task_create(void)
     taskParams.stack = &nwkTaskStack;
     taskParams.priority = 1;
     Task_construct(&nwkTaskStruct, (Task_FuncPtr)Nwk_taskFxn, &taskParams, &eb);
+
+    /* Construct key process Event */
+    Event_construct(&nwkEvtStruct, NULL);
+    /* Obtain event instance handle */
+    nwkEvtHandle = Event_handle(&nwkEvtStruct);
 }
 
 //***********************************************************************************

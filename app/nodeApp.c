@@ -108,15 +108,15 @@ void NodeAppInit(void (*Cb)(void))
 //***********************************************************************************
 void NodeAppHwInit(void)
 {
+    LedInit();
+
     Spi_init();
 
     I2c_init();
 
-    //Flash_init();
+    Flash_init();
 
     SHT2X_FxnTable.initFxn(SHT2X_I2C_CH0);
-
-    LedInit();
 }
 
 

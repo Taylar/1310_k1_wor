@@ -63,19 +63,30 @@ int main(void)
     // InternalFlashLoadConfig();
     // devicesType = DEVICES_TYPE_NODE;
 
+    /* Initialize System Application tasks */
+    SysAppTaskCreate();
+
     devicesType = DEVICES_TYPE_GATEWAY;
+
 
     if(devicesType == DEVICES_TYPE_GATEWAY)
     {
+        // Init the config
+        if(InternalFlashLoadConfig() == false)
+        {
+            InternalFlashConfigReset();
+            InternalFlashStoreConfig();
+        }
+
         Nwk_task_create();
         InterfaceTaskCreate();
     }
-    
+
+
     /* Initialize radio tasks */
     RadioAppTaskCreate();
     
-    /* Initialize System Application tasks */
-    SysAppTaskCreate();
+    
 
     // test for 32K 
     // IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);

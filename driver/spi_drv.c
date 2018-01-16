@@ -138,12 +138,12 @@ ErrorStatus Spi_init(void)
     if(DEVICES_TYPE_GATEWAY == devicesType)
     {
         SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPI0];
-        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPI1];
+        SPI_config[CC1310_LAUNCHXL_SPI1].hwAttrs = &spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPI1];
     }
     else
     {
         SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI0];
-        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI1];
+        SPI_config[CC1310_LAUNCHXL_SPI1].hwAttrs = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI1];
     }
 
     SPI_init();

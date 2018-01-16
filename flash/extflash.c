@@ -26,7 +26,7 @@ const PIN_Config extFlashPinTable_node[] = {
 };
 
 const PIN_Config extFlashPinTable_gateway[] = {
-    FLASH_SPI_CS_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
+    FLASH_SPI_CS_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     FLASH_WP_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
     FLASH_HOLD_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
     PIN_TERMINATE
@@ -149,7 +149,7 @@ static void Flash_external_erase(uint32_t flashAddr, uint8_t eraseMode)
 
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        ;
+        __delay_cycles(12000);
 
     // Write enable
     do {
@@ -373,7 +373,8 @@ void Flash_init(void)
     // Time delay before write instruction.
     Task_sleep(6 * CLOCK_UNIT_MS);
 
-	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 #ifdef FLASH_W25Q256FVk
     Flash_external_address_mode(0);
 #endif
@@ -385,10 +386,9 @@ void Flash_init(void)
     }
 
     Flash_load_sensor_ptr();
-	Semaphore_post(spiSemHandle);
+    Semaphore_post(spiSemHandle);
 
 
-    // Flash_external_Selftest();
 
 }
 

@@ -35,6 +35,8 @@
 
 
 /***** Prototypes *****/
+void InternalFlashConfigReset(void);
+
 void InternalFlashStoreConfig(void);
 
 bool InternalFlashLoadConfig(void);

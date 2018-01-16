@@ -95,7 +95,7 @@ void SystemAppTaskFxn(void)
 	}
     else
     {
-        NodeAppHwInit();
+    	NodeAppHwInit();
     }
     
     powerMode = DEVICES_POWER_OFF;

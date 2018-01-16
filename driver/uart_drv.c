@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 10:16:16
+* @Last Modified time: 2018-01-16 16:05:47
 */
 #include "../general.h"
 
@@ -175,11 +175,4 @@ void Uart_send_string(UART_PORT uartPort, uint8_t *string)
         UART_write(uarthandle[uartPort], string++, 1);
     }
 }
-
-
-//***********************************************************************************
-//
-// UART0/1 Close.
-//
-//***********************************************************************************
 

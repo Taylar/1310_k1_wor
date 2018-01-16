@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 11:08:21
+* @Last Modified time: 2018-01-16 19:00:40
 */
 #include "../general.h"
 
@@ -98,13 +98,11 @@ void ConcenterAppInit(void)
 //***********************************************************************************
 void ConcenterAppHwInit(void)
 {
+    LedInit();
+
     Spi_init();
 
-    I2c_init();
-
     Flash_init();
-
-    LedInit();
 
     DeepTemp_FxnTable.initFxn(MAX31855_SPI_CH0);
 }
