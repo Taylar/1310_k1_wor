@@ -22,7 +22,9 @@ void InterfaceTaskCreate(void);
 
 void InterfaceSend(uint8_t * datap, uint8_t len);
 
+void InterfaceEnable(void);
 
+void InterfaceDisable(void);
 
 
 #endif			// __INTERFACE_H__

@@ -43,6 +43,10 @@ void SystemKeyEventPostIsr(void)
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0);
 }
 
+void SystemLongKeyEventPostIsr(void)
+{
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_LONG);
+}
 
 void SysTimerCb(UArg arg0)
 {
@@ -99,6 +103,8 @@ void SystemAppTaskFxn(void)
     KeyInit();
     KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
 
+    KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
+
 	RtcInit(RtcEventSet);
 
 	RtcStart();
@@ -128,6 +134,18 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
+			switch(devicesType)
+			{
+				case DEVICES_TYPE_GATEWAY:
+				ConcenterShortKeyApp();
+				break;
+
+				case DEVICES_TYPE_NODE:
+
+				break;
+			}
+
+
 			static uint8_t sleep = 1;
 			if(sleep)
 			{
@@ -146,6 +164,22 @@ void SystemAppTaskFxn(void)
 				Led_set(LED_B, 1);
 			}
 		}
+
+
+		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
+		{
+			switch(devicesType)
+			{
+				case DEVICES_TYPE_GATEWAY:
+				ConcenterLongKeyApp();
+				break;
+
+				case DEVICES_TYPE_NODE:
+				break;
+			}
+		}
+
+
 
 		if(eventId &SYSTEMAPP_EVT_INTERFACE)
 		{

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-10 20:26:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-11 10:13:42
+* @Last Modified time: 2018-01-16 10:57:00
 */
 #include "../general.h"
 #include "../app/usb_prot.h"
@@ -54,7 +54,7 @@ static uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint8_t
 //***********************************************************************************
 void Usb_data_parse(uint8_t *pData, uint16_t length)
 {
-    ErrorStatus ret;
+    // ErrorStatus ret;
     uint16_t len, size;
     Calendar calendar;
 
@@ -125,42 +125,42 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 
         case EV_Get_Bluetooth_Name:
-#ifdef SUPPORT_BLUETOOTH_PRINT
-            Btp_poweron();
-            ret = Btp_get_device_name(pData);
-            Btp_poweroff();
-            if (ret == ES_ERROR) {
-                pData[0] = 1;
-                len = Usb_group_package(AC_Ack, pData, 1);
-            } else {
-                len = Usb_group_package(AC_Send_Bluetooth_Name, pData, strlen((char *)pData));
-            }
-            InterfaceSend(pData, len);
-#endif
+// #ifdef SUPPORT_BLUETOOTH_PRINT
+//             Btp_poweron();
+//             ret = Btp_get_device_name(pData);
+//             Btp_poweroff();
+//             if (ret == ES_ERROR) {
+//                 pData[0] = 1;
+//                 len = Usb_group_package(AC_Ack, pData, 1);
+//             } else {
+//                 len = Usb_group_package(AC_Send_Bluetooth_Name, pData, strlen((char *)pData));
+//             }
+//             InterfaceSend(pData, len);
+// #endif
             break;
 
         case EV_Set_Bluetooth_Name:
-#ifdef SUPPORT_BLUETOOTH_PRINT
-            Btp_poweron();
-            pData[len - 1] = '\0';
-            if (Btp_set_device_name(&pData[3]) == ES_ERROR)
-                pData[0] = 1;
-            else
-                pData[0] = 0;
-            Btp_poweroff();
-            len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
-#endif
+// #ifdef SUPPORT_BLUETOOTH_PRINT
+//             Btp_poweron();
+//             pData[len - 1] = '\0';
+//             if (Btp_set_device_name(&pData[3]) == ES_ERROR)
+//                 pData[0] = 1;
+//             else
+//                 pData[0] = 0;
+//             Btp_poweroff();
+//             len = Usb_group_package(AC_Ack, pData, 1);
+//             InterfaceSend(pData, len);
+// #endif
             break;
 
 		case EV_Usb_Upgrade:
-#ifdef SUPPORT_USB_UPGRADE
-            pData[0] = 2;
-            len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+// #ifdef SUPPORT_USB_UPGRADE
+//             pData[0] = 2;
+//             len = Usb_group_package(AC_Ack, pData, 1);
+//             InterfaceSend(pData, len);
 
-            bslFxn();
-#endif
+//             bslFxn();
+// #endif
 			break;
 
 #ifdef FLASH_EXTERNAL

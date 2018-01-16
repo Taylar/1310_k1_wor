@@ -1,12 +1,9 @@
-//***********************************************************************************
-// Copyright 2017, Zksiot Development Ltd.
-// Created by Zhengxuntai, 2017.12.18
-// MCU:	MSP430F5529
-// OS: TI-RTOS
-// Project:
-// File name: uart_drv.c
-// Description: uart process routine.
-//***********************************************************************************
+/*
+* @Author: zxt
+* @Date:   2017-12-21 17:36:18
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-01-16 10:16:16
+*/
 #include "../general.h"
 
 /* UART Board */
@@ -178,3 +175,11 @@ void Uart_send_string(UART_PORT uartPort, uint8_t *string)
         UART_write(uarthandle[uartPort], string++, 1);
     }
 }
+
+
+//***********************************************************************************
+//
+// UART0/1 Close.
+//
+//***********************************************************************************
+

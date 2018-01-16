@@ -127,7 +127,7 @@ uint32_t InternalFlashReadNodeAddr(uint32_t nodeAddr)
 	return 0xffffffff;
 }
 
-
+const uint8_t configFlag[12] = CONFIG_VALID_FLAG;
 //***********************************************************************************
 // brief: store the config from the internal flash   
 // 
@@ -136,11 +136,29 @@ uint32_t InternalFlashReadNodeAddr(uint32_t nodeAddr)
 //***********************************************************************************
 void InternalFlashStoreConfig(void)
 {
-	FlashSectorErase(CONFIG_ADDR_INTERNAL_ADDR);
-	FlashProgram((uint8_t*)(&g_rSysConfigInfo), CONFIG_ADDR_INTERNAL_ADDR, sizeof(ConfigInfo_t));
+	FlashSectorErase(CONFIG_DATA_INTERNAL_ADDR);
+	
+	FlashProgram((uint8_t *)configFlag, CONFIG_FLAG_INTERNAL_ADDR, 12);
+	FlashProgram((uint8_t*)(&g_rSysConfigInfo), CONFIG_DATA_INTERNAL_ADDR, sizeof(ConfigInfo_t));
 }
 
+//***********************************************************************************
+// brief: load the config from the internal flash   
+// 
+// parameter: 
+//***********************************************************************************
+bool InternalFlashLoadConfig(void)
+{
+	uint8_t i;
 
+	for(i = 0; i < 12; i++)
+	{
+		if(configFlag[i] != *((uint8_t*)CONFIG_FLAG_INTERNAL_ADDR))
+			return false;
+	}
+	memcpy((uint8_t*)(&g_rSysConfigInfo), (uint8_t*)CONFIG_DATA_INTERNAL_ADDR, sizeof(ConfigInfo_t));
+	return true;
+}
 
 
 //***********************************************************************************
@@ -148,8 +166,48 @@ void InternalFlashStoreConfig(void)
 // 
 // parameter: 
 //***********************************************************************************
-void InternalFlashLoadConfig(void)
+void InternalFlashConfigReset(void)
 {
-	memcpy((uint8_t*)(&g_rSysConfigInfo), (uint8_t*)CONFIG_ADDR_INTERNAL_ADDR, sizeof(ConfigInfo_t));
-}
+	uint8_t i;
 
+    g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
+    g_rSysConfigInfo.swVersion = FW_VERSION;
+    g_rSysConfigInfo.DeviceId[0] = 0;
+    g_rSysConfigInfo.DeviceId[1] = 0;
+    g_rSysConfigInfo.DeviceId[2] = 0;
+    g_rSysConfigInfo.DeviceId[3] = 0;
+    g_rSysConfigInfo.customId[0] = 0;
+    g_rSysConfigInfo.customId[1] = 0;
+
+    g_rSysConfigInfo.status = 0;
+    g_rSysConfigInfo.module = MODULE_GSM;
+
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        g_rSysConfigInfo.sensorModule[i] = SEN_TYPE_NONE;
+        g_rSysConfigInfo.alarmTemp[i].high = ALARM_TEMP_HIGH;
+        g_rSysConfigInfo.alarmTemp[i].low = ALARM_TEMP_LOW;
+        g_rSysConfigInfo.WarningTemp[i].high = ALARM_TEMP_HIGH;
+        g_rSysConfigInfo.WarningTemp[i].low = ALARM_TEMP_LOW;
+    }
+    
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+
+
+    g_rSysConfigInfo.collectPeriod = 60;   // 1min
+
+    g_rSysConfigInfo.serverIpAddr[0] = 114;
+    g_rSysConfigInfo.serverIpAddr[1] = 215;
+    g_rSysConfigInfo.serverIpAddr[2] = 122;
+    g_rSysConfigInfo.serverIpAddr[3] = 32;
+    g_rSysConfigInfo.serverIpPort = 12200;
+
+    g_rSysConfigInfo.hbPeriod = 60;     // 1min
+    g_rSysConfigInfo.uploadPeriod = 60; // 5min
+    g_rSysConfigInfo.ntpPeriod = 24 * 60 * 60L;    // 24hour
+
+    g_rSysConfigInfo.gnssPeriod = 10;  // 10sec
+
+    g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_LOW;
+
+    g_rSysConfigInfo.apnuserpwd[0] = 0;
+}

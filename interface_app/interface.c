@@ -157,7 +157,7 @@ void InterfaceTaskFxn(void)
     interfaceEvtHandle = Event_handle(&interfaceEvtStruct);
 
     Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
-    HwInterfaceInit(INTERFACE_UART, 115200, InterfaceReceiveCb);
+    InterfaceEnable();
     Semaphore_post(interfaceSemHandle);
 
     // UartClose(UART_0);
@@ -181,5 +181,24 @@ void InterfaceTaskFxn(void)
     }
 }
 
+//***********************************************************************************
+// brief:   Enable the interface 
+// 
+// parameter: 
+// Cb:      
+//***********************************************************************************
+void InterfaceEnable(void)
+{
+    HwInterfaceInit(INTERFACE_UART, 115200, InterfaceReceiveCb);
+}
 
-
+//***********************************************************************************
+// brief:   disable the interface
+// 
+// parameter: 
+// Cb:      
+//***********************************************************************************
+void InterfaceDisable(void)
+{
+    UartClose(UART_0);
+}

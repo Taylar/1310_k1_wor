@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-11 11:55:11
+* @Last Modified time: 2018-01-16 11:20:58
 */
 #include "../general.h"
 
@@ -119,14 +119,11 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			
 			Rtc_set_calendar(&calendarTemp);
 			NodeStopBroadcast();
-			// NodeCollectStart();
+			NodeCollectStart();
 			NodeUploadStart();
 			break;
 
 			case RADIO_PRO_CMD_SYN_TIME_REQ:
-			NodeStopBroadcast();
-			NodeCollectStart();
-			NodeUploadStart();
 			break;
 
 			case RADIO_PRO_CMD_SET_PARA:
@@ -227,6 +224,9 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			
 			break;
 
+			default:
+			goto NodeDispath;
+
 		}
 
 		// point to new message the head
@@ -286,15 +286,11 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_SENSOR_DATA:
 
 			// there may be several sensordata
-			// 
-			ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
 
 			// save the data to flash
 			// updata the rssi
 			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
 
-			// ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
-			
 			if(ConcenterSensorDataSaveToQueue(bufTemp->load, bufTemp->load[0]+1) == true)
 			{
 				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
@@ -308,9 +304,12 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 
 			case RADIO_PRO_CMD_SYN_TIME_REQ:
+
+
 			// send the time
-			ConcenterRadioSendSynTime(bufTemp->dstAddr, bufTemp->srcAddr);
-			// ConcenterRadioSendParaSet(bufTemp->dstAddr, bufTemp->srcAddr);
+			if(ConcenterReadSynTimeFlag())
+				ConcenterRadioSendSynTime(bufTemp->dstAddr, bufTemp->srcAddr);
+
 			break;
 
 

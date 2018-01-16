@@ -295,7 +295,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
     			}
                 
 #ifdef FLASH_INTERNAL
-                InternalFlashStoreConfig();
+                ConcenterStoreConfig();
 #endif
                 //send ack to server
                 rNwkMsgPacket.buff[0] = rxData[10];
@@ -362,7 +362,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     calendar.hour  = rxData[index++];
                     calendar.min   = rxData[index++];
                     calendar.sec   = rxData[index++];
-    	            Rtc_set_calendar(&calendar);
+    	            ConcenterTimeSychronization(&calendar);
     	            rNwkObject.ntp = 1;
     			}
                 break;

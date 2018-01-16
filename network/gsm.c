@@ -33,7 +33,7 @@ static uint8_t Gsm_open(void);
 static uint8_t Gsm_close(void);
 static uint8_t Gsm_control(uint8_t cmd, void *arg);
 static void Gsm_error_indicate(void);
-
+static void Gsm_hwiIntCallback(uint8_t *dataP, uint8_t len);
 const Nwk_FxnTable Gsm_FxnTable = {
     Gsm_init,
     Gsm_open,
@@ -420,6 +420,8 @@ static UInt Gsm_wait_ack(uint32_t timeout)
 static void Gsm_poweron(void)
 {
     if (rGsmObject.state == GSM_STATE_POWEROFF) {
+        UartHwInit(UART_0, 38400, Gsm_hwiIntCallback);
+
         Gsm_power_ctrl(1);
         Gsm_pwrkey_ctrl(1);
         Task_sleep(200 * CLOCK_UNIT_MS);
@@ -445,6 +447,7 @@ static void Gsm_poweron(void)
 static void Gsm_poweroff(void)
 {
     if (rGsmObject.state != GSM_STATE_POWEROFF) {
+        UartClose(UART_0);
         Gsm_pwrkey_ctrl(0);
         Task_sleep(1000 * CLOCK_UNIT_MS);
         Gsm_pwrkey_ctrl(1);
@@ -1375,7 +1378,7 @@ static void Gsm_init(Nwk_Params *params)
     Gsm_io_init();
 
     //Init UART.
-    UartHwInit(UART_0, 38400, Gsm_hwiIntCallback);
+    // UartHwInit(UART_0, 38400, Gsm_hwiIntCallback);
 
     rGsmObject.isOpen = 0;
     rGsmObject.actPDPCnt = 0;

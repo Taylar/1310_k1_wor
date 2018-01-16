@@ -46,5 +46,17 @@ void ConcenterShortKeyApp(void);
 
 void ConcenterLongKeyApp(void);
 
+void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr);
+
+void ConcenterSleep(void);
+
+void ConcenterWakeup(void);
+
+void ConcenterStoreConfig(void);
+
+void ConcenterTimeSychronization(Calendar *currentTime);
+
+uint8_t ConcenterReadSynTimeFlag(void);
+
 
 #endif			// _CONCENTERAPP_H__

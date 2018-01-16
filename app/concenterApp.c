@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-12 17:19:03
+* @Last Modified time: 2018-01-16 11:08:21
 */
 #include "../general.h"
 
@@ -24,26 +24,25 @@
 /***** Type declarations *****/
 typedef struct 
 {
-    uint32_t nodeCollectPeriod;
-    uint32_t nodeUploadPeriod;
-    uint32_t uploadNetPeriod;
-    uint32_t nodeNum;
+    uint32_t channelDispath;
+    
+    bool  configFlag;    // 0: unload the config; 1: has load the config
+    bool  synTimeFlag;    // 0: unsyntime; 1: synchron time
+
 }concenter_para_t;
 
-// static concenter_para_t concenterParameter;
+
 
 
 
 /***** Variable declarations *****/
 
+concenter_para_t concenterParameter;
 
 
 /* Clock for node period collect */
 static Clock_Struct concenterUploadClock;     /* not static so you can see in ROV */
 static Clock_Handle concenterUploadClockHandle;
-
-
-uint32_t concenterChannelDispath;
 
 
 extflash_queue_s extflashWriteQ;
@@ -79,7 +78,9 @@ void ConcenterAppInit(void)
     Clock_construct(&concenterUploadClock, ConcenterUploadTimerCb, 1, &clkParams);
     concenterUploadClockHandle = Clock_handle(&concenterUploadClock);
 
-    concenterChannelDispath  = 0;
+    concenterParameter.channelDispath = 0;
+    concenterParameter.configFlag     = 0;
+    concenterParameter.synTimeFlag = InternalFlashLoadConfig();
 
     InternalFlashInit();
 
@@ -99,9 +100,9 @@ void ConcenterAppHwInit(void)
 {
     Spi_init();
 
-    // Flash_init();
+    I2c_init();
 
-
+    Flash_init();
 
     LedInit();
 
@@ -209,12 +210,6 @@ void ConcenterSensorDataUpload(void)
 }       
 
 
-void ConcenterStoreParameter(uint8_t *dataP, uint8_t length)
-{
-    
-}
-
-
 //***********************************************************************************
 // brief: seach the Node parameter setting table to updata the specify node parasetting
 // 
@@ -237,7 +232,6 @@ void ConcenterUpdataNodeSetting(uint32_t srcAddr, uint32_t dstAddr)
 void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 {
     // search the table to clear the special node parameter seeting 
-
 }
 
 
@@ -262,6 +256,7 @@ void ConcenterSleep(void)
     Nwk_poweroff();
     EasyLink_abort();
     RadioFrontDisable();
+    powerMode = DEVICES_POWER_OFF;
 }
 
 //***********************************************************************************
@@ -271,10 +266,14 @@ void ConcenterSleep(void)
 //***********************************************************************************
 void ConcenterWakeup(void)
 {
-    RadioFrontRxEnable();
-    Nwk_poweron();
-    RadioFrontRxEnable();
-    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+    powerMode = DEVICES_POWER_ON;
+    if(concenterParameter.configFlag)
+    {
+        RadioFrontRxEnable();
+        Nwk_poweron();
+        RadioFrontRxEnable();
+        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+    }
 }
 
 
@@ -285,8 +284,8 @@ void ConcenterWakeup(void)
 //***********************************************************************************
 void ConcenterSaveChannel(uint32_t nodeAddr)
 {
-    if(InternalFlashSaveNodeAddr(nodeAddr, &concenterChannelDispath))
-        concenterChannelDispath++;
+    if(InternalFlashSaveNodeAddr(nodeAddr, &concenterParameter.channelDispath))
+        concenterParameter.channelDispath++;
 }
 
 //***********************************************************************************
@@ -308,7 +307,16 @@ uint32_t ConcenterReadChannel(uint32_t nodeAddr)
 //***********************************************************************************
 void ConcenterShortKeyApp(void)
 {
-    
+    switch(powerMode)
+    {
+        case DEVICES_POWER_ON:
+        Led_ctrl(LED_B, 1, 500, 1);
+        break;
+
+        case DEVICES_POWER_OFF:
+        Led_ctrl(LED_R, 1, 500, 1);
+        break;
+    }
 }
 
 //***********************************************************************************
@@ -318,5 +326,51 @@ void ConcenterShortKeyApp(void)
 //***********************************************************************************
 void ConcenterLongKeyApp(void)
 {
-    
+    switch(powerMode)
+    {
+        case DEVICES_POWER_ON:
+        ConcenterSleep();
+        Led_ctrl(LED_R, 1, 250, 6);
+        break;
+
+        case DEVICES_POWER_OFF:
+        Led_ctrl(LED_B, 1, 250, 6);
+        ConcenterWakeup();
+        break;
+    }
 }
+
+//***********************************************************************************
+// brief:save the config to internal flash
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterStoreConfig(void)
+{
+    InternalFlashStoreConfig();
+    concenterParameter.configFlag   = 1;
+}
+
+//***********************************************************************************
+// brief:
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterTimeSychronization(Calendar *currentTime)
+{
+    Rtc_set_calendar(currentTime);
+    concenterParameter.synTimeFlag  = 1;
+}
+
+//***********************************************************************************
+// brief:
+// 
+// parameter: 
+//***********************************************************************************
+uint8_t ConcenterReadSynTimeFlag(void)
+{
+    return concenterParameter.synTimeFlag;
+}
+
+
+

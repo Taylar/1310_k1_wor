@@ -295,6 +295,7 @@ typedef struct {
 #include "easylink/EasyLink.h"
 #include "network/network.h"
 #include "easylink/radio_front.h"
+#include "app/concenterApp.h"
 //***********************************************************************************
 //
 //	Global variable define
@@ -304,6 +305,7 @@ extern ConfigInfo_t g_rSysConfigInfo;
 
 extern uint8_t devicesType;
 
+extern uint8_t powerMode;
 
 #endif	/* __ZKSIOT_GENERAL_H__ */
 

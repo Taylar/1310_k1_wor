@@ -60,15 +60,15 @@ int main(void)
     /* Call driver init functions. */
     Board_initGeneral();
 
-    //InternalFlashStoreConfig();
-    devicesType = DEVICES_TYPE_NODE;
+    // InternalFlashLoadConfig();
+    // devicesType = DEVICES_TYPE_NODE;
 
-    // devicesType = DEVICES_TYPE_GATEWAY;
+    devicesType = DEVICES_TYPE_GATEWAY;
 
     if(devicesType == DEVICES_TYPE_GATEWAY)
     {
         Nwk_task_create();
-        // InterfaceTaskCreate();
+        InterfaceTaskCreate();
     }
     
     /* Initialize radio tasks */

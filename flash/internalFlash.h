@@ -8,7 +8,10 @@
 
 
 /***** Defines *****/
-#define 	CONFIG_ADDR_INTERNAL_ADDR			(0x1d000)  // start 116k position
+// g_rSysConfigInfo
+#define 	CONFIG_VALID_FLAG					"valid config"
+#define 	CONFIG_FLAG_INTERNAL_ADDR			(0x1d000)  // start 116k position
+#define 	CONFIG_DATA_INTERNAL_ADDR			(0x1d000 + 0x20)  // 
 
 
 
@@ -34,7 +37,7 @@
 /***** Prototypes *****/
 void InternalFlashStoreConfig(void);
 
-void InternalFlashLoadConfig(void);
+bool InternalFlashLoadConfig(void);
 
 void InternalFlashInit(void);
 

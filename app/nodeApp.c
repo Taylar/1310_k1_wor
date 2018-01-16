@@ -18,6 +18,8 @@ typedef struct
     uint32_t customId;
     uint16_t serialNum;
     bool     broadcasting;
+    bool     configFlag;
+    bool     synTimeFlag;
 }node_para_t;
 
 static node_para_t nodeParameter;
@@ -73,6 +75,9 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.collectPeriod = NODE_BROADCASTING_TIME;
     nodeParameter.broadcasting  = true;
     nodeParameter.customId      = DEFAULT_DST_ADDR;
+
+    nodeParameter.synTimeFlag   = false;
+    nodeParameter.configFlag    = InternalFlashLoadConfig();
 
     SetRadioSrcAddr(0x87654321);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
@@ -166,49 +171,22 @@ void NodeUploadProcess(void)
     uint8_t     data[24];
     uint32_t    dataItems;
     uint8_t     offsetUnit;
-    //reverse the buf to other command
-    // offsetUnit = 0;
-    // dataItems  = Flash_get_unupload_items();
+    // reverse the buf to other command
+    offsetUnit = 0;
+    dataItems  = Flash_get_unupload_items();
     
-    // while(dataItems)
-    // {
-    //     Flash_load_sensor_data(data, 22, dataItems);
+    while(dataItems)
+    {
+        Flash_load_sensor_data(data, 22, dataItems);
 
-    //     // the radio buf is full 
-    //     if(NodeRadioSendSensorData(data, 22) == false)
-    //     {
-    //         return;
-    //     }
-    //     dataItems--;
-    //     offsetUnit++;
-    // }
-
-// for zxttest
-    uint32_t temp;
-    data[0] = 21;
-    // rssi
-    data[1] = 0;
-    // deceive ID
-    temp    = GetRadioSrcAddr();
-    data[2] = (uint8_t)(temp>>24);
-    data[3] = (uint8_t)(temp>>16);
-    data[4] = (uint8_t)(temp>>8);
-    data[5] = (uint8_t)(temp);
-    
-    // serial num
-    data[6] = (uint8_t)(nodeParameter.serialNum>>8);
-    data[7] = (uint8_t)nodeParameter.serialNum;
-    
-
-
-    // voltage
-    temp     = AONBatMonBatteryVoltageGet();
-    temp     = ((temp&0xff00)>>8)*1000 +1000*(temp&0xff)/256;
-    data[14] = (uint8_t)(temp >> 8);
-    data[15] = (uint8_t)(temp);
-
-    NodeRadioSendSensorData(data, 22);
-
+        // the radio buf is full 
+        if(NodeRadioSendSensorData(data, 22) == false)
+        {
+            return;
+        }
+        dataItems--;
+        offsetUnit++;
+    }
 }
 //***********************************************************************************
 // brief:   when the sensor data upload fail, needn't do everything
@@ -237,6 +215,8 @@ void NodeUploadSucessProcess(void)
 //***********************************************************************************
 void NodeCollectStart(void)
 {
+    nodeParameter.synTimeFlag = true;
+    
     if(Clock_isActive(nodeCollectPeriodClockHandle) == false)
         Clock_start(nodeCollectPeriodClockHandle);
 }
@@ -335,7 +315,7 @@ void NodeCollectProcess(void)
     data[20] = (uint8_t)(temp >> 8);
     data[21] = (uint8_t)(temp);
 
-    // Flash_store_sensor_data(data, data[0]+1);
+    Flash_store_sensor_data(data, data[0]+1);
 
     nodeParameter.serialNum++;
 }
@@ -425,8 +405,15 @@ void NodeSleep(void)
 void NodeWakeup(void)
 {
     NodeStrategyReset();
-    NodeStartBroadcast();
-    NodeBroadcasting();
+    if(nodeParameter.configFlag)
+    {
+        NodeStartBroadcast();
+        NodeBroadcasting();
+        if(nodeParameter.synTimeFlag)
+        {
+            NodeCollectStart();
+        }
+    }
 }
 
 //***********************************************************************************
@@ -447,7 +434,16 @@ void NodeSetCustomId(uint32_t id)
 //***********************************************************************************
 void NodeShortKeyApp(void)
 {
+    switch(powerMode)
+    {
+        case DEVICES_POWER_ON:
+        Led_ctrl(LED_B, 1, 500, 1);
+        break;
 
+        case DEVICES_POWER_OFF:
+        Led_ctrl(LED_R, 1, 500, 1);
+        break;
+    }
 }
 
 //***********************************************************************************
@@ -457,5 +453,28 @@ void NodeShortKeyApp(void)
 //***********************************************************************************
 void NodeLongKeyApp(void)
 {
-    
+    switch(powerMode)
+    {
+        case DEVICES_POWER_ON:
+        NodeSleep();
+        Led_ctrl(LED_R, 1, 250, 6);
+        break;
+
+        case DEVICES_POWER_OFF:
+        Led_ctrl(LED_B, 1, 250, 6);
+        NodeWakeup();
+        break;
+    }
+}
+
+//***********************************************************************************
+// brief:Request the config and send the current config to configer
+// 
+// parameter: 
+//***********************************************************************************
+void NodeRequestConfig(void)
+{
+
+    // send the request
+   // RadioSendPacket()
 }
