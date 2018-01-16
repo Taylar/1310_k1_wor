@@ -153,7 +153,7 @@ bool InternalFlashLoadConfig(void)
 
 	for(i = 0; i < 12; i++)
 	{
-		if(configFlag[i] != *((uint8_t*)CONFIG_FLAG_INTERNAL_ADDR))
+		if(configFlag[i] != *((uint8_t*)(CONFIG_FLAG_INTERNAL_ADDR+i)))
 			return false;
 	}
 	memcpy((uint8_t*)(&g_rSysConfigInfo), (uint8_t*)CONFIG_DATA_INTERNAL_ADDR, sizeof(ConfigInfo_t));

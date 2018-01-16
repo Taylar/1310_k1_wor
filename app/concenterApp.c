@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 19:00:40
+* @Last Modified time: 2018-01-16 20:45:26
 */
 #include "../general.h"
 
@@ -79,8 +79,8 @@ void ConcenterAppInit(void)
     concenterUploadClockHandle = Clock_handle(&concenterUploadClock);
 
     concenterParameter.channelDispath = 0;
-    concenterParameter.configFlag     = 0;
-    concenterParameter.synTimeFlag = InternalFlashLoadConfig();
+    concenterParameter.synTimeFlag    = 0;
+    concenterParameter.configFlag     = InternalFlashLoadConfig();
 
     InternalFlashInit();
 
@@ -308,11 +308,11 @@ void ConcenterShortKeyApp(void)
     switch(powerMode)
     {
         case DEVICES_POWER_ON:
-        Led_ctrl(LED_B, 1, 500, 1);
+        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_POWER_OFF:
-        Led_ctrl(LED_R, 1, 500, 1);
+        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
 }
@@ -328,11 +328,11 @@ void ConcenterLongKeyApp(void)
     {
         case DEVICES_POWER_ON:
         ConcenterSleep();
-        Led_ctrl(LED_R, 1, 250, 6);
+        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         break;
 
         case DEVICES_POWER_OFF:
-        Led_ctrl(LED_B, 1, 250, 6);
+        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         ConcenterWakeup();
         break;
     }

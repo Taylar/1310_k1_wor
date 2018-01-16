@@ -144,25 +144,6 @@ void SystemAppTaskFxn(void)
 
 				break;
 			}
-
-
-			static uint8_t sleep = 1;
-			if(sleep)
-			{
-				sleep = !sleep;
-				Led_set(LED_R, 0);
-				Led_set(LED_G, 0);
-				Led_set(LED_B, 0);
-				// NodeWakeup();
-			}
-			else
-			{
-				sleep = !sleep;
-				// NodeSleep();
-				Led_set(LED_R, 1);
-				Led_set(LED_G, 1);
-				Led_set(LED_B, 1);
-			}
 		}
 
 
