@@ -4,7 +4,7 @@
 #include "../app/concenterApp.h"
 
 /***** Defines *****/
-#define         SYSTEM_APP_STACK_SIZE        1024
+#define         SYSTEM_APP_STACK_SIZE        768
 
 // **************************************************************************
 

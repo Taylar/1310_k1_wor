@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 19:35:42
+* @Last Modified time: 2018-01-18 14:59:59
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -15,7 +15,7 @@
 
 
 /***** Defines *****/
-#define PASSRADIO_TASK_STACK_SIZE 1024
+#define PASSRADIO_TASK_STACK_SIZE 768
 #define PASSRADIO_TASK_PRIORITY   3
 
 

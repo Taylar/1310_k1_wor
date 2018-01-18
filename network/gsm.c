@@ -1408,17 +1408,17 @@ static void Gsm_event_post(UInt event)
 static void GsmRxToutCb(UArg arg0)
 {
     UInt key;
-    uint8_t i;
+    // uint8_t i;
     
     /* Disable preemption. */
     key = Hwi_disable();
 
     memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0IsrRxData.length);
-    for (i = 0; i < uart0IsrRxData.length; ++i)
-    {
-        System_printf("%c", uart0IsrRxData.buff[i]);
-    }
-    System_printf("end\n");
+    // for (i = 0; i < uart0IsrRxData.length; ++i)
+    // {
+    //     System_printf("%c", uart0IsrRxData.buff[i]);
+    // }
+    // System_printf("end\n");
 
     uart0RxData.length    = uart0IsrRxData.length;
     uart0IsrRxData.length = 0;

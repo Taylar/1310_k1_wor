@@ -77,7 +77,7 @@ typedef struct {
 #define NWK_EVT_ALL                 0xffff
 
 
-#define NWKTASKSTACKSIZE           768
+#define NWKTASKSTACKSIZE           1536
 
 static Task_Struct nwkTaskStruct;
 static uint8_t nwkTaskStack[NWKTASKSTACKSIZE];
