@@ -188,6 +188,7 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_SENDPORT)
             {
+                Led_toggle(LED_G);
                 NodeProtocalDispath(&radioRxPacket);
             }
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-11 10:34:13
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-11 11:21:04
+* @Last Modified time: 2018-01-18 17:49:18
 */
 #include "../general.h"
 
@@ -36,7 +36,7 @@ void ExtflashRingQueueInit(extflash_queue_s * p_queue)
 //***********************************************************************************
 bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
 {  
-    if(ExtflashRingQueueIsEmpty(p_queue))  
+    if(ExtflashRingQueueIsFull(p_queue))
     {  
         return false;  
     }  

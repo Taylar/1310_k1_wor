@@ -77,7 +77,7 @@ typedef struct {
 #define NWK_EVT_ALL                 0xffff
 
 
-#define NWKTASKSTACKSIZE           1536
+#define NWKTASKSTACKSIZE           1024
 
 static Task_Struct nwkTaskStruct;
 static uint8_t nwkTaskStack[NWKTASKSTACKSIZE];
@@ -430,12 +430,12 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
             case NMI_RX_NTP:
                 index = NWK_MSG_BODY_START;
                 if((index + 6) <= package_length) {
-                    calendar.year  = rxData[index++] + CALENDAR_BASE_YEAR;
-                    calendar.month = rxData[index++];
-                    calendar.day   = rxData[index++];
-                    calendar.hour  = rxData[index++];
-                    calendar.min   = rxData[index++];
-                    calendar.sec   = rxData[index++];
+                    calendar.year  = TransBcdToHex(rxData[index++]) + CALENDAR_BASE_YEAR;
+                    calendar.month = TransBcdToHex(rxData[index++]);
+                    calendar.day   = TransBcdToHex(rxData[index++]);
+                    calendar.hour  = TransBcdToHex(rxData[index++]);
+                    calendar.min   = TransBcdToHex(rxData[index++]);
+                    calendar.sec   = TransBcdToHex(rxData[index++]);
     	            ConcenterTimeSychronization(&calendar);
     	            rNwkObject.ntp = 1;
     			}
@@ -670,6 +670,13 @@ void Nwk_upload_time_isr(void)
         }
     }
 }
+
+
+void Nwk_upload_data(void)
+{
+    Nwk_event_post(NWK_EVT_DATA_UPLOAD);
+}
+
 
 //***********************************************************************************
 //

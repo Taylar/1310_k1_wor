@@ -3,7 +3,7 @@
 #include "interface.h"
 
 /***** Defines *****/
-#define         INTERFACE_STACK_SIZE        256
+#define         INTERFACE_STACK_SIZE        512
 
 #define         INTERFACE_REC_TIMEOUT_MS    3
 // **************************************************************************

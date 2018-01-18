@@ -67,6 +67,7 @@ extern void Nwk_poweron(void);
 extern void Nwk_poweroff(void);
 extern uint8_t Nwk_get_rssi(void);
 extern void Nwk_get_simccid(uint8_t *pBuff);
+extern void Nwk_upload_data(void);
 
 #endif	/* __ZKSIOT_NETWORK_H__ */
 

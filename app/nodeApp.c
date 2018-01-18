@@ -16,6 +16,7 @@ typedef struct
     uint32_t collectPeriod;         // the unit is sec
     uint32_t uploadPeriod;          // the unit is sec
     uint32_t customId;
+    uint32_t deceive;
     uint16_t serialNum;
     bool     broadcasting;
     bool     configFlag;
@@ -73,14 +74,31 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.serialNum     = 0;
     nodeParameter.uploadPeriod  = NODE_BROADCASTING_TIME;
     nodeParameter.collectPeriod = NODE_BROADCASTING_TIME;
-    nodeParameter.broadcasting  = true;
     nodeParameter.customId      = DEFAULT_DST_ADDR;
 
     nodeParameter.synTimeFlag   = false;
     nodeParameter.configFlag    = InternalFlashLoadConfig();
+    nodeParameter.configFlag    = true;
+
+    if(nodeParameter.configFlag)
+    {
+        // nodeParameter.uploadPeriod  = g_rSysConfigInfo.uploadPeriod;
+        // nodeParameter.collectPeriod = g_rSysConfigInfo.collectPeriod;
+        // nodeParameter.customId      = 0xffff | *((uint16_t*)g_rSysConfigInfo.customId);
+        // nodeParameter.deceive      = *((uint32_t *)g_rSysConfigInfo.DeviceId);
+
+        // SetRadioSrcAddr(nodeParameter.deceive);
+    }
+    else
+    {
+        nodeParameter.uploadPeriod  = NODE_BROADCASTING_TIME;
+        nodeParameter.collectPeriod = NODE_BROADCASTING_TIME;
+        nodeParameter.customId      = DEFAULT_DST_ADDR;
+    }
 
     SetRadioSrcAddr(0x87654321);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
+
     Clock_Params clkParams;
     Clock_Params_init(&clkParams);
     clkParams.period    = 0;
@@ -285,12 +303,12 @@ void NodeCollectProcess(void)
     data[7] = (uint8_t)nodeParameter.serialNum;
     
     // collect time
-    data[8] = (uint8_t)(calendarTemp.year - 2000);
-    data[9] = (uint8_t)(calendarTemp.month);
-    data[10] = (uint8_t)(calendarTemp.day);
-    data[11] = (uint8_t)(calendarTemp.hour);
-    data[12] = (uint8_t)(calendarTemp.min);
-    data[13] = (uint8_t)(calendarTemp.sec);
+    data[8] = TransHexToBcd((uint8_t)(calendarTemp.year - 2000));
+    data[9] = TransHexToBcd((uint8_t)(calendarTemp.month));
+    data[10] = TransHexToBcd((uint8_t)(calendarTemp.day));
+    data[11] = TransHexToBcd((uint8_t)(calendarTemp.hour));
+    data[12] = TransHexToBcd((uint8_t)(calendarTemp.min));
+    data[13] = TransHexToBcd((uint8_t)(calendarTemp.sec));
 
     // voltage
     temp     = AONBatMonBatteryVoltageGet();
@@ -394,6 +412,7 @@ void NodeSleep(void)
     NodeCollectStop();
     NodeUploadStop();
     NodeStrategyStop();
+    powerMode = DEVICES_POWER_OFF;
 }
 
 //***********************************************************************************
@@ -403,6 +422,7 @@ void NodeSleep(void)
 //***********************************************************************************
 void NodeWakeup(void)
 {
+    powerMode = DEVICES_POWER_ON;
     NodeStrategyReset();
     if(nodeParameter.configFlag)
     {
@@ -436,11 +456,11 @@ void NodeShortKeyApp(void)
     switch(powerMode)
     {
         case DEVICES_POWER_ON:
-        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_B, 0, 500 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_POWER_OFF:
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_R, 0, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
 }
@@ -456,11 +476,11 @@ void NodeLongKeyApp(void)
     {
         case DEVICES_POWER_ON:
         NodeSleep();
-        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl(LED_R, 0, 250 * CLOCK_UNIT_MS, 6);
         break;
 
         case DEVICES_POWER_OFF:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl(LED_B, 0, 250 * CLOCK_UNIT_MS, 6);
         NodeWakeup();
         break;
     }

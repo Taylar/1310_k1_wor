@@ -141,7 +141,7 @@ void SystemAppTaskFxn(void)
 				break;
 
 				case DEVICES_TYPE_NODE:
-
+				NodeShortKeyApp();
 				break;
 			}
 		}
@@ -156,6 +156,7 @@ void SystemAppTaskFxn(void)
 				break;
 
 				case DEVICES_TYPE_NODE:
+				NodeLongKeyApp();
 				break;
 			}
 		}
@@ -202,7 +203,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_NET_UPLOAD)
 		{
-
+			Nwk_upload_data();
 		}
 
 		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-18 10:06:54
+* @Last Modified time: 2018-01-18 16:42:58
 */
 #include "../general.h"
 
@@ -273,6 +273,7 @@ void ConcenterWakeup(void)
         Nwk_poweron();
         RadioFrontRxEnable();
         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+        RadioModeSet(RADIOMODE_RECEIVEPORT);
     }
 }
 

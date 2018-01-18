@@ -55,6 +55,8 @@ extern uint16_t CRC16(uint8_t *pData,  uint16_t length);
 extern uint8_t CheckCode8(uint8_t *pData,  uint16_t length);
 extern ErrorStatus EnQueue(QueueDef *queue, uint8_t *obj);
 extern ErrorStatus DeQueue(QueueDef *queue, uint8_t *obj);
+extern uint8_t TransHexToBcd(uint8_t hex);
+extern uint8_t TransBcdToHex(uint8_t bcd);
 
 #endif	/* __ZKSIOT_FUNCTION_H__ */
 
