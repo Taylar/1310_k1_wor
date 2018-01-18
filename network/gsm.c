@@ -13,7 +13,7 @@
 #include "gsm.h"
 
 
-#define     GSM_TIMEOUT_MS          3
+#define     GSM_TIMEOUT_MS          20
 
 #define GSM_POWER_PIN               IOID_2
 #define GSM_KEY_PIN                 IOID_3
@@ -1352,6 +1352,9 @@ static void Gsm_hwiIntCallback(uint8_t *dataP, uint8_t len)
         datapLen++;
         uart0IsrRxData.length++;
 
+        if(uart0IsrRxData.length < 2)
+            continue;
+
         if(Clock_isActive(gsmTimeOutClockHandle))
         {
             Clock_stop(gsmTimeOutClockHandle);
@@ -1404,10 +1407,24 @@ static void Gsm_event_post(UInt event)
 //***********************************************************************************
 static void GsmRxToutCb(UArg arg0)
 {
+    UInt key;
+    uint8_t i;
+    
+    /* Disable preemption. */
+    key = Hwi_disable();
 
     memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0IsrRxData.length);
+    for (i = 0; i < uart0IsrRxData.length; ++i)
+    {
+        System_printf("%c", uart0IsrRxData.buff[i]);
+    }
+    System_printf("end\n");
+
     uart0RxData.length    = uart0IsrRxData.length;
     uart0IsrRxData.length = 0;
+
+    Hwi_restore(key);
+
     Swi_post(gsmRxSwiHandle);
 }
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 09:42:21
+* @Last Modified time: 2018-01-18 11:11:29
 */
 #include "../general.h"
 
@@ -103,7 +103,6 @@ void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
         PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], state);
         Task_sleep(period);
         PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], !state);
-        GPIO_toggle(ledId);
     }
 
     /* Unlock resource */
