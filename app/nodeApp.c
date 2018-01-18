@@ -82,6 +82,7 @@ void NodeAppInit(void (*Cb)(void))
     SetRadioSrcAddr(0x87654321);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
     Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
     clkParams.period    = 0;
     clkParams.startFlag = FALSE;
     Clock_construct(&nodeUploadPeriodClock, NodeUploadPeriodCb, 1, &clkParams);
@@ -108,8 +109,6 @@ void NodeAppInit(void (*Cb)(void))
 //***********************************************************************************
 void NodeAppHwInit(void)
 {
-    LedInit();
-
     Spi_init();
 
     I2c_init();

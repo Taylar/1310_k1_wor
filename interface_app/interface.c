@@ -3,7 +3,7 @@
 #include "interface.h"
 
 /***** Defines *****/
-#define         INTERFACE_STACK_SIZE        1024
+#define         INTERFACE_STACK_SIZE        768
 
 #define         INTERFACE_REC_TIMEOUT_MS    3
 // **************************************************************************
@@ -85,7 +85,7 @@ uint32_t HwInterfaceInit(INTERFACE_TYPE type, uint32_t baudRate, UART_CB_T cb)
     switch(type)
     {
         case INTERFACE_UART:
-        UartSoftInit(baudRate, cb);
+        UartSoftInit(baudRate, cb, UART_INTERFACE);
         break;
 
         case INTERFACE_SPI:
@@ -124,6 +124,7 @@ void InterfaceTaskCreate(void)
 
     /* Create clock object which is used for fast report timeout */
     Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
     clkParams.period = 0;
     clkParams.startFlag = FALSE;
     Clock_construct(&interfaceRecTimeoutClock, InterfaceRecTimeroutCb, 1, &clkParams);

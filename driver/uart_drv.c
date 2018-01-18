@@ -2,15 +2,17 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 16:05:47
+* @Last Modified time: 2018-01-17 19:40:40
 */
 #include "../general.h"
 
 /* UART Board */
-#define CC1310_LAUNCHXL_UART_RX               IOID_5          /* RXD */
-#define CC1310_LAUNCHXL_UART_TX               IOID_4          /* TXD */
-#define CC1310_LAUNCHXL_UART_CTS              IOID_19         /* CTS */
-#define CC1310_LAUNCHXL_UART_RTS              IOID_18         /* RTS */
+#define UART_RX_INTERFACE               IOID_23          /* RXD */
+#define UART_TX_INTERFACE               IOID_8          /* TXD */
+
+#define UART_RX_GSM                     IOID_5          /* RXD */
+#define UART_TX_GSM                     IOID_4          /* TXD */
+
 
 /*
  *  =============================== UART ===============================
@@ -21,25 +23,40 @@
 
 UARTCC26XX_Object uartCC26XXObjects[CC1310_LAUNCHXL_UARTCOUNT];
 
-const UARTCC26XX_HWAttrsV2 uartCC26XXHWAttrs[CC1310_LAUNCHXL_UARTCOUNT] = {
+const UARTCC26XX_HWAttrsV2 uartCC26XXHWAttrs_Gsm[CC1310_LAUNCHXL_UARTCOUNT] = {
     {
         .baseAddr       = UART0_BASE,
         .powerMngrId    = PowerCC26XX_PERIPH_UART0,
         .intNum         = INT_UART0_COMB,
         .intPriority    = ~0,
         .swiPriority    = 0,
-        .txPin          = CC1310_LAUNCHXL_UART_TX,
-        .rxPin          = CC1310_LAUNCHXL_UART_RX,
+        .txPin          = UART_TX_GSM,
+        .rxPin          = UART_RX_GSM,
         .ctsPin         = PIN_UNASSIGNED,
         .rtsPin         = PIN_UNASSIGNED
     }
 };
 
-const UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
+const UARTCC26XX_HWAttrsV2 uartCC26XXHWAttrs_Interface[CC1310_LAUNCHXL_UARTCOUNT] = {
+    {
+        .baseAddr       = UART0_BASE,
+        .powerMngrId    = PowerCC26XX_PERIPH_UART0,
+        .intNum         = INT_UART0_COMB,
+        .intPriority    = ~0,
+        .swiPriority    = 0,
+        .txPin          = UART_TX_INTERFACE,
+        .rxPin          = UART_RX_INTERFACE,
+        .ctsPin         = PIN_UNASSIGNED,
+        .rtsPin         = PIN_UNASSIGNED
+    }
+};
+
+
+UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
     {
         .fxnTablePtr = &UARTCC26XX_fxnTable,
         .object      = &uartCC26XXObjects[CC1310_LAUNCHXL_UART0],
-        .hwAttrs     = &uartCC26XXHWAttrs[CC1310_LAUNCHXL_UART0]
+        .hwAttrs     = &uartCC26XXHWAttrs_Gsm[CC1310_LAUNCHXL_UART0]
     },
 };
 
@@ -47,17 +64,41 @@ const UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
 const uint_least8_t UART_count = CC1310_LAUNCHXL_UARTCOUNT;
 
 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
+static UART_Handle      uarthandle[CC1310_LAUNCHXL_UARTCOUNT];
+
+
+const PIN_Config uart_pin_interface[] = {
+    UART_TX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
+    UART_RX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
+    PIN_TERMINATE
+};
+
+const PIN_Config uart_pin_gsm[] = {
+    UART_TX_GSM | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_DIS,       /* gsm uart set as input          */
+    UART_RX_GSM | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_DIS,       /* gsm uart set as input          */
+    PIN_TERMINATE
+};
+
+
+
+// 
+static PIN_State   interfacePortState, gsmPortState;
+static PIN_Handle  interfacePortHandle, gsmPortHandle;
+
+/***************************************************************************/
+
+
+// variable
+static uint8_t recBuf[32];          //1310 hardware uart rec len is 16 which take from testing
+static void (*Uart0IsrCb)(uint8_t *databuf, uint8_t len);
 
 UartRxData_t     uart0RxData;
 UartRxData_t     uart0IsrRxData;
 UartRxData_t     uart0TxData;
 
 
-/***************************************************************************/
-
-static UART_Handle      uarthandle[CC1310_LAUNCHXL_UARTCOUNT];
-static uint8_t recBuf[32];          //1310 hardware uart rec len is 16 which take from testing
-static void (*Uart0IsrCb)(uint8_t *databuf, uint8_t len);
 void uart0Isr(void)
 {
     uint32_t               intStatus;
@@ -85,19 +126,31 @@ void uart0Isr(void)
 }
 
 
-uint8_t testkk[20] = "text zxt";
 //***********************************************************************************
 //
 // UART0/1 init, use USCI_A0/1.
 //
 //***********************************************************************************
-void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb)
+void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t type)
 {
 
     if (uartPort >= UART_MAX) {
         return;
     }
 
+    UartClose(uartPort);
+
+    // UartPortEnable(type);
+
+    if(type == UART_GSM)
+    {
+        UART_config[uartPort].hwAttrs     = &uartCC26XXHWAttrs_Gsm[uartPort];
+    }
+
+    if(type == UART_INTERFACE)
+    {
+        UART_config[uartPort].hwAttrs     = &uartCC26XXHWAttrs_Interface[uartPort];
+    }
 
     UART_init();
 
@@ -135,8 +188,12 @@ void UartClose(UART_PORT uartPort)
         return;
     }
 
-    UART_readCancel(uarthandle[CC1310_LAUNCHXL_UART0]);
-    UART_close(uarthandle[uartPort]);
+    if(uarthandle[uartPort])
+    {
+        UART_readCancel(uarthandle[uartPort]);
+        UART_close(uarthandle[uartPort]);
+        uarthandle[uartPort] = NULL;
+    }
 }
 
 
@@ -174,5 +231,43 @@ void Uart_send_string(UART_PORT uartPort, uint8_t *string)
     while (*string != '\0') {
         UART_write(uarthandle[uartPort], string++, 1);
     }
+}
+
+
+
+void UartPortDisable(uint8_t type)
+{
+    if(type == UART_INTERFACE)
+    {
+        interfacePortHandle = PIN_open(&interfacePortState, uart_pin_interface);
+    }
+
+    if(type == UART_GSM)
+    {
+        gsmPortHandle = PIN_open(&gsmPortState, uart_pin_gsm);
+    }
+}
+
+
+void UartPortEnable(uint8_t type)
+{
+    if(type == UART_INTERFACE)
+    {
+        if(interfacePortHandle)
+            PIN_close(interfacePortHandle);
+
+
+        interfacePortHandle = NULL;
+    }
+
+
+    if(type == UART_GSM)
+    {
+        if(gsmPortHandle)
+            PIN_close(gsmPortHandle);
+     
+        gsmPortHandle       = NULL;
+    }
+
 }
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 20:45:26
+* @Last Modified time: 2018-01-18 10:06:54
 */
 #include "../general.h"
 
@@ -72,7 +72,7 @@ static void ConcenterUploadTimerCb(UArg arg0)
 void ConcenterAppInit(void)
 {
     Clock_Params clkParams;
-
+    Clock_Params_init(&clkParams);
     clkParams.period    = 0;
     clkParams.startFlag = FALSE;
     Clock_construct(&concenterUploadClock, ConcenterUploadTimerCb, 1, &clkParams);
@@ -98,7 +98,6 @@ void ConcenterAppInit(void)
 //***********************************************************************************
 void ConcenterAppHwInit(void)
 {
-    LedInit();
 
     Spi_init();
 
@@ -251,9 +250,12 @@ void ConcenterUploadEventSet(void)
 //***********************************************************************************
 void ConcenterSleep(void)
 {
-    Nwk_poweroff();
-    EasyLink_abort();
-    RadioFrontDisable();
+    if(concenterParameter.configFlag)
+    {
+        Nwk_poweroff();
+        EasyLink_abort();
+        RadioFrontDisable();
+    }
     powerMode = DEVICES_POWER_OFF;
 }
 

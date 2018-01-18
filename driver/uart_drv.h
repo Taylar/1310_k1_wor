@@ -24,6 +24,8 @@ typedef enum CC1310_LAUNCHXL_UARTName {
 
 
 
+#define 	UART_GSM				0
+#define 	UART_INTERFACE			1
 
 
 
@@ -50,12 +52,12 @@ extern UartRxData_t     uart0TxData;
 
 
 
-#define	UartSoftInit(baud, cb)		UartHwInit(UART_0, baud, cb)
+#define	UartSoftInit(baud, cb, type)		UartHwInit(UART_0, baud, cb, type)
 
 #define	UartSend(bufp, count)		UartSendDatas(UART_0, bufp, count)
 
 
-void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T callback);
+void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t type);
 
 void UartClose(UART_PORT uartPort);
 
@@ -64,6 +66,10 @@ void UartSendDatas(UART_PORT uartPort, uint8_t *buf, uint8_t count);
 void Uart_send_burst_data(UART_PORT uartPort, uint8_t *pData, uint16_t length);
 
 void Uart_send_string(UART_PORT uartPort, uint8_t *string);
+
+void UartPortEnable(uint8_t type);
+
+void UartPortDisable(uint8_t type);
 
 
 #endif	/* __ZKSIOT_UART_DRV_H__ */

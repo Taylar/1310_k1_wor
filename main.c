@@ -64,9 +64,13 @@ int main(void)
     // devicesType = DEVICES_TYPE_NODE;
 
     /* Initialize System Application tasks */
+    devicesType = DEVICES_TYPE_GATEWAY;
+    
+    LedInit();
+    
+
     SysAppTaskCreate();
 
-    devicesType = DEVICES_TYPE_GATEWAY;
 
 
     if(devicesType == DEVICES_TYPE_GATEWAY)

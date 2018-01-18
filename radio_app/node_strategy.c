@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-10 15:24:31
+* @Last Modified time: 2018-01-18 09:59:19
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -82,6 +82,7 @@ void NodeStrategyInit(void (*Cb)(void))
         NodeStrategyReset();
 
         Clock_Params clkParams;
+        Clock_Params_init(&clkParams);
         clkParams.period    = 0;
         clkParams.startFlag = FALSE;
         Clock_construct(&nodeStrategyStartClock, NodeStrategyStartCb, 1, &clkParams);

@@ -12,8 +12,11 @@
 #ifdef SUPPORT_GSM
 #include "gsm.h"
 
-#define GSM_POWER_PIN               IOID_3
-#define GSM_KEY_PIN                 IOID_2
+
+#define     GSM_TIMEOUT_MS          3
+
+#define GSM_POWER_PIN               IOID_2
+#define GSM_KEY_PIN                 IOID_3
 
 #define Gsm_power_ctrl(on)          PIN_setOutputValue(gsmPinHandle, GSM_POWER_PIN, on)
 #define Gsm_pwrkey_ctrl(on)         PIN_setOutputValue(gsmPinHandle, GSM_KEY_PIN, !(on))
@@ -50,6 +53,13 @@ GsmObject_t rGsmObject;
 
 static PIN_State   gsmPinState;
 static PIN_Handle  gsmPinHandle;
+
+
+/* Clock for node period sending */
+
+Clock_Struct gsmTimeOutClock;     /* not static so you can see in ROV */
+Clock_Handle gsmTimeOutClockHandle;
+
 
 //***********************************************************************************
 //
@@ -420,7 +430,7 @@ static UInt Gsm_wait_ack(uint32_t timeout)
 static void Gsm_poweron(void)
 {
     if (rGsmObject.state == GSM_STATE_POWEROFF) {
-        UartHwInit(UART_0, 38400, Gsm_hwiIntCallback);
+        UartHwInit(UART_0, 38400, Gsm_hwiIntCallback, UART_GSM);
 
         Gsm_power_ctrl(1);
         Gsm_pwrkey_ctrl(1);
@@ -1115,6 +1125,7 @@ static void Gsm_rxSwiFxn(void)
     char *ptr;
     uint8_t index;
     uint16_t value, rxLen;
+    float latitudetmp;
 
     /* Disable preemption. */
     uart0RxData.buff[uart0RxData.length] = '\0';
@@ -1174,6 +1185,7 @@ static void Gsm_rxSwiFxn(void)
                 if (ptr != NULL) {
                     rGsmObject.rssi = (uint8_t)atoi(ptr + 5);
                     if (rGsmObject.rssi != 99) {
+                        if(rGsmObject.rssi > 31)rGsmObject.rssi = 31;//处理出现大于31的异常
                         Gsm_event_post(GSM_EVT_CMD_OK);
                     }
                 }
@@ -1302,7 +1314,16 @@ static void Gsm_rxSwiFxn(void)
                     //find last position
                     ptr = strrchr((char *)uart0RxData.buff, ',');
                     if (ptr != NULL) {
-                        rGsmObject.latitude = atof(ptr + 1);
+                        latitudetmp = atof(ptr + 1);
+                        if(latitudetmp)    
+                            rGsmObject.latitude = atof(ptr + 1);
+                        else {
+                            rGsmObject.longitude = 0;
+                            HIBYTE(HIWORD(rGsmObject.latitude)) = *(ptr + 1);
+                            LOBYTE(HIWORD(rGsmObject.latitude)) = *(ptr + 2);
+                            HIBYTE(LOWORD(rGsmObject.latitude)) = *(ptr + 3);        
+                            LOBYTE(LOWORD(rGsmObject.latitude)) = *(ptr + 4);
+                        }
                         Gsm_event_post(GSM_EVT_CMD_OK);
                     }
                 }
@@ -1331,30 +1352,37 @@ static void Gsm_hwiIntCallback(uint8_t *dataP, uint8_t len)
         datapLen++;
         uart0IsrRxData.length++;
 
+        if(Clock_isActive(gsmTimeOutClockHandle))
+        {
+            Clock_stop(gsmTimeOutClockHandle);
+            Clock_setTimeout(gsmTimeOutClockHandle, GSM_TIMEOUT_MS * CLOCK_UNIT_MS);
+            Clock_start(gsmTimeOutClockHandle);
+        }
+
         if(((uart0IsrRxData.buff[uart0IsrRxData.length - 1] == '\n') && 
             (uart0IsrRxData.buff[uart0IsrRxData.length - 2] == '\r'))
             || (uart0IsrRxData.buff[uart0IsrRxData.length - 1] == '>')
             || (uart0IsrRxData.buff[uart0IsrRxData.length - 1] == 0x7e))
         {
-            memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0IsrRxData.length);
 
-            uart0RxData.length      = uart0IsrRxData.length;
-            uart0IsrRxData.length   = 0;
-
-            Swi_post(gsmRxSwiHandle);
+            if(Clock_isActive(gsmTimeOutClockHandle))
+            {
+                Clock_stop(gsmTimeOutClockHandle);
+            }
+            Clock_setTimeout(gsmTimeOutClockHandle, GSM_TIMEOUT_MS * CLOCK_UNIT_MS);
+            Clock_start(gsmTimeOutClockHandle);
         }
 
 
         if(uart0IsrRxData.length >= UART_BUFF_SIZE)
         {
-            memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0IsrRxData.length);
-            uart0RxData.length    = uart0IsrRxData.length;
-            uart0IsrRxData.length = 0;
-            datapLen  = 0;
-            Swi_post(gsmRxSwiHandle);
+            if(Clock_isActive(gsmTimeOutClockHandle))
+            {
+                Clock_stop(gsmTimeOutClockHandle);
+            }
+            Clock_setTimeout(gsmTimeOutClockHandle, GSM_TIMEOUT_MS * CLOCK_UNIT_MS);
+            Clock_start(gsmTimeOutClockHandle);
         }
-
-
     }
 }
 
@@ -1368,6 +1396,23 @@ static void Gsm_event_post(UInt event)
     Event_post(gsmEvtHandle, event);
 }
 
+
+//***********************************************************************************
+//
+// Gsm receive timeout cb
+//
+//***********************************************************************************
+static void GsmRxToutCb(UArg arg0)
+{
+
+    memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0IsrRxData.length);
+    uart0RxData.length    = uart0IsrRxData.length;
+    uart0IsrRxData.length = 0;
+    Swi_post(gsmRxSwiHandle);
+}
+
+
+
 //***********************************************************************************
 //
 // Gsm module init.
@@ -1379,6 +1424,13 @@ static void Gsm_init(Nwk_Params *params)
 
     //Init UART.
     // UartHwInit(UART_0, 38400, Gsm_hwiIntCallback);
+
+    Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
+    clkParams.period = 0;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&gsmTimeOutClock, GsmRxToutCb, 1, &clkParams);
+    gsmTimeOutClockHandle = Clock_handle(&gsmTimeOutClock);
 
     rGsmObject.isOpen = 0;
     rGsmObject.actPDPCnt = 0;
