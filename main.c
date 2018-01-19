@@ -61,10 +61,10 @@ int main(void)
     Board_initGeneral();
 
     // InternalFlashLoadConfig();
-    // devicesType = DEVICES_TYPE_NODE;
+    devicesType = DEVICES_TYPE_NODE;
 
     /* Initialize System Application tasks */
-    devicesType = DEVICES_TYPE_GATEWAY;
+    // devicesType = DEVICES_TYPE_GATEWAY;
     
     LedInit();
     

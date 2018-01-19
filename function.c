@@ -218,13 +218,13 @@ ErrorStatus Queue_drop_one_obj(QueueDef *queue)
 uint8_t TransHexToBcd(uint8_t hex)
 {
     uint8_t temp;
-    temp = hex / 10 +((hex % 10)<< 4);
+    temp = ((hex / 10)<<4) +(hex % 10);
     return temp;
 }
 
 uint8_t TransBcdToHex(uint8_t bcd)
 {
     uint8_t temp;
-    temp = bcd & 0x0f + (bcd >> 4) * 10;
+    temp = (bcd & 0x0f) + (bcd >> 4) * 10;
     return temp;
 }

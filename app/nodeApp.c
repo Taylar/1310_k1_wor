@@ -6,7 +6,7 @@
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 /***** Defines *****/
-#define NODE_BROADCASTING_TIME         2
+#define NODE_BROADCASTING_TIME         5
 
 
 
@@ -194,7 +194,7 @@ void NodeUploadProcess(void)
     
     while(dataItems)
     {
-        Flash_load_sensor_data(data, 22, dataItems);
+        Flash_load_sensor_data(data, 22, dataItems - 1);
 
         // the radio buf is full 
         if(NodeRadioSendSensorData(data, 22) == false)

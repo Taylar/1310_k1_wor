@@ -632,7 +632,7 @@ void Nwk_task_create(void)
     Task_Params_init(&taskParams);
     taskParams.stackSize = NWKTASKSTACKSIZE;
     taskParams.stack = &nwkTaskStack;
-    taskParams.priority = 2;
+    taskParams.priority = 1;
     Task_construct(&nwkTaskStruct, (Task_FuncPtr)Nwk_taskFxn, &taskParams, &eb);
 
     /* Construct key process Event */

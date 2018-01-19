@@ -157,6 +157,7 @@ bool ConcenterSensorDataSaveToQueue(uint8_t *dataP, uint8_t length)
     }
     else
     {
+        Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
         return false;
     }
 }
