@@ -2,12 +2,12 @@
 * @Author: zxt
 * @Date:   2018-01-08 16:46:40
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-08 16:54:06
+* @Last Modified time: 2018-01-23 10:43:58
 */
 
 #include "../general.h"
 
-
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
 /***** Defines *****/
 #define RADIO_CSD_PIN                       IOID_7      // 0:sleep    1:wake up
 #define RADIO_CTX_PIN                       IOID_6      // 0:Rx       1:Tx
@@ -49,11 +49,8 @@ void RadioFrontInit(void)
 //***********************************************************************************
 void RadioFrontTxEnable(void)
 {
-	if(devicesType == DEVICES_TYPE_GATEWAY)
-	{
-    	PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1);
-        PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 1);
-    }
+    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1);
+    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 1);
 }
 
 
@@ -64,11 +61,8 @@ void RadioFrontTxEnable(void)
 //***********************************************************************************
 void RadioFrontRxEnable(void)
 {
-	if(devicesType == DEVICES_TYPE_GATEWAY)
-	{
-    	PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1);
-        PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);
-    }
+    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1);
+    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);
 }
 
 
@@ -79,10 +73,31 @@ void RadioFrontRxEnable(void)
 //***********************************************************************************
 void RadioFrontDisable(void)
 {
-	if(devicesType == DEVICES_TYPE_GATEWAY)
-	{
-    	PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 0);
-        PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);
-    }
+    PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 0);
+    PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);
 }
 
+#else
+
+void RadioFrontInit(void)
+{
+    
+}
+
+void RadioFrontTxEnable(void)
+{
+    
+}
+
+void RadioFrontRxEnable(void)
+{
+    
+}
+
+void RadioFrontDisable(void)
+{
+    
+}
+
+
+#endif

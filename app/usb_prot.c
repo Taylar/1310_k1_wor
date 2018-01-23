@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-10 20:26:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 10:57:00
+* @Last Modified time: 2018-01-22 18:22:52
 */
 #include "../general.h"
 #include "../app/usb_prot.h"
@@ -111,6 +111,14 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
 
         case EV_Get_Calendar:
             calendar = Rtc_get_calendar();
+
+            calendar.Year       = TransHexToBcd((uint8_t)(calendar.Year - 2000)) + 0x2000;
+            calendar.Month      = TransHexToBcd((uint8_t)(calendar.Month));
+            calendar.DayOfMonth = TransHexToBcd((uint8_t)(calendar.DayOfMonth));
+            calendar.Hours      = TransHexToBcd((uint8_t)(calendar.Hours));
+            calendar.Minutes    = TransHexToBcd((uint8_t)(calendar.Minutes));
+            calendar.Seconds    = TransHexToBcd((uint8_t)(calendar.Seconds));
+
             memcpy((char *)pData, (char *)&calendar, sizeof(Calendar));
             len = Usb_group_package(AC_Send_Calendar, pData, sizeof(Calendar));
             InterfaceSend(pData, len);
@@ -118,6 +126,14 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
 
         case EV_Set_Calendar:
             memcpy((char *)&calendar, (char *)&pData[3], sizeof(Calendar));
+
+            calendar.Year       = TransBcdToHex((uint8_t)(calendar.Year)) + 2000;
+            calendar.Month      = TransBcdToHex((uint8_t)(calendar.Month));
+            calendar.DayOfMonth = TransBcdToHex((uint8_t)(calendar.DayOfMonth));
+            calendar.Hours      = TransBcdToHex((uint8_t)(calendar.Hours));
+            calendar.Minutes    = TransBcdToHex((uint8_t)(calendar.Minutes));
+            calendar.Seconds    = TransBcdToHex((uint8_t)(calendar.Seconds));
+
             Rtc_set_calendar(&calendar);
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);

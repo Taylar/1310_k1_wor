@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-18 14:59:59
+* @Last Modified time: 2018-01-22 16:48:09
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -128,17 +128,19 @@ void RadioModeSet(RadioOperationMode modeSet)
 
 void RadioAppTaskFxn(void)
 {
-    if(devicesType == DEVICES_TYPE_GATEWAY)
-    {
-        radioMode = RADIOMODE_RECEIVEPORT;
-        RadioFrontInit();
-        RadioFrontRxEnable();
-    }
-    else
-    {
-        radioMode = RADIOMODE_SENDPORT;
-    }
 
+#ifdef BOARD_S2_2
+
+    radioMode = RADIOMODE_RECEIVEPORT;
+    RadioFrontInit();
+    RadioFrontRxEnable();
+
+#endif
+
+
+#ifdef BOARD_S1_2
+    radioMode = RADIOMODE_SENDPORT;
+#endif
 
 
     if(EasyLink_init(RADIO_EASYLINK_MODULATION) != EasyLink_Status_Success) {

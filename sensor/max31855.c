@@ -23,7 +23,7 @@
 
 #define Max31855_spiClkCtrl(on)          PIN_setOutputValue(max31855PinHandle, MAX31855_CLK_PIN, on)
 #define Max31855_spiCsCtrl(on)           PIN_setOutputValue(max31855PinHandle, MAX31855_CS_PIN, on)
-#define Max31855_spiVccCtrl(on)          PIN_setOutputValue(max31855PinHandle, MAX31855_POWER_PIN, on)
+#define Max31855_spiVccCtrl(on)          PIN_setOutputValue(max31855PinHandle, MAX31855_POWER_PIN, !on)
 
 
 

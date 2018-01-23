@@ -81,26 +81,26 @@ uint8_t MonthMaxDay(uint16_t year_1, uint8_t month_1)
 
 void RtcSecondsIsrCb(UArg arg0)
 {
-    rtc.sec++;
-    if(rtc.sec >= 60){
-        rtc.sec = 0;
-        rtc.min++;
-        if(rtc.min >= 60){
-            rtc.min = 0;
-            rtc.hour++;
-            if(rtc.hour >= 24){
-                rtc.hour = 0;
-                rtc.day++;
-                rtc.week++;
-                if(rtc.week > 6)
-                    rtc.week = 0;
+    rtc.Seconds++;
+    if(rtc.Seconds >= 60){
+        rtc.Seconds = 0;
+        rtc.Minutes++;
+        if(rtc.Minutes >= 60){
+            rtc.Minutes = 0;
+            rtc.Hours++;
+            if(rtc.Hours >= 24){
+                rtc.Hours = 0;
+                rtc.DayOfMonth++;
+                rtc.DayOfWeek++;
+                if(rtc.DayOfWeek > 6)
+                    rtc.DayOfWeek = 0;
 
-                if(rtc.day > MonthMaxDay(rtc.year, rtc.month)){
-                    rtc.day = 1;
-                    rtc.month++;
-                    if(rtc.month >12){
-                        rtc.month = 1;
-                        rtc.year ++;
+                if(rtc.DayOfMonth > MonthMaxDay(rtc.Year, rtc.Month)){
+                    rtc.DayOfMonth = 1;
+                    rtc.Month++;
+                    if(rtc.Month >12){
+                        rtc.Month = 1;
+                        rtc.Year ++;
                     }
                 }
             }
@@ -129,13 +129,13 @@ void RtcInit(void (*Cb)(void))
     rtcSecondsClockHandle = Clock_handle(&rtcSecondsClock);
     
 
-    rtc.year  = 2018;
-    rtc.month = 1;
-    rtc.day   = 1;
-    rtc.week  = 1;
-    rtc.hour  = 0;
-    rtc.min   = 0;
-    rtc.sec   = 0;
+    rtc.Year  = 2018;
+    rtc.Month = 1;
+    rtc.DayOfMonth   = 1;
+    rtc.DayOfWeek  = 1;
+    rtc.Hours  = 0;
+    rtc.Minutes   = 0;
+    rtc.Seconds   = 0;
 
 
     RtcSecIsbCB = Cb;

@@ -8,20 +8,21 @@
 typedef struct Calendar
 {
     //! Seconds of minute between 0-59
-    uint8_t sec;
+    uint8_t Seconds;
     //! Minutes of hour between 0-59
-    uint8_t min;
+    uint8_t Minutes;
     //! Hour of day between 0-23
-    uint8_t hour;
+    uint8_t Hours;
     //! Day of week between 0-6
-    uint8_t week;
+    uint8_t DayOfWeek;
     //! Day of month between 1-31
-    uint8_t day;
+    uint8_t DayOfMonth;
     //! Month between 0-11
-    uint8_t month;
+    uint8_t Month;
     //! Year between 0-4095
-    uint16_t year;
+    uint16_t Year;
 } Calendar;
+
 
 
 void RtcInit(void (*Cb)(void));

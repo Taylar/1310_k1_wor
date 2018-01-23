@@ -2,23 +2,23 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-18 11:11:29
+* @Last Modified time: 2018-01-22 16:33:17
 */
 #include "../general.h"
 
 #ifdef SUPPORT_LED
 #include "led_drv.h"
 
+// board node
+#ifdef BOARD_S1_2
+
 #define LED_R_PIN_NODE                       IOID_25
 #define LED_G_PIN_NODE                       IOID_24
 #define LED_B_PIN_NODE                       IOID_23
 #define LED_GND_PIN_NODE                     IOID_21
 
-#define LED_R_PIN_GATEWAY                       IOID_14
-#define LED_G_PIN_GATEWAY                       IOID_13
-#define LED_B_PIN_GATEWAY                       IOID_15
 
-static uint8_t LED_ID_CONST[LED_MAX] =
+static const uint8_t LED_ID_CONST[LED_MAX] =
 {
     LED_R_PIN_NODE,
     LED_G_PIN_NODE,
@@ -27,10 +27,8 @@ static uint8_t LED_ID_CONST[LED_MAX] =
 };
 
 
-static Semaphore_Struct ledSemStruct;
-static Semaphore_Handle ledSemHandle;
 
-const PIN_Config ledPinTable_node[] = {
+const PIN_Config ledPinTable[] = {
     LED_R_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     LED_G_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     LED_B_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
@@ -38,14 +36,35 @@ const PIN_Config ledPinTable_node[] = {
     PIN_TERMINATE
 };
 
+#endif
 
-const PIN_Config ledPinTable_gateway[] = {
+// board gateway
+#ifdef BOARD_S2_2
+
+#define LED_R_PIN_GATEWAY                       IOID_14
+#define LED_G_PIN_GATEWAY                       IOID_13
+#define LED_B_PIN_GATEWAY                       IOID_15
+
+static const uint8_t LED_ID_CONST[LED_MAX] =
+{
+    LED_R_PIN_GATEWAY,
+    LED_G_PIN_GATEWAY,
+    LED_B_PIN_GATEWAY,
+};
+
+const PIN_Config ledPinTable[] = {
     
     LED_R_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     LED_G_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     LED_B_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     PIN_TERMINATE
 };
+
+#endif
+
+
+static Semaphore_Struct ledSemStruct;
+static Semaphore_Handle ledSemHandle;
 
 static PIN_State   ledState;
 static PIN_Handle  ledHandle;
@@ -58,17 +77,7 @@ static PIN_Handle  ledHandle;
 //***********************************************************************************
 void LedIoInit(void)
 {
-    if(devicesType == DEVICES_TYPE_GATEWAY)
-    {
-        ledHandle = PIN_open(&ledState, ledPinTable_gateway);
-        LED_ID_CONST[LED_R] = LED_R_PIN_GATEWAY;
-        LED_ID_CONST[LED_G] = LED_G_PIN_GATEWAY;
-        LED_ID_CONST[LED_B] = LED_B_PIN_GATEWAY;
-    }
-    else
-    {
-        ledHandle = PIN_open(&ledState, ledPinTable_node);
-    }
+    ledHandle = PIN_open(&ledState, ledPinTable);
 }
 
 

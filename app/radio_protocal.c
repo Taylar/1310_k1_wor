@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 11:20:58
+* @Last Modified time: 2018-01-22 18:11:27
 */
 #include "../general.h"
 
@@ -110,12 +110,12 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			NodeStrategySetOffset_Channel(temp, tickTemp, temp2);
 
-			calendarTemp.year  = 2000 + bufTemp->load[0];
-			calendarTemp.month = bufTemp->load[1];
-			calendarTemp.day   = bufTemp->load[2];
-			calendarTemp.hour  = bufTemp->load[3];
-			calendarTemp.min   = bufTemp->load[4];
-			calendarTemp.sec   = bufTemp->load[5];
+			calendarTemp.Year       = 2000 + bufTemp->load[0];
+			calendarTemp.Month      = bufTemp->load[1];
+			calendarTemp.DayOfMonth = bufTemp->load[2];
+			calendarTemp.Hours      = bufTemp->load[3];
+			calendarTemp.Minutes    = bufTemp->load[4];
+			calendarTemp.Seconds    = bufTemp->load[5];
 			
 			Rtc_set_calendar(&calendarTemp);
 			NodeStopBroadcast();
@@ -489,12 +489,12 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 
 	calendarTemp			= Rtc_get_calendar();
 
-	protocalTxBuf.load[0]	= (uint8_t)(calendarTemp.year - 2000);
-	protocalTxBuf.load[1]	= calendarTemp.month;
-	protocalTxBuf.load[2]	= calendarTemp.day;
-	protocalTxBuf.load[3]	= calendarTemp.hour;
-	protocalTxBuf.load[4]	= calendarTemp.min;
-	protocalTxBuf.load[5]	= calendarTemp.sec;
+	protocalTxBuf.load[0]	= (uint8_t)(calendarTemp.Year - 2000);
+	protocalTxBuf.load[1]	= calendarTemp.Month;
+	protocalTxBuf.load[2]	= calendarTemp.DayOfMonth;
+	protocalTxBuf.load[3]	= calendarTemp.Hours;
+	protocalTxBuf.load[4]	= calendarTemp.Minutes;
+	protocalTxBuf.load[5]	= calendarTemp.Seconds;
 
 	temp 					= ConcenterReadChannel(dstAddr);
 	protocalTxBuf.load[10]	= (uint8_t)(temp >> 24);

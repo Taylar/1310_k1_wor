@@ -13,6 +13,20 @@
  *  =============================== SPI board pin define ===============================
  */
 
+
+
+
+
+/*
+ *  =============================== SPI DMA ===============================
+ */
+#include <ti/drivers/SPI.h>
+#include <ti/drivers/spi/SPICC26XXDMA.h>
+
+SPICC26XXDMA_Object spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPICOUNT];
+
+#ifdef BOARD_S1_2
+
 /* SPI Board */
 #define CC1310_LAUNCHXL_SPI0_MISO_NODE             IOID_10
 #define CC1310_LAUNCHXL_SPI0_MOSI_NODE             IOID_7
@@ -23,25 +37,7 @@
 #define CC1310_LAUNCHXL_SPI1_CLK_NODE              PIN_UNASSIGNED
 #define CC1310_LAUNCHXL_SPI1_CSN_NODE              PIN_UNASSIGNED
 
-
-#define CC1310_LAUNCHXL_SPI0_MISO_GATEWAY             IOID_25
-#define CC1310_LAUNCHXL_SPI0_MOSI_GATEWAY             IOID_27
-#define CC1310_LAUNCHXL_SPI0_CLK_GATEWAY              IOID_26
-#define CC1310_LAUNCHXL_SPI0_CSN_GATEWAY              PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_MISO_GATEWAY             PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_MOSI_GATEWAY             PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_CLK_GATEWAY              PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_CSN_GATEWAY              PIN_UNASSIGNED
-
-/*
- *  =============================== SPI DMA ===============================
- */
-#include <ti/drivers/SPI.h>
-#include <ti/drivers/spi/SPICC26XXDMA.h>
-
-SPICC26XXDMA_Object spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPICOUNT];
-
-const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPICOUNT] = {
+const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
     {
         .baseAddr           = SSI0_BASE,
         .intNum             = INT_SSI0_COMB,
@@ -71,6 +67,22 @@ const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPICOUNT] 
         .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_NODE
     }
 };
+#endif
+
+
+
+#ifdef BOARD_S2_2
+
+
+#define CC1310_LAUNCHXL_SPI0_MISO_GATEWAY             IOID_25
+#define CC1310_LAUNCHXL_SPI0_MOSI_GATEWAY             IOID_27
+#define CC1310_LAUNCHXL_SPI0_CLK_GATEWAY              IOID_26
+#define CC1310_LAUNCHXL_SPI0_CSN_GATEWAY              PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_MISO_GATEWAY             PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_MOSI_GATEWAY             PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_CLK_GATEWAY              PIN_UNASSIGNED
+#define CC1310_LAUNCHXL_SPI1_CSN_GATEWAY              PIN_UNASSIGNED
+
 
 const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPICOUNT] = {
     {
@@ -102,17 +114,19 @@ const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPICOUN
         .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_GATEWAY
     }
 };
+#endif
 
-SPI_Config SPI_config[CC1310_LAUNCHXL_SPICOUNT] = {
+
+const SPI_Config SPI_config[CC1310_LAUNCHXL_SPICOUNT] = {
     {
          .fxnTablePtr = &SPICC26XXDMA_fxnTable,
          .object      = &spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPI0],
-         .hwAttrs     = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI0]
+         .hwAttrs     = &spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPI0]
     },
     {
          .fxnTablePtr = &SPICC26XXDMA_fxnTable,
          .object      = &spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPI1],
-         .hwAttrs     = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI1]
+         .hwAttrs     = &spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPI1]
     },
 };
 
@@ -135,16 +149,6 @@ ErrorStatus Spi_init(void)
 {
     SPI_Params mSpiParams;
 
-    if(DEVICES_TYPE_GATEWAY == devicesType)
-    {
-        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPI0];
-        SPI_config[CC1310_LAUNCHXL_SPI1].hwAttrs = &spiCC26XXDMAHWAttrs_gateway[CC1310_LAUNCHXL_SPI1];
-    }
-    else
-    {
-        SPI_config[CC1310_LAUNCHXL_SPI0].hwAttrs = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI0];
-        SPI_config[CC1310_LAUNCHXL_SPI1].hwAttrs = &spiCC26XXDMAHWAttrs_node[CC1310_LAUNCHXL_SPI1];
-    }
 
     SPI_init();
 

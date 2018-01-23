@@ -134,12 +134,12 @@ void Sensor_store_null_package(uint8_t *buff)
     buff[length++] = 0;
     //²É¼¯Ê±¼ä
     calendar = Rtc_get_calendar();
-    buff[length++] = calendar.year - CALENDAR_BASE_YEAR;
-    buff[length++] = calendar.month;
-    buff[length++] = calendar.day;
-    buff[length++] = calendar.hour;
-    buff[length++] = calendar.min;
-    buff[length++] = calendar.sec;
+    buff[length++] = calendar.Year - CALENDAR_BASE_YEAR;
+    buff[length++] = calendar.Month;
+    buff[length++] = calendar.DayOfMonth;
+    buff[length++] = calendar.Hours;
+    buff[length++] = calendar.Minutes;
+    buff[length++] = calendar.Seconds;
     //SensorµçÑ¹
 #ifdef SUPPORT_BATTERY
     value = AONBatMonBatteryVoltageGet();
@@ -275,7 +275,9 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 	uint8_t *ptrstart,*ptrend;
     uint16_t package_length;
     bool     congfig = false,  sensorcodec = false;
+#ifdef SUPPORT_NETGATE_DISP_NODE
     uint32_t deviceid;
+#endif
     
     //pBuff maybe include more one data package
     ptrstart = pBuff;
@@ -364,7 +366,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                             index += (5 + rxData[4]);
 
                             if(rxData[4] == 1) {// is sensor  codec
-                                Flash_store_sensor_codec(rxData[5], deviceid);                            
+                               // Flash_store_sensor_codec(rxData[5], deviceid);
                                 sensorcodec = true;
                             }
                             else {// is sensor name                       //support later.
@@ -396,6 +398,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                 
 #ifdef SUPPORT_NETGATE_DISP_NODE                
             case NMI_RX_ALARM:
+                /*
                 index = NWK_MSG_BODY_START;
                 if((index + 10) <= package_length) {//¿ÉÄÜ°üº¬¶àÌõ±¨¾¯Êý¾Ý£¬Ä¿Ç°Ö»´¦Àí1Ìõ
                     HIBYTE(HIWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
@@ -424,18 +427,18 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     rNwkMsgPacket.buff[4] = TCA_OK;
                     Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
                     Nwk_event_post(NWK_EVT_ACK);
-                }                
+                }      */
                 break;
 #endif
             case NMI_RX_NTP:
                 index = NWK_MSG_BODY_START;
                 if((index + 6) <= package_length) {
-                    calendar.year  = TransBcdToHex(rxData[index++]) + CALENDAR_BASE_YEAR;
-                    calendar.month = TransBcdToHex(rxData[index++]);
-                    calendar.day   = TransBcdToHex(rxData[index++]);
-                    calendar.hour  = TransBcdToHex(rxData[index++]);
-                    calendar.min   = TransBcdToHex(rxData[index++]);
-                    calendar.sec   = TransBcdToHex(rxData[index++]);
+                    calendar.Year       = TransBcdToHex(rxData[index++]) + CALENDAR_BASE_YEAR;
+                    calendar.Month      = TransBcdToHex(rxData[index++]);
+                    calendar.DayOfMonth = TransBcdToHex(rxData[index++]);
+                    calendar.Hours      = TransBcdToHex(rxData[index++]);
+                    calendar.Minutes    = TransBcdToHex(rxData[index++]);
+                    calendar.Seconds    = TransBcdToHex(rxData[index++]);
     	            ConcenterTimeSychronization(&calendar);
     	            rNwkObject.ntp = 1;
     			}

@@ -5,46 +5,62 @@
 
 
 
-#define FLASH_POWER_PIN_NODE         IOID_8
-#define FLASH_SPI_CS_PIN_NODE        IOID_9
-#define FLASH_WP_PIN_NODE            IOID_11
-#define FLASH_HOLD_PIN_NODE          IOID_5
+// board node
+#ifdef BOARD_S1_2
 
-#define FLASH_SPI_CS_PIN_GATEWAY        IOID_24
-#define FLASH_WP_PIN_GATEWAY            IOID_19
-#define FLASH_HOLD_PIN_GATEWAY          IOID_18
+#define FLASH_POWER_PIN         IOID_8
+#define FLASH_SPI_CS_PIN        IOID_9
+#define FLASH_WP_PIN            IOID_11
+#define FLASH_HOLD_PIN          IOID_5
 
-
-
-
-const PIN_Config extFlashPinTable_node[] = {
-    FLASH_POWER_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,      /*          */
-    FLASH_SPI_CS_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
-    FLASH_WP_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
-    FLASH_HOLD_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
+const PIN_Config extFlashPinTable[] = {
+    FLASH_POWER_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,      /*          */
+    FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
+    FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
+    FLASH_HOLD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
     PIN_TERMINATE
 };
 
-const PIN_Config extFlashPinTable_gateway[] = {
+
+#define Flash_spi_enable()      PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0)
+#define Flash_spi_disable()     PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1)
+
+#endif
+
+// board gateway
+#ifdef BOARD_S2_2
+
+#define FLASH_SPI_CS_PIN        IOID_24
+#define FLASH_WP_PIN            IOID_19
+#define FLASH_HOLD_PIN          IOID_18
+
+
+
+const PIN_Config extFlashPinTable[] = {
     FLASH_SPI_CS_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     FLASH_WP_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
     FLASH_HOLD_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
     PIN_TERMINATE
 };
 
+#define Flash_spi_enable()      PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0)
+#define Flash_spi_disable()     PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1)
+
+#endif
+
+
+
 static PIN_State   extFlashPinState;
 static PIN_Handle  extFlashPinHandle;
 
 
-#define Flash_spi_enable()      PIN_setOutputValue(extFlashPinHandle, extflashCsPin, 0)
-#define Flash_spi_disable()     PIN_setOutputValue(extFlashPinHandle, extflashCsPin, 1)
+
 
 
 //QueueDef rFlashGnssQueue;
 static FlashSensorData_t rFlashSensorData;
 
 
-static PIN_Id extflashCsPin;
 //***********************************************************************************
 
 
@@ -359,16 +375,7 @@ void Flash_init(void)
 {
     FlashSysInfo_t sysInfo;
 
-    if(devicesType == DEVICES_TYPE_GATEWAY)
-    {
-        extflashCsPin     = FLASH_SPI_CS_PIN_GATEWAY;
-        extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable_gateway);
-    }
-    else
-    {
-        extflashCsPin     = FLASH_SPI_CS_PIN_NODE;
-        extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable_node);
-    }
+    extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable);
 
     // Time delay before write instruction.
     Task_sleep(6 * CLOCK_UNIT_MS);

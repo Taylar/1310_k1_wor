@@ -303,12 +303,12 @@ void NodeCollectProcess(void)
     data[7] = (uint8_t)nodeParameter.serialNum;
     
     // collect time
-    data[8] = TransHexToBcd((uint8_t)(calendarTemp.year - 2000));
-    data[9] = TransHexToBcd((uint8_t)(calendarTemp.month));
-    data[10] = TransHexToBcd((uint8_t)(calendarTemp.day));
-    data[11] = TransHexToBcd((uint8_t)(calendarTemp.hour));
-    data[12] = TransHexToBcd((uint8_t)(calendarTemp.min));
-    data[13] = TransHexToBcd((uint8_t)(calendarTemp.sec));
+    data[8] = TransHexToBcd((uint8_t)(calendarTemp.Year - 2000));
+    data[9] = TransHexToBcd((uint8_t)(calendarTemp.Month));
+    data[10] = TransHexToBcd((uint8_t)(calendarTemp.DayOfMonth));
+    data[11] = TransHexToBcd((uint8_t)(calendarTemp.Hours));
+    data[12] = TransHexToBcd((uint8_t)(calendarTemp.Minutes));
+    data[13] = TransHexToBcd((uint8_t)(calendarTemp.Seconds));
 
     // voltage
     temp     = AONBatMonBatteryVoltageGet();

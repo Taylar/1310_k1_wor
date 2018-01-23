@@ -61,34 +61,31 @@ int main(void)
     Board_initGeneral();
 
     // InternalFlashLoadConfig();
-    devicesType = DEVICES_TYPE_NODE;
 
     /* Initialize System Application tasks */
-    // devicesType = DEVICES_TYPE_GATEWAY;
     
-    LedInit();
+    // LedInit();
     
 
     SysAppTaskCreate();
 
 
-
-    if(devicesType == DEVICES_TYPE_GATEWAY)
+#ifdef BOARD_S2_2
+    
+    // Init the config
+    if(InternalFlashLoadConfig() == false)
     {
-        // Init the config
-        if(InternalFlashLoadConfig() == false)
-        {
-            InternalFlashConfigReset();
-            InternalFlashStoreConfig();
-        }
-
-        Nwk_task_create();
-        InterfaceTaskCreate();
+        InternalFlashConfigReset();
+        InternalFlashStoreConfig();
     }
 
+    Nwk_task_create();
+    InterfaceTaskCreate();
+
+#endif 
 
     /* Initialize radio tasks */
-    RadioAppTaskCreate();
+    // RadioAppTaskCreate();
     
     
 

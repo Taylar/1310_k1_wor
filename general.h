@@ -37,6 +37,9 @@
 #include <ti/devices/cc13x0/driverlib/flash.h>
 #include <ti/devices/cc13x0/driverlib/aon_ioc.h>
 
+#include <ti/drivers/ADC.h>
+#include <ti/drivers/adc/ADCCC26XX.h>
+
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/I2C.h>
@@ -56,6 +59,9 @@
 // HW version define.
 //
 //***********************************************************************************
+#define BOARD_S1_2
+// #define BOARD_S2_2
+#define BOARD_S6_6
 
 
 
@@ -106,12 +112,16 @@
 #endif
 
 //Sensor define
-#define SUPPORT_DEEPTEMP
 
 #define SUPPORT_SENSOR
 #ifdef SUPPORT_SENSOR
 #define SUPPORT_SHT2X
 #endif
+
+#define SUPPORT_DEEPTEMP
+
+
+
 //CRC function define.
 
 
@@ -134,6 +144,18 @@
 #define I2C_BUS
 
 //LCD define
+#define SUPPORT_DISP_SCREEN
+#ifdef SUPPORT_DISP_SCREEN
+//#define AUTO_SHUTDOWN_LCD
+//Electronic Paper Display module
+//#define EPD_GDE0213B1
+#define LCD_ST7567A
+#define SUPPORT_MENU
+
+//#define SUPPORT_NETGATE_DISP_NODE
+
+#endif
+
 
 
 //Led define
@@ -161,9 +183,23 @@
 #define MODULE_NWK              (MODULE_GSM | MODULE_WIFI | MODULE_LAN)
 #define MODULE_RADIO            (MODULE_LORA| MODULE_CC1310)
 
+
+
 #define MODULE_SENSOR_MAX       1
+typedef enum {
+    SEN_TYPE_NONE = 0,
+    SEN_TYPE_SHT2X,
+    SEN_TYPE_NTC,
+    SEN_TYPE_LIGHT,
+    SEN_TYPE_DEEPTEMP,
+    SEN_TYPE_HCHO,
+    SEN_TYPE_PM25,
+    SEN_TYPE_CO2,
+    SEN_TYPE_MAX
+} SENSOR_TYPE;
 
-
+#define ALARM_TEMP_HIGH         0x7fff
+#define ALARM_TEMP_LOW          (-0x7fff)
 //***********************************************************************************
 //
 //Status define.
@@ -258,8 +294,10 @@ typedef struct {
     //battery voltage of shutdown
     uint16_t batLowVol;
     
+     //Sensor warning  temperature
+    AlarmTemp_t WarningTemp[MODULE_SENSOR_MAX];    
 
-    uint8_t reserver[44];
+    uint8_t reserver[44 - MODULE_SENSOR_MAX * 4];
 
     //apn user pwd
     uint8_t apnuserpwd[64];
@@ -280,6 +318,7 @@ typedef struct {
 //***********************************************************************************
 #include "Board.h"
 #include "function.h"
+#include "battery/battery.h"
 // #include "driver/adc_drv.h"
 #include "driver/rtc_drv.h"
 #include "driver/i2c_drv.h"
@@ -291,6 +330,8 @@ typedef struct {
 #include "key/key_proc.h"
 #include "sensor/max31855.h"
 #include "sensor/sht2x.h"
+#include "display/display.h"
+#include "display/menu.h"
 #include "display/led_drv.h"
 #include "easylink/EasyLink.h"
 #include "network/network.h"
@@ -303,9 +344,7 @@ typedef struct {
 //***********************************************************************************
 extern ConfigInfo_t g_rSysConfigInfo;
 
-extern uint8_t devicesType;
 
 extern uint8_t powerMode;
 
 #endif	/* __ZKSIOT_GENERAL_H__ */
-

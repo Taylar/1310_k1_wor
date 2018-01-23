@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-16 20:30:16
+* @Last Modified time: 2018-01-22 16:46:26
 */
 
 #include "../general.h"
@@ -13,21 +13,31 @@ static Clock_Handle keyClkHandle;
 static KeyTask_t rKeyTask;
 
 
-#define Board_BUTTON0_NODE                       IOID_4
-#define Board_BUTTON0_GATEWAY                    IOID_1
 
+#ifdef BOARD_S1_2
+#define Board_BUTTON0                            IOID_4
 
-
-
-const PIN_Config keyPinTable_node[] = {
-    Board_BUTTON0_NODE | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+const PIN_Config keyPinTable[] = {
+    Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
     PIN_TERMINATE
 };
 
-const PIN_Config keyPinTable_gateway[] = {
-    Board_BUTTON0_GATEWAY | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+#endif
+
+#ifdef BOARD_S2_2
+#define Board_BUTTON0                    IOID_1
+
+const PIN_Config keyPinTable[] = {
+    Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
     PIN_TERMINATE
 };
+
+
+#endif
+
+
+
+
 
 static PIN_State   keyState;
 static PIN_Handle  keyHandle;
@@ -39,8 +49,6 @@ typedef void (*AppKeyIsrCb_t)(void);
 static AppKeyIsrCb_t   AppKeyIsrCb[KEY_ACTION_MAX];
 
 
-static PIN_Id boardButton0Pin;
-
 //***********************************************************************************
 //
 // key Io Init.
@@ -49,16 +57,7 @@ static PIN_Id boardButton0Pin;
 //***********************************************************************************
 void KeyIoInit(PIN_IntCb pCb)
 {
-    if(devicesType == DEVICES_TYPE_GATEWAY)
-    {
-        boardButton0Pin = Board_BUTTON0_GATEWAY;
-        keyHandle = PIN_open(&keyState, keyPinTable_gateway);
-    }
-    else
-    {
-        boardButton0Pin = Board_BUTTON0_NODE;
-        keyHandle = PIN_open(&keyState, keyPinTable_node);
-    }
+    keyHandle = PIN_open(&keyState, keyPinTable);
     PIN_registerIntCb(keyHandle, pCb);
 }
 
@@ -82,7 +81,7 @@ static void KeyScanStop(void)
 //***********************************************************************************
 static void KeyScanFxn(UArg arg0)
 {
-    if (PIN_getInputValue(boardButton0Pin) == KEY_PRESSED)
+    if (PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED)
     {
         if(rKeyTask.holdPress == 0)
         {

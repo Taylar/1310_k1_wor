@@ -1,5 +1,5 @@
 #include "../general.h"
-#include "systemApp.h"
+#include "../app/systemApp.h"
 #include "../app/nodeApp.h"
 #include "../app/concenterApp.h"
 
@@ -28,7 +28,6 @@ Event_Struct systemAppEvtStruct;
 Event_Handle systemAppEvtHandle;
 
 // system application extern variable
-uint8_t devicesType;
 uint8_t powerMode;
 
 
@@ -77,7 +76,7 @@ void SysAppTaskCreate(void)
 }
 
 
-
+void Disp_info(void);
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
@@ -87,17 +86,21 @@ void SystemAppTaskFxn(void)
 	/* Obtain event instance handle */
 	systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
 
+#ifdef  BOARD_S6_6
+    Disp_init();
+    Disp_poweron();
+    Disp_info();
+#endif
+
+#ifdef BOARD_S2_2
+	ConcenterAppHwInit();
+#endif
+
+#ifdef BOARD_S1_2
+   	// NodeAppHwInit();
+#endif
 
 
-	if(devicesType == DEVICES_TYPE_GATEWAY)
-	{
-		ConcenterAppHwInit();
-	}
-    else
-    {
-    	NodeAppHwInit();
-    }
-    
     powerMode = DEVICES_POWER_OFF;
 
     KeyInit();
@@ -134,31 +137,29 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
-			switch(devicesType)
-			{
-				case DEVICES_TYPE_GATEWAY:
-				ConcenterShortKeyApp();
-				break;
+#ifdef BOARD_S2_2
+			ConcenterShortKeyApp();
+#endif
 
-				case DEVICES_TYPE_NODE:
-				NodeShortKeyApp();
-				break;
-			}
+
+#ifdef BOARD_S1_2
+			NodeShortKeyApp();
+#endif
 		}
 
 
 		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
 		{
-			switch(devicesType)
-			{
-				case DEVICES_TYPE_GATEWAY:
-				ConcenterLongKeyApp();
-				break;
 
-				case DEVICES_TYPE_NODE:
-				NodeLongKeyApp();
-				break;
-			}
+#ifdef BOARD_S2_2
+			ConcenterLongKeyApp();
+#endif
+
+
+#ifdef BOARD_S1_2
+			NodeLongKeyApp();
+#endif
+
 		}
 
 
@@ -185,8 +186,9 @@ void SystemAppTaskFxn(void)
 			// voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
 			// System_printf("voltage: %d mV\n", voltageTemp);
 			// SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
-			// System_printf("the temperature : %d\n", SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SHT2X_TEMP));
-			// System_printf("the humi : %d\n", SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SHT2X_HUMI));
+
+			// DeepTemp_FxnTable.measureFxn(MAX31855_SPI_CH0);
+			// System_printf("the temperature : %d\n", DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256);
 		}
 
 		if(eventId & SYSTEMAPP_EVT_UPLOAD_NODE)
