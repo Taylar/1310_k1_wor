@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-23 14:27:53
+* @Last Modified time: 2018-01-24 15:06:00
 */
 #include "../general.h"
 
@@ -12,9 +12,9 @@
 // board node
 #ifdef BOARD_S1_2
 
-#define LED_R_PIN_NODE                       IOID_25
+#define LED_R_PIN_NODE                       IOID_23
 #define LED_G_PIN_NODE                       IOID_24
-#define LED_B_PIN_NODE                       IOID_23
+#define LED_B_PIN_NODE                       IOID_25
 #define LED_GND_PIN_NODE                     IOID_21
 
 

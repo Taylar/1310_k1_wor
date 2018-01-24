@@ -139,6 +139,6 @@ extern uint32_t Flash_get_unupload_items(void);
 extern uint32_t Flash_get_record_items(void);
 extern ErrorStatus  Falsh_prtpoint_forward(void);
 
-ErrorStatus Flash_external_Selftest(void);
+extern ErrorStatus Flash_external_Selftest(void);
 
 #endif          // __EXTFLASH_H__

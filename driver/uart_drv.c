@@ -21,7 +21,7 @@
 
 #endif
 
-#if (!defined BOARD_S6_6) && (!defined BOARD_S6_6)
+#if (!defined BOARD_S6_6) && (!defined BOARD_S2_2)
 
 #define UART_RX_INTERFACE               IOID_13          /* RXD */
 #define UART_TX_INTERFACE               IOID_10          /* TXD */

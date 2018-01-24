@@ -195,14 +195,14 @@ void NodeUploadProcess(void)
     
     while(dataItems)
     {
-        Flash_load_sensor_data(data, 22, dataItems - 1);
+        Flash_load_sensor_data(data, 22, offsetUnit);
 
         // the radio buf is full 
         if(NodeRadioSendSensorData(data, 22) == false)
         {
             return;
         }
-        dataItems++;
+        dataItems--;
         offsetUnit++;
     }
 }
@@ -506,7 +506,6 @@ void NodeRequestConfig(void)
 {
 
     // send the request
-   // RadioSendPacket()
 }
 
 

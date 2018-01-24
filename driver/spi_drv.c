@@ -162,6 +162,7 @@ ErrorStatus Spi_init(void)
     }
 
     Semaphore_Params semParams;
+    Semaphore_Params_init(&semParams);
     Semaphore_construct(&spiSemStruct, 1, &semParams);
     spiSemHandle = Semaphore_handle(&spiSemStruct);
 
