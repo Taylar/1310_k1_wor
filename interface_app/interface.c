@@ -2,6 +2,8 @@
 #include "../radio_app/radio_app.h"
 #include "interface.h"
 
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+
 /***** Defines *****/
 #define         INTERFACE_STACK_SIZE        512
 
@@ -203,3 +205,5 @@ void InterfaceDisable(void)
 {
     UartClose(UART_0);
 }
+
+#endif

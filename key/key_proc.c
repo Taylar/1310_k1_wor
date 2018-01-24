@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-22 16:46:26
+* @Last Modified time: 2018-01-24 09:51:57
 */
 
 #include "../general.h"
@@ -14,6 +14,7 @@ static KeyTask_t rKeyTask;
 
 
 
+// node board
 #ifdef BOARD_S1_2
 #define Board_BUTTON0                            IOID_4
 
@@ -24,6 +25,7 @@ const PIN_Config keyPinTable[] = {
 
 #endif
 
+// gateway board
 #ifdef BOARD_S2_2
 #define Board_BUTTON0                    IOID_1
 
@@ -32,10 +34,20 @@ const PIN_Config keyPinTable[] = {
     PIN_TERMINATE
 };
 
-
 #endif
 
+// S6_6 board
+#ifdef BOARD_S6_6
+#define Board_BUTTON1                    IOID_1
+#define Board_BUTTON0                    IOID_18
 
+const PIN_Config keyPinTable[] = {
+    Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+    Board_BUTTON1 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+    PIN_TERMINATE
+};
+
+#endif
 
 
 
@@ -81,7 +93,7 @@ static void KeyScanStop(void)
 //***********************************************************************************
 static void KeyScanFxn(UArg arg0)
 {
-    if (PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED)
+    if(PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED)
     {
         if(rKeyTask.holdPress == 0)
         {
@@ -106,7 +118,35 @@ static void KeyScanFxn(UArg arg0)
         if(AppKeyIsrCb[KEY_0_SHORT_PRESS])
             AppKeyIsrCb[KEY_0_SHORT_PRESS]();
     }
+#ifdef BOARD_S6_6
+    if(PIN_getInputValue(Board_BUTTON1) == KEY_PRESSED)
+    {
+        if(rKeyTask.holdPress == 0)
+        {
+            rKeyTask.holdPress       = 1;
+            rKeyTask.holdTime        = 0;
+        }
+        else
+        {
+            rKeyTask.holdTime++;
+            if(rKeyTask.holdTime > TIME_KEY0_LONG)
+            {
+                KeyScanStop();
+                if(AppKeyIsrCb[KEY_1_LONG_PRESS])
+                    AppKeyIsrCb[KEY_1_LONG_PRESS]();
+            }
+        }
+    }
+    else
+    {
+        rKeyTask.holdTime = 0;
+        KeyScanStop();
+        if(AppKeyIsrCb[KEY_1_SHORT_PRESS])
+            AppKeyIsrCb[KEY_1_SHORT_PRESS]();
+    }
+#endif
 }
+
 
 //***********************************************************************************
 //
@@ -151,9 +191,39 @@ void KeyInit(void)
     KeyIoInit((PIN_IntCb)KeyIsrFxn);
 }
 
+//***********************************************************************************
+//
+// Key register the isr cb.
+//
+//***********************************************************************************
 void KeyRegister(void (*Cb)(void), KEY_ACTION action)
 {
     if(action < KEY_ACTION_MAX)
         AppKeyIsrCb[action] = Cb;
 }
 
+//***********************************************************************************
+//
+// Key read state.
+//
+//***********************************************************************************
+
+uint8_t KeyReadState(KEY_ACTION action)
+{
+    switch(action)
+    {
+        case KEY_0_SHORT_PRESS:
+        case KEY_0_LONG_PRESS:
+
+        return PIN_getInputValue(Board_BUTTON0);
+
+#ifdef BOARD_S6_6
+        case KEY_1_SHORT_PRESS:
+        case KEY_1_LONG_PRESS:
+
+        return PIN_getInputValue(Board_BUTTON1);
+#endif
+
+    }
+    return KEY_RELEASE;
+}

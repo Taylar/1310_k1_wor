@@ -6,7 +6,8 @@
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 /***** Defines *****/
-#define NODE_BROADCASTING_TIME         5
+#define NODE_BROADCASTING_TIME          5
+#define NODE_BROADCAST_TESTRESUT_TIME   5
 
 
 
@@ -201,7 +202,7 @@ void NodeUploadProcess(void)
         {
             return;
         }
-        dataItems--;
+        dataItems++;
         offsetUnit++;
     }
 }
@@ -375,6 +376,16 @@ void NodeBroadcasting(void)
     }
 }
 
+//***********************************************************************************
+// brief:   open the timer to send the device testing result
+// 
+// parameter: 
+//***********************************************************************************
+void NodeBroadcastTestResult(void)
+{
+    NodeStrategySetPeriod(NODE_BROADCAST_TESTRESUT_TIME);
+    NodeRadioSendSynReq();
+}
 
 //***********************************************************************************
 // brief:   start broadcast
@@ -412,7 +423,7 @@ void NodeSleep(void)
     NodeCollectStop();
     NodeUploadStop();
     NodeStrategyStop();
-    powerMode = DEVICES_POWER_OFF;
+    deviceMode = DEVICES_OFF_MODE;
 }
 
 //***********************************************************************************
@@ -422,7 +433,7 @@ void NodeSleep(void)
 //***********************************************************************************
 void NodeWakeup(void)
 {
-    powerMode = DEVICES_POWER_ON;
+    deviceMode = DEVICES_ON_MODE;
     NodeStrategyReset();
     if(nodeParameter.configFlag)
     {
@@ -453,13 +464,13 @@ void NodeSetCustomId(uint32_t id)
 //***********************************************************************************
 void NodeShortKeyApp(void)
 {
-    switch(powerMode)
+    switch(deviceMode)
     {
-        case DEVICES_POWER_ON:
+        case DEVICES_ON_MODE:
         Led_ctrl(LED_B, 0, 500 * CLOCK_UNIT_MS, 1);
         break;
 
-        case DEVICES_POWER_OFF:
+        case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 0, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
@@ -472,14 +483,14 @@ void NodeShortKeyApp(void)
 //***********************************************************************************
 void NodeLongKeyApp(void)
 {
-    switch(powerMode)
+    switch(deviceMode)
     {
-        case DEVICES_POWER_ON:
+        case DEVICES_ON_MODE:
         NodeSleep();
         Led_ctrl(LED_R, 0, 250 * CLOCK_UNIT_MS, 6);
         break;
 
-        case DEVICES_POWER_OFF:
+        case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 0, 250 * CLOCK_UNIT_MS, 6);
         NodeWakeup();
         break;
@@ -496,4 +507,60 @@ void NodeRequestConfig(void)
 
     // send the request
    // RadioSendPacket()
+}
+
+
+//***********************************************************************************
+// brief:the node sensor test
+// 
+// parameter: 
+//***********************************************************************************
+void NodeSensorTest(void)
+{
+    uint16_t voltageTemp;
+
+    testResultInfoLen = 0;
+    if(Flash_external_Selftest() == ES_SUCCESS)
+    {
+        testResultInfo[testResultInfoLen++] = 'F';
+        testResultInfo[testResultInfoLen++] = 'l';
+        testResultInfo[testResultInfoLen++] = 'a';
+        testResultInfo[testResultInfoLen++] = 's';
+        testResultInfo[testResultInfoLen++] = 'h';
+        testResultInfo[testResultInfoLen++] = ':';
+        testResultInfo[testResultInfoLen++] = 'O';
+        testResultInfo[testResultInfoLen++] = 'K';
+        testResultInfo[testResultInfoLen++] = '\n';
+    }
+    else
+    {
+        testResultInfo[testResultInfoLen++] = 'F';
+        testResultInfo[testResultInfoLen++] = 'l';
+        testResultInfo[testResultInfoLen++] = 'a';
+        testResultInfo[testResultInfoLen++] = 's';
+        testResultInfo[testResultInfoLen++] = 'h';
+        testResultInfo[testResultInfoLen++] = ':';
+        testResultInfo[testResultInfoLen++] = 'E';
+        testResultInfo[testResultInfoLen++] = 'R';
+        testResultInfo[testResultInfoLen++] = 'R';
+        testResultInfo[testResultInfoLen++] = 'O';
+        testResultInfo[testResultInfoLen++] = 'R';
+        testResultInfo[testResultInfoLen++] = '\n';
+    }
+
+    SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
+    DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256;
+
+    testResultInfoLen += sprintf((char *)(&testResultInfo[testResultInfoLen]), "TEMP: %02d",
+                DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256);
+
+    testResultInfo[testResultInfoLen++] = '\n';
+
+    voltageTemp = AONBatMonBatteryVoltageGet();
+    voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
+    testResultInfoLen += sprintf((char *)(&testResultInfo[testResultInfoLen]), "VOL: %d mV", voltageTemp);
+
+    testResultInfo[testResultInfoLen++] = '\n';
+
+    NodeBroadcastTestResult();
 }

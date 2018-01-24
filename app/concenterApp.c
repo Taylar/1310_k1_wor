@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-23 10:52:19
+* @Last Modified time: 2018-01-24 09:43:05
 */
 #include "../general.h"
 
@@ -11,7 +11,6 @@
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 #include "../interface_app/interface.h"
-
 
 
 
@@ -257,7 +256,7 @@ void ConcenterSleep(void)
         EasyLink_abort();
         RadioFrontDisable();
     }
-    powerMode = DEVICES_POWER_OFF;
+    deviceMode = DEVICES_OFF_MODE;
 }
 
 //***********************************************************************************
@@ -267,7 +266,7 @@ void ConcenterSleep(void)
 //***********************************************************************************
 void ConcenterWakeup(void)
 {
-    powerMode = DEVICES_POWER_ON;
+    deviceMode = DEVICES_ON_MODE;
     if(concenterParameter.configFlag)
     {
         RadioFrontRxEnable();
@@ -309,13 +308,13 @@ uint32_t ConcenterReadChannel(uint32_t nodeAddr)
 //***********************************************************************************
 void ConcenterShortKeyApp(void)
 {
-    switch(powerMode)
+    switch(deviceMode)
     {
-        case DEVICES_POWER_ON:
+        case DEVICES_ON_MODE:
         Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
-        case DEVICES_POWER_OFF:
+        case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
@@ -328,14 +327,14 @@ void ConcenterShortKeyApp(void)
 //***********************************************************************************
 void ConcenterLongKeyApp(void)
 {
-    switch(powerMode)
+    switch(deviceMode)
     {
-        case DEVICES_POWER_ON:
+        case DEVICES_ON_MODE:
         ConcenterSleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         break;
 
-        case DEVICES_POWER_OFF:
+        case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         ConcenterWakeup();
         break;
@@ -373,6 +372,5 @@ uint8_t ConcenterReadSynTimeFlag(void)
 {
     return concenterParameter.synTimeFlag;
 }
-
 
 

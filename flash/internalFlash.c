@@ -193,21 +193,21 @@ void InternalFlashConfigReset(void)
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 */
 
-    g_rSysConfigInfo.collectPeriod = 60;   // 1min
-
-    g_rSysConfigInfo.serverIpAddr[0] = 114;
-    g_rSysConfigInfo.serverIpAddr[1] = 215;
-    g_rSysConfigInfo.serverIpAddr[2] = 122;
-    g_rSysConfigInfo.serverIpAddr[3] = 32;
-    g_rSysConfigInfo.serverIpPort = 12200;
-
-    g_rSysConfigInfo.hbPeriod = 60;     // 1min
-    g_rSysConfigInfo.uploadPeriod = 60; // 5min
-    g_rSysConfigInfo.ntpPeriod = 24 * 60 * 60L;    // 24hour
-
-    g_rSysConfigInfo.gnssPeriod = 10;  // 10sec
-
-    g_rSysConfigInfo.batLowVol = 3600;
-
-    g_rSysConfigInfo.apnuserpwd[0] = 0;
+	g_rSysConfigInfo.collectPeriod   = 60;   // 1min
+	
+	g_rSysConfigInfo.serverIpAddr[0] = 114;
+	g_rSysConfigInfo.serverIpAddr[1] = 215;
+	g_rSysConfigInfo.serverIpAddr[2] = 122;
+	g_rSysConfigInfo.serverIpAddr[3] = 32;
+	g_rSysConfigInfo.serverIpPort    = 12200;
+	
+	g_rSysConfigInfo.hbPeriod        = 60;     // 1min
+	g_rSysConfigInfo.uploadPeriod    = 60; // 5min
+	g_rSysConfigInfo.ntpPeriod       = 24 * 60 * 60L;    // 24hour
+	
+	g_rSysConfigInfo.gnssPeriod      = 10;  // 10sec
+	
+	g_rSysConfigInfo.batLowVol       = 3600;
+	
+	g_rSysConfigInfo.apnuserpwd[0]   = 0;
 }

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-22 16:33:17
+* @Last Modified time: 2018-01-23 14:27:53
 */
 #include "../general.h"
 
@@ -21,8 +21,8 @@
 static const uint8_t LED_ID_CONST[LED_MAX] =
 {
     LED_R_PIN_NODE,
-    LED_G_PIN_NODE,
     LED_B_PIN_NODE,
+    LED_G_PIN_NODE,
     LED_GND_PIN_NODE,
 };
 
@@ -48,8 +48,8 @@ const PIN_Config ledPinTable[] = {
 static const uint8_t LED_ID_CONST[LED_MAX] =
 {
     LED_R_PIN_GATEWAY,
-    LED_G_PIN_GATEWAY,
     LED_B_PIN_GATEWAY,
+    LED_G_PIN_GATEWAY,
 };
 
 const PIN_Config ledPinTable[] = {
@@ -62,6 +62,28 @@ const PIN_Config ledPinTable[] = {
 
 #endif
 
+
+// board S6_6 with screen
+#ifdef  BOARD_S6_6
+
+#define LED_R_PIN                       IOID_14
+#define LED_B_PIN                       IOID_15
+
+static const uint8_t LED_ID_CONST[LED_MAX] =
+{
+    LED_R_PIN,
+    LED_B_PIN,
+};
+
+const PIN_Config ledPinTable[] = {
+    
+    LED_R_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+    LED_B_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+    PIN_TERMINATE
+};
+
+
+#endif
 
 static Semaphore_Struct ledSemStruct;
 static Semaphore_Handle ledSemHandle;
@@ -93,6 +115,11 @@ void LedIoInit(void)
 void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
 {
     /* Get access to resource */
+#ifdef BOARD_S6_6
+    if(ledId >= LED_G)
+        return;
+#endif
+
     Semaphore_pend(ledSemHandle, BIOS_WAIT_FOREVER);
 
     PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], state);

@@ -13,8 +13,8 @@
 
 typedef enum {
     LED_R,
-    LED_G,
     LED_B,
+    LED_G,
     LED_GND,
     LED_MAX
 } LED_ID;

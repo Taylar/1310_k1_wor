@@ -2,13 +2,31 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-17 19:40:40
+* @Last Modified time: 2018-01-23 18:45:47
 */
 #include "../general.h"
 
 /* UART Board */
+#ifdef BOARD_S2_2
+
 #define UART_RX_INTERFACE               IOID_23          /* RXD */
 #define UART_TX_INTERFACE               IOID_8          /* TXD */
+
+#endif
+
+#ifdef BOARD_S6_6
+
+#define UART_RX_INTERFACE               IOID_13          /* RXD */
+#define UART_TX_INTERFACE               IOID_10          /* TXD */
+
+#endif
+
+#if (!defined BOARD_S6_6) && (!defined BOARD_S6_6)
+
+#define UART_RX_INTERFACE               IOID_13          /* RXD */
+#define UART_TX_INTERFACE               IOID_10          /* TXD */
+
+#endif
 
 #define UART_RX_GSM                     IOID_5          /* RXD */
 #define UART_TX_GSM                     IOID_4          /* TXD */
@@ -51,6 +69,12 @@ const UARTCC26XX_HWAttrsV2 uartCC26XXHWAttrs_Interface[CC1310_LAUNCHXL_UARTCOUNT
     }
 };
 
+const PIN_Config uart_pin_interface[] = {
+    UART_TX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
+    UART_RX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
+    PIN_TERMINATE
+};
+
 
 UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
     {
@@ -69,11 +93,7 @@ const uint_least8_t UART_count = CC1310_LAUNCHXL_UARTCOUNT;
 static UART_Handle      uarthandle[CC1310_LAUNCHXL_UARTCOUNT];
 
 
-const PIN_Config uart_pin_interface[] = {
-    UART_TX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
-    UART_RX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
-    PIN_TERMINATE
-};
+
 
 const PIN_Config uart_pin_gsm[] = {
     UART_TX_GSM | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_DIS,       /* gsm uart set as input          */

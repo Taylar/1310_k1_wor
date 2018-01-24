@@ -15,6 +15,12 @@
 typedef enum {
     KEY_0_SHORT_PRESS,
     KEY_0_LONG_PRESS,
+
+#ifdef BOARD_S6_6
+    KEY_1_SHORT_PRESS,
+    KEY_1_LONG_PRESS,
+#endif
+
     KEY_ACTION_MAX
 } KEY_ACTION;
 
@@ -47,6 +53,9 @@ typedef struct {
 void KeyInit(void);
 
 void KeyRegister(void (*Cb)(void), KEY_ACTION action);
+
+uint8_t KeyReadState(KEY_ACTION action);
+
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */
 

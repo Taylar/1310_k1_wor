@@ -61,7 +61,7 @@
 //***********************************************************************************
 #define BOARD_S1_2
 // #define BOARD_S2_2
-#define BOARD_S6_6
+// #define BOARD_S6_6
 
 
 
@@ -102,6 +102,100 @@
 //WatchDog define
 #define SUPPORT_WATCHDOG
 
+
+#define SUPPORT_SENSOR
+#ifdef SUPPORT_SENSOR
+#define SUPPORT_SHT2X
+#endif
+
+/*
+// *********************************************************
+#ifdef BOARD_S1_2
+
+//Flash define
+#define FLASH_INTERNAL
+#define FLASH_EXTERNAL
+#ifdef FLASH_EXTERNAL
+//#define FLASH_W25Q256FV
+#endif
+
+#define SUPPORT_SENSOR
+#ifdef SUPPORT_SENSOR
+#define SUPPORT_SHT2X
+#endif
+
+
+//Led define
+#define SUPPORT_LED
+
+#endif
+
+// *********************************************************
+#ifdef BOARD_S2_2
+//Flash define
+#define FLASH_INTERNAL
+#define FLASH_EXTERNAL
+#ifdef FLASH_EXTERNAL
+//#define FLASH_W25Q256FV
+#endif
+
+#define SUPPORT_DEEPTEMP
+
+//Network define
+#define SUPPORT_NETWORK
+#ifdef SUPPORT_NETWORK
+#define SUPPORT_GSM
+#endif
+
+
+//Led define
+#define SUPPORT_LED
+
+
+//Battery function define.
+#define SUPPORT_BATTERY
+
+#endif
+
+
+// *********************************************************
+#ifdef BOARD_S6_6
+
+//Flash define
+#define FLASH_INTERNAL
+#define FLASH_EXTERNAL
+#ifdef FLASH_EXTERNAL
+//#define FLASH_W25Q256FV
+#endif
+
+//Network define
+#define SUPPORT_NETWORK
+#ifdef SUPPORT_NETWORK
+#define SUPPORT_GSM
+#endif
+
+
+//LCD define
+#define SUPPORT_DISP_SCREEN
+#ifdef SUPPORT_DISP_SCREEN
+//#define AUTO_SHUTDOWN_LCD
+//Electronic Paper Display module
+//#define EPD_GDE0213B1
+#define LCD_ST7567A
+#define SUPPORT_MENU
+//#define SUPPORT_NETGATE_DISP_NODE
+#endif
+
+
+//Led define
+#define SUPPORT_LED
+
+//Battery function define.
+#define SUPPORT_BATTERY
+
+#endif
+// *********************************************************
+*/
 //ADC define.
 
 //Flash define
@@ -111,27 +205,45 @@
 //#define FLASH_W25Q256FV
 #endif
 
-//Sensor define
-
 #define SUPPORT_SENSOR
 #ifdef SUPPORT_SENSOR
 #define SUPPORT_SHT2X
 #endif
 
-#define SUPPORT_DEEPTEMP
+
+//Led define
+#define SUPPORT_LED
+
+//Battery function define.
+#define SUPPORT_BATTERY
 
 
-
-//CRC function define.
-
-
-//Radio define
+//LCD define
+#define SUPPORT_DISP_SCREEN
+#ifdef SUPPORT_DISP_SCREEN
+//#define AUTO_SHUTDOWN_LCD
+//Electronic Paper Display module
+//#define EPD_GDE0213B1
+#define LCD_ST7567A
+#define SUPPORT_MENU
+//#define SUPPORT_NETGATE_DISP_NODE
+#endif
 
 //Network define
 #define SUPPORT_NETWORK
 #ifdef SUPPORT_NETWORK
 #define SUPPORT_GSM
 #endif
+
+// deep temperature
+#define SUPPORT_DEEPTEMP
+
+
+
+//Radio define
+
+//CRC function define.
+
 
 
 //Queue function define
@@ -143,26 +255,12 @@
 //I2C define
 #define I2C_BUS
 
-//LCD define
-#define SUPPORT_DISP_SCREEN
-#ifdef SUPPORT_DISP_SCREEN
-//#define AUTO_SHUTDOWN_LCD
-//Electronic Paper Display module
-//#define EPD_GDE0213B1
-#define LCD_ST7567A
-#define SUPPORT_MENU
-
-//#define SUPPORT_NETGATE_DISP_NODE
-
-#endif
 
 
 
-//Led define
-#define SUPPORT_LED
 
-//Battery function define.
-#define SUPPORT_BATTERY
+
+
 
 
 //***********************************************************************************
@@ -210,8 +308,9 @@ typedef enum {
 #define         DEVICES_TYPE_NODE               1
 
 // device power mode 
-#define         DEVICES_POWER_OFF               0
-#define         DEVICES_POWER_ON                1
+#define         DEVICES_OFF_MODE               0
+#define         DEVICES_ON_MODE                1
+#define         DEVICES_TEST_MODE              2
 
 //***********************************************************************************
 //
@@ -251,7 +350,9 @@ typedef struct {
 } AlarmTemp_t;
 
 typedef struct {
-	uint16_t size;
+	uint16_t size:10;
+    uint16_t hwVersion:6;
+
 	uint16_t swVersion;
 	uint8_t DeviceId[4];
 	uint8_t customId[2];
@@ -345,6 +446,6 @@ typedef struct {
 extern ConfigInfo_t g_rSysConfigInfo;
 
 
-extern uint8_t powerMode;
+extern uint8_t deviceMode;
 
 #endif	/* __ZKSIOT_GENERAL_H__ */

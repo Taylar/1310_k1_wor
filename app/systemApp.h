@@ -20,6 +20,9 @@
 
 
 
+// test result info
+extern uint8_t testResultInfo[32];
+extern uint8_t testResultInfoLen;
 
 
 

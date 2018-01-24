@@ -64,14 +64,13 @@ int main(void)
 
     /* Initialize System Application tasks */
     
-    // LedInit();
+    LedInit();
     
 
     SysAppTaskCreate();
 
 
-#ifdef BOARD_S2_2
-    
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     // Init the config
     if(InternalFlashLoadConfig() == false)
     {
@@ -81,11 +80,10 @@ int main(void)
 
     Nwk_task_create();
     InterfaceTaskCreate();
-
 #endif 
 
     /* Initialize radio tasks */
-    // RadioAppTaskCreate();
+    RadioAppTaskCreate();
     
     
 

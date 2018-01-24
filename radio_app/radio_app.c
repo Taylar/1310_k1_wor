@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-22 16:48:09
+* @Last Modified time: 2018-01-24 10:12:31
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -129,12 +129,11 @@ void RadioModeSet(RadioOperationMode modeSet)
 void RadioAppTaskFxn(void)
 {
 
-#ifdef BOARD_S2_2
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
 
     radioMode = RADIOMODE_RECEIVEPORT;
     RadioFrontInit();
     RadioFrontRxEnable();
-
 #endif
 
 

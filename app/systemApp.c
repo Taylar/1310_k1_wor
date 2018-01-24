@@ -28,9 +28,11 @@ Event_Struct systemAppEvtStruct;
 Event_Handle systemAppEvtHandle;
 
 // system application extern variable
-uint8_t powerMode;
+uint8_t deviceMode;
 
-
+// test result info
+uint8_t testResultInfo[32];
+uint8_t testResultInfoLen;
 
 /***** Prototypes *****/
 void SystemAppTaskFxn(void);
@@ -86,6 +88,14 @@ void SystemAppTaskFxn(void)
 	/* Obtain event instance handle */
 	systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
 
+
+    deviceMode = DEVICES_OFF_MODE;
+
+    KeyInit();
+    KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
+
+    KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
+
 #ifdef  BOARD_S6_6
     Disp_init();
     Disp_poweron();
@@ -97,22 +107,28 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef BOARD_S1_2
-   	// NodeAppHwInit();
+   	NodeAppHwInit();
 #endif
 
 
-    powerMode = DEVICES_POWER_OFF;
 
-    KeyInit();
-    KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
-
-    KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
 
 	RtcInit(RtcEventSet);
 
 	RtcStart();
 
-    
+
+
+   	if(KeyReadState(KEY_0_SHORT_PRESS) == KEY_PRESSED)
+   	{
+   		deviceMode = DEVICES_TEST_MODE;
+
+		Led_toggle(LED_R);
+        Led_toggle(LED_B);
+		Led_toggle(LED_G);
+		// delay for a minute waite other task Init
+		Task_sleep(2 * CLOCK_UNIT_S);
+   	}
 	// voltageTemp = Clock_getTicks();
 	// Clock_setTimeout(sysTimerClockHandle, 0);
 	// Clock_start(sysTimerClockHandle);
