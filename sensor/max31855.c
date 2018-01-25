@@ -438,6 +438,7 @@ static void Max31855_measure(uint8_t chNum)
     uint8_t scsOfSample = 0;            // 计数采样成功的次数
     uint8_t cnt = 0;                   // 循环计数单元
     uint8_t Datastate = 0;
+    int32_t k;
     MAX31855_MeasureData md[5];
     Max31855_poweron();
 
@@ -478,7 +479,10 @@ static void Max31855_measure(uint8_t chNum)
         thmpTemp = (double) md[2].sd.thermocouple * 0.25 - 2048.0f;
         jtnTemp = (double) md[2].sd.junction * 0.0625 - 128.0f;
         md[2].temp = ((uint32_t)(MAX31855_CalcTemp(thmpTemp, jtnTemp)*100));
-        rSensorData[chNum].tempdeep = ((uint32_t)(MAX31855_CalcTemp(thmpTemp, jtnTemp)*100))<<8;
+        k = (int32_t)(MAX31855_CalcTemp(thmpTemp, jtnTemp)*100);
+        k = k << 8;
+        rSensorData[chNum].tempdeep = (uint32_t)k;
+        //rSensorData[chNum].tempdeep = ((uint32_t)(MAX31855_CalcTemp(thmpTemp, jtnTemp)*100))<<8;
         return ;
     }
     // 计算温度值
@@ -492,7 +496,10 @@ static void Max31855_measure(uint8_t chNum)
     MAX31855_qsort(md, 5);
 
     // 取中间值
-    rSensorData[chNum].tempdeep = ((uint32_t)(md[2].temp*100))<<8;
+    k = (int32_t)(md[2].temp*100);
+    k =k << 8;
+    rSensorData[chNum].tempdeep = (uint32_t)k;
+    //rSensorData[chNum].tempdeep = ((uint32_t)(md[2].temp*100))<<8;
 
 }
 /*******************************************************************************
