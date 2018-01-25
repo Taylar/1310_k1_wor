@@ -203,8 +203,8 @@ void SystemAppTaskFxn(void)
 			// System_printf("voltage: %d mV\n", voltageTemp);
 			// SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
 
-			// DeepTemp_FxnTable.measureFxn(MAX31855_SPI_CH0);
-			// System_printf("the temperature : %d\n", DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256);
+			DeepTemp_FxnTable.measureFxn(MAX31855_SPI_CH0);
+			System_printf("the temperature : %d\n", DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256);
 		}
 
 		if(eventId & SYSTEMAPP_EVT_UPLOAD_NODE)
