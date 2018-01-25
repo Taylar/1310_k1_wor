@@ -65,9 +65,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket);
 
 bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length);
 
-void NodeRadioSendSynReq(void);
+bool NodeRadioSendSynReq(void);
 
-void NodeRadioSendParaSetAck(ErrorStatus status);
+bool NodeRadioSendParaSetAck(ErrorStatus status);
 
 void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorStatus status);
 

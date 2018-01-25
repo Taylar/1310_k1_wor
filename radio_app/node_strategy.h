@@ -18,7 +18,7 @@ void NodeStrategyReceiveTimeoutProcess(void);
 
 void NodeStrategyReceiveReceiveSuccess(void);
 
-uint8_t NodeStrategySendPacket(uint8_t *dataP, uint8_t len);
+bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len);
 
 void NodeStrategyBusySet(bool boolFlag);
 

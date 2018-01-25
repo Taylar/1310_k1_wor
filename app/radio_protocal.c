@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-22 18:11:27
+* @Last Modified time: 2018-01-25 15:44:53
 */
 #include "../general.h"
 
@@ -369,8 +369,7 @@ bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length)
 
 	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
-	NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
-	return true;
+	return NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
 
 
@@ -379,7 +378,7 @@ bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length)
 // 
 // parameter: 
 //***********************************************************************************
-void NodeRadioSendSynReq(void)
+bool NodeRadioSendSynReq(void)
 {
 	protocalTxBuf.len = 10;
 	protocalTxBuf.dstAddr	= GetRadioDstAddr();
@@ -387,14 +386,14 @@ void NodeRadioSendSynReq(void)
 
 	// the remainderCache is not satisfy length
 	if(NodeStrategyRemainderCache() < protocalTxBuf.len)
-		return ;
+		return false;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME_REQ;
 
 
 	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
-	NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
+	return NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
 
 
@@ -405,7 +404,7 @@ void NodeRadioSendSynReq(void)
 // parameter: 
 // status:	success or fail
 //***********************************************************************************
-void NodeRadioSendParaSetAck(ErrorStatus status)
+bool NodeRadioSendParaSetAck(ErrorStatus status)
 {
 	protocalTxBuf.command	= RADIO_PRO_CMD_SET_PARA_ACK;
 	protocalTxBuf.dstAddr	= GetRadioDstAddr();
@@ -414,13 +413,13 @@ void NodeRadioSendParaSetAck(ErrorStatus status)
 
 	// the remainderCache is not satisfy length
 	if(NodeStrategyRemainderCache() < protocalTxBuf.len)
-		return ;
+		return false;
 
 	protocalTxBuf.load[0]		= (uint8_t)status;
 
 	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
-	NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
+	return NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
 
 

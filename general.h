@@ -59,8 +59,8 @@
 // HW version define.
 //
 //***********************************************************************************
-// #define BOARD_S1_2
-#define BOARD_S2_2
+#define BOARD_S1_2
+// #define BOARD_S2_2
 // #define BOARD_S6_6
 
 

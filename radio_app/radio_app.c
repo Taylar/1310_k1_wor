@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-24 10:12:31
+* @Last Modified time: 2018-01-25 15:56:28
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -42,8 +42,8 @@ struct RadioOperation {
 static Task_Params passRadioTaskParams;
 Task_Struct passRadioTask;        /* not static so you can see in ROV */
 static uint8_t nodeRadioTaskStack[PASSRADIO_TASK_STACK_SIZE];
-//Semaphore_Struct radioAccessSem;  /* not static so you can see in ROV */
-//static Semaphore_Handle radioAccessSemHandle;
+Semaphore_Struct radioAccessSem;  /* not static so you can see in ROV */
+static Semaphore_Handle radioAccessSemHandle;
 Event_Struct radioOperationEvent; /* not static so you can see in ROV */
 static Event_Handle radioOperationEventHandle;
 
@@ -89,12 +89,12 @@ void RadioAppTaskCreate(void)
 {
 
     /* Create semaphore used for exclusive radio access */ 
-    /*
+    
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);
     Semaphore_construct(&radioAccessSem, 1, &semParam);
     radioAccessSemHandle = Semaphore_handle(&radioAccessSem); 
-    */
+    
 
     /* Create event used internally for state changes */
     Event_Params eventParam;
@@ -197,6 +197,8 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TX)
         {
+
+            Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
             // stop receive radio, otherwise couldn't send successful
             RadioFrontTxEnable();
             EasyLink_abort();
@@ -215,6 +217,7 @@ void RadioAppTaskFxn(void)
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }
+            Semaphore_post(radioAccessSemHandle);
         }
 
 
@@ -259,12 +262,14 @@ void RadioAppTaskFxn(void)
 // maxNumberOfRetries:  the max Retries timers
 // ackTimeoutMs:    the time out of Receiving
 //***********************************************************************************
-void RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs, uint8_t baseAddr)
+bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs, uint8_t baseAddr)
 {
+    if(Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER) == false)
+        return false;
     /* Set destination address in EasyLink API */
     memcpy(currentRadioOperation.easyLinkTxPacket.dstAddr, dstRadioAddr, dstAddrLen);
 
-    currentRadioOperation.easyLinkTxPacket.len      = len;
+    currentRadioOperation.easyLinkTxPacket.len      += len;
     memcpy(currentRadioOperation.easyLinkTxPacket.payload+baseAddr, dataP, len);
 
     /* Copy ADC packet to payload
@@ -274,7 +279,10 @@ void RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetrie
     currentRadioOperation.maxNumberOfRetries = maxNumberOfRetries;
     currentRadioOperation.ackTimeoutMs = ackTimeoutMs;
     currentRadioOperation.retriesDone = 0;
-   
+
+    Semaphore_post(radioAccessSemHandle);
+
+    return true;
 }
 
 
@@ -404,3 +412,7 @@ void SetRadioDstAddr(uint32_t addr)
     dstRadioAddr[3] = HIBYTE(HIWORD(addr));
 }
 
+void ClearRadioSendBuf(void)
+{
+    currentRadioOperation.easyLinkTxPacket.len = 0;
+}

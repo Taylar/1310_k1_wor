@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-18 09:59:19
+* @Last Modified time: 2018-01-25 15:57:44
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -228,6 +228,8 @@ void NodeStrategyReceiveReceiveSuccess(void)
     nodeStrategy.busy           = false;
     nodeStrategy.remainderCache = EASYLINK_MAX_DATA_LENGTH;
 
+    ClearRadioSendBuf();
+    
     if(nodeStrategy.concenterNum)
     {
         if(nodeStrategy.concenterAddr != GetRadioDstAddr())
@@ -246,7 +248,7 @@ void NodeStrategyReceiveReceiveSuccess(void)
 // 
 // parameter: none
 //***********************************************************************************
-uint8_t NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
+bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
 {
     if(len > nodeStrategy.remainderCache)
         return 0xff;

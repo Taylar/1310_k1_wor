@@ -42,7 +42,7 @@ void RadioModeSet(RadioOperationMode modeSet);
 
 void RadioAppTaskFxn(void);
 
-void RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs, uint8_t baseAddr);
+bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs, uint8_t baseAddr);
 
 void RadioSend(void);
 
@@ -62,5 +62,6 @@ uint32_t GetRadioSubSrcAddr(void);
 
 void SetRadioSubSrcAddr(uint32_t addr);
 
+void ClearRadioSendBuf(void);
 
 #endif		// __RADIO_APP_H__
