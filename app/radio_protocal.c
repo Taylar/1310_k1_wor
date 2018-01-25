@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-25 15:44:53
+* @Last Modified time: 2018-01-25 20:29:41
 */
 #include "../general.h"
 
@@ -30,30 +30,6 @@ static uint8_t     concenterRemainderCache;
 // }
 
 
-
-static void AlineRadio_protocal_tStruct(radio_protocal_t *adjust)
-{
-	uint8_t*  addrTemp;
-
-	addrTemp = (uint8_t *)adjust + 2;
-	memcpy(addrTemp, (uint8_t*)(&adjust->dstAddr), RADIO_PROTOCAL_LOAD_MAX +8);
-	
-}
-
-static void AlineRadio_protocal_tStruct_Decompile(radio_protocal_t *adjust)
-{
-	uint8_t*  addrTemp;
-	uint8_t i;
-
-	addrTemp = (uint8_t *)adjust;
-
-	for (i = 0; i < (RADIO_PROTOCAL_LOAD_MAX + 6); i++)
-	{
-		addrTemp[RADIO_PROTOCAL_LOAD_MAX + 8 - 1 - i] =  addrTemp[RADIO_PROTOCAL_LOAD_MAX + 8 - 3 - i];
-	}
-}
-
-
 //***********************************************************************************
 // brief:   analysis the node protocal 
 // 
@@ -74,8 +50,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	// this buf may be include several message
 	bufTemp		= (radio_protocal_t *)protocalRxPacket->payload;
-
-	AlineRadio_protocal_tStruct_Decompile(bufTemp);
 
 	SetRadioDstAddr(bufTemp->srcAddr);
 
@@ -231,7 +205,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 		// point to new message the head
 		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
-		AlineRadio_protocal_tStruct_Decompile(bufTemp);
 	}
 
 NodeDispath:
@@ -267,7 +240,6 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
 	len                     = protocalRxPacket->len;
 	bufTemp                 = (radio_protocal_t *)protocalRxPacket->payload;
-	AlineRadio_protocal_tStruct_Decompile(bufTemp);
 
 	SetRadioDstAddr(bufTemp->srcAddr);
     ConcenterSaveChannel(bufTemp->srcAddr);
@@ -332,8 +304,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			break;
 		}
 		// point to new message the head
-		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
-		AlineRadio_protocal_tStruct_Decompile(bufTemp);
+		bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);
 	}
 
 	// receive several cmd in one radio packet, must return in one radio packet;
@@ -367,7 +338,6 @@ bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length)
 
 	memcpy(protocalTxBuf.load, dataP, length);
 
-	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
 	return NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
@@ -391,7 +361,6 @@ bool NodeRadioSendSynReq(void)
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME_REQ;
 
 
-	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
 	return NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
@@ -417,7 +386,6 @@ bool NodeRadioSendParaSetAck(ErrorStatus status)
 
 	protocalTxBuf.load[0]		= (uint8_t)status;
 
-	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
 	return NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
@@ -461,7 +429,6 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorSt
 
 	SetRadioDstAddr(dstAddr);
 
-	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
     concenterRemainderCache -= protocalTxBuf.len;
@@ -513,7 +480,6 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 
 	SetRadioDstAddr(dstAddr);
 
-	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
     concenterRemainderCache -= protocalTxBuf.len;
@@ -544,7 +510,6 @@ void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr, uint8_t *data
 
 	SetRadioDstAddr(dstAddr);
 
-	AlineRadio_protocal_tStruct(&protocalTxBuf);
 
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
     concenterRemainderCache -= protocalTxBuf.len;

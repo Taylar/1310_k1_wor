@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-25 15:56:28
+* @Last Modified time: 2018-01-25 20:31:20
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -322,7 +322,7 @@ void RadioResendPacket(void)
 {
     EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
             
-    if(radioMode == RADIOMODE_SENDPORT)
+    if(radioMode == RADIOMODE_RECEIVEPORT)
         EasyLink_receiveAsync(RxDoneCallback, 0);
 
     currentRadioOperation.retriesDone++;

@@ -44,14 +44,14 @@
 
 
 /***** Type declarations *****/
-typedef struct {
+
+__attribute__((packed)) typedef  struct {
     uint8_t     len;
     uint8_t     command;
     uint32_t    dstAddr;
     uint32_t    srcAddr;
     uint8_t     load[RADIO_PROTOCAL_LOAD_MAX];
-}radio_protocal_t;
-
+}__attribute__((packed)) radio_protocal_t;
 
 /***** Prototypes *****/
 
