@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-26 10:25:04
+* @Last Modified time: 2018-01-26 14:46:56
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -199,7 +199,6 @@ void RadioAppTaskFxn(void)
         {
 
             Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
-                Led_toggle(LED_G);
             // stop receive radio, otherwise couldn't send successful
             RadioFrontTxEnable();
             EasyLink_abort();
@@ -219,7 +218,6 @@ void RadioAppTaskFxn(void)
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }
             Semaphore_post(radioAccessSemHandle);
-                Led_toggle(LED_G);
         }
 
 
@@ -268,7 +266,6 @@ bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetrie
 {
     if(Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER) == false)
         return false;
-                Led_toggle(LED_G);
     /* Set destination address in EasyLink API */
     memcpy(currentRadioOperation.easyLinkTxPacket.dstAddr, dstRadioAddr, dstAddrLen);
 
@@ -284,7 +281,6 @@ bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetrie
     currentRadioOperation.retriesDone = 0;
 
     Semaphore_post(radioAccessSemHandle);
-                Led_toggle(LED_G);
 
     return true;
 }
