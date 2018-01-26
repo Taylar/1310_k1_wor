@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-25 15:57:44
+* @Last Modified time: 2018-01-26 13:41:03
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -140,6 +140,8 @@ void NodeStrategyStop(void)
 {
     if(Clock_isActive(nodeStrategyStartClockHandle))
         Clock_stop(nodeStrategyStartClockHandle);
+    ClearRadioSendBuf();
+    
     nodeStrategy.busy           = false;
     nodeStrategy.success        = false;
 }
@@ -251,7 +253,7 @@ void NodeStrategyReceiveReceiveSuccess(void)
 bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
 {
     if(len > nodeStrategy.remainderCache)
-        return 0xff;
+        return false;
     
     if(nodeStrategy.success == false)
     {
@@ -264,7 +266,7 @@ bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
     nodeStrategy.remainderCache -= len;
     nodeStrategy.busy       = true;
 
-    return 0x00;
+    return true;
 }
 
 

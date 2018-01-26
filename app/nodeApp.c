@@ -37,6 +37,9 @@ Clock_Struct nodeUploadPeriodClock;     /* not static so you can see in ROV */
 static Clock_Handle nodeUploadPeriodClockHandle;
 
 
+uint8_t     offsetUnit; // for sensor data upload offset unit
+
+
 /***** Prototypes *****/
 
 
@@ -80,6 +83,8 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.synTimeFlag   = false;
     nodeParameter.configFlag    = InternalFlashLoadConfig();
     nodeParameter.configFlag    = true;
+
+    offsetUnit                  = 0;
 
     if(nodeParameter.configFlag)
     {
@@ -188,11 +193,9 @@ void NodeUploadProcess(void)
 {
     uint8_t     data[24];
     uint32_t    dataItems;
-    uint8_t     offsetUnit;
     // reverse the buf to other command
-    offsetUnit = 0;
-    dataItems  = Flash_get_unupload_items();
-    
+    dataItems  = Flash_get_unupload_items() - offsetUnit;
+
     while(dataItems)
     {
         Flash_load_sensor_data(data, 22, offsetUnit);
@@ -223,6 +226,8 @@ void NodeUploadFailProcess(void)
 //***********************************************************************************
 void NodeUploadSucessProcess(void)
 {
+    if(offsetUnit)
+        offsetUnit--;
     Falsh_prtpoint_forward();
 }
 
@@ -424,6 +429,9 @@ void NodeSleep(void)
     NodeUploadStop();
     NodeStrategyStop();
     deviceMode = DEVICES_OFF_MODE;
+
+    offsetUnit = 0;
+    
 }
 
 //***********************************************************************************

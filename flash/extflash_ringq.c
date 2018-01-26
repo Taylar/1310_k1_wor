@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-11 10:34:13
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-19 14:49:53
+* @Last Modified time: 2018-01-26 10:41:14
 */
 #include "../general.h"
 
@@ -41,12 +41,12 @@ bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
         return false;  
     }  
         
-    memcpy(p_queue->space[p_queue->head], data, SENSOR_DATA_LENGTH_MAX);
+    memcpy(p_queue->space[p_queue->tail], data, SENSOR_DATA_LENGTH_MAX);
      
     p_queue->tail = (p_queue->tail + 1) % p_queue->size ;  
      
     /* the queue is full*/  
-    if(p_queue->tail == p_queue->head)  
+    if(p_queue->tail == p_queue->head)
     {  
        p_queue->tag = 1;  
     }
