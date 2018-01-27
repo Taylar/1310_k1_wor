@@ -329,12 +329,12 @@ void NodeCollectProcess(void)
     data[17] = PARATYPE_TEMP_HUMI_SHT20;
 
     // sensor data
-    temp     = SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SHT2X_TEMP);
+    temp     = SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SENSOR_TEMP);
     data[18] = (uint8_t)(temp >> 8);
     data[19] = (uint8_t)(temp);
 
 
-    temp     = SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SHT2X_HUMI);
+    temp     = SHT2X_FxnTable.getValueFxn(SHT2X_I2C_CH0, SENSOR_HUMI);
     data[20] = (uint8_t)(temp >> 8);
     data[21] = (uint8_t)(temp);
 

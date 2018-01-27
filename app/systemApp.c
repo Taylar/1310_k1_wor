@@ -49,15 +49,34 @@ void SystemLongKeyEventPostIsr(void)
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_LONG);
 }
 
+void SystemKey1EventPostIsr(void)
+{
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY1);
+}
+
+void SystemLongKey1EventPostIsr(void)
+{
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY1_LONG);
+}
+
 void SysTimerCb(UArg arg0)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_TIMER);
 }
 
 
+void WdtResetCb(uintptr_t handle)
+{
+
+	// call this function will reset immediately, otherwise will waite another wdt timeout to reset
+	SysCtrlSystemReset();
+}
 
 void RtcEventSet(void)
 {
+#ifdef		SUPPORT_WATCHDOG
+	WdtClear();
+#endif	
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RTC);
 }
 
@@ -78,7 +97,6 @@ void SysAppTaskCreate(void)
 }
 
 
-void Disp_info(void);
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
@@ -96,14 +114,24 @@ void SystemAppTaskFxn(void)
 
     KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
 
+	RtcInit(RtcEventSet);
+
 #ifdef  BOARD_S6_6
+	AdcDriverInit();
     Disp_init();
     Disp_poweron();
-    Disp_info();
+    Disp_proc();
+
+    KeyRegister(SystemKeyEventPostIsr, KEY_1_SHORT_PRESS);
+    KeyRegister(SystemLongKeyEventPostIsr, KEY_1_LONG_PRESS);
+
+    Battery_init();
 #endif
 
 #ifdef BOARD_S2_2
+    AdcDriverInit();
 	ConcenterAppHwInit();
+    Battery_init();
 #endif
 
 #ifdef BOARD_S1_2
@@ -113,10 +141,12 @@ void SystemAppTaskFxn(void)
 
 
 
-	RtcInit(RtcEventSet);
 
 	RtcStart();
 
+#ifdef		SUPPORT_WATCHDOG
+	WdtInit(WdtResetCb);
+#endif
 
 
    	if(KeyReadState(KEY_0_SHORT_PRESS) == KEY_PRESSED)
@@ -132,7 +162,6 @@ void SystemAppTaskFxn(void)
 	// voltageTemp = Clock_getTicks();
 	// Clock_setTimeout(sysTimerClockHandle, 0);
 	// Clock_start(sysTimerClockHandle);
-
 
 	for(;;)
 	{
@@ -160,6 +189,10 @@ void SystemAppTaskFxn(void)
 
 #ifdef BOARD_S1_2
 			NodeShortKeyApp();
+#endif
+
+#ifdef BOARD_S6_6
+			S6ConcenterShortKeyApp();
 #endif
 		}
 
@@ -205,6 +238,9 @@ void SystemAppTaskFxn(void)
 
 			// DeepTemp_FxnTable.measureFxn(MAX31855_SPI_CH0);
 			// System_printf("the temperature : %d\n", DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256);
+
+			// Battery_voltage_measure();
+			// System_printf("the voltage : %dmV\n",Battery_get_voltage());
 		}
 
 		if(eventId & SYSTEMAPP_EVT_UPLOAD_NODE)

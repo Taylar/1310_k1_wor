@@ -168,7 +168,7 @@ static void SHT2x_measure(uint8_t chNum)
 // SHT2x calculate humidty.
 //
 //***********************************************************************************
-static int32_t SHT2x_get_value(uint8_t chNum, SHT2X_FUNCTION function)
+static int32_t SHT2x_get_value(uint8_t chNum, SENSOR_FUNCTION function)
 {
     if(chNum >= SHT2X_I2C_MAX)
         return TEMPERATURE_OVERLOAD;

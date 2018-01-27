@@ -45,7 +45,7 @@
 
 /***** Type declarations *****/
 
-__attribute__((packed)) typedef  struct {
+typedef  struct {
     uint8_t     len;
     uint8_t     command;
     uint32_t    dstAddr;

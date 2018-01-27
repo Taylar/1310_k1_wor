@@ -26,7 +26,7 @@ typedef enum {
 
 typedef void (*Sht2x_initFxn) (uint8_t chNum);
 typedef void (*Sht2x_measureFxn)(uint8_t chNum);
-typedef int32_t (*Sht2x_getValueFxn)(uint8_t chNum, SHT2X_FUNCTION function);
+typedef int32_t (*Sht2x_getValueFxn)(uint8_t chNum, SENSOR_FUNCTION function);
 
 typedef struct Sht2x_FxnTable {
     Sht2x_initFxn  initFxn;

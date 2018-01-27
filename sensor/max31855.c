@@ -508,7 +508,7 @@ static void Max31855_measure(uint8_t chNum)
  * @para:
  * @return:
  ******************************************************************************/
-static int32_t Max31855_get_value(uint8_t chNum, MAX31855_FUNCTION function)
+static int32_t Max31855_get_value(uint8_t chNum, SENSOR_FUNCTION function)
 {
     if (chNum < MAX31855_SPI_MAX) {
          if(function & SENSOR_DEEP_TEMP){

@@ -36,6 +36,7 @@
 #include <ti/devices/cc13x0/driverlib/aon_batmon.h>
 #include <ti/devices/cc13x0/driverlib/flash.h>
 #include <ti/devices/cc13x0/driverlib/aon_ioc.h>
+#include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
 
 #include <ti/drivers/ADC.h>
 #include <ti/drivers/adc/ADCCC26XX.h>
@@ -45,6 +46,7 @@
 #include <ti/drivers/I2C.h>
 #include <ti/drivers/SPI.h>
 #include <ti/drivers/Watchdog.h>
+#include <ti/drivers/watchdog/WatchdogCC26XX.h>
 
 
 
@@ -238,6 +240,22 @@
 // deep temperature
 #define SUPPORT_DEEPTEMP
 
+// NTC
+
+#ifdef  BOARD_S6_6
+#define SUPPORT_NTC
+#endif
+
+#ifdef SUPPORT_NTC
+//#define NTC_ELIWELL_10K
+//#define NTC_KEMIT_10K
+//#define NTC_KEMIT_100K
+//#define NTC_KEMIT_PT1000
+#define NTC_XINXIANG_10K
+//#define NTC_TIANYOU_10K
+
+#endif
+
 
 
 //Radio define
@@ -261,7 +279,14 @@
 
 
 
-
+typedef enum {
+    SENSOR_NONE = 0x00,
+    SENSOR_TEMP = 0x01,
+    SENSOR_HUMI = 0x02,
+    SENSOR_CO   = 0x04,
+    SENSOR_CO2  = 0x08,
+    SENSOR_DEEP_TEMP = 0x10,
+} SENSOR_FUNCTION;
 
 //***********************************************************************************
 //
@@ -424,6 +449,8 @@ typedef struct {
 #include "driver/rtc_drv.h"
 #include "driver/i2c_drv.h"
 #include "driver/spi_drv.h"
+#include "driver/adc_drv.h"
+#include "driver/wdt_drv.h"
 #include "driver/uart_drv.h"
 #include "flash/extflash.h"
 #include "flash/extflash_ringq.h"

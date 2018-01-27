@@ -392,30 +392,7 @@ const UDMACC26XX_Config UDMACC26XX_config[CC1310_LAUNCHXL_UDMACOUNT] = {
     },
 };
 
-/*
- *  =============================== Watchdog ===============================
- */
-#include <ti/drivers/Watchdog.h>
-#include <ti/drivers/watchdog/WatchdogCC26XX.h>
 
-WatchdogCC26XX_Object watchdogCC26XXObjects[CC1310_LAUNCHXL_WATCHDOGCOUNT];
-
-const WatchdogCC26XX_HWAttrs watchdogCC26XXHWAttrs[CC1310_LAUNCHXL_WATCHDOGCOUNT] = {
-    {
-        .baseAddr    = WDT_BASE,
-        .reloadValue = 1000 /* Reload value in milliseconds */
-    },
-};
-
-const Watchdog_Config Watchdog_config[CC1310_LAUNCHXL_WATCHDOGCOUNT] = {
-    {
-        .fxnTablePtr = &WatchdogCC26XX_fxnTable,
-        .object      = &watchdogCC26XXObjects[CC1310_LAUNCHXL_WATCHDOG0],
-        .hwAttrs     = &watchdogCC26XXHWAttrs[CC1310_LAUNCHXL_WATCHDOG0]
-    },
-};
-
-const uint_least8_t Watchdog_count = CC1310_LAUNCHXL_WATCHDOGCOUNT;
 
 /*
  *  ======== CC1310_LAUNCHXL_initGeneral ========

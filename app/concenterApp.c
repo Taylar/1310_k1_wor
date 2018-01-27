@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-26 15:44:44
+* @Last Modified time: 2018-01-27 09:58:55
 */
 #include "../general.h"
 
@@ -342,6 +342,51 @@ void ConcenterLongKeyApp(void)
 }
 
 //***********************************************************************************
+// brief:the S6 Concenter short key application
+// 
+// parameter: 
+//***********************************************************************************
+void S6ConcenterShortKeyApp(void)
+{
+    switch(deviceMode)
+    {
+        case DEVICES_ON_MODE:
+        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+        break;
+
+        case DEVICES_OFF_MODE:
+        Disp_info_switch();
+        Disp_proc();
+        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        break;
+    }
+}
+
+//***********************************************************************************
+// brief:the Concenter long key application
+// 
+// parameter: 
+//***********************************************************************************
+void S6ConcenterLongKeyApp(void)
+{
+    switch(deviceMode)
+    {
+        case DEVICES_ON_MODE:
+        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
+        break;
+
+        case DEVICES_OFF_MODE:
+        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+        break;
+    }
+}
+
+
+
+
+
+
+//***********************************************************************************
 // brief:save the config to internal flash
 // 
 // parameter: 
@@ -372,5 +417,6 @@ uint8_t ConcenterReadSynTimeFlag(void)
 {
     return concenterParameter.synTimeFlag;
 }
+
 
 

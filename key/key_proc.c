@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-27 10:36:11
+* @Last Modified time: 2018-01-27 14:17:43
 */
 
 #include "../general.h"
@@ -89,11 +89,13 @@ void KeyIoInit(PIN_IntCb pCb)
 //      
 //
 //***********************************************************************************
+#ifdef BOARD_S6_6
 void Key1IoInit(PIN_IntCb pCb)
 {
     key1Handle = PIN_open(&key1State, key1PinTable);
     PIN_registerIntCb(key1Handle, pCb);
 }
+#endif
 
 //***********************************************************************************
 //
@@ -180,8 +182,9 @@ static void KeyScanFxn(UArg arg0)
             rKeyTask.holdTime = 0;
             KeyScanStop();
         }
-        break;
 #endif
+        break;
+
         
     }
         
@@ -205,13 +208,14 @@ static void KeyIsrFxn(UInt index)
 // Key gpio hwi callback function.
 //
 //***********************************************************************************
+#ifdef  BOARD_S6_6
 static void Key1IsrFxn(UInt index)
 {
 
     if (Clock_isActive(keyClkHandle) == FALSE)
         Clock_start(keyClkHandle);
 }
-
+#endif
 //***********************************************************************************
 //
 // Key init.
@@ -242,8 +246,9 @@ void KeyInit(void)
 
     /* install Button callback */
     KeyIoInit((PIN_IntCb)KeyIsrFxn);
-
+#ifdef  BOARD_S6_6
     Key1IoInit((PIN_IntCb)Key1IsrFxn);
+#endif
 
 }
 

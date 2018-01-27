@@ -11,45 +11,10 @@
 
 #ifdef SUPPORT_BATTERY
 
-// #define     BATTERY_REF_VDDS
-#define     BATTERY_REF_FIX
-
-#ifdef      BATTERY_REF_FIX
-#define     BATTERY_REF_VOL             4300
-#else
-#define     BATTERY_REF_VOL             3326
-#endif
 
 
 #define     BATTERY_DETECT_TIME         8
 
-#define     BATTERY_DETECT_PIN          IOID_30
-
-ADCCC26XX_Object adcCC26xxObjects[1];
-
-
-
-const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[1] = {
-    {
-        .adcDIO              = BATTERY_DETECT_PIN,
-        .adcCompBInput       = ADC_COMPB_IN_AUXIO0,
-#ifdef      BATTERY_REF_FIX
-        .refSource           = ADCCC26XX_FIXED_REFERENCE,
-#else
-        .refSource           = ADCCC26XX_VDDS_REFERENCE,
-#endif
-        .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_2P7_US,
-        .inputScalingEnabled = true,
-        .triggerSource       = ADCCC26XX_TRIGGER_MANUAL,
-        .returnAdjustedVal   = false
-    }
-};
-
-const ADC_Config ADC_config[1] = {
-    {&ADCCC26XX_fxnTable, &adcCC26xxObjects[CC1310_LAUNCHXL_ADC0], &adcCC26xxHWAttrs[CC1310_LAUNCHXL_ADC0]},
-};
-
-const uint_least8_t ADC_count = 1;
 
 
 static uint16_t bBatVoltage;
@@ -65,10 +30,8 @@ void Battery_init(void)
 {
     ADC_Params   params;
 
-    ADC_init();
-
     ADC_Params_init(&params);
-    batteryHandle = ADC_open(Board_ADC0, &params);
+    batteryHandle = ADC_open(ZKS_BATTERY_ADC, &params);
 }
 
 //***********************************************************************************

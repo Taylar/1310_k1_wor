@@ -19,14 +19,11 @@ typedef enum {
     MAX31855_SPI_MAX,
 } MAX31855_CH_NUM;
 
-typedef enum {
-    SENSOR_DEEP_TEMP = 0x10,
-} MAX31855_FUNCTION;
 
 
 typedef void (*DeepTemp_initFxn) (uint8_t chNum);
 typedef void (*DeepTemp_measureFxn)(uint8_t chNum);
-typedef int32_t (*DeepTemp_getValueFxn)(uint8_t chNum, MAX31855_FUNCTION function);
+typedef int32_t (*DeepTemp_getValueFxn)(uint8_t chNum, SENSOR_FUNCTION function);
 
 typedef struct DeepTemp_FxnTable {
     DeepTemp_initFxn  initFxn;
