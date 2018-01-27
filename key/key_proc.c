@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-24 09:51:57
+* @Last Modified time: 2018-01-27 10:36:11
 */
 
 #include "../general.h"
@@ -12,7 +12,10 @@ static Clock_Handle keyClkHandle;
 
 static KeyTask_t rKeyTask;
 
-
+enum{
+    KEY0,
+    KEY1,
+};
 
 // node board
 #ifdef BOARD_S1_2
@@ -43,16 +46,23 @@ const PIN_Config keyPinTable[] = {
 
 const PIN_Config keyPinTable[] = {
     Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+    PIN_TERMINATE
+};
+
+const PIN_Config key1PinTable[] = {
     Board_BUTTON1 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
     PIN_TERMINATE
 };
 
+static PIN_State   key1State;
+static PIN_Handle  key1Handle;
 #endif
 
 
 
 static PIN_State   keyState;
 static PIN_Handle  keyHandle;
+
 
 
 
@@ -73,6 +83,17 @@ void KeyIoInit(PIN_IntCb pCb)
     PIN_registerIntCb(keyHandle, pCb);
 }
 
+//***********************************************************************************
+//
+// key Io Init.
+//      
+//
+//***********************************************************************************
+void Key1IoInit(PIN_IntCb pCb)
+{
+    key1Handle = PIN_open(&key1State, key1PinTable);
+    PIN_registerIntCb(key1Handle, pCb);
+}
 
 //***********************************************************************************
 //
@@ -93,58 +114,78 @@ static void KeyScanStop(void)
 //***********************************************************************************
 static void KeyScanFxn(UArg arg0)
 {
-    if(PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED)
+    switch(rKeyTask.keyNum)
     {
-        if(rKeyTask.holdPress == 0)
+        case KEY0:
+        if(PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED)
         {
-            rKeyTask.holdPress       = 1;
-            rKeyTask.holdTime        = 0;
+            if(rKeyTask.holdPress == 0)
+            {
+                rKeyTask.holdPress       = 1;
+                rKeyTask.holdTime        = 0;
+            }
+            else
+            {
+                rKeyTask.holdTime++;
+                if(rKeyTask.holdTime > TIME_KEY0_LONG)
+                {
+                    KeyScanStop();
+                    if(AppKeyIsrCb[KEY_0_LONG_PRESS])
+                        AppKeyIsrCb[KEY_0_LONG_PRESS]();
+                }
+            }
         }
         else
         {
-            rKeyTask.holdTime++;
-            if(rKeyTask.holdTime > TIME_KEY0_LONG)
+            if(rKeyTask.holdTime > TIME_KEY_NEW)
             {
-                KeyScanStop();
-                if(AppKeyIsrCb[KEY_0_LONG_PRESS])
-                    AppKeyIsrCb[KEY_0_LONG_PRESS]();
+            rKeyTask.holdTime = 0;
+                if(AppKeyIsrCb[KEY_0_SHORT_PRESS])
+                    AppKeyIsrCb[KEY_0_SHORT_PRESS]();
             }
+            rKeyTask.holdTime = 0;
+            KeyScanStop();
+            
         }
-    }
-    else
-    {
-        rKeyTask.holdTime = 0;
-        KeyScanStop();
-        if(AppKeyIsrCb[KEY_0_SHORT_PRESS])
-            AppKeyIsrCb[KEY_0_SHORT_PRESS]();
-    }
+        break;
+
+        case KEY1:
 #ifdef BOARD_S6_6
-    if(PIN_getInputValue(Board_BUTTON1) == KEY_PRESSED)
-    {
-        if(rKeyTask.holdPress == 0)
+        if(PIN_getInputValue(Board_BUTTON1) == KEY_PRESSED)
         {
-            rKeyTask.holdPress       = 1;
-            rKeyTask.holdTime        = 0;
+            if(rKeyTask.holdPress == 0)
+            {
+                rKeyTask.holdPress       = 1;
+                rKeyTask.holdTime        = 0;
+            }
+            else
+            {
+                rKeyTask.holdTime++;
+                if(rKeyTask.holdTime > TIME_KEY0_LONG)
+                {
+                    KeyScanStop();
+                    if(AppKeyIsrCb[KEY_1_LONG_PRESS])
+                        AppKeyIsrCb[KEY_1_LONG_PRESS]();
+                }
+            }
         }
         else
         {
-            rKeyTask.holdTime++;
-            if(rKeyTask.holdTime > TIME_KEY0_LONG)
+            if(rKeyTask.holdTime > TIME_KEY_NEW)
             {
-                KeyScanStop();
-                if(AppKeyIsrCb[KEY_1_LONG_PRESS])
-                    AppKeyIsrCb[KEY_1_LONG_PRESS]();
+                rKeyTask.holdTime = 0;
+                if(AppKeyIsrCb[KEY_1_SHORT_PRESS])
+                    AppKeyIsrCb[KEY_1_SHORT_PRESS]();
             }
+            rKeyTask.holdTime = 0;
+            KeyScanStop();
         }
-    }
-    else
-    {
-        rKeyTask.holdTime = 0;
-        KeyScanStop();
-        if(AppKeyIsrCb[KEY_1_SHORT_PRESS])
-            AppKeyIsrCb[KEY_1_SHORT_PRESS]();
-    }
+        break;
 #endif
+        
+    }
+        
+
 }
 
 
@@ -155,6 +196,18 @@ static void KeyScanFxn(UArg arg0)
 //***********************************************************************************
 static void KeyIsrFxn(UInt index)
 {
+    if (Clock_isActive(keyClkHandle) == FALSE)
+        Clock_start(keyClkHandle);
+}
+
+//***********************************************************************************
+//
+// Key gpio hwi callback function.
+//
+//***********************************************************************************
+static void Key1IsrFxn(UInt index)
+{
+
     if (Clock_isActive(keyClkHandle) == FALSE)
         Clock_start(keyClkHandle);
 }
@@ -189,6 +242,9 @@ void KeyInit(void)
 
     /* install Button callback */
     KeyIoInit((PIN_IntCb)KeyIsrFxn);
+
+    Key1IoInit((PIN_IntCb)Key1IsrFxn);
+
 }
 
 //***********************************************************************************

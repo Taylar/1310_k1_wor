@@ -11,17 +11,33 @@
 
 #ifdef SUPPORT_BATTERY
 
-#define     BATTERY_REF_VOL             3200
+// #define     BATTERY_REF_VDDS
+#define     BATTERY_REF_FIX
+
+#ifdef      BATTERY_REF_FIX
+#define     BATTERY_REF_VOL             4300
+#else
+#define     BATTERY_REF_VOL             3326
+#endif
+
+
 #define     BATTERY_DETECT_TIME         8
+
+#define     BATTERY_DETECT_PIN          IOID_30
 
 ADCCC26XX_Object adcCC26xxObjects[1];
 
 
+
 const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[1] = {
     {
-        .adcDIO              = CC1310_LAUNCHXL_DIO30_ANALOG,
+        .adcDIO              = BATTERY_DETECT_PIN,
         .adcCompBInput       = ADC_COMPB_IN_AUXIO0,
+#ifdef      BATTERY_REF_FIX
+        .refSource           = ADCCC26XX_FIXED_REFERENCE,
+#else
         .refSource           = ADCCC26XX_VDDS_REFERENCE,
+#endif
         .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_2P7_US,
         .inputScalingEnabled = true,
         .triggerSource       = ADCCC26XX_TRIGGER_MANUAL,
@@ -53,10 +69,6 @@ void Battery_init(void)
 
     ADC_Params_init(&params);
     batteryHandle = ADC_open(Board_ADC0, &params);
-
-
-
-
 }
 
 //***********************************************************************************

@@ -46,6 +46,8 @@ typedef struct {
     uint8_t shortPress;
     // Key double press flag.
     uint8_t doublePress;
+    // key num
+    uint8_t keyNum;
 } KeyTask_t;
 
 
