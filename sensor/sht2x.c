@@ -173,9 +173,9 @@ static int32_t SHT2x_get_value(uint8_t chNum, SENSOR_FUNCTION function)
     if(chNum >= SHT2X_I2C_MAX)
         return TEMPERATURE_OVERLOAD;
 
-    if(function & SHT2X_TEMP){
+    if(function & SENSOR_TEMP){
         return rSensorData[chNum].temp;
-    } else if(function & SHT2X_HUMI){
+    } else if(function & SENSOR_HUMI){
         return rSensorData[chNum].humi;
     }
 

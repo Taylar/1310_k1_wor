@@ -17,11 +17,6 @@ typedef enum {
     SHT2X_I2C_MAX,
 } SHT2X_CH_NUM;
 
-typedef enum {
-    SHT2X_NONE = 0x00,
-    SHT2X_TEMP = 0x01,
-    SHT2X_HUMI = 0x02,
-} SHT2X_FUNCTION;
 
 
 typedef void (*Sht2x_initFxn) (uint8_t chNum);
