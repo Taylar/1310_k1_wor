@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-27 09:58:55
+* @Last Modified time: 2018-01-29 18:16:53
 */
 #include "../general.h"
 
@@ -102,7 +102,16 @@ void ConcenterAppHwInit(void)
 
     Flash_init();
 
+
+#ifdef BOARD_S2_2
     DeepTemp_FxnTable.initFxn(MAX31855_SPI_CH0);
+#endif
+
+#ifdef BOARD_S6_6
+    NTC_FxnTable.initFxn(NTC_CH0);
+#endif
+
+
 }
 
 
@@ -351,12 +360,14 @@ void S6ConcenterShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        Disp_info_switch();
+        Disp_proc();
         Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_OFF_MODE:
-        Disp_info_switch();
-        Disp_proc();
+        // Disp_info_switch();
+        // Disp_proc();
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
@@ -372,11 +383,13 @@ void S6ConcenterLongKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        ConcenterSleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+        ConcenterWakeup();
         break;
     }
 }

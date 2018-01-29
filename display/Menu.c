@@ -36,7 +36,7 @@ void Menu_stop_record(void);
 void Menu_print_proc(void);
 void Menu_power_off(void);
 void Menu_restart(void);
-extern SysTask_t rSysTask;
+SysTask_t rSysTask;
 
 //#define USE_ENGLISH_MENU
 

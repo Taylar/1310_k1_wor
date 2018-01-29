@@ -809,7 +809,7 @@ void Disp_info(void)
             sprintf((char *)buff, "RMIT: %ld", Flash_get_unupload_items());
             Disp_msg(0, 4, buff, FONT_8X16);
             //upload period.
-            sprintf((char *)buff, "RCIT: %ld", Flash_get_record_items());
+            sprintf((char *)buff, "RCIT: %ld", 0);//Flash_get_record_items());
             Disp_msg(0, 6, buff, FONT_8X16);
 #endif
             break;

@@ -67,6 +67,7 @@ typedef struct {
 
 
 
+
 typedef void (*Ntc_initFxn) (uint8_t chNum);
 typedef void (*Ntc_measureFxn)(uint8_t chNum);
 typedef int32_t (*Ntc_getValueFxn)(uint8_t chNum, SENSOR_FUNCTION function);
@@ -77,6 +78,7 @@ typedef struct {
     Ntc_getValueFxn getValueFxn;
 } Ntc_FxnTable;
 
+extern const Ntc_FxnTable NTC_FxnTable;
 
 #endif  /* SUPPORT_NTC */
 

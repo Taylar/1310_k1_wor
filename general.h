@@ -62,8 +62,8 @@
 //
 //***********************************************************************************
 // #define BOARD_S1_2
-#define BOARD_S2_2
-// #define BOARD_S6_6
+// #define BOARD_S2_2
+#define BOARD_S6_6
 
 
 
@@ -101,8 +101,8 @@
 #define LITTLE_ENDIAN
 
 
-//WatchDog define
-#define SUPPORT_WATCHDOG
+//wdt WatchDog define
+// #define SUPPORT_WATCHDOG
 
 
 #define SUPPORT_SENSOR
@@ -458,6 +458,7 @@ typedef struct {
 #include "key/key_proc.h"
 #include "sensor/max31855.h"
 #include "sensor/sht2x.h"
+#include "sensor/ntc.h"
 #include "display/display.h"
 #include "display/menu.h"
 #include "display/led_drv.h"

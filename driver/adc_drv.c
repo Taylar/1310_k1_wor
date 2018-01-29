@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-27 15:49:40
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-27 16:55:14
+* @Last Modified time: 2018-01-29 18:43:30
 */
 #include "../general.h"
 
@@ -35,7 +35,7 @@ const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[ZKS_MAX_ADC] = {
 #ifdef BOARD_S6_6
     {
         .adcDIO              = NTC_DETECT_PIN,
-        .adcCompBInput       = ADC_COMPB_IN_AUXIO0,
+        .adcCompBInput       = ADC_COMPB_IN_AUXIO7,
 #ifdef      BATTERY_REF_FIX
         .refSource           = ADCCC26XX_FIXED_REFERENCE,
 #else

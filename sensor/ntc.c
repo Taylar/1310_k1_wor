@@ -39,7 +39,7 @@ static const ResHWAtts_t ResHWAtts[][CTRL_RES_NUM] = {
         {NTC_PARTIAL_TEMP1_PIN, 1000.0}
     #elif  defined(NTC_XINXIANG_10K) || defined(NTC_TIANYOU_10K)
         // {GPIO_PORT_P7, GPIO_PIN4, 9.09},
-        {NTC_PARTIAL_TEMP3_PIN, 15.80},
+        {NTC_PARTIAL_TEMP3_PIN, 35.70}, //{NTC_PARTIAL_TEMP3_PIN, 15.80},
         {NTC_PARTIAL_TEMP2_PIN, 35.70},
         {NTC_PARTIAL_TEMP1_PIN, 88.70}
 
@@ -321,13 +321,13 @@ void Ntc_measure(uint8_t chNum)
 {
     float  temp;
 
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC) {
+    // if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC) {
        
         temp = Ntc_get_adc_value(chNum);
 
         //convert rawdata to temperature
         rSensorData[chNum].temp = Ntc_calc_temperatureC(temp);
-    }
+    // }
 }
 
 //***********************************************************************************
@@ -337,12 +337,12 @@ void Ntc_measure(uint8_t chNum)
 //***********************************************************************************
 static int32_t Ntc_get_value(uint8_t chNum, SENSOR_FUNCTION function)
 {
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC) {
+    // if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC) {
 
         if (function & SENSOR_TEMP) {
             return rSensorData[chNum].temp;
         }
-    }
+    // }
 
     return TEMPERATURE_OVERLOAD;
 }

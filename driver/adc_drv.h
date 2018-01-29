@@ -4,7 +4,7 @@
 
 
 // #define     BATTERY_REF_VDDS
-#define     BATTERY_REF_FIX
+// #define     BATTERY_REF_FIX
 
 #ifdef      BATTERY_REF_FIX
 #define     BATTERY_REF_VOL             4300

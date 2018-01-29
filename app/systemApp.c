@@ -4,7 +4,7 @@
 #include "../app/concenterApp.h"
 
 /***** Defines *****/
-#define         SYSTEM_APP_STACK_SIZE        768
+#define         SYSTEM_APP_STACK_SIZE        1024
 
 // **************************************************************************
 
@@ -125,6 +125,7 @@ void SystemAppTaskFxn(void)
     KeyRegister(SystemKeyEventPostIsr, KEY_1_SHORT_PRESS);
     KeyRegister(SystemLongKeyEventPostIsr, KEY_1_LONG_PRESS);
 
+	ConcenterAppHwInit();
     Battery_init();
 #endif
 
@@ -209,6 +210,10 @@ void SystemAppTaskFxn(void)
 			NodeLongKeyApp();
 #endif
 
+#ifdef BOARD_S6_6
+			S6ConcenterLongKeyApp();
+#endif
+
 		}
 
 
@@ -241,6 +246,9 @@ void SystemAppTaskFxn(void)
 
 			// Battery_voltage_measure();
 			// System_printf("the voltage : %dmV\n",Battery_get_voltage());
+
+			NTC_FxnTable.measureFxn(NTC_CH0);
+			System_printf("the Ntc Temp : %dm C\n",NTC_FxnTable.getValueFxn(NTC_CH0, SENSOR_TEMP));
 		}
 
 		if(eventId & SYSTEMAPP_EVT_UPLOAD_NODE)
