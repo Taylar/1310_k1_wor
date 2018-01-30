@@ -36,7 +36,6 @@ void Menu_stop_record(void);
 void Menu_print_proc(void);
 void Menu_power_off(void);
 void Menu_restart(void);
-SysTask_t rSysTask;
 
 //#define USE_ENGLISH_MENU
 
@@ -85,15 +84,12 @@ void PoweroffMenu_init(void)
 
 void Menu_power_off(void)
 {    
-    rSysTask.state = SYS_STATE_STANDBY;
-    rSysTask.stateStep = 0;
-
     Menu_exit();
 }
 
 void Menu_restart(void)
 {    
-    //Sys_software_reset();
+    SysCtrlSystemReset();
    // Menu_exit();
 }
 

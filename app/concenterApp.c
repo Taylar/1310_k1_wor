@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-29 18:16:53
+* @Last Modified time: 2018-01-30 11:49:41
 */
 #include "../general.h"
 
@@ -362,13 +362,19 @@ void S6ConcenterShortKeyApp(void)
         case DEVICES_ON_MODE:
         Disp_info_switch();
         Disp_proc();
-        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+        // Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_OFF_MODE:
         // Disp_info_switch();
         // Disp_proc();
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        break;
+
+
+        case DEVICES_MENU_MODE:
+        Menu_action_proc(MENU_AC_DOWN);
+        Disp_proc();
         break;
     }
 }
@@ -383,6 +389,7 @@ void S6ConcenterLongKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        Disp_poweroff();
         ConcenterSleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         break;
@@ -390,14 +397,65 @@ void S6ConcenterLongKeyApp(void)
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         ConcenterWakeup();
+        Disp_poweron();
+        Disp_proc();
+        break;
+    }
+}
+
+//***********************************************************************************
+// brief:the S6 Concenter short key application
+// 
+// parameter: 
+//***********************************************************************************
+void S6ConcenterShortKey1App(void)
+{
+    switch(deviceMode)
+    {
+        case DEVICES_ON_MODE:
+        Disp_info_close();
+        Disp_proc();
+        break;
+
+        case DEVICES_OFF_MODE:
+        break;
+
+        case DEVICES_MENU_MODE:
+        Menu_action_proc(MENU_AC_ENTER);
+        Disp_proc();
+        if(Menu_is_process() == NULL)
+        {
+            deviceMode = DEVICES_ON_MODE;
+        }
         break;
     }
 }
 
 
 
+//***********************************************************************************
+// brief:the Concenter long key application
+// 
+// parameter: 
+//***********************************************************************************
+void S6ConcenterLongKey1App(void)
+{
+    switch(deviceMode)
+    {
+        case DEVICES_ON_MODE:
+        deviceMode = DEVICES_MENU_MODE;
+        PoweroffMenu_init();
+        Disp_proc();
+        break;
 
+        case DEVICES_OFF_MODE:
+        break;
 
+        case DEVICES_MENU_MODE:
+
+        break;
+    }
+}
 
 //***********************************************************************************
 // brief:save the config to internal flash

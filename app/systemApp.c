@@ -117,30 +117,29 @@ void SystemAppTaskFxn(void)
 	RtcInit(RtcEventSet);
 
 #ifdef  BOARD_S6_6
+
+	KeyRegister(SystemKey1EventPostIsr, KEY_1_SHORT_PRESS);
+
+    KeyRegister(SystemLongKey1EventPostIsr, KEY_1_LONG_PRESS);
+
 	AdcDriverInit();
     Disp_init();
-    Disp_poweron();
-    Disp_proc();
-
-    KeyRegister(SystemKeyEventPostIsr, KEY_1_SHORT_PRESS);
-    KeyRegister(SystemLongKeyEventPostIsr, KEY_1_LONG_PRESS);
 
 	ConcenterAppHwInit();
     Battery_init();
+    Battery_voltage_measure();
 #endif
 
 #ifdef BOARD_S2_2
     AdcDriverInit();
 	ConcenterAppHwInit();
     Battery_init();
+    Battery_voltage_measure();
 #endif
 
 #ifdef BOARD_S1_2
    	NodeAppHwInit();
 #endif
-
-
-
 
 
 	RtcStart();
@@ -163,6 +162,15 @@ void SystemAppTaskFxn(void)
 	// voltageTemp = Clock_getTicks();
 	// Clock_setTimeout(sysTimerClockHandle, 0);
 	// Clock_start(sysTimerClockHandle);
+
+#if (defined BOARD_S6_6) || (defined BOARD_S2_2)
+	ConcenterWakeup();
+#endif
+
+#ifdef BOARD_S6_6
+	Disp_poweron();
+    Disp_proc();
+#endif
 
 	for(;;)
 	{
@@ -211,10 +219,24 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef BOARD_S6_6
-			S6ConcenterLongKeyApp();
+			// S6ConcenterLongKeyApp();
 #endif
 
 		}
+
+
+#ifdef BOARD_S6_6
+		if(eventId & SYSTEMAPP_EVT_KEY1)
+		{
+			S6ConcenterShortKey1App();
+		}
+
+		if(eventId & SYSTEMAPP_EVT_KEY1_LONG)
+		{
+			S6ConcenterLongKey1App();
+		}
+#endif
+
 
 
 
@@ -247,8 +269,8 @@ void SystemAppTaskFxn(void)
 			// Battery_voltage_measure();
 			// System_printf("the voltage : %dmV\n",Battery_get_voltage());
 
-			NTC_FxnTable.measureFxn(NTC_CH0);
-			System_printf("the Ntc Temp : %dm C\n",NTC_FxnTable.getValueFxn(NTC_CH0, SENSOR_TEMP));
+			// NTC_FxnTable.measureFxn(NTC_CH0);
+			// System_printf("the Ntc Temp : %dm C\n",NTC_FxnTable.getValueFxn(NTC_CH0, SENSOR_TEMP));
 		}
 
 		if(eventId & SYSTEMAPP_EVT_UPLOAD_NODE)

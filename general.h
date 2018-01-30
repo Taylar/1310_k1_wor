@@ -335,7 +335,8 @@ typedef enum {
 // device power mode 
 #define         DEVICES_OFF_MODE               0
 #define         DEVICES_ON_MODE                1
-#define         DEVICES_TEST_MODE              2
+#define         DEVICES_MENU_MODE              2
+#define         DEVICES_TEST_MODE              3
 
 //***********************************************************************************
 //

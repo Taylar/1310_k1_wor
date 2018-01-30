@@ -50,6 +50,10 @@ void S6ConcenterShortKeyApp(void);
 
 void S6ConcenterLongKeyApp(void);
 
+void S6ConcenterShortKey1App(void);
+
+void S6ConcenterLongKey1App(void);
+
 void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr);
 
 void ConcenterSleep(void);

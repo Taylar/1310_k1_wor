@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-27 14:17:43
+* @Last Modified time: 2018-01-30 11:24:34
 */
 
 #include "../general.h"
@@ -200,7 +200,10 @@ static void KeyScanFxn(UArg arg0)
 static void KeyIsrFxn(UInt index)
 {
     if (Clock_isActive(keyClkHandle) == FALSE)
+    {
+        rKeyTask.keyNum = KEY0;
         Clock_start(keyClkHandle);
+    }
 }
 
 //***********************************************************************************
@@ -211,9 +214,11 @@ static void KeyIsrFxn(UInt index)
 #ifdef  BOARD_S6_6
 static void Key1IsrFxn(UInt index)
 {
-
     if (Clock_isActive(keyClkHandle) == FALSE)
+    {
+        rKeyTask.keyNum = KEY1;
         Clock_start(keyClkHandle);
+    }
 }
 #endif
 //***********************************************************************************
