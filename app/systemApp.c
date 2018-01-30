@@ -255,6 +255,10 @@ void SystemAppTaskFxn(void)
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
 
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+			if(deviceMode == DEVICES_ON_MODE)
+				ConcenterRadioMonitor();
+#endif
 			// Led_toggle(LED_R);
 			// Led_toggle(LED_B);
 			// Led_toggle(LED_G);

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-26 14:46:56
+* @Last Modified time: 2018-01-30 20:22:02
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -201,9 +201,14 @@ void RadioAppTaskFxn(void)
             Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
             // stop receive radio, otherwise couldn't send successful
             RadioFrontTxEnable();
-            EasyLink_abort();
+            if(EasyLink_abort() != EasyLink_Status_Success)
+            {
+                System_printf("abort 1310 radio fail before sending");
 
-            EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+            }
+
+            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))
+                EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
 
             if(radioMode == RADIOMODE_SENDPORT)
             {
@@ -215,7 +220,10 @@ void RadioAppTaskFxn(void)
             {
                 RadioFrontRxEnable();
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-                EasyLink_receiveAsync(RxDoneCallback, 0);
+                if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
+                {
+                    System_printf("open 1310 receive fail");
+                }
             }
             Semaphore_post(radioAccessSemHandle);
         }

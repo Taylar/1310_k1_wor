@@ -6,8 +6,8 @@
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 /***** Defines *****/
-#define NODE_BROADCASTING_TIME          5
-#define NODE_BROADCAST_TESTRESUT_TIME   5
+#define NODE_BROADCASTING_TIME          UPLOAD_PERIOD_DEFAULT
+#define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
 
 
 
@@ -102,7 +102,7 @@ void NodeAppInit(void (*Cb)(void))
         nodeParameter.customId      = DEFAULT_DST_ADDR;
     }
 
-    SetRadioSrcAddr(0x87654321);
+    SetRadioSrcAddr(0x87654329);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
     Clock_Params clkParams;

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-30 11:49:41
+* @Last Modified time: 2018-01-30 20:22:40
 */
 #include "../general.h"
 
@@ -18,12 +18,13 @@
 
 #define     NODE_SETTING_CMD_LENGTH    10
 
-
+#define     CONCENTER_RADIO_MONITOR_CNT_MAX     10
 
 /***** Type declarations *****/
 typedef struct 
 {
     uint32_t channelDispath;
+    uint8_t  monitorCnt;
     
     bool  configFlag;    // 0: unload the config; 1: has load the config
     bool  synTimeFlag;    // 0: unsyntime; 1: synchron time
@@ -79,6 +80,7 @@ void ConcenterAppInit(void)
 
     concenterParameter.channelDispath = 0;
     concenterParameter.synTimeFlag    = 0;
+    concenterParameter.monitorCnt     = 0;
     concenterParameter.configFlag     = InternalFlashLoadConfig();
 
     InternalFlashInit();
@@ -422,10 +424,9 @@ void S6ConcenterShortKey1App(void)
 
         case DEVICES_MENU_MODE:
         Menu_action_proc(MENU_AC_ENTER);
-        Disp_proc();
-        if(Menu_is_process() == NULL)
+        if(DEVICES_ON_MODE == deviceMode)
         {
-            deviceMode = DEVICES_ON_MODE;
+            Disp_proc();
         }
         break;
     }
@@ -449,6 +450,11 @@ void S6ConcenterLongKey1App(void)
         break;
 
         case DEVICES_OFF_MODE:
+        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+        ConcenterWakeup();
+        Disp_poweron();
+        Disp_info_close();
+        Disp_proc();
         break;
 
         case DEVICES_MENU_MODE:
@@ -490,4 +496,35 @@ uint8_t ConcenterReadSynTimeFlag(void)
 }
 
 
+//***********************************************************************************
+// brief:
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterRadioMonitor(void)
+{
+    concenterParameter.monitorCnt++;
+    if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
+    {
+        if(concenterParameter.configFlag)
+        {
+            // EasyLink_abort();
+            RadioFrontDisable();
+            RadioFrontRxEnable();
+            // EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            // RadioModeSet(RADIOMODE_RECEIVEPORT);
+        }
+    }
+}
+
+
+//***********************************************************************************
+// brief:
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterRadioMonitorClear(void)
+{
+    concenterParameter.monitorCnt = 0;
+}
 

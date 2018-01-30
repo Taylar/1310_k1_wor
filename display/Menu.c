@@ -83,12 +83,16 @@ void PoweroffMenu_init(void)
 }
 
 void Menu_power_off(void)
-{    
+{   
+    ConcenterSleep();
     Menu_exit();
+    Disp_poweroff();
+    deviceMode = DEVICES_OFF_MODE;
 }
 
 void Menu_restart(void)
 {    
+    ConcenterSleep();
     SysCtrlSystemReset();
    // Menu_exit();
 }
@@ -103,7 +107,6 @@ void Menu_init(void)
     rMenuObject.menu = rMainMenu;
     rMenuObject.index = 0;
     rMenuObject.startItem = 0;
-    Disp_clear_all();
 }
 
 //***********************************************************************************
@@ -265,6 +268,7 @@ void Menu_print_proc(void)
 //***********************************************************************************
 void Menu_exit(void)
 {
+    deviceMode = DEVICES_ON_MODE;
     rMenuObject.menu = NULL;
     rMenuObject.index = 0;
     rMenuObject.startItem = 0;
