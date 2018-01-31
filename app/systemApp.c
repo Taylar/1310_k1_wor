@@ -259,6 +259,11 @@ void SystemAppTaskFxn(void)
 			if(deviceMode == DEVICES_ON_MODE)
 				ConcenterRadioMonitor();
 #endif
+
+#ifdef BOARD_S1_2
+			if(deviceMode == DEVICES_ON_MODE)
+				NodeSynchronizeTime();
+#endif
 			// Led_toggle(LED_R);
 			// Led_toggle(LED_B);
 			// Led_toggle(LED_G);

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-26 13:41:03
+* @Last Modified time: 2018-01-31 10:19:53
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -343,7 +343,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
             if((offsetTemp - nodeStrategy.offset) > (NODE_TIME_OFFSET_MAX_MS))
             {
                 // readjust the timer
-                goto ReadjustChannel;
+                // goto ReadjustChannel;
             }
 
         }
@@ -352,7 +352,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
             if((nodeStrategy.offset - offsetTemp) > (NODE_TIME_OFFSET_MAX_MS))
             {
                 // readjust the timer
-                goto ReadjustChannel;
+                // goto ReadjustChannel;
             }
         }
     }
@@ -360,6 +360,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
     {
         // need to register the new channel
 ReadjustChannel:
+
         nodeStrategy.success        = true;
         nodeStrategy.offset         = offsetTemp;
         nodeStrategy.channel        = channel;
@@ -383,5 +384,6 @@ ReadjustChannel:
         }
         Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
         Clock_start(nodeStrategyStartClockHandle);
+        
     }
 }

@@ -8,7 +8,7 @@
 /***** Defines *****/
 #define NODE_BROADCASTING_TIME          UPLOAD_PERIOD_DEFAULT
 #define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
-
+#define NODE_SYN_TIME_MAX               3600
 
 
 /***** Type declarations *****/
@@ -19,6 +19,7 @@ typedef struct
     uint32_t customId;
     uint32_t deceive;
     uint16_t serialNum;
+    uint16_t sysTime;
     bool     broadcasting;
     bool     configFlag;
     bool     synTimeFlag;
@@ -76,6 +77,8 @@ void NodeAppInit(void (*Cb)(void))
 {
 
     nodeParameter.serialNum     = 0;
+    nodeParameter.sysTime       = 0;
+    
     nodeParameter.uploadPeriod  = NODE_BROADCASTING_TIME;
     nodeParameter.collectPeriod = NODE_BROADCASTING_TIME;
     nodeParameter.customId      = DEFAULT_DST_ADDR;
@@ -571,3 +574,14 @@ void NodeSensorTest(void)
 
     NodeBroadcastTestResult();
 }
+
+void NodeSynchronizeTime(void)
+{
+    nodeParameter.sysTime++;
+    if(nodeParameter.sysTime >= NODE_SYN_TIME_MAX)
+    {
+        NodeRadioSendSynReq();
+        nodeParameter.sysTime       = 0;
+    }
+}
+

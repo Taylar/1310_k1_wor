@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-30 20:22:40
+* @Last Modified time: 2018-01-30 20:49:04
 */
 #include "../general.h"
 
@@ -508,11 +508,11 @@ void ConcenterRadioMonitor(void)
     {
         if(concenterParameter.configFlag)
         {
-            // EasyLink_abort();
+            EasyLink_abort();
             RadioFrontDisable();
             RadioFrontRxEnable();
-            // EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-            // RadioModeSet(RADIOMODE_RECEIVEPORT);
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            RadioModeSet(RADIOMODE_RECEIVEPORT);
         }
     }
 }

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-30 20:08:15
+* @Last Modified time: 2018-01-31 10:03:48
 */
 #include "../general.h"
 
@@ -333,8 +333,8 @@ bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length)
 	protocalTxBuf.dstAddr	= GetRadioDstAddr();
 	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
 
-	// the remainderCache is not satisfy length
-	if(NodeStrategyRemainderCache() < protocalTxBuf.len)
+	// the remainderCache is not satisfy length,15 is reverse for time syschro for bracasting
+	if(NodeStrategyRemainderCache() < (protocalTxBuf.len + 15))
 		return false;
 
 

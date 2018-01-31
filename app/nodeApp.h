@@ -51,5 +51,6 @@ void NodeShortKeyApp(void);
 
 void NodeLongKeyApp(void);
 
+void NodeSynchronizeTime(void);
 
 #endif			// __NODEAPP_H__
