@@ -62,8 +62,8 @@
 //
 //***********************************************************************************
 // #define BOARD_S1_2
-#define BOARD_S2_2
-// #define BOARD_S6_6
+// #define BOARD_S2_2
+#define BOARD_S6_6
 
 
 
@@ -346,7 +346,8 @@ typedef enum {
 #define         DEVICES_OFF_MODE               0
 #define         DEVICES_ON_MODE                1
 #define         DEVICES_MENU_MODE              2
-#define         DEVICES_TEST_MODE              3
+#define         DEVICES_SLEEP_MODE             3
+#define         DEVICES_TEST_MODE              4
 
 //***********************************************************************************
 //

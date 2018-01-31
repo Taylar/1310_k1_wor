@@ -257,7 +257,13 @@ void SystemAppTaskFxn(void)
 
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
 			if(deviceMode == DEVICES_ON_MODE)
+			{
 				ConcenterRadioMonitor();
+
+#ifdef BOARD_S6_6
+				ScreenSleepMonitor();
+#endif
+			}
 #endif
 
 #ifdef BOARD_S1_2

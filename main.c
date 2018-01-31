@@ -87,7 +87,7 @@ int main(void)
     
     
 
-    // test for 32K 
+    // test for 32K s
     // IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);
     // AONIOC32kHzOutputEnable();
 

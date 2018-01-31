@@ -41,18 +41,21 @@ void Battery_init(void)
 //***********************************************************************************
 void Battery_voltage_measure(void)
 {
-    uint16_t value, max, min;
+    uint16_t temp;
+    uint32_t value, max, min;
     uint32_t  batSum;
     uint8_t i;
 
 
-    ADC_convert(batteryHandle, &max);
-    min     = max;
-    batSum  = max;
+    ADC_convert(batteryHandle, &temp);
+    max    = ADC_convertToMicroVolts(batteryHandle, temp);
+    min    = max;
+    batSum = max;
 
     for(i = 0; i < (BATTERY_DETECT_TIME - 1); i++)
     {
-        ADC_convert(batteryHandle, &value);
+        ADC_convert(batteryHandle, &temp);
+        value    = ADC_convertToMicroVolts(batteryHandle, temp);
         if(value > max)
             max = value;
 
@@ -65,7 +68,7 @@ void Battery_voltage_measure(void)
     batSum = (batSum - max - min) / (BATTERY_DETECT_TIME - 2);
 
         // Input (V) * 2^12 / VDDS (V)
-    bBatVoltage = (uint16_t)((batSum * BATTERY_REF_VOL * 2) >> 12);
+    bBatVoltage = (uint16_t)((batSum * 2)/1000);
 }
 
 //***********************************************************************************

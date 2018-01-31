@@ -70,4 +70,6 @@ void ConcenterRadioMonitor(void);
 
 void ConcenterRadioMonitorClear(void);
 
+void ScreenSleepMonitor(void);
+
 #endif			// _CONCENTERAPP_H__

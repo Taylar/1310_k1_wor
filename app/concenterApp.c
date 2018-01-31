@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-30 20:49:04
+* @Last Modified time: 2018-01-31 15:35:46
 */
 #include "../general.h"
 
@@ -20,11 +20,14 @@
 
 #define     CONCENTER_RADIO_MONITOR_CNT_MAX     10
 
+
+#define     SCREEN_SLEEP_TIME           15
 /***** Type declarations *****/
 typedef struct 
 {
     uint32_t channelDispath;
     uint8_t  monitorCnt;
+    uint8_t  screenSleepMonitorCnt;
     
     bool  configFlag;    // 0: unload the config; 1: has load the config
     bool  synTimeFlag;    // 0: unsyntime; 1: synchron time
@@ -359,6 +362,7 @@ void ConcenterLongKeyApp(void)
 //***********************************************************************************
 void S6ConcenterShortKeyApp(void)
 {
+    concenterParameter.screenSleepMonitorCnt = 0;
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -378,6 +382,12 @@ void S6ConcenterShortKeyApp(void)
         Menu_action_proc(MENU_AC_DOWN);
         Disp_proc();
         break;
+
+        case DEVICES_SLEEP_MODE:
+        Disp_poweron();
+        Disp_proc();
+        deviceMode = DEVICES_ON_MODE;
+        break;
     }
 }
 
@@ -388,6 +398,7 @@ void S6ConcenterShortKeyApp(void)
 //***********************************************************************************
 void S6ConcenterLongKeyApp(void)
 {
+    concenterParameter.screenSleepMonitorCnt = 0;
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -402,6 +413,12 @@ void S6ConcenterLongKeyApp(void)
         Disp_poweron();
         Disp_proc();
         break;
+
+        case DEVICES_SLEEP_MODE:
+        Disp_poweron();
+        Disp_proc();
+        deviceMode = DEVICES_ON_MODE;
+        break;
     }
 }
 
@@ -412,6 +429,7 @@ void S6ConcenterLongKeyApp(void)
 //***********************************************************************************
 void S6ConcenterShortKey1App(void)
 {
+    concenterParameter.screenSleepMonitorCnt = 0;
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -429,6 +447,13 @@ void S6ConcenterShortKey1App(void)
             Disp_proc();
         }
         break;
+
+        case DEVICES_SLEEP_MODE:
+        Disp_poweron();
+        Disp_proc();
+        deviceMode = DEVICES_ON_MODE;
+        break;
+
     }
 }
 
@@ -441,6 +466,7 @@ void S6ConcenterShortKey1App(void)
 //***********************************************************************************
 void S6ConcenterLongKey1App(void)
 {
+    concenterParameter.screenSleepMonitorCnt = 0;
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -459,6 +485,12 @@ void S6ConcenterLongKey1App(void)
 
         case DEVICES_MENU_MODE:
 
+        break;
+
+        case DEVICES_SLEEP_MODE:
+        Disp_poweron();
+        Disp_proc();
+        deviceMode = DEVICES_ON_MODE;
         break;
     }
 }
@@ -527,4 +559,24 @@ void ConcenterRadioMonitorClear(void)
 {
     concenterParameter.monitorCnt = 0;
 }
+
+
+//***********************************************************************************
+// brief:
+// 
+// parameter: 
+//***********************************************************************************
+void ScreenSleepMonitor(void)
+{
+    if(deviceMode == DEVICES_SLEEP_MODE)
+        return;
+    concenterParameter.screenSleepMonitorCnt ++;
+    if(concenterParameter.screenSleepMonitorCnt >= SCREEN_SLEEP_TIME)
+    {
+        Disp_poweroff();
+        deviceMode = DEVICES_SLEEP_MODE;
+    }
+}
+
+
 

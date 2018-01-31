@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-27 15:49:40
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-29 18:43:30
+* @Last Modified time: 2018-01-31 15:23:23
 */
 #include "../general.h"
 
@@ -26,7 +26,7 @@ const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[ZKS_MAX_ADC] = {
 #else
         .refSource           = ADCCC26XX_VDDS_REFERENCE,
 #endif
-        .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_2P7_US,
+        .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_5P46_MS,
         .inputScalingEnabled = true,
         .triggerSource       = ADCCC26XX_TRIGGER_MANUAL,
         .returnAdjustedVal   = false
@@ -41,7 +41,7 @@ const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[ZKS_MAX_ADC] = {
 #else
         .refSource           = ADCCC26XX_VDDS_REFERENCE,
 #endif
-        .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_2P7_US,
+        .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_5P46_MS,
         .inputScalingEnabled = true,
         .triggerSource       = ADCCC26XX_TRIGGER_MANUAL,
         .returnAdjustedVal   = false
