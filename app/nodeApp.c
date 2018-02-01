@@ -105,7 +105,7 @@ void NodeAppInit(void (*Cb)(void))
         nodeParameter.customId      = DEFAULT_DST_ADDR;
     }
 
-    SetRadioSrcAddr(0x87654321);
+    SetRadioSrcAddr(0x87654323);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
     Clock_Params clkParams;
@@ -230,8 +230,10 @@ void NodeUploadFailProcess(void)
 void NodeUploadSucessProcess(void)
 {
     if(offsetUnit)
+    {
         offsetUnit--;
-    Falsh_prtpoint_forward();
+        Falsh_prtpoint_forward();
+    }
 }
 
 //***********************************************************************************

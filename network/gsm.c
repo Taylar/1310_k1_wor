@@ -458,6 +458,7 @@ static void Gsm_poweroff(void)
 {
     if (rGsmObject.state != GSM_STATE_POWEROFF) {
         UartClose(UART_0);
+        UartPortDisable(UART_GSM);
         Gsm_pwrkey_ctrl(0);
         Task_sleep(1000 * CLOCK_UNIT_MS);
         Gsm_pwrkey_ctrl(1);

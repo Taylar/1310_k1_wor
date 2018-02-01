@@ -149,16 +149,17 @@ void SystemAppTaskFxn(void)
 #endif
 
 
-   	if(KeyReadState(KEY_0_SHORT_PRESS) == KEY_PRESSED)
-   	{
-   		deviceMode = DEVICES_TEST_MODE;
+  //  	if(KeyReadState(KEY_0_SHORT_PRESS) == KEY_PRESSED)
+  //  	{
+  //  		deviceMode = DEVICES_TEST_MODE;
 
-		Led_toggle(LED_R);
-        Led_toggle(LED_B);
-		Led_toggle(LED_G);
-		// delay for a minute waite other task Init
-		Task_sleep(2 * CLOCK_UNIT_S);
-   	}
+		// Led_toggle(LED_R);
+  //       Led_toggle(LED_B);
+		// Led_toggle(LED_G);
+		// // delay for a minute waite other task Init
+		// Task_sleep(2 * CLOCK_UNIT_S);
+   	// }
+   	
 	// voltageTemp = Clock_getTicks();
 	// Clock_setTimeout(sysTimerClockHandle, 0);
 	// Clock_start(sysTimerClockHandle);

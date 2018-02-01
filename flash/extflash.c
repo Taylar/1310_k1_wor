@@ -1,7 +1,7 @@
 #include "../general.h"
 
 
-#define FLASH_EXTERNAL_SELFTEST_ADDR                (255*1024)
+#define FLASH_EXTERNAL_SELFTEST_ADDR                (8*1024+8)
 
 
 
@@ -142,7 +142,7 @@ static void Flash_external_page_program(uint32_t flashAddr, uint8_t *pData, uint
 
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        ;
+        Task_sleep(10 * CLOCK_UNIT_MS);
 
     // Write enable
     do {
@@ -184,7 +184,7 @@ static void Flash_external_erase(uint32_t flashAddr, uint8_t eraseMode)
 
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        __delay_cycles(12000);
+        Task_sleep(10 * CLOCK_UNIT_MS);
 
     // Write enable
     do {
@@ -251,7 +251,7 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
 
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        ;
+        Task_sleep(10 * CLOCK_UNIT_MS);
 
     Flash_spi_enable();
     Spi_write(buff, 4);
@@ -320,6 +320,7 @@ static void Flash_load_sensor_ptr(void)
             break;
         }
         rFlashSensorData.ptrDataAddr += FLASH_SENSOR_PTR_SIZE;
+        __delay_cycles(1200);
     }
 
     if (ret == ES_ERROR) {
@@ -397,11 +398,11 @@ void Flash_init(void)
     extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable);
 
     // Time delay before write instruction.
-    Task_sleep(6 * CLOCK_UNIT_MS);
+    Task_sleep(500 * CLOCK_UNIT_MS);
 
     
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-#ifdef FLASH_W25Q256FVk
+#ifdef FLASH_W25Q256FV
     Flash_external_address_mode(0);
 #endif
     sysInfo.printRecordAddr.start = 0;
@@ -414,7 +415,7 @@ void Flash_init(void)
     Flash_load_sensor_ptr();
     Semaphore_post(spiSemHandle);
 
-
+    // Flash_external_Selftest();
 
 }
 

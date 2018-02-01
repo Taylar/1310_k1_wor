@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-23 18:45:47
+* @Last Modified time: 2018-01-31 18:01:40
 */
 #include "../general.h"
 
@@ -158,6 +158,28 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t typ
         return;
     }
 
+
+    if(type == UART_INTERFACE)
+    {
+        if(interfacePortHandle)
+        {
+            PIN_close(interfacePortHandle);
+            interfacePortHandle = NULL;
+        }
+        UartPortDisable(UART_GSM);
+
+    }
+
+    if(type == UART_GSM)
+    {
+        if(gsmPortHandle)
+        {
+            PIN_close(gsmPortHandle);
+            gsmPortHandle = NULL;
+        }
+        UartPortDisable(UART_INTERFACE);
+    }
+
     UartClose(uartPort);
 
     // UartPortEnable(type);
@@ -259,12 +281,14 @@ void UartPortDisable(uint8_t type)
 {
     if(type == UART_INTERFACE)
     {
-        interfacePortHandle = PIN_open(&interfacePortState, uart_pin_interface);
+        if(interfacePortHandle == NULL)
+            interfacePortHandle = PIN_open(&interfacePortState, uart_pin_interface);
     }
 
     if(type == UART_GSM)
     {
-        gsmPortHandle = PIN_open(&gsmPortState, uart_pin_gsm);
+        if(gsmPortHandle == NULL)
+            gsmPortHandle = PIN_open(&gsmPortState, uart_pin_gsm);
     }
 }
 

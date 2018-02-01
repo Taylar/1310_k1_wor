@@ -142,8 +142,7 @@ void Sensor_store_null_package(uint8_t *buff)
     buff[length++] = calendar.Seconds;
     //SensorµçÑ¹
 #ifdef SUPPORT_BATTERY
-    value = AONBatMonBatteryVoltageGet();
-    value = ((value&0xff00)>>8)*1000 +1000*(value&0xff)/256;
+    value = Battery_get_voltage();
 #endif
     buff[length++] = HIBYTE(value);
     buff[length++] = LOBYTE(value);
@@ -190,8 +189,7 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPacket)
         packet.buff[packet.length++] = 0x01;
         //ÖÕ¶ËµçÑ¹
 #ifdef SUPPORT_BATTERY
-        value = AONBatMonBatteryVoltageGet();
-        value = ((value&0xff00)>>8)*1000 +1000*(value&0xff)/256;
+        value = Battery_get_voltage();
 #endif
         packet.buff[packet.length++] = HIBYTE(value);
         packet.buff[packet.length++] = LOBYTE(value);

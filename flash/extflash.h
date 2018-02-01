@@ -49,7 +49,7 @@
 //External flash sensor data pointer store position
 #define FLASH_SENSOR_PTR_POS            (FLASH_SYS_POS + FLASH_SYS_AREA_SIZE)
 //External flash sensor data pointer size
-#define FLASH_SENSOR_PTR_SIZE           8
+#define FLASH_SENSOR_PTR_SIZE           16
 //External flash sensor data pointer number
 #define FLASH_SENSOR_PTR_NUMBER         6144L           // 12*4096
 //External flash sensor data pointer position offset

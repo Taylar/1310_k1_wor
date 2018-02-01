@@ -63,6 +63,7 @@ int main(void)
     // InternalFlashLoadConfig();
 
     /* Initialize System Application tasks */
+
     
     LedInit();
     
@@ -79,7 +80,7 @@ int main(void)
     }
 
     Nwk_task_create();
-    InterfaceTaskCreate();
+    // InterfaceTaskCreate();
 #endif 
 
     /* Initialize radio tasks */
