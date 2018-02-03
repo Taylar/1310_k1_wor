@@ -72,7 +72,7 @@ signed char Max31855_poweron(void) {
  ******************************************************************************/
 signed char Max31855_powerdown(void) {
 
-    Max31855_spiCsCtrl(1) ;
+    Max31855_spiCsCtrl(0) ;
     Max31855_delay(20);
     Max31855_spiClkCtrl(0);
     Max31855_delay(20);

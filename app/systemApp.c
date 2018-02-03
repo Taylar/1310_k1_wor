@@ -260,6 +260,7 @@ void SystemAppTaskFxn(void)
 			if(deviceMode != DEVICES_OFF_MODE)
 			{
 				ConcenterRadioMonitor();
+				Nwk_ntp_syn();
 			}
 #endif
 

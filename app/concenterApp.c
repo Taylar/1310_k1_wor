@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-31 15:35:46
+* @Last Modified time: 2018-02-03 11:32:25
 */
 #include "../general.h"
 
@@ -26,6 +26,7 @@
 typedef struct 
 {
     uint32_t channelDispath;
+    uint32_t synchronTimeCnt;
     uint8_t  monitorCnt;
     uint8_t  screenSleepMonitorCnt;
     
@@ -81,9 +82,11 @@ void ConcenterAppInit(void)
     Clock_construct(&concenterUploadClock, ConcenterUploadTimerCb, 1, &clkParams);
     concenterUploadClockHandle = Clock_handle(&concenterUploadClock);
 
-    concenterParameter.channelDispath = 0;
-    concenterParameter.synTimeFlag    = 0;
-    concenterParameter.monitorCnt     = 0;
+    concenterParameter.channelDispath  = 0;
+    concenterParameter.synTimeFlag     = 0;
+    concenterParameter.monitorCnt      = 0;
+    concenterParameter.synchronTimeCnt = 0;
+
     concenterParameter.configFlag     = InternalFlashLoadConfig();
 
     InternalFlashInit();
@@ -577,6 +580,4 @@ void ScreenSleepMonitor(void)
         deviceMode = DEVICES_SLEEP_MODE;
     }
 }
-
-
 

@@ -678,6 +678,22 @@ void Nwk_upload_data(void)
     Nwk_event_post(NWK_EVT_DATA_UPLOAD);
 }
 
+//***********************************************************************************
+//
+// Network data sent time counter isr.
+//
+//***********************************************************************************
+void Nwk_ntp_syn(void)
+{
+    if (rNwkObject.poweron) {
+        rNwkObject.ntpTime++;
+        if (rNwkObject.ntpTime >= 3600)//g_rSysConfigInfo.ntpPeriod) 
+        {
+            rNwkObject.ntpTime = 0;
+            rNwkObject.ntp = 0;
+        }
+    }
+}
 
 //***********************************************************************************
 //
