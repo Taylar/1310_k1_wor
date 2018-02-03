@@ -105,7 +105,7 @@ void NodeAppInit(void (*Cb)(void))
         nodeParameter.customId      = DEFAULT_DST_ADDR;
     }
 
-    SetRadioSrcAddr(0x87654323);
+    SetRadioSrcAddr(0x87654329);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
     Clock_Params clkParams;
@@ -197,7 +197,15 @@ void NodeUploadProcess(void)
     uint8_t     data[24];
     uint32_t    dataItems;
     // reverse the buf to other command
-    dataItems  = Flash_get_unupload_items() - offsetUnit;
+    dataItems  = Flash_get_unupload_items();
+    if(dataItems >= offsetUnit)
+    {
+        dataItems = dataItems - offsetUnit;
+    }
+    else
+    {
+        offsetUnit = 0;
+    }
 
     while(dataItems)
     {
@@ -219,7 +227,11 @@ void NodeUploadProcess(void)
 //***********************************************************************************
 void NodeUploadFailProcess(void)
 {
-
+    // if send fail should clear the buf,
+    if(offsetUnit)
+    {
+        offsetUnit = 0;
+    }
 }
 
 //***********************************************************************************
