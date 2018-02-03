@@ -13,7 +13,7 @@
 
 #define DEFAULT_DST_ADDR                0x12121212
 
-#define PASSRADIO_ACK_TIMEOUT_TIME_MS (50)
+#define PASSRADIO_ACK_TIMEOUT_TIME_MS (100)
 
 #define RADIO_EASYLINK_MODULATION     EasyLink_Phy_Custom
 

@@ -105,7 +105,7 @@ void NodeAppInit(void (*Cb)(void))
         nodeParameter.customId      = DEFAULT_DST_ADDR;
     }
 
-    SetRadioSrcAddr(0x87654329);
+    SetRadioSrcAddr(0x87654321);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
     Clock_Params clkParams;
