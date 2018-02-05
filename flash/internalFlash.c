@@ -192,6 +192,7 @@ void InternalFlashConfigReset(void)
     
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 */
+    g_rSysConfigInfo.module 		 = MODULE_NWK | MODULE_RADIO;
 
 	g_rSysConfigInfo.collectPeriod   = UPLOAD_PERIOD_DEFAULT;   //unit is sec
 	

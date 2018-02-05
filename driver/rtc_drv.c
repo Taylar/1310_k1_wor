@@ -123,19 +123,19 @@ void RtcInit(void (*Cb)(void))
     /* Create clock object which is used for fast report timeout */
     Clock_Params clkParams;
     Clock_Params_init(&clkParams);
-    clkParams.period = CLOCK_UNIT_S;
+    clkParams.period = CLOCK_UNIT_MS * 953;
     clkParams.startFlag = FALSE;
     Clock_construct(&rtcSecondsClock, RtcSecondsIsrCb, 1, &clkParams);
     rtcSecondsClockHandle = Clock_handle(&rtcSecondsClock);
     
 
-    rtc.Year  = 2018;
-    rtc.Month = 1;
-    rtc.DayOfMonth   = 1;
+    rtc.Year       = 2018;
+    rtc.Month      = 1;
+    rtc.DayOfMonth = 1;
     rtc.DayOfWeek  = 1;
-    rtc.Hours  = 0;
-    rtc.Minutes   = 0;
-    rtc.Seconds   = 0;
+    rtc.Hours      = 0;
+    rtc.Minutes    = 0;
+    rtc.Seconds    = 0;
 
 
     RtcSecIsbCB = Cb;

@@ -61,9 +61,9 @@
 // HW version define.
 //
 //***********************************************************************************
-// #define BOARD_S1_2
+#define BOARD_S1_2
 // #define BOARD_S2_2
-#define BOARD_S6_6
+// #define BOARD_S6_6
 
 
 
@@ -73,7 +73,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0001
+#define FW_VERSION              0x0002
 
 
 //***********************************************************************************
@@ -238,7 +238,8 @@
 //#define EPD_GDE0213B1
 #define LCD_ST7567A
 #define SUPPORT_MENU
-//#define SUPPORT_NETGATE_DISP_NODE
+#define SUPPORT_NETGATE_DISP_NODE
+
 #endif
 
 //Network define

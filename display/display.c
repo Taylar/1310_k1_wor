@@ -8,6 +8,8 @@
 // Description: Display API function process routine.
 //***********************************************************************************
 #include "../general.h"
+#include "../APP/radio_protocal.h"
+
 
 #ifdef SUPPORT_DISP_SCREEN
 const uint8_t font5x8[]= {
@@ -547,80 +549,55 @@ void Disp_sensor_data(void)
     
 #ifdef SUPPORT_NETGATE_DISP_NODE
     sensordata_mem Sensor = {0,0,0,0};
-    uint8_t buff[32],cursensorno;
+    uint8_t buff[32];
 
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor
             
-        if (g_bAlarmSensorFlag) {
-
-            cursensorno = Flash_load_sensor_codec(g_AlarmSensor.DeviceId); //find sensor no in sensor codec table           
-
-            if (cursensorno){
-                sprintf((char*)buff, "%02d#", cursensorno);
-                Disp_msg(4, 2, buff, FONT_8X16);
-            }
-            else {                
-                sprintf((char*)buff, "%08lx", g_AlarmSensor.DeviceId);
-                Disp_msg(2, 2, buff, FONT_8X16);
-            }
-
-            //all  data  saved to tempdeep
-            if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {   
-                sprintf((char*)buff, "%2d.%dc", (uint16_t)g_AlarmSensor.value.tempdeep/100, (uint16_t)round((g_AlarmSensor.value.tempdeep/10)) % 10);
-                Disp_msg(2, 4, buff, FONT_8X16);    
-            }
-            else if (g_AlarmSensor.type == SENSOR_DATA_HUMI) {
-                sprintf((char*)buff, "%02d%%", (uint16_t)g_AlarmSensor.value.tempdeep/100);
-                Disp_msg(2, 4, buff, FONT_8X16);    
-            }
-            
-
-            return;
-        }
-
-
         if(get_next_sensor_memory(&Sensor)){
             
-            cursensorno = Flash_load_sensor_codec(Sensor.DeviceId); //find sensor no in sensor codec table             
             
-            if (cursensorno){
-                sprintf((char*)buff, "%02d#", cursensorno);
-                Disp_msg(4, 2, buff, FONT_8X16);
-            }
-            else {                
-                sprintf((char*)buff, "%08lx", Sensor.DeviceId);
-                Disp_msg(2, 2, buff, FONT_8X16);
-            }
+            sprintf((char*)buff, "%08lx", Sensor.DeviceId);
+            Disp_msg(2, 2, buff, FONT_8X16);
             
-            if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)(SENSOR_TEMP | SENSOR_HUMI)) {
-
-                if (Sensor.value.temp != TEMPERATURE_OVERLOAD)//temp valid 
-                    sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);                  
+            switch(Sensor.type)
+            {
+                case PARATYPE_TEMP_HUMI_SHT20:
+                if (Sensor.temp != TEMPERATURE_OVERLOAD)//temp valid
+                    sprintf((char*)buff, "%d.%dc", Sensor.temp/100, (uint16_t)round((Sensor.temp/10.0)) % 10);
                 else 
                     sprintf((char*)buff, "--c");
                 
-                if (Sensor.value.humi != HUMIDTY_OVERLOAD) //humi valid
-                    sprintf((char*)(buff + strlen((const char *)buff)), " %02d%%", Sensor.value.humi/100);
+                if (Sensor.humi != HUMIDTY_OVERLOAD) //humi valid
+                    sprintf((char*)(buff + strlen((const char *)buff)), " %02d%%", Sensor.humi/100);
                 else 
                     sprintf((char*)(buff + strlen((const char *)buff)), " --%%");
                 
-                Disp_msg(2, 4, buff, FONT_8X16);                
-            } else if (Sensor_get_function_by_type(Sensor.type) == SENSOR_TEMP) {   
-            
-                if (Sensor.value.temp != TEMPERATURE_OVERLOAD)//temp valid 
-                    sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);   
+                Disp_msg(2, 4, buff, FONT_8X16);
+                break;
+
+                case PARATYPE_NTC:
+                 if (Sensor.temp != TEMPERATURE_OVERLOAD)//temp valid
+                    sprintf((char*)buff, "%d.%dc", Sensor.temp/100, (uint16_t)round((Sensor.temp/10.0)) % 10);
                 else 
                     sprintf((char*)buff, "--c");                
                 
-                Disp_msg(2, 4, buff, FONT_8X16);                
-            } else if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_DEEP_TEMP){
-                if (Sensor.value.temp != DEEP_TEMP_OVERLOAD)//temp valid 
-                    sprintf((char*)buff, "%d.%dc", (uint16_t)(Sensor.value.tempdeep/100), (uint16_t)round((Sensor.value.tempdeep/10)) % 10);
+                Disp_msg(2, 4, buff, FONT_8X16);
+                break;
+
+                case PARATYPE_ILLUMINATION:
+                break;
+
+                case PARATYPE_TEMP_MAX31855:
+                if (Sensor.temp != DEEP_TEMP_OVERLOAD)//temp valid
+                    sprintf((char*)buff, "%d.%dc", (uint16_t)(Sensor.tempdeep/100), (uint16_t)round((Sensor.tempdeep/10)) % 10);
                 else
                     sprintf((char*)buff, "--c");
                 
                 Disp_msg(2, 4, buff, FONT_8X16);
+                break;
+
+
             }
         }
     }

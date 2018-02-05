@@ -4,10 +4,23 @@
 
 /***** Defines *****/
 
-
+#define 		MEMSENSOR_NUM			(20)
 
 
 /***** Type declarations *****/
+
+typedef struct {
+    uint32_t DeviceId;
+    uint8_t index;
+    uint8_t type;
+union{
+	struct {
+    	int16_t temp;
+    	uint16_t humi;
+    };
+    int32_t tempdeep;
+	};
+}sensordata_mem;
 
 
 
@@ -69,5 +82,9 @@ uint8_t ConcenterReadSynTimeFlag(void);
 void ConcenterRadioMonitorClear(void);
 
 void ConcenterRtcProcess(void);
+
+void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
+
+bool get_next_sensor_memory(sensordata_mem *pSensor);
 
 #endif			// _CONCENTERAPP_H__

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-03 15:26:16
+* @Last Modified time: 2018-02-05 17:43:09
 */
 #include "../general.h"
 
@@ -267,6 +267,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			// updata the rssi
 			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
 
+			sensor_unpackage_to_memory(bufTemp->load, bufTemp->load[0]+1);
 			if(ConcenterSensorDataSaveToQueue(bufTemp->load, bufTemp->load[0]+1) == true)
 			{
 				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);

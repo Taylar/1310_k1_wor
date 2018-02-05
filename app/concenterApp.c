@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-03 16:48:18
+* @Last Modified time: 2018-02-05 17:24:02
 */
 #include "../general.h"
 
@@ -567,3 +567,107 @@ void ConcenterRtcProcess(void)
     Nwk_ntp_syn();
 
 }
+
+
+#ifdef SUPPORT_NETGATE_DISP_NODE
+
+sensordata_mem pMemSensor[MEMSENSOR_NUM];//  
+uint8_t MemSensorIndex = 0;
+
+//***********************************************************************************
+//
+// unpackage  sensor data and save  sensor mac , index, type and value to mem
+//
+//***********************************************************************************
+void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
+{    
+    uint8_t i;
+    uint16_t Index;    
+    sensordata_mem cursensor;
+    
+    Index = 2;//DeviceId  start
+
+    HIBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
+    LOBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
+    HIBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];
+    LOBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];  
+    
+    Index = 16;//sensor  start
+
+    while(Index < length)
+    {
+        cursensor.index = pData[Index++];
+        cursensor.type  = pData[Index++];
+        
+        switch(cursensor.type)
+        {
+            case PARATYPE_TEMP_HUMI_SHT20:
+            HIBYTE(cursensor.temp) = pData[Index++];
+            LOBYTE(cursensor.temp) = pData[Index++];
+            HIBYTE(cursensor.humi) = pData[Index++];
+            LOBYTE(cursensor.humi) = pData[Index++];
+            break;
+
+            case PARATYPE_NTC:
+            HIBYTE(cursensor.temp) = pData[Index++];
+            LOBYTE(cursensor.temp) = pData[Index++];
+            break;
+
+            case PARATYPE_ILLUMINATION:
+            break;
+
+            case PARATYPE_TEMP_MAX31855:
+            HIBYTE(HIWORD(cursensor.tempdeep)) = pData[Index++];
+            LOBYTE(HIWORD(cursensor.tempdeep)) = pData[Index++];
+            HIBYTE(LOWORD(cursensor.tempdeep)) = pData[Index++];
+            cursensor.tempdeep >>= 8;
+            break;
+
+        }
+
+        //find in mem 
+        for (i = 0; i < MEMSENSOR_NUM; ++i) {
+            if (((pMemSensor) + i)->DeviceId == cursensor.DeviceId &&
+               ((pMemSensor) + i)->index == cursensor.index &&
+               ((pMemSensor) + i)->type == cursensor.type )
+                break;
+
+        }
+        
+        if (i < MEMSENSOR_NUM) {//update
+             memcpy((pMemSensor) + i, &cursensor, sizeof(sensordata_mem));
+        }
+        else {
+            //new sensor id
+            memcpy((pMemSensor) + MemSensorIndex, &cursensor, sizeof(sensordata_mem));
+
+            MemSensorIndex = (MemSensorIndex + 1) % MEMSENSOR_NUM;
+        }
+        
+        
+    }
+
+}
+
+bool get_next_sensor_memory(sensordata_mem *pSensor)
+{    
+    static uint8_t dispSensorIndex = 0;
+
+restart:
+    if (((sensordata_mem*)(pMemSensor) + dispSensorIndex)->DeviceId != 0x00000000 ){//valid data  
+        memcpy(pSensor, (sensordata_mem*)(pMemSensor) + dispSensorIndex, sizeof(sensordata_mem));
+        dispSensorIndex = (dispSensorIndex + 1) % MEMSENSOR_NUM;
+        return true;
+    }
+    else {
+        if(dispSensorIndex == 0)    
+            return false;
+        else {
+            dispSensorIndex = 0;
+            goto restart;
+        }    
+    }
+}
+#endif
+
+
