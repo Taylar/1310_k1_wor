@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-31 10:03:48
+* @Last Modified time: 2018-02-03 15:26:16
 */
 #include "../general.h"
 
@@ -116,7 +116,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						   ((uint32_t)bufTemp->load[baseAddr+1]);
 					lenTemp -= 5;
 					NodeCollectStop();
-					NodeCollectPeriodSet(temp * CLOCK_UNIT_S);
+					NodeCollectPeriodSet(temp);
 					if(temp)
 						NodeCollectStart();
 					break;

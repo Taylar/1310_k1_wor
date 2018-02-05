@@ -8,6 +8,35 @@
 #define         INTERFACE_STACK_SIZE        512
 
 #define         INTERFACE_REC_TIMEOUT_MS    3
+
+
+#ifdef BOARD_S6_6
+#define INTERFACE_REQ_PIN                            IOID_22
+
+const PIN_Config Int_Req_PinTable[] = {
+    INTERFACE_REQ_PIN | PIN_INPUT_EN | PIN_NOPULL | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+    PIN_TERMINATE
+};
+
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // **************************************************************************
 // task
 uint8_t         interfaceTaskStack[INTERFACE_STACK_SIZE];

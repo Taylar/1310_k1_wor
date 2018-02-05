@@ -955,4 +955,15 @@ void Disp_poweroff(void)
    // Sys_lcd_stop_timing();
 }
 
+//***********************************************************************************
+//
+// Read lcd power state.
+//
+//***********************************************************************************
+uint8_t Disp_powerState(void)
+{
+    return rDispObject.init;
+}
+
+
 #endif  /* SUPPORT_DISP_SCREEN */

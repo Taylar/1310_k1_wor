@@ -257,23 +257,11 @@ void SystemAppTaskFxn(void)
 		{
 
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
-			if(deviceMode != DEVICES_OFF_MODE)
-			{
-				ConcenterRadioMonitor();
-				Nwk_ntp_syn();
-			}
-#endif
-
-#ifdef BOARD_S6_6
-			if(deviceMode == DEVICES_ON_MODE)
-			{
-				ScreenSleepMonitor();
-			}
+			ConcenterRtcProcess();
 #endif
 
 #ifdef BOARD_S1_2
-			if(deviceMode == DEVICES_ON_MODE)
-				NodeSynchronizeTime();
+			NodeRtcProcess();
 #endif
 			// Led_toggle(LED_R);
 			// Led_toggle(LED_B);

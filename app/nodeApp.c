@@ -15,11 +15,15 @@
 typedef struct 
 {
     uint32_t collectPeriod;         // the unit is sec
+    uint32_t collectTimeCnt;         // the unit is sec
     uint32_t uploadPeriod;          // the unit is sec
+    uint32_t uploadTimeCnt;          // the unit is sec
     uint32_t customId;
     uint32_t deceive;
     uint16_t serialNum;
     uint16_t sysTime;
+    bool     collectStart;
+    bool     uploadStart;
     bool     broadcasting;
     bool     configFlag;
     bool     synTimeFlag;
@@ -31,11 +35,7 @@ static node_para_t nodeParameter;
 
 /* Clock for node period collect */
 
-Clock_Struct nodeCollectPeriodClock;     /* not static so you can see in ROV */
-static Clock_Handle nodeCollectPeriodClockHandle;
 
-Clock_Struct nodeUploadPeriodClock;     /* not static so you can see in ROV */
-static Clock_Handle nodeUploadPeriodClockHandle;
 
 
 uint8_t     offsetUnit; // for sensor data upload offset unit
@@ -46,26 +46,6 @@ uint8_t     offsetUnit; // for sensor data upload offset unit
 
 
 /***** Function definitions *****/
-//***********************************************************************************
-// brief: set the upload period event   
-// 
-// parameter: 
-//***********************************************************************************
-static void NodeUploadPeriodCb(UArg arg0)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
-}
-
-//***********************************************************************************
-// brief: set the upload sensor event event   
-// 
-// parameter: 
-//***********************************************************************************
-static void NodeCollectPeriodCb(UArg arg0)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_COLLECT_NODE);
-}
-
 
 
 //***********************************************************************************
@@ -76,18 +56,22 @@ static void NodeCollectPeriodCb(UArg arg0)
 void NodeAppInit(void (*Cb)(void))
 {
 
-    nodeParameter.serialNum     = 0;
-    nodeParameter.sysTime       = 0;
+    nodeParameter.serialNum      = 0;
+    nodeParameter.sysTime        = 0;
     
-    nodeParameter.uploadPeriod  = NODE_BROADCASTING_TIME;
-    nodeParameter.collectPeriod = NODE_BROADCASTING_TIME;
-    nodeParameter.customId      = DEFAULT_DST_ADDR;
-
-    nodeParameter.synTimeFlag   = false;
-    nodeParameter.configFlag    = InternalFlashLoadConfig();
-    nodeParameter.configFlag    = true;
-
-    offsetUnit                  = 0;
+    nodeParameter.uploadPeriod   = NODE_BROADCASTING_TIME;
+    nodeParameter.uploadTimeCnt  = 0;
+    nodeParameter.collectPeriod  = NODE_BROADCASTING_TIME;
+    nodeParameter.collectTimeCnt = 0;
+    nodeParameter.customId       = DEFAULT_DST_ADDR;
+    
+    nodeParameter.uploadStart    = false;
+    nodeParameter.collectStart   = false;
+    nodeParameter.synTimeFlag    = false;
+    nodeParameter.configFlag     = InternalFlashLoadConfig();
+    nodeParameter.configFlag     = true;
+    
+    offsetUnit                   = 0;
 
     if(nodeParameter.configFlag)
     {
@@ -108,24 +92,7 @@ void NodeAppInit(void (*Cb)(void))
     SetRadioSrcAddr(0x87654321);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
-    Clock_Params clkParams;
-    Clock_Params_init(&clkParams);
-    clkParams.period    = 0;
-    clkParams.startFlag = FALSE;
-    Clock_construct(&nodeUploadPeriodClock, NodeUploadPeriodCb, 1, &clkParams);
-    nodeUploadPeriodClockHandle = Clock_handle(&nodeUploadPeriodClock);
-    NodeUploadPeriodSet(nodeParameter.uploadPeriod);
-
-    clkParams.period    = 0;
-    clkParams.startFlag = FALSE;
-    Clock_construct(&nodeCollectPeriodClock, NodeCollectPeriodCb, 1, &clkParams);
-    nodeCollectPeriodClockHandle = Clock_handle(&nodeCollectPeriodClock);
-    NodeCollectPeriodSet(nodeParameter.collectPeriod);
-
-    NodeStrategyInit(Cb);
-
-    NodeStrategySetPeriod(nodeParameter.uploadPeriod);
-
+    
     // NodeWakeup();
 }
 
@@ -153,9 +120,7 @@ void NodeAppHwInit(void)
 //***********************************************************************************
 void NodeUploadStart(void)
 {
-
-    if((Clock_isActive(nodeUploadPeriodClockHandle) == false) && (nodeParameter.uploadPeriod))
-        Clock_start(nodeUploadPeriodClockHandle);
+    nodeParameter.uploadStart = true;
 }
 
 
@@ -166,8 +131,7 @@ void NodeUploadStart(void)
 //***********************************************************************************
 void NodeUploadStop(void)
 {
-    if(Clock_isActive(nodeUploadPeriodClockHandle))
-        Clock_stop(nodeUploadPeriodClockHandle);
+    nodeParameter.uploadStart = false;
 }
 
 //***********************************************************************************
@@ -179,10 +143,6 @@ void NodeUploadStop(void)
 void NodeUploadPeriodSet(uint32_t period)
 {
     nodeParameter.uploadPeriod      = period;
-    if(period == 0)
-        Clock_stop(nodeUploadPeriodClockHandle);
-    else
-        Clock_setPeriod(nodeUploadPeriodClockHandle, period * CLOCK_UNIT_S);
 }
 
 
@@ -255,10 +215,8 @@ void NodeUploadSucessProcess(void)
 //***********************************************************************************
 void NodeCollectStart(void)
 {
-    nodeParameter.synTimeFlag = true;
-    
-    if(Clock_isActive(nodeCollectPeriodClockHandle) == false)
-        Clock_start(nodeCollectPeriodClockHandle);
+    nodeParameter.synTimeFlag       = true;
+    nodeParameter.collectStart      = true;
 }
 
 
@@ -269,8 +227,8 @@ void NodeCollectStart(void)
 //***********************************************************************************
 void NodeCollectStop(void)
 {
-    if(Clock_isActive(nodeCollectPeriodClockHandle))
-        Clock_stop(nodeCollectPeriodClockHandle);
+    nodeParameter.collectStart      = false;
+    nodeParameter.synTimeFlag       = false;
 }
 
 
@@ -283,10 +241,6 @@ void NodeCollectStop(void)
 void NodeCollectPeriodSet(uint32_t period)
 {
     nodeParameter.collectPeriod         = period;
-    if(period == 0)
-        Clock_stop(nodeCollectPeriodClockHandle);
-    else
-        Clock_setPeriod(nodeCollectPeriodClockHandle, period * CLOCK_UNIT_S);
 }
 
 
@@ -446,6 +400,8 @@ void NodeSleep(void)
     NodeUploadStop();
     NodeStrategyStop();
     deviceMode = DEVICES_OFF_MODE;
+    nodeParameter.uploadStart         = false;
+    nodeParameter.collectStart        = false;
 
     offsetUnit = 0;
     
@@ -589,13 +545,42 @@ void NodeSensorTest(void)
     NodeBroadcastTestResult();
 }
 
-void NodeSynchronizeTime(void)
+
+
+
+//***********************************************************************************
+// brief:the node rtc process
+// 
+// parameter: 
+//***********************************************************************************
+void NodeRtcProcess(void)
 {
-    nodeParameter.sysTime++;
-    if(nodeParameter.sysTime >= NODE_SYN_TIME_MAX)
+    if(nodeParameter.collectStart)
     {
-        NodeRadioSendSynReq();
-        nodeParameter.sysTime       = 0;
+        nodeParameter.collectTimeCnt++;
+        
+        if(nodeParameter.collectTimeCnt >= nodeParameter.collectPeriod)
+        {
+            nodeParameter.collectTimeCnt = 0;
+            Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_COLLECT_NODE);
+        }
+
+        nodeParameter.sysTime++;
+        if(nodeParameter.sysTime >= NODE_SYN_TIME_MAX)
+        {
+            NodeRadioSendSynReq();
+            nodeParameter.sysTime       = 0;
+        }
+    }
+
+    if(nodeParameter.uploadStart)
+    {
+        nodeParameter.uploadTimeCnt++;
+        if(nodeParameter.uploadTimeCnt > nodeParameter.collectPeriod)
+        {
+            nodeParameter.uploadTimeCnt = 0;
+            Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+        }
     }
 }
 

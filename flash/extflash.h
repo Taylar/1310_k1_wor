@@ -46,12 +46,14 @@
 //External flash system info area size
 #define FLASH_SYS_AREA_SIZE             FLASH_SECTOR_SIZE * 1
 
+#ifdef BOARD_S1_2
+
 //External flash sensor data pointer store position
 #define FLASH_SENSOR_PTR_POS            (FLASH_SYS_POS + FLASH_SYS_AREA_SIZE)
 //External flash sensor data pointer size
 #define FLASH_SENSOR_PTR_SIZE           16
 //External flash sensor data pointer number
-#define FLASH_SENSOR_PTR_NUMBER         6144L           // 12*4096
+#define FLASH_SENSOR_PTR_NUMBER         (5120L)           // 20*4096
 //External flash sensor data pointer position offset
 #define FLASH_SENSOR_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)
 
@@ -60,9 +62,35 @@
 //External flash sensor data size
 #define FLASH_SENSOR_DATA_SIZE          32
 //External flash sensor data number
-#define FLASH_SENSOR_DATA_NUMBER        (6144L)         // the max store data   //48 *4096
+#define FLASH_SENSOR_DATA_NUMBER        (5120L)         // the max store data   //40 *4096
 //External flash sensor data position offset
 #define FLASH_SENSOR_DATA_AREA_SIZE     (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER)
+
+#endif
+
+#if (defined BOARD_S6_6) || (defined BOARD_S2_2)
+
+//External flash sensor data pointer store position
+#define FLASH_SENSOR_PTR_POS            (FLASH_SYS_POS + FLASH_SYS_AREA_SIZE)
+//External flash sensor data pointer size
+#define FLASH_SENSOR_PTR_SIZE           16
+//External flash sensor data pointer number
+#define FLASH_SENSOR_PTR_NUMBER         (698624L)           // 2729*4096
+//External flash sensor data pointer position offset
+#define FLASH_SENSOR_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)
+
+//External flash sensor data store position
+#define FLASH_SENSOR_DATA_POS           (FLASH_SENSOR_PTR_POS + FLASH_SENSOR_PTR_AREA_SIZE)
+//External flash sensor data size
+#define FLASH_SENSOR_DATA_SIZE          32
+//External flash sensor data number
+#define FLASH_SENSOR_DATA_NUMBER        (698624L)         // the max store data   //40 *4096
+//External flash sensor data position offset
+#define FLASH_SENSOR_DATA_AREA_SIZE     (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER)
+
+
+#endif
+
 
 
 //External flash NODE_PARA data pointer store position

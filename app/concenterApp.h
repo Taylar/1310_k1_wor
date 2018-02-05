@@ -66,10 +66,8 @@ void ConcenterTimeSychronization(Calendar *currentTime);
 
 uint8_t ConcenterReadSynTimeFlag(void);
 
-void ConcenterRadioMonitor(void);
-
 void ConcenterRadioMonitorClear(void);
 
-void ScreenSleepMonitor(void);
+void ConcenterRtcProcess(void);
 
 #endif			// _CONCENTERAPP_H__

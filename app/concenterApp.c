@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-03 11:32:25
+* @Last Modified time: 2018-02-03 16:48:18
 */
 #include "../general.h"
 
@@ -27,11 +27,15 @@ typedef struct
 {
     uint32_t channelDispath;
     uint32_t synchronTimeCnt;
+    uint32_t uploadPeriod;          // the unit is sec
+    uint32_t uploadTimeCnt;          // the unit is sec
+    
     uint8_t  monitorCnt;
     uint8_t  screenSleepMonitorCnt;
     
     bool  configFlag;    // 0: unload the config; 1: has load the config
     bool  synTimeFlag;    // 0: unsyntime; 1: synchron time
+    bool  radioReceive;    // 0: stop receive radio; 1: continue receive radio
 
 }concenter_para_t;
 
@@ -44,9 +48,6 @@ typedef struct
 concenter_para_t concenterParameter;
 
 
-/* Clock for node period collect */
-static Clock_Struct concenterUploadClock;     /* not static so you can see in ROV */
-static Clock_Handle concenterUploadClockHandle;
 
 
 extflash_queue_s extflashWriteQ;
@@ -57,15 +58,6 @@ extflash_queue_s extflashWriteQ;
 
 /***** Function definitions *****/
 
-//***********************************************************************************
-// brief:   set the concenter upload event
-// 
-// parameter: 
-//***********************************************************************************
-static void ConcenterUploadTimerCb(UArg arg0)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_NET_UPLOAD);
-}
 
 
 //***********************************************************************************
@@ -75,17 +67,13 @@ static void ConcenterUploadTimerCb(UArg arg0)
 //***********************************************************************************
 void ConcenterAppInit(void)
 {
-    Clock_Params clkParams;
-    Clock_Params_init(&clkParams);
-    clkParams.period    = 0;
-    clkParams.startFlag = FALSE;
-    Clock_construct(&concenterUploadClock, ConcenterUploadTimerCb, 1, &clkParams);
-    concenterUploadClockHandle = Clock_handle(&concenterUploadClock);
 
     concenterParameter.channelDispath  = 0;
-    concenterParameter.synTimeFlag     = 0;
     concenterParameter.monitorCnt      = 0;
     concenterParameter.synchronTimeCnt = 0;
+
+    concenterParameter.synTimeFlag     = 0;
+    concenterParameter.radioReceive    = false;
 
     concenterParameter.configFlag     = InternalFlashLoadConfig();
 
@@ -131,8 +119,6 @@ void ConcenterAppHwInit(void)
 //***********************************************************************************
 void ConcenterUploadStart(void)
 {
-    if(Clock_isActive(concenterUploadClockHandle) == false)
-        Clock_start(concenterUploadClockHandle);
 }
 
 
@@ -143,8 +129,6 @@ void ConcenterUploadStart(void)
 //***********************************************************************************
 void ConcenterUploadStop(void)
 {
-    if(Clock_isActive(concenterUploadClockHandle))
-        Clock_stop(concenterUploadClockHandle);
 }
 
 //***********************************************************************************
@@ -155,7 +139,7 @@ void ConcenterUploadStop(void)
 //***********************************************************************************
 void ConcenterUploadPeriodSet(uint32_t period)
 {
-    Clock_setPeriod(concenterUploadClockHandle, period * CLOCK_UNIT_MS);
+
 }
 
 
@@ -269,6 +253,7 @@ void ConcenterSleep(void)
 {
     if(concenterParameter.configFlag)
     {
+        concenterParameter.radioReceive = false;
         Nwk_poweroff();
         EasyLink_abort();
         RadioFrontDisable();
@@ -286,6 +271,7 @@ void ConcenterWakeup(void)
     deviceMode = DEVICES_ON_MODE;
     if(concenterParameter.configFlag)
     {
+        concenterParameter.radioReceive = true;
         RadioFrontRxEnable();
         Nwk_poweron();
         RadioFrontRxEnable();
@@ -531,27 +517,6 @@ uint8_t ConcenterReadSynTimeFlag(void)
 }
 
 
-//***********************************************************************************
-// brief:
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterRadioMonitor(void)
-{
-    concenterParameter.monitorCnt++;
-    if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
-    {
-        if(concenterParameter.configFlag)
-        {
-            EasyLink_abort();
-            RadioFrontDisable();
-            RadioFrontRxEnable();
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-            RadioModeSet(RADIOMODE_RECEIVEPORT);
-        }
-    }
-}
-
 
 //***********************************************************************************
 // brief:
@@ -563,21 +528,42 @@ void ConcenterRadioMonitorClear(void)
     concenterParameter.monitorCnt = 0;
 }
 
-
 //***********************************************************************************
-// brief:
+// brief:the concenter rtc process
 // 
 // parameter: 
 //***********************************************************************************
-void ScreenSleepMonitor(void)
+void ConcenterRtcProcess(void)
 {
-    if(deviceMode == DEVICES_SLEEP_MODE)
-        return;
-    concenterParameter.screenSleepMonitorCnt ++;
-    if(concenterParameter.screenSleepMonitorCnt >= SCREEN_SLEEP_TIME)
+    
+#ifdef BOARD_S6_6
+    if(Disp_powerState())
     {
-        Disp_poweroff();
-        deviceMode = DEVICES_SLEEP_MODE;
+        concenterParameter.screenSleepMonitorCnt ++;
+        if(concenterParameter.screenSleepMonitorCnt >= SCREEN_SLEEP_TIME)
+        {
+            Disp_poweroff();
+            deviceMode = DEVICES_SLEEP_MODE;
+        }
     }
-}
+#endif
 
+    if(concenterParameter.radioReceive)
+    {
+        concenterParameter.monitorCnt++;
+        if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
+        {
+            if(concenterParameter.configFlag)
+            {
+                EasyLink_abort();
+                RadioFrontDisable();
+                RadioFrontRxEnable();
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+                RadioModeSet(RADIOMODE_RECEIVEPORT);
+            }
+        }
+    }
+
+    Nwk_ntp_syn();
+
+}
