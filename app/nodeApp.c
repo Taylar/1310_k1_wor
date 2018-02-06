@@ -89,7 +89,7 @@ void NodeAppInit(void (*Cb)(void))
         nodeParameter.customId      = DEFAULT_DST_ADDR;
     }
 
-    SetRadioSrcAddr(0x87654328);
+    SetRadioSrcAddr(0x87654333);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
     NodeStrategyInit(Cb);

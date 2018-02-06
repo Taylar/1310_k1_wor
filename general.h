@@ -81,7 +81,7 @@
 // default setting.
 //
 //***********************************************************************************
-#define UPLOAD_PERIOD_DEFAULT       5
+#define UPLOAD_PERIOD_DEFAULT       60
 
 
 
