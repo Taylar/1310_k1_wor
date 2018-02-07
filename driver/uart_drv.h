@@ -54,7 +54,7 @@ extern UartRxData_t     uart0TxData;
 
 #define	UartSoftInit(baud, cb, type)		UartHwInit(UART_0, baud, cb, type)
 
-#define	UartSend(bufp, count)		Uart_send_burst_data(UART_0, bufp, count)
+#define	UartSend(bufp, count)				Uart_send_burst_data(UART_0, bufp, count)
 
 
 void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t type);
