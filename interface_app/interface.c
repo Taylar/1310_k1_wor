@@ -66,7 +66,7 @@ static Clock_Handle interfaceRecTimeoutClockHandle;
 UartRxData_t     uart0RxData;
 UartRxData_t     uart0IsrRxData;
 UartRxData_t     uart0TxData;
-
+bool            interfaceFlag;
 
 void InterfaceTaskFxn(void);
 
@@ -188,9 +188,10 @@ void InterfaceTaskFxn(void)
     /* Obtain event instance handle */
     interfaceEvtHandle = Event_handle(&interfaceEvtStruct);
 
-    Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
-    InterfaceEnable();
-    Semaphore_post(interfaceSemHandle);
+    interfaceFlag       = FALSE;
+    // Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
+    // InterfaceEnable();
+    // Semaphore_post(interfaceSemHandle);
 
     // UartClose(UART_0);
 
@@ -200,14 +201,18 @@ void InterfaceTaskFxn(void)
 
         if(eventId & INTERFACE_EVT_RX)
         {
-            
+            Usb_data_parse(uart0RxData.buff, uart0RxData.length);
             // InterfaceSend(uart0RxData.buff, uart0RxData.length);
         }
 
         if(eventId & INTERFACE_EVT_TX)
         {
             Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
-            UartSend(uart0TxData.buff, uart0TxData.length);
+
+            if(interfaceFlag)
+                UartSend(uart0TxData.buff, uart0TxData.length);
+
+            
             Semaphore_post(interfaceSemHandle);
         }
     }
@@ -221,7 +226,10 @@ void InterfaceTaskFxn(void)
 //***********************************************************************************
 void InterfaceEnable(void)
 {
+    Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
+    interfaceFlag       = true;
     HwInterfaceInit(INTERFACE_UART, 115200, InterfaceReceiveCb);
+    Semaphore_post(interfaceSemHandle);
 }
 
 //***********************************************************************************
@@ -232,7 +240,11 @@ void InterfaceEnable(void)
 //***********************************************************************************
 void InterfaceDisable(void)
 {
+    Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
+    interfaceFlag       = FALSE;
     UartClose(UART_0);
+    UartPortDisable(UART_INTERFACE);
+    Semaphore_post(interfaceSemHandle);
 }
 
 #endif

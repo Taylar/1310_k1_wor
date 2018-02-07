@@ -46,7 +46,6 @@ typedef struct {
 #define USB_PACKAGE_TAILH         '\n'
 
 
-extern void Usb_task_create(void);
 
 
 

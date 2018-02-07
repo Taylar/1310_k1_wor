@@ -142,6 +142,7 @@ void Sensor_store_null_package(uint8_t *buff)
     buff[length++] = calendar.Seconds;
     //SensorµçÑ¹
 #ifdef SUPPORT_BATTERY
+    Battery_voltage_measure();
     value = Battery_get_voltage();
 #endif
     buff[length++] = HIBYTE(value);
@@ -189,6 +190,7 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPacket)
         packet.buff[packet.length++] = 0x01;
         //ÖÕ¶ËµçÑ¹
 #ifdef SUPPORT_BATTERY
+        Battery_voltage_measure();
         value = Battery_get_voltage();
 #endif
         packet.buff[packet.length++] = HIBYTE(value);
@@ -274,7 +276,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
     uint16_t package_length;
     bool     congfig = false,  sensorcodec = false;
 #ifdef SUPPORT_NETGATE_DISP_NODE
-    uint32_t deviceid;
+    //uint32_t deviceid;
 #endif
     
     //pBuff maybe include more one data package
@@ -356,6 +358,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                         
 #ifdef SUPPORT_NETGATE_DISP_NODE
                     case PTI_SENSOR_CODEC:
+                        /*
                         if((index + 6)<= package_length) {   
                             HIBYTE(HIWORD(deviceid)) = rxData[index + 0];
                             LOBYTE(HIWORD(deviceid)) = rxData[index + 1];
@@ -371,7 +374,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                                
                             }
                             
-                        }
+                        }*/
                         break;
 #endif                        
     				}	

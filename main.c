@@ -80,7 +80,7 @@ int main(void)
     }
 
     Nwk_task_create();
-    // InterfaceTaskCreate();
+    InterfaceTaskCreate();
 #endif 
 
     /* Initialize radio tasks */

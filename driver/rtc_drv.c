@@ -123,7 +123,7 @@ void RtcInit(void (*Cb)(void))
     /* Create clock object which is used for fast report timeout */
     Clock_Params clkParams;
     Clock_Params_init(&clkParams);
-    clkParams.period = CLOCK_UNIT_MS * 953;
+    clkParams.period = CLOCK_UNIT_S;
     clkParams.startFlag = FALSE;
     Clock_construct(&rtcSecondsClock, RtcSecondsIsrCb, 1, &clkParams);
     rtcSecondsClockHandle = Clock_handle(&rtcSecondsClock);

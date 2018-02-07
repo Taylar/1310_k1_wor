@@ -89,7 +89,7 @@ void NodeAppInit(void (*Cb)(void))
         nodeParameter.customId      = DEFAULT_DST_ADDR;
     }
 
-    SetRadioSrcAddr(0x87654333);
+    SetRadioSrcAddr(0x87654321);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
     NodeStrategyInit(Cb);
@@ -451,11 +451,11 @@ void NodeShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        Led_ctrl(LED_B, 0, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_R, 0, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
 }
@@ -471,11 +471,11 @@ void NodeLongKeyApp(void)
     {
         case DEVICES_ON_MODE:
         NodeSleep();
-        Led_ctrl(LED_R, 0, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 0, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         NodeWakeup();
         break;
     }
