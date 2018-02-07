@@ -47,6 +47,7 @@ typedef struct {
 
 
 
+void Usb_data_parse(uint8_t *pData, uint16_t length);
 
 
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-07 15:40:06
+* @Last Modified time: 2018-02-07 16:58:24
 */
 #include "../general.h"
 
@@ -257,7 +257,10 @@ void ConcenterSleep(void)
         Nwk_poweroff();
         EasyLink_abort();
         RadioFrontDisable();
+        // wait the nwk disable the uart
+        Task_sleep(500 * CLOCK_UNIT_MS);
     }
+    InterfaceEnable();
     deviceMode = DEVICES_OFF_MODE;
 }
 
@@ -269,6 +272,7 @@ void ConcenterSleep(void)
 void ConcenterWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
+    InterfaceDisable();
     if(concenterParameter.configFlag)
     {
         concenterParameter.radioReceive = true;
@@ -318,6 +322,7 @@ void ConcenterShortKeyApp(void)
         break;
 
         case DEVICES_OFF_MODE:
+        InterfaceSend("zxt test", 9);
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
     }

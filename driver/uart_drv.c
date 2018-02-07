@@ -2,14 +2,14 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-31 18:01:40
+* @Last Modified time: 2018-02-07 17:52:32
 */
 #include "../general.h"
 
 /* UART Board */
 #ifdef BOARD_S2_2
 
-#define UART_RX_INTERFACE               IOID_23          /* RXD */
+#define UART_RX_INTERFACE               IOID_11          /* RXD */
 #define UART_TX_INTERFACE               IOID_8          /* TXD */
 
 #endif
@@ -257,7 +257,9 @@ void UartSendDatas(UART_PORT uartPort, uint8_t *buf, uint8_t count)
 void Uart_send_burst_data(UART_PORT uartPort, uint8_t *pData, uint16_t length)
 {
     uint16_t i;
-
+    if (uartPort >= UART_MAX) {
+        return;
+    }
     for (i = 0; i < length; i++) {
         UART_write(uarthandle[uartPort], pData+i, 1);
     }

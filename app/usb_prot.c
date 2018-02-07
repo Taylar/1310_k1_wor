@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-10 20:26:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-22 18:22:52
+* @Last Modified time: 2018-02-07 17:29:42
 */
 #include "../general.h"
 #include "../app/usb_prot.h"
@@ -68,8 +68,8 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
         return;
 
     //package check code
-    if (pData[len - 1] != CheckCode8(pData, len - 1))
-        return;
+    // if (pData[len - 1] != CheckCode8(pData, len - 1))
+    //     return;
 
 // The data is valid.
     switch (pData[2]) {

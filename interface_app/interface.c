@@ -1,6 +1,13 @@
+/*
+* @Author: zxt
+* @Date:   2017-12-21 17:36:18
+* @Last Modified by:   zxt
+* @Last Modified time: 2018-02-07 17:04:16
+*/
 #include "../general.h"
 #include "../radio_app/radio_app.h"
 #include "interface.h"
+#include "../app/usb_prot.h"
 
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
 
@@ -63,9 +70,7 @@ static Clock_Handle interfaceRecTimeoutClockHandle;
 
 // **************************************************************************
 // variable
-UartRxData_t     uart0RxData;
-UartRxData_t     uart0IsrRxData;
-UartRxData_t     uart0TxData;
+
 bool            interfaceFlag;
 
 void InterfaceTaskFxn(void);
@@ -212,7 +217,7 @@ void InterfaceTaskFxn(void)
             if(interfaceFlag)
                 UartSend(uart0TxData.buff, uart0TxData.length);
 
-            
+
             Semaphore_post(interfaceSemHandle);
         }
     }
