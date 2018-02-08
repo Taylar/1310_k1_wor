@@ -11,7 +11,6 @@
 #define         RADIO_EVT_ALL           0xffff
 
 
-#define DEFAULT_DST_ADDR                0x12341234
 
 #define PASSRADIO_ACK_TIMEOUT_TIME_MS (100)
 

@@ -81,8 +81,15 @@
 // default setting.
 //
 //***********************************************************************************
+#define CUSTOM_ID_DEFAULT           0X60002769
+
 #define UPLOAD_PERIOD_DEFAULT       60
 
+#define NODE_BROADCASTING_TIME          UPLOAD_PERIOD_DEFAULT
+#define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
+#define NODE_SYN_TIME_MAX               3600
+
+#define DEFAULT_DST_ADDR            0x12341234
 
 
 //***********************************************************************************

@@ -6,9 +6,6 @@
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 /***** Defines *****/
-#define NODE_BROADCASTING_TIME          UPLOAD_PERIOD_DEFAULT
-#define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
-#define NODE_SYN_TIME_MAX               3600
 
 
 /***** Type declarations *****/
@@ -89,7 +86,7 @@ void NodeAppInit(void (*Cb)(void))
         nodeParameter.customId      = DEFAULT_DST_ADDR;
     }
 
-    SetRadioSrcAddr(0x87654321);
+    SetRadioSrcAddr(CUSTOM_ID_DEFAULT);
     SetRadioDstAddr(DEFAULT_DST_ADDR);
 
     NodeStrategyInit(Cb);

@@ -172,10 +172,10 @@ void InternalFlashConfigReset(void)
 
     g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
     g_rSysConfigInfo.swVersion = FW_VERSION;
-    g_rSysConfigInfo.DeviceId[0] = 0x60;
-    g_rSysConfigInfo.DeviceId[1] = 0x00;
-    g_rSysConfigInfo.DeviceId[2] = 0x27;
-    g_rSysConfigInfo.DeviceId[3] = 0x69;
+    g_rSysConfigInfo.DeviceId[0] = (uint8_t)((CUSTOM_ID_DEFAULT>>24)&0xff);
+    g_rSysConfigInfo.DeviceId[1] = (uint8_t)((CUSTOM_ID_DEFAULT>>16)&0xff);
+    g_rSysConfigInfo.DeviceId[2] = (uint8_t)((CUSTOM_ID_DEFAULT>>8)&0xff);
+    g_rSysConfigInfo.DeviceId[3] = (uint8_t)((CUSTOM_ID_DEFAULT)&0xff);;
     g_rSysConfigInfo.customId[0] = 0;
     g_rSysConfigInfo.customId[1] = 0;
 
