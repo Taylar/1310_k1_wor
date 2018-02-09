@@ -2,14 +2,14 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-07 17:04:16
+* @Last Modified time: 2018-02-09 14:54:24
 */
 #include "../general.h"
 #include "../radio_app/radio_app.h"
 #include "interface.h"
 #include "../app/usb_prot.h"
 
-#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+// #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
 
 /***** Defines *****/
 #define         INTERFACE_STACK_SIZE        512
@@ -252,4 +252,4 @@ void InterfaceDisable(void)
     Semaphore_post(interfaceSemHandle);
 }
 
-#endif
+// #endif
