@@ -87,4 +87,13 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
 
 bool get_next_sensor_memory(sensordata_mem *pSensor);
 
+void ConcenterCollectStart(void);
+
+void ConcenterCollectStop(void);
+
+void ConcenterCollectPeriodSet(uint32_t period);
+
+void ConcenterCollectProcess(void);
+
+
 #endif			// _CONCENTERAPP_H__

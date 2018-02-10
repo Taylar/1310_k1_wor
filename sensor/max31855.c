@@ -480,7 +480,7 @@ static void Max31855_measure(uint8_t chNum)
         jtnTemp = (double) md[2].sd.junction * 0.0625 - 128.0f;
         md[2].temp = ((uint32_t)(MAX31855_CalcTemp(thmpTemp, jtnTemp)*100));
         k = (int32_t)(MAX31855_CalcTemp(thmpTemp, jtnTemp)*100);
-        k = k << 8;
+        k = k << 4;
         rSensorData[chNum].tempdeep = (uint32_t)k;
         //rSensorData[chNum].tempdeep = ((uint32_t)(MAX31855_CalcTemp(thmpTemp, jtnTemp)*100))<<8;
         return ;
@@ -497,7 +497,7 @@ static void Max31855_measure(uint8_t chNum)
 
     // 取中间值
     k = (int32_t)(md[2].temp*100);
-    k =k << 8;
+    k =k << 4;
     rSensorData[chNum].tempdeep = (uint32_t)k;
     //rSensorData[chNum].tempdeep = ((uint32_t)(md[2].temp*100))<<8;
 

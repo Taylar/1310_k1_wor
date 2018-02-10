@@ -61,8 +61,8 @@
 // HW version define.
 //
 //***********************************************************************************
-#define BOARD_S1_2
-// #define BOARD_S2_2
+// #define BOARD_S1_2
+#define BOARD_S2_2
 // #define BOARD_S6_6
 
 
@@ -81,7 +81,7 @@
 // default setting.
 //
 //***********************************************************************************
-#define CUSTOM_ID_DEFAULT           0X22000924
+#define CUSTOM_ID_DEFAULT           0X12002100
 
 #define UPLOAD_PERIOD_DEFAULT       60
 
@@ -89,7 +89,7 @@
 #define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
 #define NODE_SYN_TIME_MAX               3600
 
-#define DEFAULT_DST_ADDR            0x22000924
+#define DEFAULT_DST_ADDR            0x12341234
 
 
 //***********************************************************************************
