@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-10 10:40:43
+* @Last Modified time: 2018-02-26 10:25:07
 */
 #include "../general.h"
 
@@ -714,6 +714,9 @@ void ConcenterRtcProcess(void)
 }
 
 
+
+
+
 #ifdef SUPPORT_NETGATE_DISP_NODE
 
 sensordata_mem pMemSensor[MEMSENSOR_NUM];//  
@@ -810,7 +813,7 @@ restart:
         else {
             dispSensorIndex = 0;
             goto restart;
-        }    
+        }
     }
 }
 #endif

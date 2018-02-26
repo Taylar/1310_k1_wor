@@ -64,6 +64,7 @@
 // #define BOARD_S1_2
 #define BOARD_S2_2
 // #define BOARD_S6_6
+// #define BOARD_CONFIG_DECEIVE
 
 
 // #define FACTOR_RADIO_TEST
@@ -89,7 +90,7 @@
 #define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
 #define NODE_SYN_TIME_MAX               3600
 
-#define DEFAULT_DST_ADDR            0x12341234
+#define DEFAULT_DST_ADDR            0x22000924
 
 
 //***********************************************************************************
@@ -326,7 +327,7 @@ typedef enum {
 
 
 
-#define MODULE_SENSOR_MAX       1
+#define MODULE_SENSOR_MAX       8
 typedef enum {
     SEN_TYPE_NONE = 0,
     SEN_TYPE_SHT2X,
@@ -395,8 +396,7 @@ typedef struct {
 } AlarmTemp_t;
 
 typedef struct {
-	uint16_t size:10;
-    uint16_t hwVersion:6;
+	uint16_t size;
 
 	uint16_t swVersion;
 	uint8_t DeviceId[4];
