@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-27 11:21:21
+* @Last Modified time: 2018-02-27 11:58:47
 */
 #include "../general.h"
 
@@ -697,7 +697,7 @@ void ConcenterRtcProcess(void)
         }
     }
 
-    Nwk_ntp_syn();
+    Nwk_upload_time_isr();
 
     if(concenterParameter.collectStart)
     {

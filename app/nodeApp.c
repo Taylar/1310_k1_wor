@@ -11,10 +11,9 @@
 /***** Type declarations *****/
 typedef struct 
 {
-    uint32_t collectPeriod;         // the unit is sec
     uint32_t collectTimeCnt;         // the unit is sec
-    uint32_t uploadPeriod;          // the unit is sec
     uint32_t uploadTimeCnt;          // the unit is sec
+    uint32_t configModeTimeCnt;          // the unit is sec
     uint32_t customId;
     uint32_t deceive;
     uint16_t serialNum;
@@ -71,7 +70,7 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.customId       = 0xffff0000 | *((uint16_t*)(g_rSysConfigInfo.customId));
     
     SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
-    SetRadioDstAddr(nodeParameter.customId);
+    SetRadioDstAddr(*((uint16_t*)(g_rSysConfigInfo.customId)));
 
     NodeStrategyInit(Cb);
     
@@ -423,6 +422,13 @@ void NodeShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
+        deviceMode                      = DEVICES_CONFIG_MODE;
+        nodeParameter.configModeTimeCnt = 0;
+        NodeUploadFailProcess();
+        NodeStrategyBusySet(false);
+
+
         Led_ctrl(LED_B, 0, 500 * CLOCK_UNIT_MS, 1);
         break;
 
@@ -541,7 +547,7 @@ void NodeRtcProcess(void)
         }
 
         nodeParameter.sysTime++;
-        if(nodeParameter.sysTime >= NODE_SYN_TIME_MAX)
+        if(nodeParameter.sysTime >= g_rSysConfigInfo.ntpPeriod)
         {
             NodeRadioSendSynReq();
             nodeParameter.sysTime       = 0;
@@ -554,7 +560,21 @@ void NodeRtcProcess(void)
         if(nodeParameter.uploadTimeCnt > g_rSysConfigInfo.collectPeriod)
         {
             nodeParameter.uploadTimeCnt = 0;
-            Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+
+            if(deviceMode == DEVICES_ON_MODE)
+                Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+        }
+    }
+
+    if(deviceMode == DEVICES_CONFIG_MODE)
+    {
+        nodeParameter.configModeTimeCnt++;
+        if(nodeParameter.configModeTimeCnt >= 60)
+        {
+            EasyLink_abort();
+            deviceMode = DEVICES_ON_MODE;
+            NodeStrategyBusySet(true);
+
         }
     }
 }

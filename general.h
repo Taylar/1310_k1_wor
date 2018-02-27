@@ -385,8 +385,9 @@ typedef enum {
 #define         DEVICES_OFF_MODE               0
 #define         DEVICES_ON_MODE                1
 #define         DEVICES_MENU_MODE              2
-#define         DEVICES_SLEEP_MODE             3
-#define         DEVICES_TEST_MODE              4
+#define         DEVICES_CONFIG_MODE            3
+#define         DEVICES_SLEEP_MODE             4
+#define         DEVICES_TEST_MODE              5
 
 //***********************************************************************************
 //

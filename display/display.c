@@ -811,16 +811,7 @@ void Disp_info(void)
                     Disp_msg(0, 2*j, buff, FONT_8X16);                    
 
                     
-                    if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.WarningTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "PA: ~ ");
-                    else if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH)
-                        sprintf((char *)buff, "PA:%d~ ", g_rSysConfigInfo.WarningTemp[i].low/100);
-                    else if(g_rSysConfigInfo.WarningTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "PA: ~%d",g_rSysConfigInfo.WarningTemp[i].high/100);
-                    else                        
-                        sprintf((char *)buff, "PA:%d~%d", g_rSysConfigInfo.WarningTemp[i].low/100,g_rSysConfigInfo.WarningTemp[i].high/100);
-                    
-                    Disp_msg(9, 2*j, buff, FONT_8X16);                    
+
 
                 }
                 if (j>=3)break;
