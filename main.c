@@ -71,7 +71,6 @@ int main(void)
     SysAppTaskCreate();
 
 
-#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     // Init the config
     if(InternalFlashLoadConfig() == false)
     {
@@ -79,6 +78,7 @@ int main(void)
         InternalFlashStoreConfig();
     }
 
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     Nwk_task_create();
     InterfaceTaskCreate();
 #endif 

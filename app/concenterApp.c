@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-26 10:25:07
+* @Last Modified time: 2018-02-27 11:21:21
 */
 #include "../general.h"
 
@@ -89,7 +89,8 @@ void ConcenterAppInit(void)
 
     ExtflashRingQueueInit(&extflashWriteQ);
 
-    SetRadioSrcAddr(DEFAULT_DST_ADDR);
+    SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
+    SetRadioSubSrcAddr(0xffff0000 | *((uint16_t*)(g_rSysConfigInfo.customId)));
 
     ConcenterSleep();
 }
@@ -224,8 +225,6 @@ void ConcenterSensorDataUpload(void)
 void ConcenterUpdataNodeSetting(uint32_t srcAddr, uint32_t dstAddr)
 {
     // search the table to updata the parameter setting
-
-
     // 
     // ConcenterRadioSendParaSet(srcAddr, dstAddr, NODE_SETTING_CMD, NODE_SETTING_CMD_LENGTH);
 }

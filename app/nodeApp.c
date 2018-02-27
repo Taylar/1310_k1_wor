@@ -56,11 +56,8 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.serialNum      = 0;
     nodeParameter.sysTime        = 0;
     
-    nodeParameter.uploadPeriod   = NODE_BROADCASTING_TIME;
     nodeParameter.uploadTimeCnt  = 0;
-    nodeParameter.collectPeriod  = NODE_BROADCASTING_TIME;
     nodeParameter.collectTimeCnt = 0;
-    nodeParameter.customId       = DEFAULT_DST_ADDR;
     
     nodeParameter.uploadStart    = false;
     nodeParameter.collectStart   = false;
@@ -70,28 +67,15 @@ void NodeAppInit(void (*Cb)(void))
     
     offsetUnit                   = 0;
 
-    if(nodeParameter.configFlag)
-    {
-        // nodeParameter.uploadPeriod  = g_rSysConfigInfo.uploadPeriod;
-        // nodeParameter.collectPeriod = g_rSysConfigInfo.collectPeriod;
-        // nodeParameter.customId      = 0xffff | *((uint16_t*)g_rSysConfigInfo.customId);
-        // nodeParameter.deceive      = *((uint32_t *)g_rSysConfigInfo.DeviceId);
 
-        // SetRadioSrcAddr(nodeParameter.deceive);
-    }
-    else
-    {
-        nodeParameter.uploadPeriod  = NODE_BROADCASTING_TIME;
-        nodeParameter.collectPeriod = NODE_BROADCASTING_TIME;
-        nodeParameter.customId      = DEFAULT_DST_ADDR;
-    }
-
-    SetRadioSrcAddr(CUSTOM_ID_DEFAULT);
-    SetRadioDstAddr(DEFAULT_DST_ADDR);
+    nodeParameter.customId       = 0xffff0000 | *((uint16_t*)(g_rSysConfigInfo.customId));
+    
+    SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
+    SetRadioDstAddr(nodeParameter.customId);
 
     NodeStrategyInit(Cb);
     
-    NodeStrategySetPeriod(nodeParameter.uploadPeriod);
+    NodeStrategySetPeriod(g_rSysConfigInfo.uploadPeriod);
 
     // NodeWakeup();
 }
@@ -142,7 +126,7 @@ void NodeUploadStop(void)
 //***********************************************************************************
 void NodeUploadPeriodSet(uint32_t period)
 {
-    nodeParameter.uploadPeriod      = period;
+
 }
 
 
@@ -240,7 +224,7 @@ void NodeCollectStop(void)
 //***********************************************************************************
 void NodeCollectPeriodSet(uint32_t period)
 {
-    nodeParameter.collectPeriod         = period;
+
 }
 
 
@@ -427,15 +411,6 @@ void NodeWakeup(void)
     }
 }
 
-//***********************************************************************************
-// brief: set the custom id as the radio dst addr
-// 
-// parameter: 
-//***********************************************************************************
-void NodeSetCustomId(uint32_t id)
-{
-    nodeParameter.customId = id;
-}
 
 
 //***********************************************************************************
@@ -559,7 +534,7 @@ void NodeRtcProcess(void)
     {
         nodeParameter.collectTimeCnt++;
         
-        if(nodeParameter.collectTimeCnt >= nodeParameter.collectPeriod)
+        if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
         {
             nodeParameter.collectTimeCnt = 0;
             Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_COLLECT_NODE);
@@ -576,7 +551,7 @@ void NodeRtcProcess(void)
     if(nodeParameter.uploadStart)
     {
         nodeParameter.uploadTimeCnt++;
-        if(nodeParameter.uploadTimeCnt > nodeParameter.collectPeriod)
+        if(nodeParameter.uploadTimeCnt > g_rSysConfigInfo.collectPeriod)
         {
             nodeParameter.uploadTimeCnt = 0;
             Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);

@@ -8,6 +8,7 @@
 #define         RADIO_EVT_TX            Event_Id_01
 #define         RADIO_EVT_TOUT          Event_Id_02
 #define         RADIO_EVT_FAIL          Event_Id_03
+#define         RADIO_EVT_TEST          Event_Id_04
 #define         RADIO_EVT_ALL           0xffff
 
 

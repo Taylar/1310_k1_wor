@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-07 17:52:32
+* @Last Modified time: 2018-02-26 19:18:33
 */
 #include "../general.h"
 
@@ -257,12 +257,41 @@ void UartSendDatas(UART_PORT uartPort, uint8_t *buf, uint8_t count)
 void Uart_send_burst_data(UART_PORT uartPort, uint8_t *pData, uint16_t length)
 {
     uint16_t i;
+    UARTCC26XX_HWAttrsV2 const     *hwAttrs;
+
+    hwAttrs = uarthandle[uartPort]->hwAttrs;
+
     if (uartPort >= UART_MAX) {
         return;
     }
+
+    /* Enable TX */
+    HWREG(UART0_BASE + UART_O_CTL) |= UART_CTL_TXE;
+
     for (i = 0; i < length; i++) {
-        UART_write(uarthandle[uartPort], pData+i, 1);
+        // wait for tx finish
+        while(HWREG(hwAttrs->baseAddr + UART_O_FR) & UART_FR_TXFF);
+        // Send the char.
+        HWREG(hwAttrs->baseAddr + UART_O_DR) = *(pData+i);
+
+        // wait for tx finish
+        while(HWREG(hwAttrs->baseAddr + UART_O_FR) & UART_FR_TXFF);
     }
+
+    // if((length % 2) != 0)
+    // {
+
+    //     // Send the char.
+    //     HWREG(hwAttrs->baseAddr + UART_O_DR) = 0;
+        
+    //     // wait for tx finish
+    //     while(HWREG(hwAttrs->baseAddr + UART_O_FR) & UART_FR_TXFF);
+    // }
+    __delay_cycles(800);
+    while(HWREG(hwAttrs->baseAddr + UART_O_FR) & UART_FR_BUSY);
+
+    /* Disable UART TX */
+    HWREG(UART0_BASE + UART_O_CTL) &= ~(UART_CTL_TXE);
 }
 
 //***********************************************************************************
@@ -272,9 +301,32 @@ void Uart_send_burst_data(UART_PORT uartPort, uint8_t *pData, uint16_t length)
 //***********************************************************************************
 void Uart_send_string(UART_PORT uartPort, uint8_t *string)
 {
+    UARTCC26XX_HWAttrsV2 const     *hwAttrs;
+    
+    hwAttrs = uarthandle[uartPort]->hwAttrs;
+
+    /* Enable TX */
+    HWREG(UART0_BASE + UART_O_CTL) |= UART_CTL_TXE;
+
+    
+
     while (*string != '\0') {
-        UART_write(uarthandle[uartPort], string++, 1);
+        // wait for tx finish
+        while(HWREG(hwAttrs->baseAddr + UART_O_FR) & UART_FR_TXFF);
+
+        // Send the char.
+        HWREG(hwAttrs->baseAddr + UART_O_DR) = *(string++);
+
+        // wait for tx finish
+        while(HWREG(hwAttrs->baseAddr + UART_O_FR) & UART_FR_TXFF);
     }
+
+    __delay_cycles(800);
+    while(HWREG(hwAttrs->baseAddr + UART_O_FR) & UART_FR_BUSY);
+
+    /* Disable UART TX */
+    HWREG(UART0_BASE + UART_O_CTL) &= ~(UART_CTL_TXE);
+
 }
 
 

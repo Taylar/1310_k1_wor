@@ -691,7 +691,7 @@ void Nwk_ntp_syn(void)
 {
     if (rNwkObject.poweron) {
         rNwkObject.ntpTime++;
-        if (rNwkObject.ntpTime >= 3600)//g_rSysConfigInfo.ntpPeriod) 
+        if (rNwkObject.ntpTime >= g_rSysConfigInfo.ntpPeriod)//g_rSysConfigInfo.ntpPeriod) 
         {
             rNwkObject.ntpTime = 0;
             rNwkObject.ntp = 0;

@@ -172,15 +172,52 @@ void InternalFlashConfigReset(void)
 
     g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
     g_rSysConfigInfo.swVersion = FW_VERSION;
-    g_rSysConfigInfo.DeviceId[0] = (uint8_t)((CUSTOM_ID_DEFAULT>>24)&0xff);
-    g_rSysConfigInfo.DeviceId[1] = (uint8_t)((CUSTOM_ID_DEFAULT>>16)&0xff);
-    g_rSysConfigInfo.DeviceId[2] = (uint8_t)((CUSTOM_ID_DEFAULT>>8)&0xff);
-    g_rSysConfigInfo.DeviceId[3] = (uint8_t)((CUSTOM_ID_DEFAULT)&0xff);;
-    g_rSysConfigInfo.customId[0] = 0;
-    g_rSysConfigInfo.customId[1] = 0;
+    g_rSysConfigInfo.DeviceId[0] = (uint8_t)((DECEIVE_ID_DEFAULT>>24)&0xff);
+    g_rSysConfigInfo.DeviceId[1] = (uint8_t)((DECEIVE_ID_DEFAULT>>16)&0xff);
+    g_rSysConfigInfo.DeviceId[2] = (uint8_t)((DECEIVE_ID_DEFAULT>>8)&0xff);
+    g_rSysConfigInfo.DeviceId[3] = (uint8_t)((DECEIVE_ID_DEFAULT)&0xff);;
+
+    g_rSysConfigInfo.customId[0] = (uint8_t)(CUSTOM_ID_DEFAULT >> 8);
+    g_rSysConfigInfo.customId[1] = (uint8_t)(CUSTOM_ID_DEFAULT);
+
 
     g_rSysConfigInfo.status = 0;
-    g_rSysConfigInfo.module = MODULE_GSM;
+
+#ifdef		BOARD_S2_2
+
+	g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO;
+	g_rSysConfigInfo.serverIpAddr[0] = 114;
+	g_rSysConfigInfo.serverIpAddr[1] = 215;
+	g_rSysConfigInfo.serverIpAddr[2] = 122;
+	g_rSysConfigInfo.serverIpAddr[3] = 32;
+	g_rSysConfigInfo.serverIpPort    = 12200;
+
+	g_rSysConfigInfo.batLowVol       = 3600;
+	g_rSysConfigInfo.apnuserpwd[0]   = 0;
+	g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
+#endif
+
+#ifdef		BOARD_S6_6
+
+	g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO;
+	g_rSysConfigInfo.serverIpAddr[0] = 114;
+	g_rSysConfigInfo.serverIpAddr[1] = 215;
+	g_rSysConfigInfo.serverIpAddr[2] = 122;
+	g_rSysConfigInfo.serverIpAddr[3] = 32;
+	g_rSysConfigInfo.serverIpPort    = 12200;
+
+	g_rSysConfigInfo.batLowVol       = 3600;
+	g_rSysConfigInfo.apnuserpwd[0]   = 0;
+	g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
+#endif
+
+
+#ifdef		BOARD_S1_2
+
+	g_rSysConfigInfo.batLowVol       = 2500;
+	g_rSysConfigInfo.apnuserpwd[0]   = 0;
+#endif
+
 /*
     for (i = 0; i < MODULE_SENSOR_MAX; i++) {
         g_rSysConfigInfo.sensorModule[i] = SEN_TYPE_NONE;
@@ -192,23 +229,14 @@ void InternalFlashConfigReset(void)
     
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 */
-    g_rSysConfigInfo.module 		 = MODULE_NWK | MODULE_RADIO;
 
 	g_rSysConfigInfo.collectPeriod   = UPLOAD_PERIOD_DEFAULT;   //unit is sec
 	
-	g_rSysConfigInfo.serverIpAddr[0] = 114;
-	g_rSysConfigInfo.serverIpAddr[1] = 215;
-	g_rSysConfigInfo.serverIpAddr[2] = 122;
-	g_rSysConfigInfo.serverIpAddr[3] = 32;
-	g_rSysConfigInfo.serverIpPort    = 12200;
-	
-	g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
 	g_rSysConfigInfo.uploadPeriod    = UPLOAD_PERIOD_DEFAULT; // unit is sec
-	g_rSysConfigInfo.ntpPeriod       = 24 * 60 * 60L;    // 24hour
+	
+	g_rSysConfigInfo.ntpPeriod       = NTC_DEFAULT;    // 
 	
 	g_rSysConfigInfo.gnssPeriod      = 10;  // 10sec
 	
-	g_rSysConfigInfo.batLowVol       = 3600;
 	
-	g_rSysConfigInfo.apnuserpwd[0]   = 0;
 }

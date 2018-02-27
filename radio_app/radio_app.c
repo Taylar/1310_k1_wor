@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-07 10:55:25
+* @Last Modified time: 2018-02-27 11:24:57
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -153,37 +153,42 @@ void RadioAppTaskFxn(void)
     // radioMode       = RADIOMODE_RECEIVEPORT;
 
     if(radioMode == RADIOMODE_SENDPORT)
+    {
         NodeAppInit(RadioSend);
+
+        /* Set the filter to the generated random address */
+        if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
+        {
+            System_abort("EasyLink_enableRxAddrFilter failed");
+        }
+    }
     else
+    {
         ConcenterAppInit();
+
+        /* Set the filter to the generated random address */
+        if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 2) != EasyLink_Status_Success)
+        {
+            System_abort("EasyLink_enableRxAddrFilter failed");
+        }
+    }
     
 
-    /* Set the filter to the generated random address */
-    if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
-    {
-        System_abort("EasyLink_enableRxAddrFilter failed");
-    }
-
-    // if(radioMode == RADIOMODE_RECEIVEPORT)
-    // {
-    //     RadioFrontRxEnable();
-    //     EasyLink_receiveAsync(RxDoneCallback, 0);
-    // }
-
-#ifdef  FACTOR_RADIO_TEST
-    RadioFrontTxEnable();
-    EasyLink_abort();
-    while(1)
-    {
-        EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
-    }
-#endif
-
+    
 
 
     for(;;)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
+
+
+        if (events & RADIO_EVT_TEST)
+        {
+            RadioFrontTxEnable();
+            EasyLink_abort();
+            EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+        }
+
 
         if (events & RADIO_EVT_RX)
         {
@@ -192,7 +197,7 @@ void RadioAppTaskFxn(void)
             {
                 Led_toggle(LED_R);
                 Led_toggle(LED_B);
-                // Led_toggle(LED_G);
+                
                 ConcenterProtocalDispath(&radioRxPacket);
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }

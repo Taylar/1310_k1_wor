@@ -82,15 +82,22 @@
 // default setting.
 //
 //***********************************************************************************
-#define CUSTOM_ID_DEFAULT           0X12002100
+#define DECEIVE_ID_DEFAULT              0X12002100
 
-#define UPLOAD_PERIOD_DEFAULT       60
+#define CUSTOM_ID_DEFAULT               0X0000
+
+#define UPLOAD_PERIOD_DEFAULT           60
+
+#define COLLECT_PERIOD_DEFAULT          60
+
+#define HEARTBEAT_PERIOD_DEFAULT        60
+
+#define NTC_DEFAULT                     (60*60)
 
 #define NODE_BROADCASTING_TIME          UPLOAD_PERIOD_DEFAULT
 #define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
-#define NODE_SYN_TIME_MAX               3600
 
-#define DEFAULT_DST_ADDR            0x22000924
+#define DEFAULT_DST_ADDR                0x22000924
 
 
 //***********************************************************************************
@@ -342,9 +349,32 @@ typedef enum {
 
 #define ALARM_TEMP_HIGH         0x7fff
 #define ALARM_TEMP_LOW          (-0x7fff)
+
+
 //***********************************************************************************
 //
 //Status define.
+//
+//***********************************************************************************
+#define STATUS_LCD_ALWAYS_ON    0x0001
+#define STATUS_GSM_TEST         0x0002
+#define STATUS_KEY_LED_ON       0x0004
+#define STATUS_ALARM_OFF        0x0008//本地报警开关
+#define STATUS_SENSOR_NAME_ON   0x0010//网关显示采集器名字开关
+
+
+#define STATUS_LORA_MASTER      0x0001//
+#define STATUS_LORA_TEST        0x0002//LORA 测试模式
+#define STATUS_LORA_APC         0x0004//采集器自动增益控制
+#define STATUS_LORA_ALARM       0x0008//采集器发送报警信息到网关
+
+
+
+
+
+//***********************************************************************************
+//
+//mode define.
 //
 //***********************************************************************************
 // devices type
@@ -397,7 +427,6 @@ typedef struct {
 
 typedef struct {
 	uint16_t size;
-
 	uint16_t swVersion;
 	uint8_t DeviceId[4];
 	uint8_t customId[2];
@@ -446,7 +475,7 @@ typedef struct {
     uint8_t reserver[44 - MODULE_SENSOR_MAX * 4];
 
     //apn user pwd
-    uint8_t apnuserpwd[64];
+    uint8_t apnuserpwd[60];
     
 } ConfigInfo_t;
 

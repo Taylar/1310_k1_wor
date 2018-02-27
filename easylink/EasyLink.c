@@ -60,8 +60,8 @@ union setupCmd_t{
     rfc_CMD_PROP_RADIO_SETUP_t setup;
 };
 
-#define EASYLINK_MAX_ADDR_SIZE           8
-#define EASYLINK_MAX_ADDR_FILTERS        3
+#define EASYLINK_MAX_ADDR_SIZE           4
+#define EASYLINK_MAX_ADDR_FILTERS        2
 
 //Primary IEEE address location
 #define EASYLINK_PRIMARY_IEEE_ADDR_LOCATION   0x500012F0
