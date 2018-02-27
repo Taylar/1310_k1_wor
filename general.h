@@ -469,13 +469,10 @@ typedef struct {
     //battery voltage of shutdown
     uint16_t batLowVol;
     
-     //Sensor warning  temperature
-    AlarmTemp_t WarningTemp[MODULE_SENSOR_MAX];    
-
-    uint8_t reserver[44 - MODULE_SENSOR_MAX * 4];
+    uint8_t reserver[44];
 
     //apn user pwd
-    uint8_t apnuserpwd[60];
+    uint8_t apnuserpwd[64];
     
 } ConfigInfo_t;
 
