@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-27 18:19:48
+* @Last Modified time: 2018-02-28 10:42:55
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -195,11 +195,17 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_RECEIVEPORT)
             {
-                Led_toggle(LED_R);
+
                 Led_toggle(LED_B);
                 
+#ifdef  BOARD_S1_2
+                NodeProtocalDispath(&radioRxPacket);
+#else
                 ConcenterProtocalDispath(&radioRxPacket);
+#endif           
                 EasyLink_receiveAsync(RxDoneCallback, 0);
+
+
             }
 
             if(radioMode == RADIOMODE_SENDPORT)
@@ -230,16 +236,8 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_SENDPORT)
             {
-                if(deviceMode == DEVICES_CONFIG_MODE)
-                {
-                    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-                    EasyLink_receiveAsync(RxDoneCallback, 0);
-                }
-                else
-                {
-                    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
-                    EasyLink_receiveAsync(RxDoneCallback, 0);
-                }
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
+                EasyLink_receiveAsync(RxDoneCallback, 0);
             }
 
             if(radioMode == RADIOMODE_RECEIVEPORT)

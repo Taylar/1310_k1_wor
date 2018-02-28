@@ -70,13 +70,18 @@ int main(void)
 
     SysAppTaskCreate();
 
-
+#ifndef   BOARD_CONFIG_DECEIVE
+    
     // Init the config
     if(InternalFlashLoadConfig() == false)
     {
         InternalFlashConfigReset();
         InternalFlashStoreConfig();
     }
+
+#endif
+
+
 
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     Nwk_task_create();

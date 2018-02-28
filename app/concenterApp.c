@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-27 11:58:47
+* @Last Modified time: 2018-02-28 17:06:05
 */
 #include "../general.h"
 
@@ -89,8 +89,17 @@ void ConcenterAppInit(void)
 
     ExtflashRingQueueInit(&extflashWriteQ);
 
+#ifdef  BOARD_CONFIG_DECEIVE
+
+    SetRadioSrcAddr(CONFIG_DECEIVE_ID_DEFAULT);
+    SetRadioSubSrcAddr(CONFIG_DECEIVE_ID_DEFAULT);
+
+#else
+
     SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
     SetRadioSubSrcAddr(0xffff0000 | *((uint16_t*)(g_rSysConfigInfo.customId)));
+
+#endif
 
     ConcenterSleep();
 }
@@ -292,6 +301,23 @@ void ConcenterWakeup(void)
     }
 }
 
+
+//***********************************************************************************
+// brief:   Init the board as the config deceive
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterConfigDeceiveInit(void)
+{
+    Nwk_poweroff();
+
+    deviceMode = DEVICES_CONFIG_MODE;
+    concenterParameter.radioReceive = true;
+    RadioFrontRxEnable();
+    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+    RadioModeSet(RADIOMODE_RECEIVEPORT);
+    InterfaceEnable();
+}
 
 //***********************************************************************************
 // brief:   save the node addr and channel to the internal flash

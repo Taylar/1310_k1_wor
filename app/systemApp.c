@@ -149,6 +149,12 @@ void SystemAppTaskFxn(void)
 #endif
 
 
+#ifdef BOARD_CONFIG_DECEIVE
+
+	ConcenterConfigDeceiveInit();
+
+#endif
+
   //  	if(KeyReadState(KEY_0_SHORT_PRESS) == KEY_PRESSED)
   //  	{
   //  		deviceMode = DEVICES_TEST_MODE;
@@ -165,7 +171,11 @@ void SystemAppTaskFxn(void)
 	// Clock_start(sysTimerClockHandle);
 
 #if (defined BOARD_S6_6) || (defined BOARD_S2_2)
+
+#ifndef  BOARD_CONFIG_DECEIVE
 	ConcenterWakeup();
+#endif
+
 #endif
 
 #ifdef BOARD_S6_6
@@ -188,7 +198,8 @@ void SystemAppTaskFxn(void)
 
 		}
 
-
+// the config deceive key is disable
+#ifndef   BOARD_CONFIG_DECEIVE
 
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
@@ -238,7 +249,7 @@ void SystemAppTaskFxn(void)
 		}
 #endif
 
-
+#endif
 
 
 		if(eventId &SYSTEMAPP_EVT_INTERFACE)

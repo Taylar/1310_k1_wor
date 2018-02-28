@@ -70,7 +70,7 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.customId       = 0xffff0000 | *((uint16_t*)(g_rSysConfigInfo.customId));
     
     SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
-    SetRadioDstAddr(*((uint16_t*)(g_rSysConfigInfo.customId)));
+    SetRadioDstAddr(nodeParameter.customId);
 
     NodeStrategyInit(Cb);
     
@@ -422,11 +422,17 @@ void NodeShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        case DEVICES_CONFIG_MODE:
         // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
         deviceMode                      = DEVICES_CONFIG_MODE;
         nodeParameter.configModeTimeCnt = 0;
         NodeUploadFailProcess();
         NodeStrategyBusySet(false);
+        RadioModeSet(RADIOMODE_RECEIVEPORT);
+        SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
+
+        ClearRadioSendBuf();
+        NodeRadioSendConfig();
 
 
         Led_ctrl(LED_B, 0, 500 * CLOCK_UNIT_MS, 1);
@@ -571,7 +577,9 @@ void NodeRtcProcess(void)
         nodeParameter.configModeTimeCnt++;
         if(nodeParameter.configModeTimeCnt >= 60)
         {
-            EasyLink_abort();
+            RadioModeSet(RADIOMODE_SENDPORT);
+            SetRadioDstAddr(*((uint16_t*)(nodeParameter.customId)));
+
             deviceMode = DEVICES_ON_MODE;
             NodeStrategyBusySet(true);
 

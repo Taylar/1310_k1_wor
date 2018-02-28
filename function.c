@@ -51,7 +51,7 @@ uint16_t Protocol_escape(uint8_t *pObj, uint8_t *pSou, uint16_t length)
 //***********************************************************************************
 uint16_t Protocol_recover_escape(uint8_t *pObj, uint8_t *pSou, uint16_t length)
 {
-    uint8_t i;
+    uint16_t i;
     uint16_t len = 0;
 
     for (i = 0; i < length; i++) {

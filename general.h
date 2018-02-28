@@ -64,7 +64,7 @@
 // #define BOARD_S1_2
 #define BOARD_S2_2
 // #define BOARD_S6_6
-// #define BOARD_CONFIG_DECEIVE
+#define BOARD_CONFIG_DECEIVE
 
 
 // #define FACTOR_RADIO_TEST
@@ -82,6 +82,8 @@
 // default setting.
 //
 //***********************************************************************************
+#define CONFIG_DECEIVE_ID_DEFAULT       0XFFFFFFFA
+
 #define DECEIVE_ID_DEFAULT              0X12002100
 
 #define CUSTOM_ID_DEFAULT               0X0000
@@ -513,6 +515,8 @@ typedef struct {
 #include "network/network.h"
 #include "easylink/radio_front.h"
 #include "app/concenterApp.h"
+#include "app/usb_prot.h"
+#include "app/radio_protocal.h"
 //***********************************************************************************
 //
 //	Global variable define

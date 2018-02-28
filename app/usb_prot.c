@@ -2,11 +2,15 @@
 * @Author: zxt
 * @Date:   2018-01-10 20:26:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-07 17:29:42
+* @Last Modified time: 2018-02-28 15:30:45
 */
 #include "../general.h"
 #include "../app/usb_prot.h"
+#include "../radio_app/radio_app.h"
 #include "../interface_app/interface.h"
+
+
+uint8_t usbBuff[UART_BUFF_SIZE];
 
 
 //***********************************************************************************
@@ -45,6 +49,55 @@ static uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint8_t
     return length;
 }
 
+
+void UsbSend(USB_TX_MSG_ID msgId)
+{
+    uint16_t len;
+    Calendar calendar;
+
+    switch(msgId)
+    {
+        case AC_Ack:
+        usbBuff[0] = 0;
+        len = Usb_group_package(AC_Ack, usbBuff, 1);
+        InterfaceSend(usbBuff, len);
+        break;
+
+        case AC_Send_Config:
+        memcpy((char *)usbBuff, (char *)&g_rSysConfigInfo, sizeof(g_rSysConfigInfo));
+        len = Usb_group_package(AC_Send_Config, usbBuff, sizeof(g_rSysConfigInfo));
+        InterfaceSend(usbBuff, len);
+        break;
+
+        case AC_Send_APN:
+
+        break;
+
+        case AC_Send_Calendar:
+        calendar = Rtc_get_calendar();
+
+        calendar.Year       = TransHexToBcd((uint8_t)(calendar.Year - 2000)) + 0x2000;
+        calendar.Month      = TransHexToBcd((uint8_t)(calendar.Month));
+        calendar.DayOfMonth = TransHexToBcd((uint8_t)(calendar.DayOfMonth));
+        calendar.Hours      = TransHexToBcd((uint8_t)(calendar.Hours));
+        calendar.Minutes    = TransHexToBcd((uint8_t)(calendar.Minutes));
+        calendar.Seconds    = TransHexToBcd((uint8_t)(calendar.Seconds));
+
+        memcpy((char *)usbBuff, (char *)&calendar, sizeof(Calendar));
+        len = Usb_group_package(AC_Send_Calendar, usbBuff, sizeof(Calendar));
+        InterfaceSend(usbBuff, len);
+        break;
+
+        case AC_Send_Bluetooth_Name:
+
+        break;
+
+        case EV_Send_DataRecord:
+
+        break;
+
+    }
+}
 
 
 //***********************************************************************************
@@ -99,6 +152,11 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
             InterfaceSend(pData, len);
+
+            if(deviceMode == DEVICES_CONFIG_MODE)
+            {
+                ConcenterRadioSendParaSet(GetRadioSrcAddr(), GetRadioDstAddr());
+            }
             break;
 
         case EV_Get_APN:

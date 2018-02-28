@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-27 18:16:05
+* @Last Modified time: 2018-02-28 18:03:35
 */
 #include "../general.h"
 
@@ -110,10 +110,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					case PARASETTING_COLLECT_INTERVAL:
 					if(lenTemp < 5)
 						goto NodeDispath;
-					temp = ((uint32_t)bufTemp->load[baseAddr+4] << 24) + 
-						   ((uint32_t)bufTemp->load[baseAddr+3] << 16) +
-						   ((uint32_t)bufTemp->load[baseAddr+2] << 8) +
-						   ((uint32_t)bufTemp->load[baseAddr+1]);
+					temp = ((uint32_t)bufTemp->load[baseAddr+1] << 24) + 
+						   ((uint32_t)bufTemp->load[baseAddr+2] << 16) +
+						   ((uint32_t)bufTemp->load[baseAddr+3] << 8) +
+						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 					NodeCollectStop();
 					g_rSysConfigInfo.collectPeriod = temp;
@@ -124,10 +124,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					case PARASETTING_UPLOAD_INTERVAL:
 					if(lenTemp < 5)
 						goto NodeDispath;
-					temp = ((uint32_t)bufTemp->load[baseAddr+4] << 24) + 
-						   ((uint32_t)bufTemp->load[baseAddr+3] << 16) +
-						   ((uint32_t)bufTemp->load[baseAddr+2] << 8) +
-						   ((uint32_t)bufTemp->load[baseAddr+1]);
+					temp = ((uint32_t)bufTemp->load[baseAddr+1] << 24) + 
+						   ((uint32_t)bufTemp->load[baseAddr+2] << 16) +
+						   ((uint32_t)bufTemp->load[baseAddr+3] << 8) +
+						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 
 					NodeUploadStop();
@@ -194,14 +194,18 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					case PARASETTING_NTC_INTERVAL:
 					if(lenTemp < 5)
 						goto NodeDispath;
-					g_rSysConfigInfo.ntpPeriod = *((uint32_t *)(bufTemp->load+1));
+					g_rSysConfigInfo.ntpPeriod =	((uint32_t)bufTemp->load[baseAddr+1] << 24) + 
+													((uint32_t)bufTemp->load[baseAddr+2] << 16) +
+													((uint32_t)bufTemp->load[baseAddr+3] << 8) +
+													((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 					break;
 
 					case PARASETTING_LOW_VOLTAGE:
 					if(lenTemp < 3)
 						goto NodeDispath;
-					g_rSysConfigInfo.batLowVol    = *((uint16_t *)(bufTemp->load+1));
+					g_rSysConfigInfo.batLowVol    = ((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
+													((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 3;
 					break;
 
@@ -274,7 +278,8 @@ NodeDispath:
 //***********************************************************************************
 void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
-	uint8_t len;
+	uint8_t len, lenTemp, baseAddr;
+	uint32_t	temp;
 	radio_protocal_t	*bufTemp;
 
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
@@ -288,6 +293,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	SetRadioDstAddr(bufTemp->srcAddr);
     ConcenterSaveChannel(bufTemp->srcAddr);
 
+
 	while(len)
 	{
 		// the receive data is not integrated
@@ -295,6 +301,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			return;
 		
 		len 	-= bufTemp->len;
+		lenTemp = bufTemp->len;
 
 		switch(bufTemp->command)
 		{
@@ -340,6 +347,104 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 
 			case RADIO_PRO_CMD_SET_PARA_ACK:
+
+			break;
+
+			case RADIO_PRO_CMD_RESPOND_PARA:
+			while(lenTemp)
+			{
+				baseAddr	= bufTemp->len - lenTemp;
+				switch(bufTemp->load[baseAddr])
+				{
+					case PARASETTING_COLLECT_INTERVAL:
+					if(lenTemp < 5)
+						goto ConcenterConfigRespondEnd;
+					temp = ((uint32_t)bufTemp->load[baseAddr+1] << 24) + 
+						   ((uint32_t)bufTemp->load[baseAddr+2] << 16) +
+						   ((uint32_t)bufTemp->load[baseAddr+3] << 8) +
+						   ((uint32_t)bufTemp->load[baseAddr+4]);
+					lenTemp -= 5;
+					g_rSysConfigInfo.collectPeriod = temp;
+					break;
+
+					case PARASETTING_UPLOAD_INTERVAL:
+					if(lenTemp < 5)
+						goto ConcenterConfigRespondEnd;
+					temp = ((uint32_t)bufTemp->load[baseAddr+1] << 24) + 
+						   ((uint32_t)bufTemp->load[baseAddr+2] << 16) +
+						   ((uint32_t)bufTemp->load[baseAddr+3] << 8) +
+						   ((uint32_t)bufTemp->load[baseAddr+4]);
+					lenTemp -= 5;
+
+					g_rSysConfigInfo.uploadPeriod = temp;
+					break;
+
+					case PARASETTING_LOW_TEMP_ALARM:
+					if(lenTemp < 4)
+						goto ConcenterConfigRespondEnd;
+					
+					lenTemp -= 4;
+					break;
+
+					case PARASETTING_HIGH_TEMP_ALARM:
+					if(lenTemp < 4)
+						goto ConcenterConfigRespondEnd;
+					
+					lenTemp -= 4;
+					break;
+
+
+					case PARASETTING_DECEIVE_ID:
+					if(lenTemp < 5)
+						goto ConcenterConfigRespondEnd;
+					g_rSysConfigInfo.DeviceId[0] = bufTemp->load[baseAddr+1];
+					g_rSysConfigInfo.DeviceId[1] = bufTemp->load[baseAddr+2];
+					g_rSysConfigInfo.DeviceId[2] = bufTemp->load[baseAddr+3];
+    				g_rSysConfigInfo.DeviceId[3] = bufTemp->load[baseAddr+4];
+
+
+					lenTemp -= 5;
+					break;
+
+					case PARASETTING_CUSTOM_ID:
+					if(lenTemp < 3)
+						goto ConcenterConfigRespondEnd;
+    				g_rSysConfigInfo.customId[0] = bufTemp->load[baseAddr+1];
+    				g_rSysConfigInfo.customId[1] = bufTemp->load[baseAddr+2];
+
+					lenTemp -= 3;
+					
+					break;
+
+					case PARASETTING_NTC_INTERVAL:
+					if(lenTemp < 5)
+						goto ConcenterConfigRespondEnd;
+					g_rSysConfigInfo.ntpPeriod =	((uint32_t)bufTemp->load[baseAddr+1] << 24) + 
+													((uint32_t)bufTemp->load[baseAddr+2] << 16) +
+													((uint32_t)bufTemp->load[baseAddr+3] << 8) +
+													((uint32_t)bufTemp->load[baseAddr+4]);
+					lenTemp -= 5;
+					break;
+
+					case PARASETTING_LOW_VOLTAGE:
+					if(lenTemp < 3)
+						goto ConcenterConfigRespondEnd;
+					g_rSysConfigInfo.batLowVol	=	((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
+													((uint32_t)bufTemp->load[baseAddr+4]);
+					lenTemp -= 3;
+					break;
+
+					default:
+					// error setting parameter
+					goto ConcenterConfigRespondEnd;
+				}
+			}
+ConcenterConfigRespondEnd:
+			UsbSend(AC_Send_Config);
+			break;
+
+
+			case RADIO_PRO_CMD_RESPOND_PARA_ACK:
 
 			break;
 
@@ -436,7 +541,7 @@ bool NodeRadioSendParaSetAck(ErrorStatus status)
 }
 
 //***********************************************************************************
-// brief:   send the parameter setting ack to the strategy process
+// brief:   send the parameter setting to the config deceive
 // 
 // parameter: 
 // status:	success or fail
@@ -609,21 +714,65 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 // dataP:	the setting parameter point
 // length:	the setting parameter length
 //***********************************************************************************
-void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr, uint8_t *dataP, uint8_t length)
+void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr)
 {
-	if(length > RADIO_PROTOCAL_LOAD_MAX)
-		return;
+    uint8_t temp;
+	temp = 0;
+
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SET_PARA;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
-	protocalTxBuf.len 		= 16;
-
-	memcpy(protocalTxBuf.load, dataP, length);
-
-	SetRadioDstAddr(dstAddr);
 
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
-    concenterRemainderCache -= protocalTxBuf.len;
+
+	protocalTxBuf.load[temp++]		= PARASETTING_COLLECT_INTERVAL;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.collectPeriod>>24);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.collectPeriod>>16);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.collectPeriod>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.collectPeriod);
+
+
+	protocalTxBuf.load[temp++]		= PARASETTING_UPLOAD_INTERVAL;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.uploadPeriod>>24);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.uploadPeriod>>16);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.uploadPeriod>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.uploadPeriod);
+
+
+	// protocalTxBuf.load[temp++]		= PARASETTING_LOW_TEMP_ALARM;
+	// protocalTxBuf.load[temp++]		= 0;
+	// protocalTxBuf.load[temp++]		= 0x7f;
+	// protocalTxBuf.load[temp++]		= 0xff;
+
+
+	// protocalTxBuf.load[temp++]		= PARASETTING_HIGH_TEMP_ALARM;
+	// protocalTxBuf.load[temp++]		= 0;
+	// protocalTxBuf.load[temp++]		= 0x7f;
+	// protocalTxBuf.load[temp++]		= 0xff;
+
+	protocalTxBuf.load[temp++]		= PARASETTING_DECEIVE_ID;
+	protocalTxBuf.load[temp++]		= g_rSysConfigInfo.DeviceId[0];
+	protocalTxBuf.load[temp++]		= g_rSysConfigInfo.DeviceId[1];
+	protocalTxBuf.load[temp++]		= g_rSysConfigInfo.DeviceId[2];
+	protocalTxBuf.load[temp++]		= g_rSysConfigInfo.DeviceId[3];
+
+	protocalTxBuf.load[temp++]		= PARASETTING_CUSTOM_ID;
+	protocalTxBuf.load[temp++]		= g_rSysConfigInfo.customId[0];
+	protocalTxBuf.load[temp++]		= g_rSysConfigInfo.customId[1];
+
+	protocalTxBuf.load[temp++]		= PARASETTING_NTC_INTERVAL;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.ntpPeriod>>24);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.ntpPeriod>>16);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.ntpPeriod>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.ntpPeriod);
+
+
+	protocalTxBuf.load[temp++]		= PARASETTING_LOW_VOLTAGE;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.batLowVol>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.batLowVol);
+
+	protocalTxBuf.len = 10 + temp;
+
+	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
 }

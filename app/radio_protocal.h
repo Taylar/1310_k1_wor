@@ -75,11 +75,13 @@ bool NodeRadioSendSynReq(void);
 
 bool NodeRadioSendParaSetAck(ErrorStatus status);
 
+bool NodeRadioSendConfig(void);
+
 void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorStatus status);
 
 void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr);
 
-void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr, uint8_t *dataP, uint8_t length);
+void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr);
 
 
 #endif      // __RADIO_PROTOCAL_H__

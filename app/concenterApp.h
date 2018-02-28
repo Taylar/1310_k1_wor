@@ -73,6 +73,8 @@ void ConcenterSleep(void);
 
 void ConcenterWakeup(void);
 
+void ConcenterConfigDeceiveInit(void);
+
 void ConcenterStoreConfig(void);
 
 void ConcenterTimeSychronization(Calendar *currentTime);
