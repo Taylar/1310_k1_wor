@@ -578,7 +578,7 @@ void NodeRtcProcess(void)
         if(nodeParameter.configModeTimeCnt >= 60)
         {
             RadioModeSet(RADIOMODE_SENDPORT);
-            SetRadioDstAddr(*((uint16_t*)(nodeParameter.customId)));
+            SetRadioDstAddr(nodeParameter.customId);
 
             deviceMode = DEVICES_ON_MODE;
             NodeStrategyBusySet(true);
