@@ -61,10 +61,10 @@
 // HW version define.
 //
 //***********************************************************************************
-#define BOARD_S1_2
-// #define BOARD_S2_2
+// #define BOARD_S1_2
+#define BOARD_S2_2
 // #define BOARD_S6_6
-// #define BOARD_CONFIG_DECEIVE
+#define BOARD_CONFIG_DECEIVE
 
 
 // #define FACTOR_RADIO_TEST
@@ -477,7 +477,7 @@ typedef struct {
     //apn user pwd
     uint8_t apnuserpwd[64];
     
-} ConfigInfo_t;
+}__attribute__((packed)) ConfigInfo_t;
 
 //***********************************************************************************
 //

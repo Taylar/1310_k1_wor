@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-10 20:26:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-28 15:30:45
+* @Last Modified time: 2018-03-01 09:50:52
 */
 #include "../general.h"
 #include "../app/usb_prot.h"
@@ -139,11 +139,11 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 
         case EV_Set_config:
-            size = (pData[4] << 8) + pData[3];
+            size = (pData[0] << 8) + pData[1] - 1;
             if (size > sizeof(g_rSysConfigInfo)) {//涓轰簡鍓嶅悗鍏煎锛屽綋鏂版垨鏃х殑宸ュ叿鍐欏叆鏁版嵁鏃讹紝鍙彇褰撳墠鎻愪緵鐨勬垨绋嬪簭闇�瑕佺殑閮ㄥ垎銆�
                 size = sizeof(g_rSysConfigInfo);                
             }
-            memcpy((char *)&g_rSysConfigInfo, (char *)&pData[3], size);
+            memcpy((char*)&g_rSysConfigInfo, (char *)&pData[3], size);
             g_rSysConfigInfo.size = sizeof(g_rSysConfigInfo);
             
 #ifdef FLASH_INTERNAL
@@ -156,6 +156,8 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             if(deviceMode == DEVICES_CONFIG_MODE)
             {
                 ConcenterRadioSendParaSet(GetRadioSrcAddr(), GetRadioDstAddr());
+                memset((char *)&g_rSysConfigInfo, 0, sizeof(g_rSysConfigInfo));
+                g_rSysConfigInfo.size = sizeof(g_rSysConfigInfo);
             }
             break;
 

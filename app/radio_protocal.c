@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-28 18:03:35
+* @Last Modified time: 2018-03-01 14:39:29
 */
 #include "../general.h"
 
@@ -205,8 +205,36 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					if(lenTemp < 3)
 						goto NodeDispath;
 					g_rSysConfigInfo.batLowVol    = ((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
-													((uint32_t)bufTemp->load[baseAddr+4]);
+													((uint32_t)bufTemp->load[baseAddr+2]);
 					lenTemp -= 3;
+					break;
+
+					case PARASETTING_SOFT_VER:
+					if(lenTemp < 3)
+						goto NodeDispath;
+					g_rSysConfigInfo.swVersion    = ((uint32_t)FW_VERSION << 8) + 
+													((uint32_t)FW_VERSION);
+					lenTemp -= 3;
+					break;
+
+					case PARASETTING_RF_PARA:
+					if(lenTemp < 5)
+						goto NodeDispath;
+					g_rSysConfigInfo.rfPA    	= bufTemp->load[baseAddr+1];
+					g_rSysConfigInfo.rfBW    	= bufTemp->load[baseAddr+2];
+					g_rSysConfigInfo.rfSF    	= bufTemp->load[baseAddr+3];
+					g_rSysConfigInfo.rfStatus 	= bufTemp->load[baseAddr+4];
+					lenTemp -= 5;
+					break;
+
+					case PARASETTING_MODULE_SET:
+					if(lenTemp < 5)
+						goto NodeDispath;
+					g_rSysConfigInfo.status    	=	((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
+													((uint32_t)bufTemp->load[baseAddr+2]);
+					g_rSysConfigInfo.module    	=	((uint32_t)bufTemp->load[baseAddr+3] << 8) + 
+													((uint32_t)bufTemp->load[baseAddr+4]);
+					lenTemp -= 5;
 					break;
 
 					default:
@@ -430,8 +458,36 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					if(lenTemp < 3)
 						goto ConcenterConfigRespondEnd;
 					g_rSysConfigInfo.batLowVol	=	((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
-													((uint32_t)bufTemp->load[baseAddr+4]);
+													((uint32_t)bufTemp->load[baseAddr+2]);
 					lenTemp -= 3;
+					break;
+
+					case PARASETTING_SOFT_VER:
+					if(lenTemp < 3)
+						goto ConcenterConfigRespondEnd;
+					g_rSysConfigInfo.swVersion    = ((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
+													((uint32_t)bufTemp->load[baseAddr+2]);
+					lenTemp -= 3;
+					break;
+
+					case PARASETTING_RF_PARA:
+					if(lenTemp < 5)
+						goto ConcenterConfigRespondEnd;
+					g_rSysConfigInfo.rfPA    	= bufTemp->load[baseAddr+1];
+					g_rSysConfigInfo.rfBW    	= bufTemp->load[baseAddr+2];
+					g_rSysConfigInfo.rfSF    	= bufTemp->load[baseAddr+3];
+					g_rSysConfigInfo.rfStatus 	= bufTemp->load[baseAddr+4];
+					lenTemp -= 5;
+					break;
+
+					case PARASETTING_MODULE_SET:
+					if(lenTemp < 5)
+						goto ConcenterConfigRespondEnd;
+					g_rSysConfigInfo.status    	=	((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
+													((uint32_t)bufTemp->load[baseAddr+2]);
+					g_rSysConfigInfo.module    	=	((uint32_t)bufTemp->load[baseAddr+3] << 8) + 
+													((uint32_t)bufTemp->load[baseAddr+4]);
+					lenTemp -= 5;
 					break;
 
 					default:
@@ -602,6 +658,23 @@ bool NodeRadioSendConfig(void)
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.batLowVol>>8);
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.batLowVol);
 
+
+	protocalTxBuf.load[temp++]		= PARASETTING_SOFT_VER;
+	protocalTxBuf.load[temp++]		= (uint8_t)(FW_VERSION>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(FW_VERSION);
+
+	protocalTxBuf.load[temp++]		= PARASETTING_RF_PARA;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfPA);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfBW);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfSF);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfStatus);
+
+	protocalTxBuf.load[temp++]		= PARASETTING_MODULE_SET;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.status>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.status);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module);
+
 	protocalTxBuf.len = 10 + temp;
 
 	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
@@ -771,6 +844,22 @@ void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.load[temp++]		= PARASETTING_LOW_VOLTAGE;
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.batLowVol>>8);
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.batLowVol);
+
+	protocalTxBuf.load[temp++]		= PARASETTING_SOFT_VER;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.swVersion>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.swVersion);
+
+	protocalTxBuf.load[temp++]		= PARASETTING_RF_PARA;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfPA);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfBW);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfSF);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.rfStatus);
+
+	protocalTxBuf.load[temp++]		= PARASETTING_MODULE_SET;
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.status>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.status);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module>>8);
+	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module);
 
 	protocalTxBuf.len = 10 + temp;
 
