@@ -136,7 +136,7 @@ const uint8_t configFlag[12] = CONFIG_VALID_FLAG;
 //***********************************************************************************
 void InternalFlashStoreConfig(void)
 {
-	FlashSectorErase(CONFIG_DATA_INTERNAL_ADDR);
+	FlashSectorErase(CONFIG_FLAG_INTERNAL_ADDR);
 	
 	FlashProgram((uint8_t *)configFlag, CONFIG_FLAG_INTERNAL_ADDR, 12);
 	FlashProgram((uint8_t*)(&g_rSysConfigInfo), CONFIG_DATA_INTERNAL_ADDR, sizeof(ConfigInfo_t));

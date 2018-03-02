@@ -53,4 +53,8 @@ void NodeLongKeyApp(void);
 
 void NodeRtcProcess(void);
 
+void NodeSetCustomId(uint32_t customId);
+
+uint32_t NodeGetCustomId(void);
+
 #endif			// __NODEAPP_H__

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-01 14:39:29
+* @Last Modified time: 2018-03-02 15:38:31
 */
 #include "../general.h"
 
@@ -117,8 +117,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					lenTemp -= 5;
 					NodeCollectStop();
 					g_rSysConfigInfo.collectPeriod = temp;
-					if(temp)
-						NodeCollectStart();
+					
 					break;
 
 					case PARASETTING_UPLOAD_INTERVAL:
@@ -133,15 +132,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					NodeUploadStop();
 					g_rSysConfigInfo.uploadPeriod = temp;
 					NodeStrategySetPeriod(temp);
-					if(temp)
-					{
-						NodeStopBroadcast();
-						NodeUploadStart();
-					}
-					else
-					{
-						NodeStartBroadcast();
-					}
 
 					break;
 
@@ -185,8 +175,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     				g_rSysConfigInfo.customId[0] = bufTemp->load[baseAddr+1];
     				g_rSysConfigInfo.customId[1] = bufTemp->load[baseAddr+2];
 
-    				SetRadioDstAddr(*((uint16_t*)(g_rSysConfigInfo.customId)));
-
+    				NodeSetCustomId(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
 					lenTemp -= 3;
 					
 					break;
@@ -239,10 +228,11 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 					default:
 					// error setting parameter
+					InternalFlashStoreConfig();
 					goto NodeDispath;
 				}
 			}
-				
+			InternalFlashStoreConfig();	
 			break;
 
 			case RADIO_PRO_CMD_SET_PARA_ACK:

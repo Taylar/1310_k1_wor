@@ -253,10 +253,10 @@ void NodeCollectProcess(void)
     data[1] = 0;
     // deceive ID
     temp    = GetRadioSrcAddr();
-    data[2] = (uint8_t)(temp>>24);
-    data[3] = (uint8_t)(temp>>16);
-    data[4] = (uint8_t)(temp>>8);
-    data[5] = (uint8_t)(temp);
+    data[2] = g_rSysConfigInfo.DeviceId[0];
+    data[3] = g_rSysConfigInfo.DeviceId[1];
+    data[4] = g_rSysConfigInfo.DeviceId[2];
+    data[5] = g_rSysConfigInfo.DeviceId[3];
     
     // serial num
     data[6] = (uint8_t)(nodeParameter.serialNum>>8);
@@ -330,7 +330,7 @@ void NodeBroadcasting(void)
 {
     if(nodeParameter.broadcasting)
     {
-        NodeStrategySetPeriod(NODE_BROADCASTING_TIME);
+        NodeStrategySetPeriod(g_rSysConfigInfo.uploadPeriod);
         NodeRadioSendSynReq();
     }
 }
@@ -577,13 +577,38 @@ void NodeRtcProcess(void)
         nodeParameter.configModeTimeCnt++;
         if(nodeParameter.configModeTimeCnt >= 60)
         {
+            ClearRadioSendBuf();
             RadioModeSet(RADIOMODE_SENDPORT);
-            SetRadioDstAddr(nodeParameter.customId);
+            NodeStartBroadcast();
+            NodeBroadcasting();
 
             deviceMode = DEVICES_ON_MODE;
             NodeStrategyBusySet(true);
-
         }
     }
 }
 
+
+//***********************************************************************************
+// brief:the node rtc process
+// 
+// parameter: 
+//***********************************************************************************
+void NodeSetCustomId(uint32_t customId)
+{
+    nodeParameter.customId = customId;
+}
+
+
+
+
+
+//***********************************************************************************
+// brief:the node rtc process
+// 
+// parameter: 
+//***********************************************************************************
+uint32_t NodeGetCustomId(void)
+{
+    return nodeParameter.customId;
+}
