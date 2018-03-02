@@ -17,7 +17,8 @@
 #define         SYSTEMAPP_EVT_COLLECT_NODE              Event_Id_10
 #define         SYSTEMAPP_EVT_STORE_CONCENTER           Event_Id_11
 #define         SYSTEMAPP_EVT_NET_UPLOAD                Event_Id_12
-#define         SYSTEMAPP_EVT_TIMER                     Event_Id_13
+#define         SYSTEMAPP_EVT_USBINT                    Event_Id_13
+#define         SYSTEMAPP_EVT_TIMER                     Event_Id_14
 #define         SYSTEMAPP_EVT_ALL                       0xffff
 
 
@@ -34,6 +35,7 @@ extern Event_Handle systemAppEvtHandle;
 /***** Prototypes *****/
 void SysAppTaskCreate(void);
 
+void SystemUsbIntEventPostIsr(void);
 
 
 #endif      // __SYSTEMAPP_H__

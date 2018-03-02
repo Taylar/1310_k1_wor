@@ -62,9 +62,9 @@
 //
 //***********************************************************************************
 // #define BOARD_S1_2
-#define BOARD_S2_2
-// #define BOARD_S6_6
-#define BOARD_CONFIG_DECEIVE
+// #define BOARD_S2_2
+#define BOARD_S6_6
+// #define BOARD_CONFIG_DECEIVE
 
 
 // #define FACTOR_RADIO_TEST
@@ -501,6 +501,7 @@ typedef struct {
 #include "driver/adc_drv.h"
 #include "driver/wdt_drv.h"
 #include "driver/uart_drv.h"
+#include "driver/usbInt_drv.h"
 #include "flash/extflash.h"
 #include "flash/extflash_ringq.h"
 #include "flash/internalFlash.h"

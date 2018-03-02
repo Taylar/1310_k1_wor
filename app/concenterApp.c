@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-28 17:06:05
+* @Last Modified time: 2018-03-02 10:15:38
 */
 #include "../general.h"
 
@@ -123,6 +123,8 @@ void ConcenterAppHwInit(void)
 
 #ifdef BOARD_S6_6
     NTC_FxnTable.initFxn(NTC_CH0);
+
+    UsbIntInit(SystemUsbIntEventPostIsr);
 #endif
 
 
@@ -275,9 +277,14 @@ void ConcenterSleep(void)
         RadioFrontDisable();
         ConcenterCollectStop();
         // wait the nwk disable the uart
-        Task_sleep(500 * CLOCK_UNIT_MS);
+        while(Nwk_get_state())
+            Task_sleep(100 * CLOCK_UNIT_MS);
     }
+#ifdef BOARD_S2_2
+
     InterfaceEnable();
+
+#endif
     deviceMode = DEVICES_OFF_MODE;
 }
 
@@ -289,7 +296,9 @@ void ConcenterSleep(void)
 void ConcenterWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
+#ifdef BOARD_S2_2
     InterfaceDisable();
+#endif
     if(concenterParameter.configFlag)
     {
         concenterParameter.radioReceive = true;
@@ -298,6 +307,73 @@ void ConcenterWakeup(void)
         RadioFrontRxEnable();
         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
         RadioModeSet(RADIOMODE_RECEIVEPORT);
+    }
+}
+
+
+//***********************************************************************************
+// brief:   
+// 
+// parameter: 
+//***********************************************************************************
+void UsbIntProcess(void)
+{
+    static uint8_t deviceModeTemp = DEVICES_SLEEP_MODE;
+
+    if(GetUsbState() == USB_LINK_STATE)
+    {
+        switch(deviceMode)
+        {
+            case DEVICES_ON_MODE:
+            case DEVICES_MENU_MODE:
+            case DEVICES_SLEEP_MODE:
+            Nwk_poweroff();
+            Disp_poweroff();
+            // wait for the gsm uart close
+            while(Nwk_get_state())
+                Task_sleep(100 * CLOCK_UNIT_MS);
+
+            InterfaceEnable();
+            deviceModeTemp = DEVICES_SLEEP_MODE;
+            deviceMode = DEVICES_CONFIG_MODE;
+            break;
+
+            case DEVICES_OFF_MODE:
+            InterfaceEnable();
+            deviceModeTemp = DEVICES_OFF_MODE;
+            deviceMode = DEVICES_CONFIG_MODE;
+            break;
+
+            case DEVICES_CONFIG_MODE:
+            case DEVICES_TEST_MODE:
+            break;
+
+        }
+
+    }
+    else
+    {
+        // the usb has unlink
+        if(deviceMode != DEVICES_CONFIG_MODE)
+            return;
+
+        deviceMode = deviceModeTemp;
+        InterfaceDisable();
+        switch(deviceMode)
+        {
+            case DEVICES_ON_MODE:
+            case DEVICES_MENU_MODE:
+            case DEVICES_SLEEP_MODE:
+            Nwk_poweron();
+
+            case DEVICES_OFF_MODE:
+            break;
+
+            case DEVICES_CONFIG_MODE:
+            case DEVICES_TEST_MODE:
+            break;
+
+        }
     }
 }
 
@@ -574,7 +650,8 @@ void ConcenterRadioMonitorClear(void)
 //***********************************************************************************
 void ConcenterCollectStart(void)
 {
-    concenterParameter.collectStart      = true;
+    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_MASTER))
+        concenterParameter.collectStart      = true;
 }
 
 

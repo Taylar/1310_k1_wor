@@ -741,6 +741,17 @@ void Nwk_get_simccid(uint8_t *pBuff)
     Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_SIMCCID_GET, pBuff);
 }
 
+
+//***********************************************************************************
+//
+// get network power state.
+//
+//***********************************************************************************
+uint8_t Nwk_get_state(void)
+{
+    return rNwkObject.poweron;
+}
+
 #else
 void Nwk_task_create(void)
 {

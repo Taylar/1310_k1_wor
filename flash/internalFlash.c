@@ -195,6 +195,7 @@ void InternalFlashConfigReset(void)
 	g_rSysConfigInfo.batLowVol       = 3600;
 	g_rSysConfigInfo.apnuserpwd[0]   = 0;
 	g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
+	g_rSysConfigInfo.rfStatus 		|= STATUS_LORA_MASTER;
 #endif
 
 #ifdef		BOARD_S6_6
@@ -209,6 +210,7 @@ void InternalFlashConfigReset(void)
 	g_rSysConfigInfo.batLowVol       = 3600;
 	g_rSysConfigInfo.apnuserpwd[0]   = 0;
 	g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
+	g_rSysConfigInfo.rfStatus 		|= STATUS_LORA_MASTER;
 #endif
 
 

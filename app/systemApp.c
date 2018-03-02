@@ -59,6 +59,12 @@ void SystemLongKey1EventPostIsr(void)
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY1_LONG);
 }
 
+void SystemUsbIntEventPostIsr(void)
+{
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_USBINT);
+}
+
+
 void SysTimerCb(UArg arg0)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_TIMER);
@@ -313,6 +319,12 @@ void SystemAppTaskFxn(void)
 		{
 			ConcenterSensorDataSave();
 		}
+
+		if(eventId & SYSTEMAPP_EVT_USBINT)
+		{
+			UsbIntProcess();
+		}
+
 
 
 		if(eventId & SYSTEMAPP_EVT_TIMER)

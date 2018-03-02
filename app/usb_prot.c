@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-10 20:26:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-01 09:50:52
+* @Last Modified time: 2018-03-02 10:24:53
 */
 #include "../general.h"
 #include "../app/usb_prot.h"
@@ -156,7 +156,9 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             if(deviceMode == DEVICES_CONFIG_MODE)
             {
                 ConcenterRadioSendParaSet(GetRadioSrcAddr(), GetRadioDstAddr());
+#ifdef  BOARD_CONFIG_DECEIVE
                 memset((char *)&g_rSysConfigInfo, 0, sizeof(g_rSysConfigInfo));
+#endif
                 g_rSysConfigInfo.size = sizeof(g_rSysConfigInfo);
             }
             break;
