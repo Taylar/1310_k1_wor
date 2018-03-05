@@ -84,7 +84,7 @@
 //***********************************************************************************
 #define CONFIG_DECEIVE_ID_DEFAULT       0XFFFFFFFA
 
-#define DECEIVE_ID_DEFAULT              0X12002100
+#define DECEIVE_ID_DEFAULT              0XFFFFFFFB
 
 #define CUSTOM_ID_DEFAULT               0X0000
 
@@ -99,7 +99,7 @@
 #define NODE_BROADCASTING_TIME          UPLOAD_PERIOD_DEFAULT
 #define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT
 
-#define DEFAULT_DST_ADDR                0x22000924
+#define DEFAULT_DST_ADDR                0xFFFFFFFD
 
 
 //***********************************************************************************

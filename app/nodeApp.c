@@ -457,6 +457,7 @@ void NodeShortKeyApp(void)
         // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
         deviceMode                      = DEVICES_CONFIG_MODE;
         nodeParameter.configModeTimeCnt = 0;
+        NodeUploadStop();
         NodeUploadFailProcess();
         NodeStrategyBusySet(false);
         RadioModeSet(RADIOMODE_RECEIVEPORT);
@@ -485,6 +486,7 @@ void NodeLongKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        case DEVICES_CONFIG_MODE:
         NodeSleep();
         Led_ctrl(LED_R, 0, 250 * CLOCK_UNIT_MS, 6);
         break;
@@ -611,10 +613,10 @@ void NodeRtcProcess(void)
             ClearRadioSendBuf();
             RadioModeSet(RADIOMODE_SENDPORT);
             NodeStartBroadcast();
-            NodeBroadcasting();
-
-            deviceMode = DEVICES_ON_MODE;
             NodeStrategyBusySet(true);
+
+            NodeBroadcasting();
+            deviceMode = DEVICES_ON_MODE;
         }
     }
 }

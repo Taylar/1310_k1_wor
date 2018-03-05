@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-02 17:40:01
+* @Last Modified time: 2018-03-05 16:19:38
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -59,6 +59,7 @@ static struct RadioOperation currentRadioOperation;
 
 EasyLink_RxPacket radioRxPacket;
 
+static uint8_t  radioTestFlag;
 
 /***** Prototypes *****/
 
@@ -190,9 +191,13 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TEST)
         {
-            RadioFrontTxEnable();
-            EasyLink_abort();
-            EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+            while(radioTestFlag)
+            {
+                RadioFrontTxEnable();
+                EasyLink_abort();
+                EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+            }
+            continue;
         }
 
 
@@ -454,3 +459,15 @@ void ClearRadioSendBuf(void)
 {
     currentRadioOperation.easyLinkTxPacket.len = 0;
 }
+
+void RadioTestEnable(void)
+{
+    radioTestFlag = true;
+    Event_post(radioOperationEventHandle, RADIO_EVT_TEST);
+}
+
+void RadioTestDisable(void)
+{
+    radioTestFlag = false;
+}
+

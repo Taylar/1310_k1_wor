@@ -64,4 +64,8 @@ void SetRadioSubSrcAddr(uint32_t addr);
 
 void ClearRadioSendBuf(void);
 
+void RadioTestEnable(void);
+
+void RadioTestDisable(void);
+
 #endif		// __RADIO_APP_H__
