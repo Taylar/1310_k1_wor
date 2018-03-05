@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-28 10:42:55
+* @Last Modified time: 2018-03-02 17:40:01
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -174,8 +174,14 @@ void RadioAppTaskFxn(void)
     }
     
 
-    
-
+#ifdef FACTOR_RADIO_TEST
+    while(1)
+    {
+        RadioFrontTxEnable();
+        EasyLink_abort();
+        EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+    }
+#endif
 
     for(;;)
     {
