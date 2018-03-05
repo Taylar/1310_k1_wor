@@ -35,6 +35,8 @@ void Rtc_set_calendar(Calendar *currentTime);
 
 Calendar Rtc_get_calendar(void);
 
+uint8_t RtcGetSec(void);
+
 #endif    // __RTC_DRV_H__
 
 

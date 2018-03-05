@@ -198,8 +198,33 @@ void NodeUploadSucessProcess(void)
 //***********************************************************************************
 void NodeCollectStart(void)
 {
-    nodeParameter.synTimeFlag       = true;
-    nodeParameter.collectStart      = true;
+    uint8_t secTemp;
+
+    secTemp                    = RtcGetSec();
+
+    nodeParameter.synTimeFlag  = true;
+    nodeParameter.collectStart = true;
+
+
+    // promise the next collect time is 30s 
+    if(g_rSysConfigInfo.uploadPeriod == 60)
+    {
+        if(secTemp >= 30)
+        {
+            if(nodeParameter.collectTimeCnt >= 30)
+            {
+                nodeParameter.collectTimeCnt = secTemp + 60;
+            }
+            else
+            {
+                nodeParameter.collectTimeCnt = secTemp - 30;
+            }
+        }
+        else
+        {
+            nodeParameter.collectTimeCnt = secTemp + 30;
+        }
+    }
 }
 
 
@@ -295,6 +320,12 @@ void NodeCollectProcess(void)
     Flash_store_sensor_data(data, data[0]+1);
 
     nodeParameter.serialNum++;
+
+    if(nodeParameter.uploadStart)
+    {
+        if(deviceMode == DEVICES_ON_MODE)
+            Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+    }
 }
 
 
@@ -548,7 +579,7 @@ void NodeRtcProcess(void)
         
         if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
         {
-            nodeParameter.collectTimeCnt = 0;
+            nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
             Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_COLLECT_NODE);
         }
 
@@ -560,17 +591,17 @@ void NodeRtcProcess(void)
         }
     }
 
-    if(nodeParameter.uploadStart)
-    {
-        nodeParameter.uploadTimeCnt++;
-        if(nodeParameter.uploadTimeCnt > g_rSysConfigInfo.collectPeriod)
-        {
-            nodeParameter.uploadTimeCnt = 0;
+    // if(nodeParameter.uploadStart)
+    // {
+    //     nodeParameter.uploadTimeCnt++;
+    //     if(nodeParameter.uploadTimeCnt > g_rSysConfigInfo.collectPeriod)
+    //     {
+    //         nodeParameter.uploadTimeCnt = 0;
 
-            if(deviceMode == DEVICES_ON_MODE)
-                Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
-        }
-    }
+    //         if(deviceMode == DEVICES_ON_MODE)
+    //             Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+    //     }
+    // }
 
     if(deviceMode == DEVICES_CONFIG_MODE)
     {
