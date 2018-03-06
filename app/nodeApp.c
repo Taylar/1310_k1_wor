@@ -213,7 +213,7 @@ void NodeCollectStart(void)
         {
             if(nodeParameter.collectTimeCnt >= 30)
             {
-                nodeParameter.collectTimeCnt = secTemp + 60;
+                nodeParameter.collectTimeCnt = secTemp + 30;
             }
             else
             {
