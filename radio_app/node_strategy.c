@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-31 10:19:53
+* @Last Modified time: 2018-03-06 16:37:19
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -229,7 +229,8 @@ void NodeStrategyReceiveReceiveSuccess(void)
     
     nodeStrategy.busy           = false;
     nodeStrategy.remainderCache = EASYLINK_MAX_DATA_LENGTH;
-
+    nodeStrategy.failNum        = 0;
+    
     ClearRadioSendBuf();
     
     if(nodeStrategy.concenterNum)
