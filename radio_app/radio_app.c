@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-05 16:19:38
+* @Last Modified time: 2018-03-06 17:03:03
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -230,6 +230,7 @@ void RadioAppTaskFxn(void)
         if (events & RADIO_EVT_TX)
         {
 
+
             Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
             // stop receive radio, otherwise couldn't send successful
             if(radioMode == RADIOMODE_RECEIVEPORT)
@@ -247,6 +248,8 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_SENDPORT)
             {
+                Led_toggle(LED_G);
+                
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }
