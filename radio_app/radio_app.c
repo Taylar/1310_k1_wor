@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-06 17:03:03
+* @Last Modified time: 2018-03-07 14:55:34
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -248,7 +248,7 @@ void RadioAppTaskFxn(void)
 
             if(radioMode == RADIOMODE_SENDPORT)
             {
-                Led_toggle(LED_G);
+                // Led_toggle(LED_G);
                 
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
                 EasyLink_receiveAsync(RxDoneCallback, 0);
