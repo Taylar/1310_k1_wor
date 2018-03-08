@@ -10,7 +10,7 @@
 
 void NodeStrategyReset(void);
 
-void NodeStrategyInit(void (*Cb)(void));
+void NodeStrategyInit(void (*Cb)(void), void (*StrategyFailCb)(void));
 
 void NodeStrategySetPeriod(uint32_t period);
 

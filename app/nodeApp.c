@@ -624,6 +624,20 @@ void NodeRtcProcess(void)
 
 
 //***********************************************************************************
+// brief:the the
+// 
+// parameter: 
+//***********************************************************************************
+void NodeStrategyTimeoutProcess(void)
+{
+    ClearRadioSendBuf();
+    NodeStartBroadcast();
+    NodeStrategyBusySet(true);
+    NodeBroadcasting();
+}
+
+
+//***********************************************************************************
 // brief:the node rtc process
 // 
 // parameter: 

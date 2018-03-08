@@ -89,7 +89,10 @@ int main(void)
 #endif 
 
     /* Initialize radio tasks */
-    RadioAppTaskCreate();
+    if(g_rSysConfigInfo.module & MODULE_RADIO)
+    {
+        RadioAppTaskCreate();
+    }
     
     
 

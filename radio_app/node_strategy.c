@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-08 13:57:52
+* @Last Modified time: 2018-03-08 15:50:12
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -23,7 +23,7 @@
 #define     NODE_TIME_OFFSET_MAX_MS     (3) 
 
 
-#define     FAIL_CONNECT_MAX_NUM               5
+#define     FAIL_CONNECT_MAX_NUM               10
 
 #define     FAIL_CONNECT_PERIOD_MAX_NUM        3
 
@@ -75,7 +75,7 @@ static void NodeStrategyStartCb(UArg arg0)
 // parameter: 
 // Cb:      Init the send radio event
 //***********************************************************************************
-void NodeStrategyInit(void (*Cb)(void))
+void NodeStrategyInit(void (*Cb)(void), void (*StrategyFailCb)(void))
 {
     if(nodeStrategy.init == false)
     {
@@ -195,7 +195,7 @@ static void NodeStrategyStart(void)
 //***********************************************************************************
 void NodeStrategyReceiveTimeoutProcess(void)
 {
-    nodeStrategy.failNum++;
+    nodeStrategy.failNum += 2;
     if(nodeStrategy.success == true)
     {
         if(nodeStrategy.failNum > FAIL_CONNECT_MAX_NUM)
@@ -229,7 +229,8 @@ void NodeStrategyReceiveReceiveSuccess(void)
     
     nodeStrategy.busy           = false;
     nodeStrategy.remainderCache = EASYLINK_MAX_DATA_LENGTH;
-    nodeStrategy.failNum        = 0;
+    if(nodeStrategy.failNum)
+        nodeStrategy.failNum--;
     
     ClearRadioSendBuf();
     

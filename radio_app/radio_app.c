@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-07 14:55:34
+* @Last Modified time: 2018-03-08 15:10:42
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -130,17 +130,22 @@ void RadioModeSet(RadioOperationMode modeSet)
 void RadioAppTaskFxn(void)
 {
 
-#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+
 
     radioMode = RADIOMODE_RECEIVEPORT;
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     RadioFrontInit();
-    RadioFrontRxEnable();
 #endif
 
-
-#ifdef BOARD_S1_2
-    radioMode = RADIOMODE_SENDPORT;
-#endif
+    if(g_rSysConfigInfo.rfStatus & STATUS_LORA_MASTER)
+    {
+        RadioFrontRxEnable();
+        radioMode = RADIOMODE_RECEIVEPORT;
+    }
+    else
+    {
+        radioMode = RADIOMODE_SENDPORT;
+    }
 
 
     if(EasyLink_init(RADIO_EASYLINK_MODULATION) != EasyLink_Status_Success) {
@@ -249,7 +254,7 @@ void RadioAppTaskFxn(void)
             if(radioMode == RADIOMODE_SENDPORT)
             {
                 // Led_toggle(LED_G);
-                
+
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
                 EasyLink_receiveAsync(RxDoneCallback, 0);
             }
