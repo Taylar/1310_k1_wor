@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-06 16:37:19
+* @Last Modified time: 2018-03-08 13:57:52
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -23,9 +23,9 @@
 #define     NODE_TIME_OFFSET_MAX_MS     (3) 
 
 
-#define     FAIL_CONNECT_MAX_NUM               10
+#define     FAIL_CONNECT_MAX_NUM               5
 
-#define     FAIL_CONNECT_PERIOD_MAX_NUM        10
+#define     FAIL_CONNECT_PERIOD_MAX_NUM        3
 
 /***** Type declarations *****/
 typedef struct {

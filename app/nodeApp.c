@@ -489,6 +489,7 @@ void NodeLongKeyApp(void)
         case DEVICES_CONFIG_MODE:
         NodeSleep();
         Led_ctrl(LED_R, 0, 250 * CLOCK_UNIT_MS, 6);
+        SysCtrlSystemReset();
         break;
 
         case DEVICES_OFF_MODE:
