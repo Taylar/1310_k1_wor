@@ -55,18 +55,6 @@ uint32_t ConcenterReadChannel(uint32_t nodeAddr);
 
 void ConcenterSaveChannel(uint32_t nodeAddr);
 
-void ConcenterShortKeyApp(void);
-
-void ConcenterLongKeyApp(void);
-
-void S6ConcenterShortKeyApp(void);
-
-void S6ConcenterLongKeyApp(void);
-
-void S6ConcenterShortKey1App(void);
-
-void S6ConcenterLongKey1App(void);
-
 void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr);
 
 void ConcenterSleep(void);
@@ -86,10 +74,6 @@ uint8_t ConcenterReadSynTimeFlag(void);
 void ConcenterRadioMonitorClear(void);
 
 void ConcenterRtcProcess(void);
-
-void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
-
-bool get_next_sensor_memory(sensordata_mem *pSensor);
 
 void ConcenterCollectStart(void);
 

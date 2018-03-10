@@ -679,6 +679,8 @@ void Nwk_upload_time_isr(void)
 
 void Nwk_upload_data(void)
 {
+    if (!(g_rSysConfigInfo.module & MODULE_NWK))
+        return;
     Nwk_event_post(NWK_EVT_DATA_UPLOAD);
 }
 
@@ -749,6 +751,8 @@ void Nwk_get_simccid(uint8_t *pBuff)
 //***********************************************************************************
 uint8_t Nwk_get_state(void)
 {
+    if (!(g_rSysConfigInfo.module & MODULE_NWK))
+        return false;
     return rNwkObject.poweron;
 }
 

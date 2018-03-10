@@ -37,5 +37,14 @@ void SysAppTaskCreate(void);
 
 void SystemUsbIntEventPostIsr(void);
 
+void SystemKeyEventPostIsr(void);
+
+void SystemLongKeyEventPostIsr(void);
+
+void SystemKey1EventPostIsr(void);
+
+void SystemLongKey1EventPostIsr(void);
+
+void SystemUsbIntEventPostIsr(void);
 
 #endif      // __SYSTEMAPP_H__

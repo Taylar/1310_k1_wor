@@ -513,11 +513,20 @@ typedef struct {
 #include "display/menu.h"
 #include "display/led_drv.h"
 #include "easylink/EasyLink.h"
-#include "network/network.h"
 #include "easylink/radio_front.h"
+#include "radio_app/radio_app.h"
+#include "radio_app/node_strategy.h"
+#include "network/network.h"
 #include "app/concenterApp.h"
 #include "app/usb_prot.h"
 #include "app/radio_protocal.h"
+#include "app/nodeApp.h"
+#include "app/concenterApp.h"
+#include "app/systemApp.h"
+#include "app/s1_app.h"
+#include "app/s2_app.h"
+#include "app/s6_app.h"
+
 //***********************************************************************************
 //
 //	Global variable define

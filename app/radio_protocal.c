@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-02 15:38:31
+* @Last Modified time: 2018-03-09 16:45:39
 */
 #include "../general.h"
 
@@ -257,8 +257,15 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 				NodeUploadFailProcess();
 			else
 				NodeUploadSucessProcess();
-			
+
+			// resever more 6 package and is the last ack
+			if(Flash_get_unupload_items() > 6 && lenTemp < 12)
+			{
+				NodeUploadProcess();
+				RadioSend();
+			}
 			break;
+
 
 			default:
 			goto NodeDispath;

@@ -115,38 +115,20 @@ void SystemAppTaskFxn(void)
 
     deviceMode = DEVICES_OFF_MODE;
 
-    KeyInit();
-    KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
-
-    KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
 
 	RtcInit(RtcEventSet);
 
 #ifdef  BOARD_S6_6
-
-	KeyRegister(SystemKey1EventPostIsr, KEY_1_SHORT_PRESS);
-
-    KeyRegister(SystemLongKey1EventPostIsr, KEY_1_LONG_PRESS);
-
-	AdcDriverInit();
-    Disp_init();
-
-	ConcenterAppHwInit();
-    Battery_init();
-    Battery_voltage_measure();
+	S6HwInit();
 #endif
 
 #ifdef BOARD_S2_2
-    AdcDriverInit();
-	ConcenterAppHwInit();
-    Battery_init();
-    Battery_voltage_measure();
+    S2HwInit();
 #endif
 
 #ifdef BOARD_S1_2
-   	NodeAppHwInit();
+   	S1HwInit();
 #endif
-
 
 	RtcStart();
 
@@ -156,9 +138,7 @@ void SystemAppTaskFxn(void)
 
 
 #ifdef BOARD_CONFIG_DECEIVE
-
 	ConcenterConfigDeceiveInit();
-
 #endif
 
   //  	if(KeyReadState(KEY_0_SHORT_PRESS) == KEY_PRESSED)
@@ -177,17 +157,12 @@ void SystemAppTaskFxn(void)
 	// Clock_start(sysTimerClockHandle);
 
 #if (defined BOARD_S6_6) || (defined BOARD_S2_2)
-
 #ifndef  BOARD_CONFIG_DECEIVE
 	ConcenterWakeup();
 #endif
-
 #endif
 
-#ifdef BOARD_S6_6
-	Disp_poweron();
-    Disp_proc();
-#endif
+
 
 	for(;;)
 	{
@@ -210,16 +185,16 @@ void SystemAppTaskFxn(void)
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
 #ifdef BOARD_S2_2
-			ConcenterShortKeyApp();
+			S2ShortKeyApp();
 #endif
 
 
 #ifdef BOARD_S1_2
-			NodeShortKeyApp();
+			S1ShortKeyApp();
 #endif
 
 #ifdef BOARD_S6_6
-			S6ConcenterShortKeyApp();
+			S6ShortKeyApp();
 #endif
 		}
 
@@ -228,12 +203,12 @@ void SystemAppTaskFxn(void)
 		{
 
 #ifdef BOARD_S2_2
-			ConcenterLongKeyApp();
+			S2LongKeyApp();
 #endif
 
 
 #ifdef BOARD_S1_2
-			NodeLongKeyApp();
+			S1LongKeyApp();
 #endif
 
 #ifdef BOARD_S6_6
@@ -246,12 +221,12 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S6_6
 		if(eventId & SYSTEMAPP_EVT_KEY1)
 		{
-			S6ConcenterShortKey1App();
+			S6ShortKey1App();
 		}
 
 		if(eventId & SYSTEMAPP_EVT_KEY1_LONG)
 		{
-			S6ConcenterLongKey1App();
+			S6LongKey1App();
 		}
 #endif
 
@@ -273,8 +248,13 @@ void SystemAppTaskFxn(void)
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
 
-#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+#ifdef BOARD_S2_2
 			ConcenterRtcProcess();
+#endif
+
+#ifdef BOARD_S6_6
+			ConcenterRtcProcess();
+			S6AppRtcProcess();
 #endif
 
 #ifdef BOARD_S1_2

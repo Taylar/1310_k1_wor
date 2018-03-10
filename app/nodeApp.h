@@ -11,8 +11,6 @@
 
 void NodeAppInit(void (*Cb)(void));
 
-void NodeAppHwInit(void);
-
 void NodeUploadStart(void);
 
 void NodeUploadStop(void);
@@ -46,10 +44,6 @@ void NodeWakeup(void);
 void NodeUploadFailProcess(void);
 
 void NodeUploadSucessProcess(void);
-
-void NodeShortKeyApp(void);
-
-void NodeLongKeyApp(void);
 
 void NodeRtcProcess(void);
 

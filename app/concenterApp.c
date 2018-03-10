@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-02 10:15:38
+* @Last Modified time: 2018-03-09 17:28:55
 */
 #include "../general.h"
 
@@ -21,7 +21,7 @@
 #define     CONCENTER_RADIO_MONITOR_CNT_MAX     10
 
 
-#define     SCREEN_SLEEP_TIME           15
+
 /***** Type declarations *****/
 typedef struct 
 {
@@ -34,7 +34,6 @@ typedef struct
     uint32_t serialNum;         // the unit is sec
     
     uint8_t  monitorCnt;
-    uint8_t  screenSleepMonitorCnt;
     
     bool  configFlag;    // 0: unload the config; 1: has load the config
     bool  synTimeFlag;    // 0: unsyntime; 1: synchron time
@@ -104,31 +103,6 @@ void ConcenterAppInit(void)
     ConcenterSleep();
 }
 
-//***********************************************************************************
-// brief:   
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterAppHwInit(void)
-{
-
-    Spi_init();
-
-    Flash_init();
-
-
-#ifdef BOARD_S2_2
-    DeepTemp_FxnTable.initFxn(MAX31855_SPI_CH0);
-#endif
-
-#ifdef BOARD_S6_6
-    NTC_FxnTable.initFxn(NTC_CH0);
-
-    UsbIntInit(SystemUsbIntEventPostIsr);
-#endif
-
-
-}
 
 
 
@@ -418,186 +392,6 @@ uint32_t ConcenterReadChannel(uint32_t nodeAddr)
 
 
 
-//***********************************************************************************
-// brief:the Concenter short key application
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterShortKeyApp(void)
-{
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
-        break;
-
-        case DEVICES_OFF_MODE:
-        InterfaceSend("zxt test", 9);
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        break;
-    }
-}
-
-//***********************************************************************************
-// brief:the Concenter long key application
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterLongKeyApp(void)
-{
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        ConcenterSleep();
-        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
-        break;
-
-        case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        ConcenterWakeup();
-        break;
-    }
-}
-
-//***********************************************************************************
-// brief:the S6 Concenter short key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6ConcenterShortKeyApp(void)
-{
-    concenterParameter.screenSleepMonitorCnt = 0;
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Disp_info_switch();
-        Disp_proc();
-        // Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
-        break;
-
-        case DEVICES_OFF_MODE:
-        // Disp_info_switch();
-        // Disp_proc();
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        break;
-
-
-        case DEVICES_MENU_MODE:
-        Menu_action_proc(MENU_AC_DOWN);
-        Disp_proc();
-        break;
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        Disp_proc();
-        deviceMode = DEVICES_ON_MODE;
-        break;
-    }
-}
-
-//***********************************************************************************
-// brief:the Concenter long key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6ConcenterLongKeyApp(void)
-{
-    concenterParameter.screenSleepMonitorCnt = 0;
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Disp_poweroff();
-        ConcenterSleep();
-        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
-        break;
-
-        case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        ConcenterWakeup();
-        Disp_poweron();
-        Disp_proc();
-        break;
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        Disp_proc();
-        deviceMode = DEVICES_ON_MODE;
-        break;
-    }
-}
-
-//***********************************************************************************
-// brief:the S6 Concenter short key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6ConcenterShortKey1App(void)
-{
-    concenterParameter.screenSleepMonitorCnt = 0;
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Disp_info_close();
-        Disp_proc();
-        break;
-
-        case DEVICES_OFF_MODE:
-        break;
-
-        case DEVICES_MENU_MODE:
-        Menu_action_proc(MENU_AC_ENTER);
-        if(DEVICES_ON_MODE == deviceMode)
-        {
-            Disp_proc();
-        }
-        break;
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        Disp_proc();
-        deviceMode = DEVICES_ON_MODE;
-        break;
-
-    }
-}
-
-
-
-//***********************************************************************************
-// brief:the Concenter long key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6ConcenterLongKey1App(void)
-{
-    concenterParameter.screenSleepMonitorCnt = 0;
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        deviceMode = DEVICES_MENU_MODE;
-        PoweroffMenu_init();
-        Disp_proc();
-        break;
-
-        case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        ConcenterWakeup();
-        Disp_poweron();
-        Disp_info_close();
-        Disp_proc();
-        break;
-
-        case DEVICES_MENU_MODE:
-
-        break;
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        Disp_proc();
-        deviceMode = DEVICES_ON_MODE;
-        break;
-    }
-}
 
 //***********************************************************************************
 // brief:save the config to internal flash
@@ -650,8 +444,11 @@ void ConcenterRadioMonitorClear(void)
 //***********************************************************************************
 void ConcenterCollectStart(void)
 {
-    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_MASTER))
-        concenterParameter.collectStart      = true;
+    for(i = 0; i < MODULE_SENSOR_MAX; i++)
+    {
+        if((g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X) || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X))
+            concenterParameter.collectStart      = true;
+    }
 }
 
 
@@ -737,8 +534,8 @@ void ConcenterCollectProcess(void)
     data[7] = (uint8_t)concenterParameter.serialNum;
     
     // collect time
-    data[8] = TransHexToBcd((uint8_t)(calendarTemp.Year - 2000));
-    data[9] = TransHexToBcd((uint8_t)(calendarTemp.Month));
+    data[8]  = TransHexToBcd((uint8_t)(calendarTemp.Year - 2000));
+    data[9]  = TransHexToBcd((uint8_t)(calendarTemp.Month));
     data[10] = TransHexToBcd((uint8_t)(calendarTemp.DayOfMonth));
     data[11] = TransHexToBcd((uint8_t)(calendarTemp.Hours));
     data[12] = TransHexToBcd((uint8_t)(calendarTemp.Minutes));
@@ -753,13 +550,13 @@ void ConcenterCollectProcess(void)
     data[16] = 0;
 
 
-
-    
-
-
     Flash_store_sensor_data(data, data[0]+1);
 
     concenterParameter.serialNum++;
+
+#ifdef  BOARD_S6_6
+    sensor_unpackage_to_memory(data, data[0]+1);
+#endif
 }
 
 
@@ -771,18 +568,6 @@ void ConcenterCollectProcess(void)
 //***********************************************************************************
 void ConcenterRtcProcess(void)
 {
-    
-#ifdef BOARD_S6_6
-    if(Disp_powerState())
-    {
-        concenterParameter.screenSleepMonitorCnt ++;
-        if(concenterParameter.screenSleepMonitorCnt >= SCREEN_SLEEP_TIME)
-        {
-            Disp_poweroff();
-            deviceMode = DEVICES_SLEEP_MODE;
-        }
-    }
-#endif
 
     if(concenterParameter.radioReceive)
     {
@@ -816,108 +601,5 @@ void ConcenterRtcProcess(void)
 }
 
 
-
-
-
-#ifdef SUPPORT_NETGATE_DISP_NODE
-
-sensordata_mem pMemSensor[MEMSENSOR_NUM];//  
-uint8_t MemSensorIndex = 0;
-
-//***********************************************************************************
-//
-// unpackage  sensor data and save  sensor mac , index, type and value to mem
-//
-//***********************************************************************************
-void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
-{    
-    uint8_t i;
-    uint16_t Index;    
-    sensordata_mem cursensor;
-    
-    Index = 2;//DeviceId  start
-
-    HIBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
-    LOBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
-    HIBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];
-    LOBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];  
-    
-    Index = 16;//sensor  start
-
-    while(Index < length)
-    {
-        cursensor.index = pData[Index++];
-        cursensor.type  = pData[Index++];
-        
-        switch(cursensor.type)
-        {
-            case PARATYPE_TEMP_HUMI_SHT20:
-            HIBYTE(cursensor.temp) = pData[Index++];
-            LOBYTE(cursensor.temp) = pData[Index++];
-            HIBYTE(cursensor.humi) = pData[Index++];
-            LOBYTE(cursensor.humi) = pData[Index++];
-            break;
-
-            case PARATYPE_NTC:
-            HIBYTE(cursensor.temp) = pData[Index++];
-            LOBYTE(cursensor.temp) = pData[Index++];
-            break;
-
-            case PARATYPE_ILLUMINATION:
-            break;
-
-            case PARATYPE_TEMP_MAX31855:
-            HIBYTE(HIWORD(cursensor.tempdeep)) = pData[Index++];
-            LOBYTE(HIWORD(cursensor.tempdeep)) = pData[Index++];
-            HIBYTE(LOWORD(cursensor.tempdeep)) = pData[Index++];
-            cursensor.tempdeep >>= 8;
-            break;
-
-        }
-
-        //find in mem 
-        for (i = 0; i < MEMSENSOR_NUM; ++i) {
-            if (((pMemSensor) + i)->DeviceId == cursensor.DeviceId &&
-               ((pMemSensor) + i)->index == cursensor.index &&
-               ((pMemSensor) + i)->type == cursensor.type )
-                break;
-
-        }
-        
-        if (i < MEMSENSOR_NUM) {//update
-             memcpy((pMemSensor) + i, &cursensor, sizeof(sensordata_mem));
-        }
-        else {
-            //new sensor id
-            memcpy((pMemSensor) + MemSensorIndex, &cursensor, sizeof(sensordata_mem));
-
-            MemSensorIndex = (MemSensorIndex + 1) % MEMSENSOR_NUM;
-        }
-        
-        
-    }
-
-}
-
-bool get_next_sensor_memory(sensordata_mem *pSensor)
-{    
-    static uint8_t dispSensorIndex = 0;
-
-restart:
-    if (((sensordata_mem*)(pMemSensor) + dispSensorIndex)->DeviceId != 0x00000000 ){//valid data  
-        memcpy(pSensor, (sensordata_mem*)(pMemSensor) + dispSensorIndex, sizeof(sensordata_mem));
-        dispSensorIndex = (dispSensorIndex + 1) % MEMSENSOR_NUM;
-        return true;
-    }
-    else {
-        if(dispSensorIndex == 0)    
-            return false;
-        else {
-            dispSensorIndex = 0;
-            goto restart;
-        }
-    }
-}
-#endif
 
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-08 15:50:12
+* @Last Modified time: 2018-03-09 15:26:03
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -59,6 +59,8 @@ static node_strategy_t      nodeStrategy;
 
 
 static void (*NodeStrategyPeriodCb)(void);
+
+static void (*NodeStrategyFailCb)(void);
 /***** Function definitions *****/
 
 
@@ -91,6 +93,8 @@ void NodeStrategyInit(void (*Cb)(void), void (*StrategyFailCb)(void))
 
 
         NodeStrategyPeriodCb        = Cb;
+
+        NodeStrategyFailCb          = StrategyFailCb;
     }
 }
 
@@ -205,6 +209,7 @@ void NodeStrategyReceiveTimeoutProcess(void)
             {
                 nodeStrategy.periodNum = FAIL_CONNECT_PERIOD_MAX_NUM;
             }
+            NodeStrategyFailCb();
             NodeStrategyStart();
             nodeStrategy.success    = false;
             nodeStrategy.failNum   = 0;
