@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-09 15:52:52
+* @Last Modified time: 2018-03-12 10:50:20
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -135,6 +135,11 @@ void RadioAppTaskFxn(void)
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     radioMode = RADIOMODE_RECEIVEPORT;
     RadioFrontInit();
+
+#ifdef  BOARD_CONFIG_DECEIVE
+    
+    g_rSysConfigInfo.rfStatus |= STATUS_LORA_MASTER;
+
 #endif
 
     if(g_rSysConfigInfo.rfStatus & STATUS_LORA_MASTER)
@@ -146,7 +151,13 @@ void RadioAppTaskFxn(void)
     {
         radioMode = RADIOMODE_SENDPORT;
     }
+#endif
 
+#ifdef  BOARD_S1_2
+
+    radioMode = RADIOMODE_SENDPORT;
+
+#endif
 
     if(EasyLink_init(RADIO_EASYLINK_MODULATION) != EasyLink_Status_Success) {
         System_abort("EasyLink_init failed");

@@ -93,6 +93,12 @@ int main(void)
     {
         RadioAppTaskCreate();
     }
+
+#if (defined BOARD_S1_2) || (defined BOARD_CONFIG_DECEIVE)
+
+    RadioAppTaskCreate();
+
+#endif
     
     
 

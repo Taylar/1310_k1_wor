@@ -290,7 +290,7 @@ void NodeCollectProcess(void)
 
 
 
-#ifdef BOARD_S1_1
+#ifdef BOARD_S1_2
     // save the sht2x data
     SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
 

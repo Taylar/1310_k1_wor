@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-09 17:28:55
+* @Last Modified time: 2018-03-12 15:15:40
 */
 #include "../general.h"
 
@@ -277,7 +277,13 @@ void ConcenterWakeup(void)
     {
         concenterParameter.radioReceive = true;
         RadioFrontRxEnable();
-        Nwk_poweron();
+
+#ifdef BOARD_S6_6
+        if(GetUsbState() == USB_UNLINK_STATE)
+#endif
+        {
+            Nwk_poweron();
+        }
         RadioFrontRxEnable();
         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
         RadioModeSet(RADIOMODE_RECEIVEPORT);
@@ -303,11 +309,15 @@ void UsbIntProcess(void)
             case DEVICES_SLEEP_MODE:
             Nwk_poweroff();
             Disp_poweroff();
+            Task_sleep(100 * CLOCK_UNIT_MS);
             // wait for the gsm uart close
             while(Nwk_get_state())
                 Task_sleep(100 * CLOCK_UNIT_MS);
 
             InterfaceEnable();
+
+            RadioTestDisable();
+
             deviceModeTemp = DEVICES_SLEEP_MODE;
             deviceMode = DEVICES_CONFIG_MODE;
             break;
@@ -339,6 +349,11 @@ void UsbIntProcess(void)
             case DEVICES_MENU_MODE:
             case DEVICES_SLEEP_MODE:
             Nwk_poweron();
+            
+            if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
+            {
+                RadioTestEnable();
+            }
 
             case DEVICES_OFF_MODE:
             break;
@@ -444,10 +459,12 @@ void ConcenterRadioMonitorClear(void)
 //***********************************************************************************
 void ConcenterCollectStart(void)
 {
+    uint8_t i;
     for(i = 0; i < MODULE_SENSOR_MAX; i++)
     {
         if((g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X) || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X))
             concenterParameter.collectStart      = true;
+        break;
     }
 }
 
