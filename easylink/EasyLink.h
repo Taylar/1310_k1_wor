@@ -31,9 +31,8 @@
  */
 
 /*!
-\defgroup EasyLink
+\defgroup EasyLink EasyLink
 
-\ingroup EasyLink
 @{
 
 @file       EasyLink.h
@@ -96,21 +95,28 @@ drive documentation for more details.
 
 # Supported Functions #
 
-| Generic API function          | Description                                       |
-|-------------------------------|---------------------------------------------------|
-| EasyLink_init()               | Init's and opens the RF driver and configures the |
-|                               | specified modulation                              |
-| EasyLink_transmit()           | Blocking Transmit                                 |
-| EasyLink_transmitAsync()      | Nonblocking Transmit                              |
-| EasyLink_receive()            | Blocking Receive                                  |
-| EasyLink_receiveAsync()       | Nonblocking Receive                               |
-| EasyLink_abort()              | Aborts a non blocking call                        |
-| EasyLink_EnableRxAddrFilter() | Enables/Disables RX filtering on the Addr         |
-| EasyLink_GetIeeeAddr()        | Gets the IEEE Address                             |
-| EasyLink_SetFreq()            | Sets the frequency                                |
-| EasyLink_GetFreq()            | Gets the frequency                                |
-| EasyLink_SetRfPwr()           | Sets the Tx Power                                 |
-| EasyLink_GetRfPwr()           | Gets the Tx Power                                 |
+
+| Generic API function          | Description                                        |
+|-------------------------------|----------------------------------------------------|
+| EasyLink_init()               | Init's and opens the RF driver and configures the  |
+|                               | specified settings based on EasyLink_Params struct |
+| EasyLink_transmit()           | Blocking Transmit                                  |
+| EasyLink_transmitAsync()      | Non-blocking Transmit                              |
+| EasyLink_transmitCcaAsync()   | Non-blocking Transmit with Clear Channel Assessment|
+| EasyLink_receive()            | Blocking Receive                                   |
+| EasyLink_receiveAsync()       | Nonblocking Receive                                |
+| EasyLink_abort()              | Aborts a non blocking call                         |
+| EasyLink_enableRxAddrFilter() | Enables/Disables RX filtering on the Addr          |
+| EasyLink_getIeeeAddr()        | Gets the IEEE Address                              |
+| EasyLink_setFrequency()       | Sets the frequency                                 |
+| EasyLink_getFrequency()       | Gets the frequency                                 |
+| EasyLink_setRfPower()         | Sets the Tx Power                                  |
+| EasyLink_getRfPower()         | Gets the Tx Power                                  |
+| EasyLink_getRssi()            | Gets the RSSI                                      |
+| EasyLink_getAbsTime()         | Gets the absolute time in RAT ticks                |
+| EasyLink_setCtrl()            | Set RF parameters, test modes or EasyLink options  |
+| EasyLink_getCtrl()            | Get RF parameters or EasyLink options              |
+| EasyLink_getIeeeAddr()        | Gets the IEEE address                              |
 
 \endhtmlonly
 
@@ -148,23 +154,50 @@ extern "C"
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <ti/drivers/rf/RF.h>
+#include <stdlib.h>
 
-#define EASYLINK_API_VERSION "EasyLink-v2.10.01"
+//! \brief EasyLink API Version
+#define EASYLINK_API_VERSION "EasyLink-v2.30.00"
 
 //! \brief defines the largest Tx/Rx payload that the interface can support
-#define EASYLINK_MAX_DATA_LENGTH        128
+#define EASYLINK_MAX_DATA_LENGTH            128
 
 //! \brief defines the Tx/Rx Max Address Size
-#define EASYLINK_MAX_ADDR_SIZE        4
+#define EASYLINK_MAX_ADDR_SIZE              8
 
 //! \brief defines the Max number of Rx Address filters
-#define EASYLINK_MAX_ADDR_FILTERS     2
+#define EASYLINK_MAX_ADDR_FILTERS           3
+
+#if (defined(DeviceFamily_CC13X0) || defined(DeviceFamily_CC13X2))
+//! \brief Minimum CCA back-off window in units of
+//! EASYLINK_CCA_BACKOFF_TIMEUNITS, as a power of 2
+#define EASYLINK_MIN_CCA_BACKOFF_WINDOW     5
+
+//! \brief  Maximum CCA back-off window in units of
+//! EASYLINK_CCA_BACKOFF_TIMEUNITS, as a power of 2
+#define EASYLINK_MAX_CCA_BACKOFF_WINDOW     8
+
+//! \brief The back-off time units in microseconds
+#define EASYLINK_CCA_BACKOFF_TIMEUNITS      250
+
+//! \brief RSSI threshold for Clear Channel Assessment (CCA)
+#define EASYLINK_CS_RSSI_THRESHOLD_DBM      -80
+
+//! \brief Time for which the channel RSSI must remain below the specified
+//! threshold for the channel to be considered idle
+#define EASYLINK_CHANNEL_IDLE_TIME_US		5000
+
+#endif //(defined(DeviceFamily_CC13X0) || defined(DeviceFamily_CC13X2))
 
 //! \brief macro to convert from Radio Time Ticks to ms
-#define EasyLink_RadioTime_To_ms(radioTime) ((1000 * radioTime) / 4000000)
+#define EasyLink_RadioTime_To_ms(radioTime) (radioTime / (4000000/1000))
 
 //! \brief macro to convert from ms to Radio Time Ticks
 #define EasyLink_ms_To_RadioTime(ms) (ms*(4000000/1000))
+
+//! \brief macro to convert from us to Radio Time Ticks
+#define EasyLink_us_To_RadioTime(us) (us*(4000000/1000000))
 
 //! \brief EasyLink Status and error codes
 typedef enum
@@ -183,14 +216,21 @@ typedef enum
 } EasyLink_Status;
 
 
+//! \brief Phy Type defines so we can use them in checks
+#define EasyLink_PHY_CUSTOM             0
+#define EasyLink_PHY_50KBPS2GFSK        1
+#define EasyLink_PHY_625BPSLRM          2
+#define EasyLink_PHY_2_4_200KBPS2GFSK   3
+#define EasyLink_PHY_5KBPSSLLR      4
+
 //! \brief Phy Type passed to EasyLink_init()
 typedef enum
 {
-    EasyLink_Phy_Custom = 0,             //!< Customer Phy specific settings exported from SmartRF Studio
-    EasyLink_Phy_50kbps2gfsk = 1,        //!< Phy settings for Sub1G 50kbps data rate, IEEE 802.15.4g GFSK.
-    EasyLink_Phy_625bpsLrm = 2,          //!< Phy settings for Sub1G 625bps data rate, Long Range Mode.
-    EasyLink_Phy_2_4_200kbps2gfsk = 3,   //!< Phy settings for 2.4Ghz 200kbps data rate, IEEE 802.15.4g GFSK.
-    EasyLink_Phy_5kbpsSlLr = 4,          //!< SimpleLink Long Range (5 kbps)
+    EasyLink_Phy_Custom = EasyLink_PHY_CUSTOM,            //!< Customer Phy specific settings exported from SmartRF Studio
+    EasyLink_Phy_50kbps2gfsk = EasyLink_PHY_50KBPS2GFSK,  //!< Phy settings for Sub1G 50kbps data rate, IEEE 802.15.4g GFSK.
+    EasyLink_Phy_625bpsLrm = EasyLink_PHY_625BPSLRM,      //!< Phy settings for Sub1G 625bps data rate, Long Range Mode.
+    EasyLink_Phy_2_4_200kbps2gfsk = EasyLink_PHY_2_4_200KBPS2GFSK,   //!< Phy settings for 2.4Ghz 200kbps data rate, IEEE 802.15.4g GFSK.
+    EasyLink_Phy_5kbpsSlLr = EasyLink_PHY_5KBPSSLLR,      //!< SimpleLink Long Range (5 kbps)
 } EasyLink_PhyType;
 
 //! \brief Advance configuration options
@@ -214,7 +254,21 @@ typedef enum
 
     EasyLink_Ctrl_Test_Tone = 4,         //!< Enable/Disable Test mode for Tone
     EasyLink_Ctrl_Test_Signal = 5,       //!< Enable/Disable Test mode for Signal
+    EasyLink_Ctrl_Rx_Test_Tone = 6,      //!< Enable/Disable Rx Test mode for Tone
 } EasyLink_CtrlOption;
+
+
+//! \brief EasyLink 32-bit Random number generator function type used in the
+//! clear channel assessment algorithm.
+typedef uint32_t (*EasyLink_GetRandomNumber)(void);
+
+//! \brief Structure for EasyLink_init() and EasyLink_Params_init()
+typedef struct {
+    EasyLink_PhyType ui32ModType;        //!< PHY type
+    RF_ClientCallback   pClientEventCb;  //!< Client event callback function
+    RF_ClientEventMask  nClientEventMask;//!< Client event mask
+    EasyLink_GetRandomNumber pGrnFxn;    //!< Pointer to function that returns a 32-bit unsigned random number
+} EasyLink_Params;
 
 //! \brief Structure for the TX Packet
 typedef struct
@@ -251,7 +305,7 @@ typedef void (*EasyLink_TxDoneCb)(EasyLink_Status status);
 
 //*****************************************************************************
 //
-//! \brief Initializes the radio with specified Phy settings
+//! \brief Initializes the radio with specified Phy settings and RF client events
 //!
 //! This function configures the radio phy settings. If the ui32ModType
 //! is ::EasyLink_Phy_Custom then the configuration is taken from srf_settings.h.
@@ -259,17 +313,51 @@ typedef void (*EasyLink_TxDoneCb)(EasyLink_Status status);
 //! the defined Phy types in ::EasyLink_PhyType then you can cut and past the
 //! RF setting from the SmartRF Studio code export tool. This will copy and use
 //! the RF_prop, RF_cmdPropRadioDivSetup and RF_cmdFs commands, as well as the
-//! Sync word from the RF_cmdPropTx and RF_cmdPropRx commands.
+//! Sync word from the RF_cmdPropTx and RF_cmdPropRx commands. The function
+//! configures the callback for client events. The client events that trigger
+//! the callback are set using the nClientEventMask type in ::EasyLink_Params.
+//! A pointer to the desired callback should be provided to the pClientEventCb
+//! type of the ::EasyLink_Params structure.
 //!
-//! \param ui32ModType is a set to:
-//! - \ref EasyLink_Phy_50kbps2gfsk
-//! - \ref EasyLink_Phy_625bpsLrm
-//! - \ref EasyLink_Phy_Custom
+//! \param params The descriptor for the Phy mode and event callback settings
+//!
+//! Default values are:
+//!     ui32ModType            = EasyLink_Phy_50kbps2gfsk
+//!     RF_ClientCallback      = NULL
+//!     RF_ClientEventMask     = 0
+//!     pGrnFxn                = (EasyLink_GetRandomNumber)rand
 //!
 //! \return EasyLink_Status
 //
 //*****************************************************************************
-extern EasyLink_Status EasyLink_init(EasyLink_PhyType ui32ModType);
+extern void EasyLink_Params_init(EasyLink_Params *params);
+
+//*****************************************************************************
+//
+//! \brief Initializes the radio with specified Phy settings, CCA random number
+//! generator, and RF client events
+//!
+//! This function configures the radio phy settings. If the ui32ModType
+//! is ::EasyLink_Phy_Custom then the configuration is taken from srf_settings.h.
+//! If a specific phy configuration is required (and not supported by any of
+//! the defined Phy types in ::EasyLink_PhyType then you can cut and past the
+//! RF setting from the SmartRF Studio code export tool. This will copy and use
+//! the RF_prop, RF_cmdPropRadioDivSetup and RF_cmdFs commands, as well as the
+//! Sync word from the RF_cmdPropTx and RF_cmdPropRx commands. The function
+//! configures the callback for client events. The client events that trigger
+//! the callback are set using the nClientEventMask type in ::EasyLink_Params.
+//! A pointer to the desired callback should be provided to the pClientEventCb
+//! type of the ::EasyLink_Params structure.
+//!
+//! \param params The descriptor for the Phy mode, random number generator, and
+//!  event callback settings
+//!
+//! \return EasyLink_Status
+//
+//*****************************************************************************
+
+extern EasyLink_Status EasyLink_init(EasyLink_Params *params);
+
 
 //*****************************************************************************
 //
@@ -279,11 +367,30 @@ extern EasyLink_Status EasyLink_init(EasyLink_PhyType ui32ModType);
 //! monitoring or Tx/Rx events using the EasyLink_TxPacket and
 //! EasyLink_RxPacket::absTime field.
 //!
+//! \param pui32AbsTime Pointer to return the signed RSSI value (dBm)
 //!
-//! \return absolute time
+//! \return ::EasyLink_Status
 //
 //*****************************************************************************
-extern uint32_t EasyLink_getAbsTime(void);
+extern EasyLink_Status EasyLink_getAbsTime(uint32_t *pui32AbsTime);
+
+//*****************************************************************************
+//
+//! \brief Gets the RSSI value of an ongoing Radio Operation
+//!
+//! This function returns the RSSI from an ongoing receiver radio operation.
+//! It is useful in receiver test modes to detect the presence of both
+//! modulated and unmodulated carrier waves
+//!
+//! \param pi8Rssi     Pointer to return the signed RSSI value (dBm)
+//!
+//! \return ::EasyLink_Status
+//!
+//! \note if no RSSI is available the function writes -128 to the value
+//! argument
+//
+//*****************************************************************************
+extern EasyLink_Status EasyLink_getRssi(int8_t *pi8Rssi);
 
 //*****************************************************************************
 //
@@ -306,8 +413,7 @@ extern EasyLink_Status EasyLink_transmit(EasyLink_TxPacket *txPacket);
 //!
 //! This function is a non blocking call to send a packet. If the Tx is
 //! successfully scheduled then the callback will be call once the Tx is
-//! complete. The Tx will timeout if ::EasyLink_Ctrl_AsyncTx_TimeOut
-//! ctrl message is used to set the timeout to something other than 0.
+//! complete.
 //!
 //! \param txPacket The descriptor for the packet to be Tx'ed.
 //! \param cb       The tx done function pointer.
@@ -317,6 +423,30 @@ extern EasyLink_Status EasyLink_transmit(EasyLink_TxPacket *txPacket);
 //*****************************************************************************
 extern EasyLink_Status EasyLink_transmitAsync(EasyLink_TxPacket *txPacket,
         EasyLink_TxDoneCb cb);
+
+#if (defined(DeviceFamily_CC13X0) || defined(DeviceFamily_CC13X2))
+//*****************************************************************************
+//
+//! \brief Sends a Packet with non blocking call if the channel is idle.
+//!
+//! This function is a non blocking call to send a packet. It will check for a
+//! clear channel prior to transmission. If the channel is busy it will backoff
+//! for a random period, in time units of EASYLINK_CCA_BACKOFF_TIMEUNITS, before
+//! reassessing. It does this a certain number
+//! (EASYLINK_MAX_CCA_BACKOFF_WINDOW - EASYLINK_MIN_CCA_BACKOFF_WINDOW)
+//! of times before quitting unsuccessfully and running to the callback.
+//! If the Tx is successfully scheduled then the callback will be called once
+//! the Tx is complete.
+//!
+//! \param txPacket The descriptor for the packet to be Tx'ed.
+//! \param cb       The tx done function pointer.
+//!
+//! \return ::EasyLink_Status
+//
+//*****************************************************************************
+extern EasyLink_Status EasyLink_transmitCcaAsync(EasyLink_TxPacket *txPacket,
+        EasyLink_TxDoneCb cb);
+#endif // (defined(DeviceFamily_CC13X0) || defined(DeviceFamily_CC13X2))
 
 //*****************************************************************************
 //
@@ -368,12 +498,12 @@ extern EasyLink_Status EasyLink_abort(void);
 //! This function set the radio to the specified frequency. Note that this will
 //! be rounded to the nearest frequency supported by the Frequency Synthesizer.
 //!
-//! \param ui16Freq Frequency in units of kHz
+//! \param ui32Frequency Frequency in units of kHz
 //!
 //! \return ::EasyLink_Status
 //
 //*****************************************************************************
-extern EasyLink_Status EasyLink_setFrequency(uint32_t ui16Freq);
+extern EasyLink_Status EasyLink_setFrequency(uint32_t ui32Frequency);
 
 //*****************************************************************************
 //
@@ -428,15 +558,15 @@ extern EasyLink_Status EasyLink_getIeeeAddr(uint8_t *ieeeAddr);
 //! \brief Sets the TX Power
 //!
 //! This function sets the Tx Power
-//!
-//! \param i8Power the tx power in dBm's to be set. integers of -10 and between
-//!        0-14 dBm are accepted. Values above 14 are rounded to 14 and below 0
-//!        are rounded to -10
+//!f
+//! \param i8TxPowerdBm  The Tx power in dBm's to be set. integers of -10 and
+//!        between 0-14 dBm are accepted. Values above 14 are rounded to 14
+//!        and below 0 are rounded to -10
 //!
 //! \return ::EasyLink_Status
 //
 //*****************************************************************************
-extern EasyLink_Status EasyLink_setRfPwr(int8_t i8Power);
+extern EasyLink_Status EasyLink_setRfPower(int8_t i8TxPowerdBm);
 
 //*****************************************************************************
 //
@@ -445,10 +575,12 @@ extern EasyLink_Status EasyLink_setRfPwr(int8_t i8Power);
 //! This function gets the Tx Power in dBm, values ranging from -10 to 14 dBm
 //! should be expect
 //!
-//! \return power in dBm
+//! \param pi8TxPowerdBm  Pointer to return the transmission power value (dBm)
+//!
+//! \return ::EasyLink_Status
 //
 //*****************************************************************************
-extern int8_t EasyLink_getRfPwr(void);
+extern EasyLink_Status EasyLink_getRfPower(int8_t *pi8TxPowerdBm);
 
 //*****************************************************************************
 //

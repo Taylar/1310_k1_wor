@@ -142,9 +142,11 @@ uint32_t pOverrides_fsk[] =
     // override_phy_rx_rssi_offset_5db.xml
     // Rx: Set RSSI offset to adjust reported RSSI by +5 dB
     (uint32_t)0x00FB88A3,
+#if (CCFG_FORCE_VDDR_HH)
     // TX power override
     // Tx: Set PA trim to max (in ADI0, set PACTL0=0xF8)
     ADI_REG_OVERRIDE(0,12,0xF8),
+#endif
     (uint32_t)0xFFFFFFFF,
 };
 
@@ -200,9 +202,11 @@ uint32_t pOverrides_lrm[] =
     // override_phy_rx_rssi_offset_5db.xml
     // Rx: Set RSSI offset to adjust reported RSSI by +5 dB
     (uint32_t)0x00FB88A3,
+#if (CCFG_FORCE_VDDR_HH)
     // TX power override
     // Tx: Set PA trim to max (in ADI0, set PACTL0=0xF8)
     ADI_REG_OVERRIDE(0,12,0xF8),
+#endif
     (uint32_t)0xFFFFFFFF,
 };
 
@@ -355,9 +359,11 @@ uint32_t pOverrides_sl_lr[] =
     // override_phy_rx_rssi_offset_5db.xml
     // Rx: Set RSSI offset to adjust reported RSSI by +5 dB
     (uint32_t)0x00FB88A3,
+#if (CCFG_FORCE_VDDR_HH)
     // TX power override
     // Tx: Set PA trim to max (in ADI0, set PACTL0=0xF8)
     ADI_REG_OVERRIDE(0,12,0xF8),
+#endif
     (uint32_t)0xFFFFFFFF,
 };
 
