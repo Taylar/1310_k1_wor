@@ -164,10 +164,10 @@ extern "C"
 #define EASYLINK_MAX_DATA_LENGTH            128
 
 //! \brief defines the Tx/Rx Max Address Size
-#define EASYLINK_MAX_ADDR_SIZE              8
+#define EASYLINK_MAX_ADDR_SIZE              4
 
 //! \brief defines the Max number of Rx Address filters
-#define EASYLINK_MAX_ADDR_FILTERS           3
+#define EASYLINK_MAX_ADDR_FILTERS           2
 
 #if (defined(DeviceFamily_CC13X0) || defined(DeviceFamily_CC13X2))
 //! \brief Minimum CCA back-off window in units of
