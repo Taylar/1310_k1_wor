@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-12 10:50:20
+* @Last Modified time: 2018-03-13 10:36:18
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -159,9 +159,15 @@ void RadioAppTaskFxn(void)
 
 #endif
 
-    if(EasyLink_init(RADIO_EASYLINK_MODULATION) != EasyLink_Status_Success) {
+    EasyLink_Params easyLink_params;
+    EasyLink_Params_init(&easyLink_params);
+    
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    
+    if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
-    }
+    }   
+
 
     //EasyLink_setFrequency(433000000);
 
