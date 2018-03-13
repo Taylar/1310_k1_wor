@@ -1457,8 +1457,10 @@ static void Gsm_init(Nwk_Params *params)
     rGsmObject.resetCnt = 0;
     rGsmObject.state = GSM_STATE_POWEROFF;
 
+    Event_Params eventParam;
+    Event_Params_init(&eventParam);
     /* Construct key process Event */
-    Event_construct(&gsmEvtStruct, NULL);
+    Event_construct(&gsmEvtStruct, &eventParam);
     /* Obtain event instance handle */
     gsmEvtHandle = Event_handle(&gsmEvtStruct);
 

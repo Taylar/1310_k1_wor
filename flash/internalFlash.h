@@ -10,13 +10,13 @@
 /***** Defines *****/
 // g_rSysConfigInfo
 #define 	CONFIG_VALID_FLAG					"valid config"
-#define 	CONFIG_FLAG_INTERNAL_ADDR			(0x1d000)  // start 116k position
-#define 	CONFIG_DATA_INTERNAL_ADDR			(0x1d000 + 0x20)  // 
+#define 	CONFIG_FLAG_INTERNAL_ADDR			(0x1e000)  // start 116k position
+#define 	CONFIG_DATA_INTERNAL_ADDR			(0x1e000 + 0x20)  // 
 
 
 
 //External flash sensor data pointer store position
-#define NODE_ADDR_INT_FLASH_POS            			(0X1e000)            // base start 120K position
+#define NODE_ADDR_INT_FLASH_POS            			(0X1f000)            // base start 120K position
 //External flash sensor data pointer size
 #define NODE_ADDR_INT_FLASH_SIZE                    8
 //External flash sensor data pointer number

@@ -640,8 +640,10 @@ void Nwk_task_create(void)
     taskParams.priority = 1;
     Task_construct(&nwkTaskStruct, (Task_FuncPtr)Nwk_taskFxn, &taskParams, &eb);
 
+    Event_Params eventParam;
+    Event_Params_init(&eventParam);
     /* Construct key process Event */
-    Event_construct(&nwkEvtStruct, NULL);
+    Event_construct(&nwkEvtStruct, &eventParam);
     /* Obtain event instance handle */
     nwkEvtHandle = Event_handle(&nwkEvtStruct);
 }

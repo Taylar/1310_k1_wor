@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-09 14:54:24
+* @Last Modified time: 2018-03-13 16:05:40
 */
 #include "../general.h"
 #include "../radio_app/radio_app.h"
@@ -188,8 +188,10 @@ void InterfaceTaskFxn(void)
 {
     uint32_t    eventId;
 
+    Event_Params eventParam;
+    Event_Params_init(&eventParam);
     /* Construct system process Event */
-    Event_construct(&interfaceEvtStruct, NULL);
+    Event_construct(&interfaceEvtStruct, &eventParam);
     /* Obtain event instance handle */
     interfaceEvtHandle = Event_handle(&interfaceEvtStruct);
 

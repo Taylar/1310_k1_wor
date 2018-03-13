@@ -107,8 +107,11 @@ void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
     // uint32_t	voltageTemp;
+
+    Event_Params eventParam;
+    Event_Params_init(&eventParam);
 	/* Construct system process Event */
-	Event_construct(&systemAppEvtStruct, NULL);
+	Event_construct(&systemAppEvtStruct, &eventParam);
 	/* Obtain event instance handle */
 	systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
 
