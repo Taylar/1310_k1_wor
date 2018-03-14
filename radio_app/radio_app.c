@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-13 10:36:18
+* @Last Modified time: 2018-03-14 18:21:27
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -194,7 +194,14 @@ void RadioAppTaskFxn(void)
         {
             System_abort("EasyLink_enableRxAddrFilter failed");
         }
+            if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success) 
+            {
+                System_abort("EasyLink_receiveAsync failed");
+            }
     }
+
+
+    
     
 
 #ifdef FACTOR_RADIO_TEST

@@ -261,6 +261,7 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef BOARD_S1_2
+			S1AppRtcProcess();
 			NodeRtcProcess();
 #endif
 			// Led_toggle(LED_R);

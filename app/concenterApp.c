@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-12 15:15:40
+* @Last Modified time: 2018-03-14 16:32:20
 */
 #include "../general.h"
 
@@ -35,7 +35,6 @@ typedef struct
     
     uint8_t  monitorCnt;
     
-    bool  configFlag;    // 0: unload the config; 1: has load the config
     bool  synTimeFlag;    // 0: unsyntime; 1: synchron time
     bool  collectStart;    // 0: stop collect data; 1: start collect data
     bool  radioReceive;    // 0: stop receive radio; 1: continue receive radio
@@ -82,8 +81,6 @@ void ConcenterAppInit(void)
     concenterParameter.collectStart     = false;
     concenterParameter.radioReceive    = false;
 
-    concenterParameter.configFlag     = InternalFlashLoadConfig();
-
     InternalFlashInit();
 
     ExtflashRingQueueInit(&extflashWriteQ);
@@ -100,7 +97,7 @@ void ConcenterAppInit(void)
 
 #endif
 
-    ConcenterSleep();
+    // ConcenterSleep();
 }
 
 
@@ -243,17 +240,14 @@ void ConcenterUploadEventSet(void)
 //***********************************************************************************
 void ConcenterSleep(void)
 {
-    if(concenterParameter.configFlag)
-    {
-        concenterParameter.radioReceive = false;
-        Nwk_poweroff();
-        EasyLink_abort();
-        RadioFrontDisable();
-        ConcenterCollectStop();
-        // wait the nwk disable the uart
-        while(Nwk_get_state())
-            Task_sleep(100 * CLOCK_UNIT_MS);
-    }
+    concenterParameter.radioReceive = false;
+    Nwk_poweroff();
+    EasyLink_abort();
+    RadioFrontDisable();
+    ConcenterCollectStop();
+    // wait the nwk disable the uart
+    while(Nwk_get_state())
+        Task_sleep(100 * CLOCK_UNIT_MS);
 #ifdef BOARD_S2_2
 
     InterfaceEnable();
@@ -273,21 +267,21 @@ void ConcenterWakeup(void)
 #ifdef BOARD_S2_2
     InterfaceDisable();
 #endif
-    if(concenterParameter.configFlag)
-    {
-        concenterParameter.radioReceive = true;
-        RadioFrontRxEnable();
-
+    concenterParameter.radioReceive = true;
 #ifdef BOARD_S6_6
-        if(GetUsbState() == USB_UNLINK_STATE)
+    if(GetUsbState() == USB_UNLINK_STATE)
 #endif
-        {
-            Nwk_poweron();
-        }
-        RadioFrontRxEnable();
-        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-        RadioModeSet(RADIOMODE_RECEIVEPORT);
+    {
+        Nwk_poweron();
     }
+    RadioFrontRxEnable();
+    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+    RadioModeSet(RADIOMODE_RECEIVEPORT);
+
+
+// for test
+    Calendar currentTime = {0,0,10,3,14,3,2018};
+    ConcenterTimeSychronization(&currentTime);
 }
 
 
@@ -416,7 +410,6 @@ uint32_t ConcenterReadChannel(uint32_t nodeAddr)
 void ConcenterStoreConfig(void)
 {
     InternalFlashStoreConfig();
-    concenterParameter.configFlag   = 1;
 }
 
 //***********************************************************************************
@@ -591,14 +584,12 @@ void ConcenterRtcProcess(void)
         concenterParameter.monitorCnt++;
         if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
         {
-            if(concenterParameter.configFlag)
-            {
-                EasyLink_abort();
-                RadioFrontDisable();
-                RadioFrontRxEnable();
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-                RadioModeSet(RADIOMODE_RECEIVEPORT);
-            }
+            ConcenterRadioMonitorClear();
+            EasyLink_abort();
+            RadioFrontDisable();
+            RadioFrontRxEnable();
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            RadioModeSet(RADIOMODE_RECEIVEPORT);
         }
     }
 
@@ -611,7 +602,6 @@ void ConcenterRtcProcess(void)
         {
             concenterParameter.collectTimeCnt = 0;
             ConcenterCollectProcess();
-            ConcenterUploadEventSet();
         }
     }
 

@@ -86,13 +86,14 @@ int main(void)
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     Nwk_task_create();
     InterfaceTaskCreate();
-#endif 
+
 
     /* Initialize radio tasks */
     if(g_rSysConfigInfo.module & MODULE_RADIO)
     {
         RadioAppTaskCreate();
     }
+#endif
 
 #if (defined BOARD_S1_2) || (defined BOARD_CONFIG_DECEIVE)
 

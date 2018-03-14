@@ -216,8 +216,10 @@ void InternalFlashConfigReset(void)
 
 #ifdef		BOARD_S1_2
 
+	g_rSysConfigInfo.module          = MODULE_RADIO;
 	g_rSysConfigInfo.batLowVol       = 2500;
 	g_rSysConfigInfo.apnuserpwd[0]   = 0;
+	g_rSysConfigInfo.rfStatus 		 = 0;
 #endif
 
 /*

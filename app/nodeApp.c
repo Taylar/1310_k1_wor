@@ -60,8 +60,6 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.uploadStart    = false;
     nodeParameter.collectStart   = false;
     nodeParameter.synTimeFlag    = false;
-    nodeParameter.configFlag     = InternalFlashLoadConfig();
-    nodeParameter.configFlag     = true;
     
     offsetUnit                   = 0;
 
@@ -462,14 +460,11 @@ void NodeWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
     NodeStrategyReset();
-    if(nodeParameter.configFlag)
+    NodeStartBroadcast();
+    NodeBroadcasting();
+    if(nodeParameter.synTimeFlag)
     {
-        NodeStartBroadcast();
-        NodeBroadcasting();
-        if(nodeParameter.synTimeFlag)
-        {
-            NodeCollectStart();
-        }
+        NodeCollectStart();
     }
 }
 
