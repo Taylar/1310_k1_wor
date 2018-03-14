@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-09 16:45:39
+* @Last Modified time: 2018-03-14 19:00:03
 */
 #include "../general.h"
 
@@ -493,7 +493,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 				}
 			}
 ConcenterConfigRespondEnd:
+#ifdef BOARD_CONFIG_DECEIVE
 			UsbSend(AC_Send_Config);
+#endif
 			break;
 
 
