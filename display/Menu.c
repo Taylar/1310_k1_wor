@@ -92,8 +92,9 @@ void Menu_power_off(void)
 
 void Menu_restart(void)
 {    
-    ConcenterSleep();
-    SysCtrlSystemReset();
+    // ConcenterSleep();
+    while(1)
+        SdysCtrlSystemReset();
    // Menu_exit();
 }
 

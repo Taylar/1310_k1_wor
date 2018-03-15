@@ -80,9 +80,7 @@ void WdtResetCb(uintptr_t handle)
 
 void RtcEventSet(void)
 {
-#ifdef		SUPPORT_WATCHDOG
-	WdtClear();
-#endif	
+
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RTC);
 }
 
@@ -250,6 +248,10 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
+#ifdef		SUPPORT_WATCHDOG
+			WdtClear();
+#endif	
+
 
 #ifdef BOARD_S2_2
 			ConcenterRtcProcess();

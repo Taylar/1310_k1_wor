@@ -129,7 +129,7 @@
 
 
 //wdt WatchDog define
-// #define SUPPORT_WATCHDOG
+#define SUPPORT_WATCHDOG
 
 
 #define SUPPORT_SENSOR
