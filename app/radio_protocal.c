@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-14 20:04:50
+* @Last Modified time: 2018-03-15 14:14:47
 */
 #include "../general.h"
 
@@ -164,7 +164,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					g_rSysConfigInfo.DeviceId[2] = bufTemp->load[baseAddr+3];
     				g_rSysConfigInfo.DeviceId[3] = bufTemp->load[baseAddr+4];
 
-    				SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
+    				SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+				                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+				                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+				                     g_rSysConfigInfo.DeviceId[3]);
 
 					lenTemp -= 5;
 					break;

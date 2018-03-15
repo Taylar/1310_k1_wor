@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-15 09:43:24
+* @Last Modified time: 2018-03-15 14:13:46
 */
 #include "../general.h"
 
@@ -92,8 +92,11 @@ void ConcenterAppInit(void)
 
 #else
 
-    SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
-    SetRadioSubSrcAddr(0xffff0000 | *((uint16_t*)(g_rSysConfigInfo.customId)));
+    SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+                     g_rSysConfigInfo.DeviceId[3]);
+    SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
 
 #endif
 

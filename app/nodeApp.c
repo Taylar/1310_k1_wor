@@ -64,9 +64,12 @@ void NodeAppInit(void (*Cb)(void))
     offsetUnit                   = 0;
 
 
-    nodeParameter.customId       = 0xffff0000 | *((uint16_t*)(g_rSysConfigInfo.customId));
+    nodeParameter.customId       = 0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1];
     
-    SetRadioSrcAddr(*((uint32_t*)(g_rSysConfigInfo.DeviceId)));
+    SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+                     g_rSysConfigInfo.DeviceId[3]);
     SetRadioDstAddr(nodeParameter.customId);
 
     NodeStrategyInit(Cb, NodeStrategyTimeoutProcess);
