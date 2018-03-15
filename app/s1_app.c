@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-12 10:27:13
+* @Last Modified time: 2018-03-15 10:27:00
 */
 #include "../general.h"
 
@@ -79,11 +79,11 @@ void S1ShortKeyApp(void)
         NodeRadioSendConfig();
 
 
-        Led_ctrl(LED_B, 0, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_R, 0, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
 }
@@ -100,12 +100,12 @@ void S1LongKeyApp(void)
         case DEVICES_ON_MODE:
         case DEVICES_CONFIG_MODE:
         NodeSleep();
-        Led_ctrl(LED_R, 0, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         SysCtrlSystemReset();
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 0, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         NodeWakeup();
         break;
     }
