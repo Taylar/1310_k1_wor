@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-14 16:32:20
+* @Last Modified time: 2018-03-15 09:43:24
 */
 #include "../general.h"
 
@@ -280,8 +280,8 @@ void ConcenterWakeup(void)
 
 
 // for test
-    Calendar currentTime = {0,0,10,3,14,3,2018};
-    ConcenterTimeSychronization(&currentTime);
+    // Calendar currentTime = {0,0,10,3,14,3,2018};
+    // ConcenterTimeSychronization(&currentTime);
 }
 
 
