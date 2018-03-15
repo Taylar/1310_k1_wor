@@ -94,7 +94,7 @@ void Menu_restart(void)
 {    
     // ConcenterSleep();
     while(1)
-        SdysCtrlSystemReset();
+        SysCtrlSystemReset();
    // Menu_exit();
 }
 
