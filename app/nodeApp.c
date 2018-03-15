@@ -593,6 +593,7 @@ void NodeStrategyTimeoutProcess(void)
 {
     NodeUploadStop();
     ClearRadioSendBuf();
+    NodeUploadFailProcess();
     NodeStartBroadcast();
     NodeStrategyBusySet(true);
     NodeBroadcasting();
