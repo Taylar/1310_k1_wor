@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-15 14:13:46
+* @Last Modified time: 2018-03-16 14:03:45
 */
 #include "../general.h"
 
@@ -91,6 +91,16 @@ void ConcenterAppInit(void)
     SetRadioSubSrcAddr(CONFIG_DECEIVE_ID_DEFAULT);
 
 #else
+
+// *******************************for test*************************
+    // g_rSysConfigInfo.DeviceId[0] = (uint8_t)((DECEIVE_ID_DEFAULT>>24)&0xff);
+    // g_rSysConfigInfo.DeviceId[1] = (uint8_t)((DECEIVE_ID_DEFAULT>>16)&0xff);
+    // g_rSysConfigInfo.DeviceId[2] = (uint8_t)((DECEIVE_ID_DEFAULT>>8)&0xff);
+    // g_rSysConfigInfo.DeviceId[3] = (uint8_t)((DECEIVE_ID_DEFAULT)&0xff);;
+
+    // g_rSysConfigInfo.customId[0] = (uint8_t)(CUSTOM_ID_DEFAULT >> 8);
+    // g_rSysConfigInfo.customId[1] = (uint8_t)(CUSTOM_ID_DEFAULT);
+// *******************************
 
     SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
