@@ -697,9 +697,9 @@ void Nwk_poweron(void)
     if (!(g_rSysConfigInfo.module & MODULE_NWK))
         return;
 
-//    if (g_rSysConfigInfo.status & STATUS_GSM_TEST)
-//        Nwk_event_post(NWK_EVT_POWERON | NWK_EVT_TEST);
-//    else
+   if (g_rSysConfigInfo.status & STATUS_GSM_TEST)
+       Nwk_event_post(NWK_EVT_POWERON | NWK_EVT_TEST);
+   else
         Nwk_event_post(NWK_EVT_POWERON | NWK_EVT_DATA_UPLOAD);
 }
 

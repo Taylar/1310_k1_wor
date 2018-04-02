@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-11 10:34:13
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-26 10:41:14
+* @Last Modified time: 2018-03-31 16:21:34
 */
 #include "../general.h"
 
@@ -36,8 +36,13 @@ void ExtflashRingQueueInit(extflash_queue_s * p_queue)
 //***********************************************************************************
 bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
 {  
+    UInt key;
+    
+    key = Hwi_disable();
+
     if(ExtflashRingQueueIsFull(p_queue))
     {  
+        Hwi_restore(key);
         return false;  
     }  
         
@@ -50,6 +55,7 @@ bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
     {  
        p_queue->tag = 1;  
     }
+    Hwi_restore(key);
 
     return true;
 }  
@@ -64,11 +70,16 @@ bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
 //***********************************************************************************
 bool ExtflashRingQueuePoll(extflash_queue_s * p_queue, uint8_t * data)
 {  
+    UInt key;
+
+    key = Hwi_disable();
     if(ExtflashRingQueueIsEmpty(p_queue))  
     {  
+        Hwi_restore(key);
         return false;
     }  
     
+
     memcpy(data, p_queue->space[p_queue->head], SENSOR_DATA_LENGTH_MAX);
 
     p_queue->head = (p_queue->head + 1) % p_queue->size ;  
@@ -78,6 +89,9 @@ bool ExtflashRingQueuePoll(extflash_queue_s * p_queue, uint8_t * data)
     {  
         p_queue->tag = 0;  
     }
+    
+    Hwi_restore(key);
+
     return true;
 }  
 

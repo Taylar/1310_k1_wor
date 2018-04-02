@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-09 17:13:01
+* @Last Modified time: 2018-03-31 16:06:50
 */
 #include "../general.h"
 
@@ -156,6 +156,7 @@ void S6ShortKey1App(void)
         break;
 
         case DEVICES_OFF_MODE:
+        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_MENU_MODE:
