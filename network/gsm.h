@@ -57,6 +57,9 @@
 //Get Local IP Address
 #define ATCMD_GET_LOCAL_IP          "AT+QILOCIP\r\n"
 
+//Set connect by domian or ip
+#define ATCMD_SET_DOMAINORIP        "AT+QIDNSIP=%d\r\n"
+
 //Start Up TCP or UDP Connection
 #define ATCMD_START_CONNECT         "AT+QIOPEN=\"TCP\","
 
@@ -85,6 +88,17 @@
 //Phone auto answer function, use to test antenna.
 #define ATCMD_AUTO_ANSWER           "ATS0=1\r\n"
 
+//Set engineering mode
+#ifdef SUPPOERT_LBS_NEARBY_CELL
+#define ATCMD_ENG_MODE_ON           "AT+QENG=1,1\r\n"
+#else
+#define ATCMD_ENG_MODE_ON           "AT+QENG=1,0\r\n"
+#endif
+#define ATCMD_ENG_MODE_OFF          "AT+QENG=0\r\n"
+#define ATCMD_ENG_MODE_QUERY        "AT+QENG?\r\n"
+
+//Get IMEI
+#define ATCMD_IMEI_QUERY            "AT+GSN\r\n"
 
 typedef enum {
     AT_CMD_NULL = 0,
@@ -101,6 +115,8 @@ typedef enum {
     AT_CMD_ACK_QUERY,
     AT_CMD_CLOSE_CONNECT,
     AT_CMD_GET_LOCATION,
+    AT_CMD_ENG_MODE_QUERY,
+    AT_CMD_IMEI_QUERY,
     AT_CMD_MAX
 } GSM_AT_CMD_TYPE;
 
@@ -135,6 +151,8 @@ typedef enum {
     GSM_ERR_SLEEP_MODE,     //TCP sleep cmd respond error, need reset
     GSM_ERR_WAKEUP_MODE,    //TCP wakeup cmd respond error, need reset
     GSM_ERR_GET_LBS,        //TCP get lbs information error
+    GSM_ERR_GET_NEARBY_LOCATION,
+    GSM_ERR_SET_NEARBY_LOCATION_OFF,
     GSM_ERR_AUTO_ANSWER,    //Phone auto answer error
     GSM_ERR_MAX
 } GSM_ERR_STATE;
@@ -155,7 +173,6 @@ typedef enum {
 #define GSM_EVT_CMD_ERROR           Event_Id_02
 #define GSM_EVT_ALL                 0xffff
 
-
 typedef struct {
     GSM_ERR_STATE error;
 //AT cmd type
@@ -174,10 +191,14 @@ typedef struct {
 	uint8_t uploadFailCnt;
 //GSM RSSI
 	uint8_t rssi;
-//LBS longitude
-    float longitude;
-//LBS latitude
-    float latitude;
+#ifdef SUPPORT_LBS
+//LBS location
+    NwkLocation_t location;
+#endif
+#ifdef SUPPORT_IMEI
+//IMEI
+	uint8_t imei[15];
+#endif
 //Sim card ccid
 	uint8_t simCcid[20];
 

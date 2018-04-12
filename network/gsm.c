@@ -37,6 +37,7 @@ static uint8_t Gsm_close(void);
 static uint8_t Gsm_control(uint8_t cmd, void *arg);
 static void Gsm_error_indicate(void);
 static void Gsm_hwiIntCallback(uint8_t *dataP, uint8_t len);
+static void GsmRxToutCb(UArg arg0);
 const Nwk_FxnTable Gsm_FxnTable = {
     Gsm_init,
     Gsm_open,
@@ -59,8 +60,8 @@ static PIN_Handle  gsmPinHandle;
 
 Clock_Struct gsmTimeOutClock;     /* not static so you can see in ROV */
 Clock_Handle gsmTimeOutClockHandle;
-
-
+uint8_t gsmBusyFlag = 0;
+uint16_t gsmRxLength;
 //***********************************************************************************
 //
 // Gsm module io init.
@@ -78,6 +79,7 @@ static void Gsm_io_init(void)
 //***********************************************************************************
 static void AT_send_data(uint8_t *pData, uint16_t length)
 {
+    UInt key;
     Uart_send_burst_data(UART_0, pData, length);
 }
 
@@ -88,6 +90,16 @@ static void AT_send_data(uint8_t *pData, uint16_t length)
 //***********************************************************************************
 static void AT_send_cmd(uint8_t *string)
 {
+    UInt key;
+
+    while(gsmBusyFlag)
+    {
+        Task_sleep(5 * CLOCK_UNIT_MS);
+    }
+    /* Disable preemption. */
+    key = Hwi_disable();
+    g_rUart1RxData.length = 0;
+    Hwi_restore(key);
     Uart_send_string(UART_0, string);
 }
 
@@ -281,15 +293,44 @@ static void AT_get_local_ip(void)
 // Send ATCMD_START_CONNECT.
 //
 //***********************************************************************************
+static void AT_set_connect_domain(void)
+{
+    uint8_t buff[20];
+    
+    if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//ÈçöÂ∂á–ûÊµºÊ®∫Âéõ
+        sprintf((char *)buff, ATCMD_SET_DOMAINORIP, 1);
+    }
+    else{
+        sprintf((char *)buff, ATCMD_SET_DOMAINORIP, 0);
+    }
+
+    rGsmObject.cmdType = AT_CMD_COMMON;
+    
+    AT_send_cmd(buff);
+}
+
+
+//***********************************************************************************
+//
+// Send ATCMD_START_CONNECT.
+//
+//***********************************************************************************
 static void AT_start_connect(void)
 {
-    uint8_t buff[48], index, length;
+    uint8_t buff[64+20], index, length;
 
     strcpy((char *)buff, ATCMD_START_CONNECT);
     index = sizeof(ATCMD_START_CONNECT) - 1;
-    length = sprintf((char *)(buff + index), "\"%d.%d.%d.%d\",\"%d\"\r\n", g_rSysConfigInfo.serverIpAddr[0],
+    
+    if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//ÈçöÂ∂á–ûÊµºÊ®∫Âéõ
+        length = sprintf((char *)(buff + index), "\"%s\",\"%d\"\r\n", g_rSysConfigInfo.serverAddr, g_rSysConfigInfo.serverIpPort);
+    
+    }
+    else{
+        length = sprintf((char *)(buff + index), "\"%d.%d.%d.%d\",\"%d\"\r\n", g_rSysConfigInfo.serverIpAddr[0],
                             g_rSysConfigInfo.serverIpAddr[1], g_rSysConfigInfo.serverIpAddr[2],
                             g_rSysConfigInfo.serverIpAddr[3], g_rSysConfigInfo.serverIpPort);
+    }
     index += length;
     buff[index] = '\0';
     rGsmObject.cmdType = AT_CMD_CONNECT;
@@ -384,6 +425,7 @@ static void AT_set_receive_head(void)
     AT_send_cmd(ATCMD_SET_RECEIVE_HEAD);
 }
 
+#ifdef USE_QUECTEL_API_FOR_LBS
 //***********************************************************************************
 //
 // Send ATCMD_GET_LOCATION.
@@ -394,6 +436,7 @@ static void AT_lbs_get_location(void)
     rGsmObject.cmdType = AT_CMD_GET_LOCATION;
     AT_send_cmd(ATCMD_GET_LOCATION);
 }
+#endif
 
 //***********************************************************************************
 //
@@ -406,6 +449,47 @@ static void AT_auto_answer(void)
     AT_send_cmd(ATCMD_AUTO_ANSWER);
 }
 
+#ifdef USE_ENGINEERING_MODE_FOR_LBS
+//***********************************************************************************
+//
+// Set engineering mode cmd.
+//
+//***********************************************************************************
+static void AT_set_eng_mode(uint8_t on)
+{
+    rGsmObject.cmdType = AT_CMD_COMMON;
+    if (on) {
+        AT_send_cmd(ATCMD_ENG_MODE_ON);
+    } else {
+        AT_send_cmd(ATCMD_ENG_MODE_OFF);
+    }
+}
+
+//***********************************************************************************
+//
+// Send ATCMD_ENG_MODE_QUERY.
+//
+//***********************************************************************************
+static void AT_eng_mode_query(void)
+{
+    rGsmObject.cmdType = AT_CMD_ENG_MODE_QUERY;
+    AT_send_cmd(ATCMD_ENG_MODE_QUERY);
+}
+#endif
+
+#ifdef SUPPORT_IMEI
+//***********************************************************************************
+//
+// Send ATCMD_IMEI_QUERY.
+//
+//***********************************************************************************
+static void AT_imei_query(void)
+{
+    rGsmObject.cmdType = AT_CMD_IMEI_QUERY;
+    AT_send_cmd(ATCMD_IMEI_QUERY);
+}
+#endif
+
 //***********************************************************************************
 //
 // Gsm module wait cmd ack.
@@ -414,10 +498,19 @@ static void AT_auto_answer(void)
 static UInt Gsm_wait_ack(uint32_t timeout)
 {
     UInt eventId;
+    UInt key;
 
     eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN | GSM_EVT_CMD_OK | GSM_EVT_CMD_ERROR, timeout * CLOCK_UNIT_MS);
 
+    while(gsmBusyFlag)
+    {
+        Task_sleep(5 * CLOCK_UNIT_MS);
+    }
     rGsmObject.cmdType = AT_CMD_NULL;
+
+    key = Hwi_disable();
+    g_rUart1RxData.length = 0;
+    Hwi_restore(key);
 
     return eventId;
 }
@@ -566,6 +659,28 @@ static GSM_RESULT Gsm_module_config(void)
         return RESULT_RESET;
     }
 
+#ifdef USE_ENGINEERING_MODE_FOR_LBS
+    //uart Open engineering mode for lbs
+    for (i = 5; i > 0; i--) {
+        AT_set_eng_mode(1);
+        eventId = Gsm_wait_ack(500);
+        if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
+            break;
+    }
+    if (eventId & GSM_EVT_SHUTDOWN) {
+        return RESULT_SHUTDOWN;
+    }
+#endif
+
+#ifdef SUPPORT_IMEI
+    //get IMEI
+    AT_imei_query();
+    eventId = Gsm_wait_ack(500);
+    if (eventId & GSM_EVT_SHUTDOWN) {
+        return RESULT_SHUTDOWN;
+    }
+#endif
+
     return RESULT_OK;
 }
 
@@ -658,7 +773,7 @@ static GSM_RESULT Gsm_active_PDP(void)
 
     rGsmObject.error = GSM_NO_ERR;
 
-    //…Ë÷√Ω”»Îµ„ APN°¢”√ªß√˚∫Õ√‹¬Î
+    //ÁíÅÂâßÁñÜÈé∫„É•ÂèÜÈêêÔøΩ APNÈäÜ‰Ω∫Êï§Èé¥Â≥∞ÊÇïÈçúÂ±ΩÁòëÈêÆÔøΩ
     if (g_rSysConfigInfo.apnuserpwd[0]){
         AT_set_apn();
         eventId = Gsm_wait_ack(500);
@@ -667,14 +782,14 @@ static GSM_RESULT Gsm_active_PDP(void)
         }
     }
     
-    //∆Ù∂Ø»ŒŒÒ
+    //ÈçöÓàöÂß©Êµ†ËØ≤Âßü
     AT_start_task();
     eventId = Gsm_wait_ack(500);
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
     }
 
-    //º§ªÓ“∆∂Ø≥°æ∞£®ªÚ∑¢∆ GPRS/CSD Œﬁœﬂ¡¨Ω”£©
+    //Â©µÔøΩÂ®≤Ëç§–©Èçî„Ñ•Ê∫ÄÈèÖÓà§Á¥ôÈé¥Ê†ßÂΩÇÁíßÔøΩ GPRS/CSD ÈèÉÁäµÂöéÊù©ÁÇ¥Â∏¥ÈîõÔøΩ
     AT_active_ms();
     eventId = Gsm_wait_ack(150000);
     if (eventId & GSM_EVT_SHUTDOWN) {
@@ -684,7 +799,7 @@ static GSM_RESULT Gsm_active_PDP(void)
         rGsmObject.error = GSM_ERR_ACT;
         return RESULT_RESET;
     } else if (eventId & GSM_EVT_CMD_ERROR) {
-        //»•º§ªÓ≥°æ∞
+        //ÈçòÁªòÁ∏∫Â®≤ËØ≤Ê∫ÄÈèÖÔøΩ
         AT_deactive_ms();
         eventId = Gsm_wait_ack(90000);
         if (eventId & GSM_EVT_SHUTDOWN) {
@@ -717,8 +832,14 @@ static GSM_RESULT Gsm_tcp_connect(void)
 
     rGsmObject.error = GSM_NO_ERR;
 
-    //Ω®¡¢ TCP ¡¨Ω”ªÚ◊¢≤· UDP ∂Àø⁄∫≈
+    //ÂØ§ËôπÁèõ TCP Êù©ÁÇ¥Â∏¥Èé¥Ê†®ÊïûÈçêÔøΩ UDP ÁªîÓàöÂΩõÈçôÔøΩ
     for (i = 5; i > 0; i--) {
+        
+        AT_set_connect_domain();
+        eventId = Gsm_wait_ack(500);
+        if (!(eventId & GSM_EVT_CMD_OK))
+            continue;            
+        
         AT_start_connect();
         eventId = Gsm_wait_ack(90000);
         if (!(eventId & GSM_EVT_CMD_ERROR))
@@ -727,7 +848,7 @@ static GSM_RESULT Gsm_tcp_connect(void)
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
     } else if (i == 0 || eventId == 0) {
-        //»•º§ªÓ≥°æ∞
+        //ÈçòÁªòÁ∏∫Â®≤ËØ≤Ê∫ÄÈèÖÔøΩ
         AT_deactive_ms();
         eventId = Gsm_wait_ack(90000);
         if (eventId & GSM_EVT_SHUTDOWN) {
@@ -756,7 +877,7 @@ static GSM_RESULT Gsm_tcp_connect(void)
 //***********************************************************************************
 static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
 {
-    uint8_t i;
+    uint16_t i;
     UInt eventId;
 
     rGsmObject.error = GSM_NO_ERR;
@@ -773,6 +894,7 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
     }
 
     //tcp send data
+    Event_pend(gsmEvtHandle, 0, GSM_EVT_ALL, BIOS_NO_WAIT);
     AT_tcp_start_send_data(length);
     eventId = Gsm_wait_ack(500);
     if (eventId & GSM_EVT_SHUTDOWN) {
@@ -791,9 +913,9 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
     }
 
     //tcp send data ack query
-    for (i = 180; i > 0; i--) {
+    for (i = 300; i > 0; i--) {
         AT_ack_query();
-        eventId = Gsm_wait_ack(500);
+        eventId = Gsm_wait_ack(300);
         if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
             break;
     }
@@ -850,6 +972,7 @@ static GSM_RESULT Gsm_query_csq(void)
     return RESULT_OK;
 }
 
+#ifdef SUPPORT_LBS
 //***********************************************************************************
 //
 // Gsm module get lbs information process.
@@ -861,11 +984,21 @@ static GSM_RESULT Gsm_query_csq(void)
 static GSM_RESULT Gsm_get_lbs(void)
 {
     UInt eventId;
+    uint8_t i;
 
     rGsmObject.error = GSM_NO_ERR;
 
+#ifdef USE_QUECTEL_API_FOR_LBS
     AT_lbs_get_location();
     eventId = Gsm_wait_ack(60000);
+#elif defined(USE_ENGINEERING_MODE_FOR_LBS)
+    for (i = 3; i > 0; i--) {
+        AT_eng_mode_query();
+        eventId = Gsm_wait_ack(2000);
+        if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
+            break;
+    }
+#endif
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
     } else if (eventId == 0 ||(eventId & GSM_EVT_CMD_ERROR)) {
@@ -876,6 +1009,7 @@ static GSM_RESULT Gsm_get_lbs(void)
 
     return RESULT_OK;
 }
+#endif
 
 //***********************************************************************************
 //
@@ -1124,9 +1258,17 @@ LAB_CONNECT:
 static void Gsm_rxSwiFxn(void)
 {
     char *ptr;
+    UInt key;
     uint8_t index;
     uint16_t value, rxLen;
+    Uart2RxData_t tempRx;
+#ifdef USE_QUECTEL_API_FOR_LBS
     float latitudetmp;
+#endif
+#ifdef USE_ENGINEERING_MODE_FOR_LBS
+    char *ptr1;
+    uint8_t i;
+#endif
 
     /* Disable preemption. */
     uart0RxData.buff[uart0RxData.length] = '\0';
@@ -1135,7 +1277,7 @@ static void Gsm_rxSwiFxn(void)
     if (ptr != NULL) {
         index = ptr - (char *)uart0RxData.buff;
         rxLen = atoi(ptr + 3);
-        if ((uart0RxData.length - index) > rxLen && rxLen < 128) {
+        if ((uart0RxData.length - index) > rxLen && rxLen < UART_BUFF_SIZE) {
             //Second 0x7e
             ptr = strstr((char *)ptr, "\x7e");
             rGsmObject.dataProcCallbackFxn((uint8_t *)ptr, rxLen);
@@ -1147,7 +1289,7 @@ static void Gsm_rxSwiFxn(void)
 
     switch (rGsmObject.cmdType) {
         case AT_CMD_COMMON:
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 Gsm_event_post(GSM_EVT_CMD_OK);
                 break;
@@ -1159,7 +1301,7 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_SIM_QUERY:
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)uart0RxData.buff, "READY");
                 if (ptr != NULL) {
@@ -1169,7 +1311,7 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_SIM_CCID:
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)uart0RxData.buff, "+CCID:");
                 if (ptr != NULL) {
@@ -1180,13 +1322,13 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_CSQ_QUERY:
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)uart0RxData.buff, "+CSQ:");
                 if (ptr != NULL) {
                     rGsmObject.rssi = (uint8_t)atoi(ptr + 5);
                     if (rGsmObject.rssi != 99) {
-                        if(rGsmObject.rssi > 31)rGsmObject.rssi = 31;//¥¶¿Ì≥ˆœ÷¥Û”⁄31µƒ“Ï≥£
+                        if(rGsmObject.rssi > 31)rGsmObject.rssi = 31;//Êæ∂Âã≠ÊÇäÈçëËôπÂπáÊæ∂—ÇÁ∞¨31Èê®Âã´Á¥ìÁîØÔøΩ
                         Gsm_event_post(GSM_EVT_CMD_OK);
                     }
                 }
@@ -1194,7 +1336,7 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_CREG_QUERY:
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)uart0RxData.buff, "+CREG:");
                 if (ptr != NULL) {
@@ -1206,7 +1348,7 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_CGREG_QUERY:
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)uart0RxData.buff, "+CGREG:");
                 if (ptr != NULL) {
@@ -1236,7 +1378,7 @@ static void Gsm_rxSwiFxn(void)
                     break;
                 }
             }
-            ptr = strstr((char *)uart0RxData.buff, "CONNECT OK");
+            ptr = strstr((char *)uart0RxData.buff, "CONNECT OK\r\n");
             if (ptr != NULL) {
                 Gsm_event_post(GSM_EVT_CMD_OK);
                 break;
@@ -1260,7 +1402,7 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_SEND_DATA:
-            ptr = strstr((char *)uart0RxData.buff, "SEND OK");
+            ptr = strstr((char *)uart0RxData.buff, "SEND OK\r\n");
             if (ptr != NULL) {
                 Gsm_event_post(GSM_EVT_CMD_OK);
                 break;
@@ -1272,7 +1414,7 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_ACK_QUERY:
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)uart0RxData.buff, "+QISACK:");
                 if (ptr != NULL) {
@@ -1282,15 +1424,13 @@ static void Gsm_rxSwiFxn(void)
                         value = atoi(ptr + 1);
                         if (value == 0)
                             Gsm_event_post(GSM_EVT_CMD_OK);
-                        else
-                            Gsm_event_post(GSM_EVT_CMD_ERROR);
                     }
                 }
             }
             break;
 
         case AT_CMD_CLOSE_CONNECT:
-            ptr = strstr((char *)uart0RxData.buff, "CLOSE OK");
+            ptr = strstr((char *)uart0RxData.buff, "CLOSE OK\r\n");
             if (ptr != NULL) {
                 Gsm_event_post(GSM_EVT_CMD_OK);
                 break;
@@ -1301,35 +1441,121 @@ static void Gsm_rxSwiFxn(void)
             }
             break;
 
+#ifdef USE_QUECTEL_API_FOR_LBS
         case AT_CMD_GET_LOCATION:
             ptr = strstr((char *)uart0RxData.buff, "ERROR");
             if (ptr != NULL) {
                 Gsm_event_post(GSM_EVT_CMD_ERROR);
                 break;
             }
-            ptr = strstr((char *)uart0RxData.buff, "OK");
+            ptr = strstr((char *)uart0RxData.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)uart0RxData.buff, "+QCELLLOC:");
                 if (ptr != NULL) {
-                    rGsmObject.longitude = atof(ptr + 10);
+                    rGsmObject.location.longitude = atof(ptr + 10);
                     //find last position
                     ptr = strrchr((char *)uart0RxData.buff, ',');
                     if (ptr != NULL) {
                         latitudetmp = atof(ptr + 1);
                         if(latitudetmp)    
-                            rGsmObject.latitude = atof(ptr + 1);
+                            rGsmObject.location.latitude = atof(ptr + 1);
                         else {
-                            rGsmObject.longitude = 0;
-                            HIBYTE(HIWORD(rGsmObject.latitude)) = *(ptr + 1);
-                            LOBYTE(HIWORD(rGsmObject.latitude)) = *(ptr + 2);
-                            HIBYTE(LOWORD(rGsmObject.latitude)) = *(ptr + 3);        
-                            LOBYTE(LOWORD(rGsmObject.latitude)) = *(ptr + 4);
+                            rGsmObject.location.longitude = 0;
+                            HIBYTE(HIWORD(rGsmObject.location.latitude)) = *(ptr + 1);
+                            LOBYTE(HIWORD(rGsmObject.location.latitude)) = *(ptr + 2);
+                            HIBYTE(LOWORD(rGsmObject.location.latitude)) = *(ptr + 3);        
+                            LOBYTE(LOWORD(rGsmObject.location.latitude)) = *(ptr + 4);
                         }
                         Gsm_event_post(GSM_EVT_CMD_OK);
                     }
                 }
             }
             break;
+
+#elif defined(USE_ENGINEERING_MODE_FOR_LBS)
+
+        case AT_CMD_ENG_MODE_QUERY:
+            ptr =  strstr((char *)tempRx.buff, "OK\r\n");
+            if (ptr == NULL)
+                break;
+            ptr =  strstr((char *)tempRx.buff, "+QENG: 0,");
+            if (ptr != NULL) {
+                ptr1 = ptr + 9;
+                rGsmObject.location.mcc = atoi(ptr1);
+                ptr =  strstr(ptr1, ",");
+                if (ptr == NULL)
+                    break;
+                ptr1 = ptr + 1;
+                rGsmObject.location.mnc = atoi(ptr1);
+                ptr =  strstr(ptr1, ",");
+                if (ptr == NULL)
+                    break;
+                ptr1 = ptr + 1;
+                rGsmObject.location.local.lac = htoi(ptr1);
+                ptr =  strstr(ptr1, ",");
+                if (ptr == NULL)
+                    break;
+                ptr1 = ptr + 1;
+                rGsmObject.location.local.cellid = htoi(ptr1);
+                for (i = 0; i < 3; i++) {
+                    ptr =  strstr(ptr1, ",");
+                    if (ptr == NULL)
+                        return;
+                    ptr1 = ptr + 1;
+                }
+                rGsmObject.location.local.dbm = atoi(ptr1);
+                if (rGsmObject.location.local.dbm > 0)
+                    rGsmObject.location.local.dbm = rGsmObject.location.local.dbm * 2 - 113;
+            }
+#ifdef SUPPOERT_LBS_NEARBY_CELL
+            ptr =  strstr((char *)tempRx.buff, "+QENG: 1,1,");
+            if (ptr != NULL) {
+                ptr1 = ptr + 11;
+                for (index = 0; index < LBS_NEARBY_CELL_MAX; index++) {
+                    ptr =  strstr(ptr1, ",");
+                    if (ptr == NULL)
+                        break;
+                    ptr1 = ptr + 1;
+                    rGsmObject.location.nearby[index].dbm = atoi(ptr1);
+                    if (rGsmObject.location.nearby[index].dbm > 0)
+                        rGsmObject.location.nearby[index].dbm = rGsmObject.location.nearby[index].dbm * 2 - 113;
+
+                    for (i = 0; i < 6; i++) {
+                        ptr =  strstr(ptr1, ",");
+                        if (ptr == NULL)
+                            return;
+                        ptr1 = ptr + 1;
+                    }
+                    rGsmObject.location.nearby[index].lac = htoi(ptr1);
+                    ptr =  strstr(ptr1, ",");
+                    if (ptr == NULL)
+                        break;
+                    ptr1 = ptr + 1;
+                    rGsmObject.location.nearby[index].cellid = htoi(ptr1);
+                    ptr =  strstr(ptr1, ",");
+                    if (ptr == NULL)
+                        break;
+                    ptr1 = ptr + 1;
+                    ptr =  strstr(ptr1, ",");
+                    if (ptr == NULL)
+                        break;
+                    ptr1 = ptr + 1;
+                }
+            }
+#endif
+            Gsm_event_post(GSM_EVT_CMD_OK);
+            break;
+#endif
+
+#ifdef SUPPORT_IMEI
+        case AT_CMD_IMEI_QUERY:
+            ptr =  strstr((char *)tempRx.buff, "OK\r\n");
+            if (ptr == NULL)
+                break;
+            memcpy((char *)rGsmObject.imei, (char *)tempRx.buff + 2, 15);
+            Gsm_event_post(GSM_EVT_CMD_OK);
+            break;
+#endif
 
         default:
             break;
@@ -1356,36 +1582,11 @@ static void Gsm_hwiIntCallback(uint8_t *dataP, uint8_t len)
         if(uart0IsrRxData.length < 2)
             continue;
 
-        if(Clock_isActive(gsmTimeOutClockHandle))
-        {
-            Clock_stop(gsmTimeOutClockHandle);
-            Clock_setTimeout(gsmTimeOutClockHandle, GSM_TIMEOUT_MS * CLOCK_UNIT_MS);
-            Clock_start(gsmTimeOutClockHandle);
-        }
-
-        if(((uart0IsrRxData.buff[uart0IsrRxData.length - 1] == '\n') && 
-            (uart0IsrRxData.buff[uart0IsrRxData.length - 2] == '\r'))
-            || (uart0IsrRxData.buff[uart0IsrRxData.length - 1] == '>')
-            || (uart0IsrRxData.buff[uart0IsrRxData.length - 1] == 0x7e))
-        {
-
-            if(Clock_isActive(gsmTimeOutClockHandle))
-            {
-                Clock_stop(gsmTimeOutClockHandle);
-            }
-            Clock_setTimeout(gsmTimeOutClockHandle, GSM_TIMEOUT_MS * CLOCK_UNIT_MS);
-            Clock_start(gsmTimeOutClockHandle);
-        }
-
+        Clock_start(gsmTimeOutClockHandle);
 
         if(uart0IsrRxData.length >= UART_BUFF_SIZE)
         {
-            if(Clock_isActive(gsmTimeOutClockHandle))
-            {
-                Clock_stop(gsmTimeOutClockHandle);
-            }
-            Clock_setTimeout(gsmTimeOutClockHandle, GSM_TIMEOUT_MS * CLOCK_UNIT_MS);
-            Clock_start(gsmTimeOutClockHandle);
+            GsmRxToutCb(NULL);
         }
     }
 }
@@ -1415,15 +1616,8 @@ static void GsmRxToutCb(UArg arg0)
     key = Hwi_disable();
 
     memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0IsrRxData.length);
-    // for (i = 0; i < uart0IsrRxData.length; ++i)
-    // {
-    //     System_printf("%c", uart0IsrRxData.buff[i]);
-    // }
-    // System_printf("end\n");
-
     uart0RxData.length    = uart0IsrRxData.length;
     uart0IsrRxData.length = 0;
-
     Hwi_restore(key);
 
     Swi_post(gsmRxSwiHandle);
@@ -1449,6 +1643,9 @@ static void Gsm_init(Nwk_Params *params)
     clkParams.startFlag = FALSE;
     Clock_construct(&gsmTimeOutClock, GsmRxToutCb, 1, &clkParams);
     gsmTimeOutClockHandle = Clock_handle(&gsmTimeOutClock);
+    Clock_setTimeout(gsmTimeOutClockHandle, GSM_TIMEOUT_MS * CLOCK_UNIT_MS);
+
+    gsmBusyFlag = 0;
 
     rGsmObject.isOpen = 0;
     rGsmObject.actPDPCnt = 0;
@@ -1567,19 +1764,26 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
             }
             break;
 
+#ifdef SUPPORT_LBS
         case NWK_CONTROL_LBS_QUERY:
             if (rGsmObject.state == GSM_STATE_TCP_UPLOAD) {
                 result = Gsm_get_lbs();
+#ifdef USE_QUECTEL_API_FOR_LBS
                 if (result != RESULT_OK) {
                     ((NwkLocation_t *)arg)->longitude = 360;
                     ((NwkLocation_t *)arg)->latitude = 360;
                     return FALSE;
                 }
-
-                ((NwkLocation_t *)arg)->longitude = rGsmObject.longitude;
-                ((NwkLocation_t *)arg)->latitude = rGsmObject.latitude;
+#elif defined(USE_ENGINEERING_MODE_FOR_LBS)
+                if (result != RESULT_OK) {
+                    // ((NwkLocation_t *)arg)->mcc = 0;
+                    return FALSE;
+                }
+#endif
+                memcpy((char *)arg, (char *)&rGsmObject.location, sizeof(rGsmObject.location));
             }
             break;
+#endif
 
         case NWK_CONTROL_TRANSMIT:
             result = Gsm_transmit_process(((NwkMsgPacket_t *)arg)->buff, ((NwkMsgPacket_t *)arg)->length);
@@ -1594,6 +1798,12 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
         case NWK_CONTROL_SHUTDOWN_MSG:
             Gsm_event_post(GSM_EVT_SHUTDOWN);
             break;
+
+#ifdef SUPPORT_IMEI
+        case NWK_CONTROL_IMEI_GET:
+            memcpy((char *)arg, (char *)rGsmObject.imei, 15);
+            break;
+#endif
 
         case NWK_CONTROL_TEST:
             result = Gsm_test();
