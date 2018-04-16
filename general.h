@@ -341,11 +341,12 @@ typedef enum {
     SEN_TYPE_NONE = 0,
     SEN_TYPE_SHT2X,
     SEN_TYPE_NTC,
-    SEN_TYPE_LIGHT,
+    SEN_TYPE_OPT3001,
     SEN_TYPE_DEEPTEMP,
     SEN_TYPE_HCHO,
     SEN_TYPE_PM25,
     SEN_TYPE_CO2,
+    SEN_TYPE_GSENSOR,
     SEN_TYPE_MAX
 } SENSOR_TYPE;
 
@@ -412,6 +413,8 @@ typedef enum {
     SYS_STATE_IDLE
 } SYS_STATE;
 
+#pragma pack (1)
+
 typedef struct {
     //System state.
     SYS_STATE state;
@@ -427,6 +430,20 @@ typedef struct {
     //Low Temperature Alarm value
 	int16_t low;
 } AlarmTemp_t;
+
+typedef struct {
+    uint32_t    Deviceid;
+    int8_t      ChNo;
+    AlarmTemp_t AlarmInfo;
+} BindNode_t;
+
+typedef struct {
+    uint32_t   err_restarts;
+    uint32_t   i2c_errors;
+    uint32_t   lora_send_errors;        
+    uint32_t   lora_list_fulls; 
+    uint32_t   reserve;    
+}SystemState_t;
 
 typedef struct {
 	uint16_t size;
@@ -471,13 +488,31 @@ typedef struct {
     
     //battery voltage of shutdown
     uint16_t batLowVol;
-    
-    uint8_t reserver[44];
+     //Sensor warning  temperature
+    AlarmTemp_t WarningTemp[MODULE_SENSOR_MAX];    
 
-    //apn user pwd
-    uint8_t apnuserpwd[64];
+    //bind gateway
+    uint8_t BindGateway[4];
     
-}__attribute__((packed)) ConfigInfo_t;
+    //record  rtc time
+    Calendar  rtc;
+
+    //offset 128
+    //apn user pwd 
+    uint8_t apnuserpwd[64];
+    uint8_t serverAddr[64];
+
+   //offset 256
+    SystemState_t  sysState;  //size =20
+    
+#ifdef SUPPORT_NETGATE_BIND_NODE   //
+    //offset 256 +20    
+    BindNode_t  bindnode[NETGATE_BIND_NODE_MAX];
+
+#endif
+    
+} ConfigInfo_t;
+#pragma pack ()
 
 //***********************************************************************************
 //
