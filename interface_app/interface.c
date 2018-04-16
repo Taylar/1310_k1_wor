@@ -2,12 +2,12 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-13 16:05:40
+* @Last Modified time: 2018-04-16 14:40:54
 */
 #include "../general.h"
-#include "../radio_app/radio_app.h"
-#include "interface.h"
-#include "../app/usb_prot.h"
+//#include "../radio_app/radio_app.h"
+//#include "interface.h"
+//#include "../app/usb_prot.h"
 
 // #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
 
@@ -73,38 +73,22 @@ static Clock_Handle interfaceRecTimeoutClockHandle;
 
 bool            interfaceFlag;
 
+uint8_t         interfaceBusyFlag;
+uint8_t         interfaceTimerFlag;
+
 void InterfaceTaskFxn(void);
 
 // call back in uart isr 
-void InterfaceReceiveCb(uint8_t *datap, uint8_t len)
+void InterfaceReceiveCb(void)
 {
-    uint8_t  datapLen;
-    if(Clock_isActive(interfaceRecTimeoutClockHandle))
-        Clock_stop(interfaceRecTimeoutClockHandle);
-
-
-    Clock_setTimeout(interfaceRecTimeoutClockHandle,
-            INTERFACE_REC_TIMEOUT_MS * 1000 / Clock_tickPeriod);
-    Clock_start(interfaceRecTimeoutClockHandle);
-
-    datapLen        = 0;
-    while(len)
+    if(interfaceBusyFlag == 0)
     {
-        len--;
-        uart0IsrRxData.buff[uart0IsrRxData.length] = datap[datapLen];
-        datapLen++;
-        uart0IsrRxData.length++;
 
-        if(uart0IsrRxData.length >= UART_BUFF_SIZE)
-        {
-            uart0RxData.length    = uart0IsrRxData.length;
-            uart0IsrRxData.length = 0;
-            datapLen  = 0;
-
-            memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0RxData.length);
-            Event_post(interfaceEvtHandle, INTERFACE_EVT_RX);
-        }
+        interfaceBusyFlag = 1;
+        Clock_start(interfaceRecTimeoutClockHandle);
     }
+
+    interfaceTimerFlag = 1;
 }
 
 
@@ -137,17 +121,23 @@ uint32_t HwInterfaceInit(INTERFACE_TYPE type, uint32_t baudRate, UART_CB_T cb)
 
 void InterfaceRecTimeroutCb(UArg arg0)
 {
-    UInt key;
 
-    /* Disable preemption. */
-    key = Hwi_disable();
+    if(interfaceTimerFlag == 1)
+    {
+        interfaceTimerFlag = 0;
+    }
+    else
+    {
+        if(interfaceBusyFlag == 1)
+        {
+            interfaceBusyFlag = 0;
+            uart0RxData.length    = g_rUart1RxData.length;
+            g_rUart1RxData.length = 0;
+            memcpy(uart0RxData.buff, g_rUart1RxData.buff, uart0RxData.length);;
+            Event_post(interfaceEvtHandle, INTERFACE_EVT_RX);
+        }    
+    }
 
-    uart0RxData.length    = uart0IsrRxData.length;
-    uart0IsrRxData.length = 0;
-    memcpy(uart0RxData.buff, uart0IsrRxData.buff, uart0RxData.length);
-
-    Hwi_restore(key);
-    Event_post(interfaceEvtHandle, INTERFACE_EVT_RX);
 }
 
 
@@ -165,7 +155,11 @@ void InterfaceTaskCreate(void)
     clkParams.startFlag = FALSE;
     Clock_construct(&interfaceRecTimeoutClock, InterfaceRecTimeroutCb, 1, &clkParams);
     interfaceRecTimeoutClockHandle = Clock_handle(&interfaceRecTimeoutClock);
+    Clock_setTimeout(interfaceRecTimeoutClockHandle, 8 * CLOCK_UNIT_MS);
+    Clock_setPeriod(interfaceRecTimeoutClockHandle, 8 * CLOCK_UNIT_MS);
 
+    interfaceBusyFlag  = 0;
+    interfaceTimerFlag = 0;
 
     /* Construct the semparams for interface  */
     Semaphore_Params semParams;

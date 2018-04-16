@@ -32,7 +32,7 @@ typedef enum CC1310_LAUNCHXL_UARTName {
 
 #define UART_BUFF_SIZE           288
 
-typedef void (*UART_CB_T)(uint8_t *dataP, uint8_t len);
+typedef void (*UART_CB_T)(void);
 
 typedef enum {
     UART_0,
@@ -46,8 +46,8 @@ typedef struct {
 
 
 
+extern UartRxData_t     g_rUart1RxData;
 extern UartRxData_t     uart0RxData;
-extern UartRxData_t     uart0IsrRxData;
 extern UartRxData_t     uart0TxData;
 
 

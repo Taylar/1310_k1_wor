@@ -398,6 +398,7 @@ typedef enum {
 //
 //***********************************************************************************
 
+#include "driver/rtc_drv.h"
 
 //***********************************************************************************
 //
@@ -552,6 +553,7 @@ typedef struct {
 #include "radio_app/radio_app.h"
 #include "radio_app/node_strategy.h"
 #include "network/network.h"
+#include "interface_app/interface.h"
 #include "app/concenterApp.h"
 #include "app/usb_prot.h"
 #include "app/radio_protocal.h"

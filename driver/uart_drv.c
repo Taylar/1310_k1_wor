@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-02-26 19:18:33
+* @Last Modified time: 2018-04-16 14:57:08
 */
 #include "../general.h"
 
@@ -111,19 +111,16 @@ static PIN_Handle  interfacePortHandle, gsmPortHandle;
 
 
 // variable
-static uint8_t recBuf[32];          //1310 hardware uart rec len is 16 which take from testing
-static void (*Uart0IsrCb)(uint8_t *databuf, uint8_t len);
+static void (*Uart0IsrCb)(void);
 
+UartRxData_t     g_rUart1RxData;
 UartRxData_t     uart0RxData;
-UartRxData_t     uart0IsrRxData;
 UartRxData_t     uart0TxData;
 
 
 void uart0Isr(void)
 {
     uint32_t               intStatus;
-    uint8_t                 i;
-    i = 0;
     intStatus       = UARTIntStatus(UART0_BASE, true);
     UARTIntClear(UART0_BASE,intStatus);
 
@@ -133,15 +130,14 @@ void uart0Isr(void)
         if(!(HWREG(UART0_BASE + UART_O_FR) & UART_FR_RXFE))
         {
             // Read and return the next character.
-
-            recBuf[i] = (HWREG(UART0_BASE + UART_O_DR));
-            i++;
+            g_rUart1RxData.buff[g_rUart1RxData.length] = (HWREG(UART0_BASE + UART_O_DR));
+            g_rUart1RxData.length++;
         }
         else
         {
             break;
         }
-        Uart0IsrCb(recBuf, i);
+        Uart0IsrCb();
     }
 }
 
