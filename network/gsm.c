@@ -1622,6 +1622,7 @@ static void GsmRxToutCb(UArg arg0)
     {
         if(gsmBusyFlag == 1)
         {
+            Clock_stop(gsmTimeOutClockHandle);
             gsmBusyFlag = 0;
             gsmRxLength = g_rUart1RxData.length;
             Swi_post(gsmRxSwiHandle);

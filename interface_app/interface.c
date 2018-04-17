@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-16 14:40:54
+* @Last Modified time: 2018-04-17 14:06:39
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
@@ -130,6 +130,7 @@ void InterfaceRecTimeroutCb(UArg arg0)
     {
         if(interfaceBusyFlag == 1)
         {
+            Clock_stop(interfaceRecTimeoutClockHandle);
             interfaceBusyFlag = 0;
             uart0RxData.length    = g_rUart1RxData.length;
             g_rUart1RxData.length = 0;
