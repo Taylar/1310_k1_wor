@@ -108,6 +108,8 @@ void Menu_init(void)
     rMenuObject.menu = rMainMenu;
     rMenuObject.index = 0;
     rMenuObject.startItem = 0;
+
+    Disp_clear_all();
 }
 
 //***********************************************************************************
@@ -129,14 +131,24 @@ void Menu_action_proc(MENU_ACTION action)
             break;
 
         case MENU_AC_UP:
-            if (rMenuObject.index > 0)
+            if (rMenuObject.index > 0){
                 rMenuObject.index--;
+                if(rMenuObject.menu->count == 4){//normal menu , not poweroff menu                
+                    if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2 )//??車D角??角?㏒?谷2???那?∩辰車?
+                        rMenuObject.index = 1;
+                }
+            }
             else
                 rMenuObject.index = rMenuObject.menu[0].count - 1;
             break;
 
         case MENU_AC_DOWN:
             rMenuObject.index++;
+            if(rMenuObject.menu->count == 4){//normal menu , not poweroff menu                    
+                if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2)//??車D角??角?㏒?谷2???那?∩辰車?
+                        rMenuObject.index = 3;
+            }
+            
             if (rMenuObject.index >= rMenuObject.menu[0].count)
                 rMenuObject.index = 0;
             break;
@@ -166,10 +178,6 @@ void Menu_action_proc(MENU_ACTION action)
 //***********************************************************************************
 void Menu_show(void)
 {
-#ifdef  USE_ENGLISH_MENU
-    uint8_t i;
-#endif
-
     if (rMenuObject.menu == rMainMenu){
 
 #ifndef  USE_ENGLISH_MENU
@@ -185,7 +193,7 @@ void Menu_show(void)
         Disp_picture(0, 0, 128, 64, rMenuObject.menu[rMenuObject.index].string);
         Disp_msg(3, rMenuObject.index*2+1, "*", FONT_8X16);
 #else
-        for(i=0; i < PoweroffMenu[0].count; ++i){
+        for(uint8_t i=0; i < PoweroffMenu[0].count; ++i){
             Disp_msg(1, i*3, " ", FONT_8X16);            
             Disp_msg(4, i*3, rMenuObject.menu[i].string, FONT_8X16);
         }        
@@ -202,7 +210,12 @@ void Menu_show(void)
 void Menu_start_record(void)
 {
     rMenuObject.startRecord = 1;
-   // g_bAlarmSensorFlag = 0;
+
+
+#ifdef SUPPORT_G7_PROTOCOL
+    BlePrintRecordStartNotify();
+#endif  // SUPPORT_G7_PROTOCOL
+
 #ifdef FLASH_EXTERNAL
     Flash_store_record_addr(1);
 #endif
@@ -216,10 +229,16 @@ void Menu_start_record(void)
 //***********************************************************************************
 void Menu_stop_record(void)
 {
-    rMenuObject.startRecord = 0;
+    if(rMenuObject.startRecord)
+    {
+        rMenuObject.startRecord = 0;
+
+
 #ifdef FLASH_EXTERNAL
-    Flash_store_record_addr(0);
+        Flash_store_record_addr(0);
 #endif
+
+    }
     Menu_exit();
 }
 
@@ -235,15 +254,7 @@ void Menu_print_proc(void)
 
     Sys_lcd_stop_timing();
     Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECTING * MENU_128X32_OFS]);
-    Btp_poweron();
-    timeout = 40;   // 40s
-    while (timeout--) {
-        if (Btp_is_connect()) {
-            //Bluetooth connect success
-            break;
-        }
-        Task_sleep(1 * CLOCK_UNIT_S);
-    }
+    Btp_poweron();   
 
     if (Btp_is_connect()) {
         //Bluetooth connect success

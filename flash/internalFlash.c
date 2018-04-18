@@ -9,7 +9,7 @@
 
 
 /***** Variable declarations *****/
-ConfigInfo_t g_rSysConfigInfo;
+
 
 uint32_t intFlashNodeWritenAddr[NODE_ADDR_INT_FLASH_BLOCK_NUM];
 
@@ -134,7 +134,7 @@ const uint8_t configFlag[12] = CONFIG_VALID_FLAG;
 // note: every sector is 4K
 // parameter: 
 //***********************************************************************************
-void InternalFlashStoreConfig(void)
+void Flash_store_config(void)
 {
 	FlashSectorErase(CONFIG_FLAG_INTERNAL_ADDR);
 	

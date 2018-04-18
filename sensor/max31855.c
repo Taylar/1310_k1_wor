@@ -510,17 +510,15 @@ static void Max31855_measure(uint8_t chNum)
  ******************************************************************************/
 static int32_t Max31855_get_value(uint8_t chNum, SENSOR_FUNCTION function)
 {
-    if (chNum < MAX31855_SPI_MAX) {
+    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_DEEPTEMP) {
          if(function & SENSOR_DEEP_TEMP){
              return rSensorData[chNum].tempdeep;
          }
-     }else{
-          System_printf("Max31855_get_value2\n");
-          System_flush();
      }
     return DEEP_TEMP_OVERLOAD;
 }
-const Max31855_FxnTable  DeepTemp_FxnTable = {
+const Sensor_FxnTable  DeepTemp_FxnTable = {
+    SENSOR_DEEP_TEMP,
     Max31855_init,
     Max31855_measure,
     Max31855_get_value,

@@ -22,6 +22,13 @@
 #define FONT_14X32_OFS              56
 #define FONT_16X32_OFS              64
 
+#ifdef SUPPORT_SFKJ_UI
+#define FONT_23X24_OFS              69
+#define FONT_13X8_OFS               13
+#define FONT_8X8_OFS                8
+#define FONT_6X16_OFS               12
+#define FONT_3X16_OFS               6
+#endif
 typedef enum {
     FONT_5X8 = 0,
     FONT_8X16,
@@ -107,7 +114,36 @@ typedef enum {
     ICON_16X32_DIGIT_8,
     ICON_16X32_DIGIT_9,
     ICON_16X32_SUB,
+#ifdef  SUPPORT_SFKJ_UI
+    ICON_13X8_SIGNAL_0,
+    ICON_13X8_SIGNAL_1,
+    ICON_13X8_SIGNAL_2,
+    ICON_13X8_SIGNAL_3,
+    ICON_8X8_PER_0,
+    ICON_23X24_TMP_STAT_0,
+    ICON_23X24_TMP_STAT_1,
 
+    ICON_6X16_STAR_BAR_0,
+    ICON_6X16_STAR_BAR_1,
+    ICON_6X16_STAR_BAR_2,
+    ICON_6X16_STAR_BAR_3,
+    ICON_6X16_STAR_BAR_4,
+    ICON_6X16_STAR_BAR_5,
+    ICON_6X16_STAR_BAR_6,
+    ICON_6X16_STAR_BAR_7,
+    ICON_6X16_STAR_BAR_8,
+    ICON_6X16_STAR_BAR_9,
+	ICON_6X16_STAR_BAR_A,
+    ICON_6X16_STAR_BAR_H,
+    ICON_6X16_STAR_BAR_L,
+    ICON_6X16_STAR_BAR_T,
+    ICON_6X16_STAR_BAR_P,
+    ICON_6X16_STAR_BAR_DC,
+
+    ICON_3X16_STAR_BAR_MHAO,
+    ICON_3X16_STAR_BAR_SUB,
+    ICON_3X16_STAR_BAR_DOT,
+#endif
     ICON_MAX
 } DISP_ICON;
 
@@ -131,7 +167,6 @@ extern void Disp_proc(void);
 extern void Disp_init(void);
 extern bool Disp_poweron(void);
 extern void Disp_poweroff(void);
-extern uint8_t Disp_powerState(void);
 
 #endif  /* SUPPORT_DISP_SCREEN */
 

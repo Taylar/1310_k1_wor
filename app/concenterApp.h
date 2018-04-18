@@ -4,23 +4,10 @@
 
 /***** Defines *****/
 
-#define 		MEMSENSOR_NUM			(20)
 
 
 /***** Type declarations *****/
 
-typedef struct {
-    uint32_t DeviceId;
-    uint8_t index;
-    uint8_t type;
-union{
-	struct {
-    	int16_t temp;
-    	uint16_t humi;
-    };
-    int32_t tempdeep;
-	};
-}sensordata_mem;
 
 
 

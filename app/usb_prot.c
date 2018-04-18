@@ -18,7 +18,7 @@ uint8_t usbBuff[UART_BUFF_SIZE];
 // Usb protocol group package.
 //
 //***********************************************************************************
-static uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint8_t dataLen)
+static uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataLen)
 {
     uint8_t i, buff[USB_BUFF_LENGTH];
     uint16_t length;
@@ -147,7 +147,7 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             g_rSysConfigInfo.size = sizeof(g_rSysConfigInfo);
             
 #ifdef FLASH_INTERNAL
-            InternalFlashStoreConfig();
+            Flash_store_config();
 #endif
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);

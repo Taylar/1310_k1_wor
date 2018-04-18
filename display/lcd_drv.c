@@ -113,10 +113,14 @@ void Lcd_spiSendByte(uint8_t value)
 //***********************************************************************************
 void Lcd_send_cmd(uint8_t cmd)
 {
+    UInt key;
+
+    key = Hwi_disable();
     Lcd_spiDcCtrl(0);
     Lcd_spiCsCtrl(0);
     Lcd_spiSendByte(cmd);
     Lcd_spiCsCtrl(1);
+    Hwi_restore(key);
 }
 
 //***********************************************************************************
@@ -126,10 +130,14 @@ void Lcd_send_cmd(uint8_t cmd)
 //***********************************************************************************
 void Lcd_send_data(uint8_t value)
 {
+    UInt key;
+
+    key = Hwi_disable();
     Lcd_spiDcCtrl(1);
     Lcd_spiCsCtrl(0);
     Lcd_spiSendByte(value);
     Lcd_spiCsCtrl(1);
+    Hwi_restore(key);
 }
 
 //***********************************************************************************

@@ -20,6 +20,9 @@ typedef struct {
     uint16_t length;
 } NwkMsgPacket_t;
 
+#ifdef SUPPORT_LBS
+#ifdef USE_QUECTEL_API_FOR_LBS
+
 typedef struct {
 //LBS longitude
     float longitude;
@@ -27,6 +30,27 @@ typedef struct {
     float latitude;
 } NwkLocation_t;
 
+#elif defined(USE_ENGINEERING_MODE_FOR_LBS)
+
+#define LBS_NEARBY_CELL_MAX     2
+
+typedef struct {
+    uint16_t lac;
+    uint32_t cellid;
+    int8_t dbm;
+} NwkCellInfo_t;
+
+typedef struct {
+	uint16_t mcc;
+	uint16_t mnc;
+    NwkCellInfo_t local;
+#ifdef SUPPOERT_LBS_NEARBY_CELL
+    NwkCellInfo_t nearby[LBS_NEARBY_CELL_MAX];
+#endif
+} NwkLocation_t;
+
+#endif
+#endif
 
 typedef void (*Nwk_CallbackFxn) (uint8_t *pBuff, uint16_t length);
 
@@ -54,8 +78,11 @@ typedef enum {
     NWK_CONTROL_WAKEUP,
     NWK_CONTROL_SLEEP,
     NWK_CONTROL_LBS_QUERY,
+    NWK_CONTROL_NEARBY_LOCATION,
+    NWK_CONTROL_NEARBY_LOCATION_OFF,
     NWK_CONTROL_TRANSMIT,
     NWK_CONTROL_SHUTDOWN_MSG,
+    NWK_CONTROL_IMEI_GET,
     NWK_CONTROL_TEST
 } NWK_CONTROL;
 
@@ -67,8 +94,23 @@ extern void Nwk_poweron(void);
 extern void Nwk_poweroff(void);
 extern uint8_t Nwk_get_rssi(void);
 extern void Nwk_get_simccid(uint8_t *pBuff);
-extern void Nwk_upload_data(void);
-extern uint8_t Nwk_get_state(void);
+extern bool SetDevicePara(uint8_t *rxData, uint16_t length);
+
+#ifdef SUPPORT_G7_PROTOCOL
+void SurroundingMonitor(uint16_t value);
+
+void BlePrintRecordStartNotify(void);
+
+void BlePrintRecordStopNotify(void);
+
+void BlePrintingRecordNotify(void);
+
+NwkLocation_t * G7GetLbs(void);
+
+void BleRecordSearch(void);
+
+void G7ProtocalFunctionInit(void);
+#endif  // SUPPORT_G7_PROTOCOL
 
 #endif	/* __ZKSIOT_NETWORK_H__ */
 

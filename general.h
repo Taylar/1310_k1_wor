@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <math.h>
 
 /* XDC module Headers */
@@ -50,11 +51,11 @@
 
 
 
-// #ifdef VARIABLES_DEFINE
+#ifdef VARIABLES_DEFINE
 #define EXTERN_ATTR
-// #else
-// #define EXTERN_ATTR extern
-// #endif
+#else 
+#define EXTERN_ATTR extern
+#endif
 
 //***********************************************************************************
 //
@@ -127,116 +128,63 @@
 // Mcu little-ending or big-ending define
 #define LITTLE_ENDIAN
 
+//Device type define.
+//#define END_DEVICE
+//#define ACCESS_POINT
+//#define RANGE_EXTENDER
 
-//wdt WatchDog define
+//WatchDog define
 #define SUPPORT_WATCHDOG
 
 
-#define SUPPORT_SENSOR
-#ifdef SUPPORT_SENSOR
-#define SUPPORT_SHT2X
-#endif
-
-/*
-// *********************************************************
-#ifdef BOARD_S1_2
-
-//Flash define
-#define FLASH_INTERNAL
-#define FLASH_EXTERNAL
-#ifdef FLASH_EXTERNAL
-//#define FLASH_W25Q256FV
-#endif
-
-#define SUPPORT_SENSOR
-#ifdef SUPPORT_SENSOR
-#define SUPPORT_SHT2X
-#endif
-
-
-//Led define
-#define SUPPORT_LED
-
-#endif
-
-// *********************************************************
-#ifdef BOARD_S2_2
-//Flash define
-#define FLASH_INTERNAL
-#define FLASH_EXTERNAL
-#ifdef FLASH_EXTERNAL
-//#define FLASH_W25Q256FV
-#endif
-
-#define SUPPORT_DEEPTEMP
-
-//Network define
-#define SUPPORT_NETWORK
-#ifdef SUPPORT_NETWORK
-#define SUPPORT_GSM
-#endif
-
-
-//Led define
-#define SUPPORT_LED
-
-
-//Battery function define.
-#define SUPPORT_BATTERY
-
-#endif
-
-
-// *********************************************************
-#ifdef BOARD_S6_6
-
-//Flash define
-#define FLASH_INTERNAL
-#define FLASH_EXTERNAL
-#ifdef FLASH_EXTERNAL
-//#define FLASH_W25Q256FV
-#endif
-
-//Network define
-#define SUPPORT_NETWORK
-#ifdef SUPPORT_NETWORK
-#define SUPPORT_GSM
-#endif
-
-
-//LCD define
-#define SUPPORT_DISP_SCREEN
-#ifdef SUPPORT_DISP_SCREEN
-//#define AUTO_SHUTDOWN_LCD
-//Electronic Paper Display module
-//#define EPD_GDE0213B1
-#define LCD_ST7567A
-#define SUPPORT_MENU
-//#define SUPPORT_NETGATE_DISP_NODE
-#endif
-
-
-//Led define
-#define SUPPORT_LED
-
-//Battery function define.
-#define SUPPORT_BATTERY
-
-#endif
-// *********************************************************
-*/
 //ADC define.
 
 //Flash define
 #define FLASH_INTERNAL
 #define FLASH_EXTERNAL
 #ifdef FLASH_EXTERNAL
-//#define FLASH_W25Q256FV
+//#define FLASH_W25Q256FV  //大于128Mb=16MB,采用4字节地址模式。
+//#define FLASH_SIZE_128M
+//#define FLASH_SENSOR_DATA_32BYTE
+//#define SUPPORT_FLASH_LOG
+//#define MX66L1G45G  //1G flash
 #endif
 
+//Sensor define
 #define SUPPORT_SENSOR
 #ifdef SUPPORT_SENSOR
 #define SUPPORT_SHT2X
+#define SUPPORT_NTC
+#ifdef BOARD_S2_2
+#define SUPPORT_DEEPTEMP
+//#define SUPPORT_GPS
+#endif
+#endif
+
+#ifdef SUPPORT_NTC
+//#define NTC_ELIWELL_10K
+//#define NTC_KEMIT_10K
+//#define NTC_KEMIT_100K
+//#define NTC_KEMIT_PT1000
+//#define NTC_KEMIT_PT1000_2ADC
+#define NTC_XINXIANG_10K
+//#define NTC_TIANYOU_10K
+#endif
+
+//CRC function define.
+#define SUPPORT_CRC16
+#ifdef SUPPORT_CRC16
+//#define CRC16_HW_MODULE
+#ifndef CRC16_HW_MODULE
+//#define CRC16_MSB
+#define CRC16_LSB
+#endif
+#endif
+
+//Radio define
+//#define SUPPORT_RADIO
+#ifdef SUPPORT_RADIO
+#define SUPPORT_CC1310
 #endif
 
 
@@ -250,28 +198,43 @@
 //LCD define
 #define SUPPORT_DISP_SCREEN
 #ifdef SUPPORT_DISP_SCREEN
-//#define AUTO_SHUTDOWN_LCD
-//Electronic Paper Display module
+
+
 //#define EPD_GDE0213B1
 #define LCD_ST7567A
 #define SUPPORT_MENU
-#define SUPPORT_NETGATE_DISP_NODE
 
+#define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
+//#define SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+#define NETGATE_BIND_NODE_MAX       30
+
+#endif
+
+//Led define
+#define SUPPORT_LED
+
+//Battery function define.
+#define SUPPORT_BATTERY
+#ifdef SUPPORT_BATTERY
+//#define SUPPORT_ADP5062
 #endif
 
 //Network define
 #define SUPPORT_NETWORK
 #ifdef SUPPORT_NETWORK
 #define SUPPORT_GSM
+#define SUPPORT_GSM_SHORT_CONNECT
+#define SUPPORT_LBS
+#ifdef SUPPORT_LBS
+//#define USE_QUECTEL_API_FOR_LBS
+#define USE_ENGINEERING_MODE_FOR_LBS
+#define SUPPOERT_LBS_NEARBY_CELL
 #endif
+#define SUPPORT_IMEI
 
-// deep temperature
-#define SUPPORT_DEEPTEMP
+#define PACKAGE_ITEM_COUNT_MAX 1
+#define SUPPORT_ZKS_PROTOCOL
 
-// NTC
-
-#ifdef  BOARD_S6_6
-#define SUPPORT_NTC
 #endif
 
 #ifdef SUPPORT_NTC
@@ -307,14 +270,6 @@
 
 
 
-typedef enum {
-    SENSOR_NONE = 0x00,
-    SENSOR_TEMP = 0x01,
-    SENSOR_HUMI = 0x02,
-    SENSOR_CO   = 0x04,
-    SENSOR_CO2  = 0x08,
-    SENSOR_DEEP_TEMP = 0x10,
-} SENSOR_FUNCTION;
 
 //***********************************************************************************
 //
@@ -333,7 +288,6 @@ typedef enum {
 
 #define MODULE_NWK              (MODULE_GSM | MODULE_WIFI | MODULE_LAN)
 #define MODULE_RADIO            (MODULE_LORA| MODULE_CC1310)
-
 
 
 #define MODULE_SENSOR_MAX       8
@@ -359,18 +313,20 @@ typedef enum {
 //Status define.
 //
 //***********************************************************************************
-#define STATUS_LCD_ALWAYS_ON    0x0001
-#define STATUS_GSM_TEST         0x0002
-#define STATUS_KEY_LED_ON       0x0004
+#define STATUS_LCD_ALWAYS_ON    0x0001//lcd常开
+#define STATUS_GSM_TEST         0x0002//gsm测试模式
+#define STATUS_KEY_LED_ON       0x0004//按键灯亮灯
 #define STATUS_ALARM_OFF        0x0008//本地报警开关
 #define STATUS_SENSOR_NAME_ON   0x0010//网关显示采集器名字开关
+#define STATUS_DISP_NOBINDNODE  0x0020//网关显示非绑定设备的信息开关
 
 
-#define STATUS_LORA_MASTER      0x0001//
-#define STATUS_LORA_TEST        0x0002//LORA 测试模式
-#define STATUS_LORA_APC         0x0004//采集器自动增益控制
-#define STATUS_LORA_ALARM       0x0008//采集器发送报警信息到网关
 
+#define STATUS_LORA_MASTER      0x0001//lora做master或slaver
+#define STATUS_LORA_TEST      	0x0002//LORA 测试模式
+#define STATUS_LORA_APC      	0x0004//采集器自动增益控制
+#define STATUS_LORA_ALARM      	0x0008//采集器发送报警信息到网关
+#define STATUS_LORA_CHANGE_FREQ 0x0010//LORA的中心频根据客户码变化
 
 
 
@@ -515,6 +471,7 @@ typedef struct {
 } ConfigInfo_t;
 #pragma pack ()
 
+
 //***********************************************************************************
 //
 // System I/O define.
@@ -529,12 +486,10 @@ typedef struct {
 //***********************************************************************************
 #include "Board.h"
 #include "function.h"
-#include "battery/battery.h"
-// #include "driver/adc_drv.h"
+#include "driver/adc_drv.h"
 #include "driver/rtc_drv.h"
 #include "driver/i2c_drv.h"
 #include "driver/spi_drv.h"
-#include "driver/adc_drv.h"
 #include "driver/wdt_drv.h"
 #include "driver/uart_drv.h"
 #include "driver/usbInt_drv.h"
@@ -542,12 +497,11 @@ typedef struct {
 #include "flash/extflash_ringq.h"
 #include "flash/internalFlash.h"
 #include "key/key_proc.h"
-#include "sensor/max31855.h"
-#include "sensor/sht2x.h"
-#include "sensor/ntc.h"
 #include "display/display.h"
 #include "display/menu.h"
 #include "display/led_drv.h"
+#include "sensor/sensor.h"
+#include "battery/battery.h"
 #include "easylink/EasyLink.h"
 #include "easylink/radio_front.h"
 #include "radio_app/radio_app.h"
@@ -569,7 +523,7 @@ typedef struct {
 //	Global variable define
 //
 //***********************************************************************************
-extern ConfigInfo_t g_rSysConfigInfo;
+EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
 
 
 extern uint8_t deviceMode;
