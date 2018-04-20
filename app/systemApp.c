@@ -113,9 +113,7 @@ void SystemAppTaskFxn(void)
 	/* Obtain event instance handle */
 	systemAppEvtHandle = Event_handle(&systemAppEvtStruct);
 
-
     deviceMode = DEVICES_OFF_MODE;
-
 
 	RtcInit(RtcEventSet);
 
@@ -133,10 +131,11 @@ void SystemAppTaskFxn(void)
 
 	RtcStart();
 
+	Sensor_init();
+
 #ifdef		SUPPORT_WATCHDOG
 	WdtInit(WdtResetCb);
 #endif
-
 
 #ifdef BOARD_CONFIG_DECEIVE
 	ConcenterConfigDeceiveInit();

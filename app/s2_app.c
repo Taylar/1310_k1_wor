@@ -41,7 +41,7 @@ void S2HwInit(void)
 
     Flash_init();
 
-    DeepTemp_FxnTable.initFxn(MAX31855_SPI_CH0);
+
 
     AdcDriverInit();
     Battery_init();

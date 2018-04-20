@@ -725,11 +725,11 @@ static void Nwk_taskFxn(void)
 #ifdef FLASH_EXTERNAL
                 //send data second.
                 bsensordata = 0;
-                while (Flash_load_sensor_data(rNwkMsgPacket.buff, FLASH_SENSOR_DATA_SIZE, 0) == ES_SUCCESS) {
+                while (Flash_load_sensor_data_by_offset(rNwkMsgPacket.buff, FLASH_SENSOR_DATA_SIZE, 0) == ES_SUCCESS) {
                     bsensordata = 1;
                     Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
                     if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == TRUE) {
-                        Falsh_prtpoint_forward();
+                        Flash_moveto_next_sensor_data();
                     }
                     else
                     {

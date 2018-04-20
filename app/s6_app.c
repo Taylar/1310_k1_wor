@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-31 16:06:50
+* @Last Modified time: 2018-04-18 17:01:24
 */
 #include "../general.h"
 
@@ -48,21 +48,13 @@ void S6HwInit(void)
 
     Flash_init();
 
-
-#ifdef BOARD_S2_2
-    DeepTemp_FxnTable.initFxn(MAX31855_SPI_CH0);
-#endif
-
-#ifdef BOARD_S6_6
     KeyRegister(SystemKey1EventPostIsr, KEY_1_SHORT_PRESS);
 
     KeyRegister(SystemLongKey1EventPostIsr, KEY_1_LONG_PRESS);
     
     screenSleepMonitorCnt = 0;
-    NTC_FxnTable.initFxn(NTC_CH0);
 
     UsbIntInit(SystemUsbIntEventPostIsr);
-#endif
 
     Battery_init();
     Battery_voltage_measure();
@@ -233,107 +225,4 @@ void S6AppRtcProcess(void)
     }
 }
 
-
-
-#ifdef SUPPORT_NETGATE_DISP_NODE
-
-sensordata_mem pMemSensor[MEMSENSOR_NUM];//  
-uint8_t MemSensorIndex = 0;
-
-//***********************************************************************************
-//
-// unpackage  sensor data and save  sensor mac , index, type and value to mem
-//
-//***********************************************************************************
-void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
-{    
-    uint8_t i;
-    uint16_t Index;    
-    sensordata_mem cursensor;
-    
-    Index = 2;//DeviceId  start
-
-    HIBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
-    LOBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
-    HIBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];
-    LOBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];  
-    
-    Index = 16;//sensor  start
-
-    while(Index < length)
-    {
-        cursensor.index = pData[Index++];
-        cursensor.type  = pData[Index++];
-        
-        switch(cursensor.type)
-        {
-            case PARATYPE_TEMP_HUMI_SHT20:
-            HIBYTE(cursensor.temp) = pData[Index++];
-            LOBYTE(cursensor.temp) = pData[Index++];
-            HIBYTE(cursensor.humi) = pData[Index++];
-            LOBYTE(cursensor.humi) = pData[Index++];
-            break;
-
-            case PARATYPE_NTC:
-            HIBYTE(cursensor.temp) = pData[Index++];
-            LOBYTE(cursensor.temp) = pData[Index++];
-            break;
-
-            case PARATYPE_ILLUMINATION:
-            break;
-
-            case PARATYPE_TEMP_MAX31855:
-            HIBYTE(HIWORD(cursensor.tempdeep)) = pData[Index++];
-            LOBYTE(HIWORD(cursensor.tempdeep)) = pData[Index++];
-            HIBYTE(LOWORD(cursensor.tempdeep)) = pData[Index++];
-            cursensor.tempdeep >>= 8;
-            break;
-
-        }
-
-        //find in mem 
-        for (i = 0; i < MEMSENSOR_NUM; ++i) {
-            if (((pMemSensor) + i)->DeviceId == cursensor.DeviceId &&
-               ((pMemSensor) + i)->index == cursensor.index &&
-               ((pMemSensor) + i)->type == cursensor.type )
-                break;
-
-        }
-        
-        if (i < MEMSENSOR_NUM) {//update
-             memcpy((pMemSensor) + i, &cursensor, sizeof(sensordata_mem));
-        }
-        else {
-            //new sensor id
-            memcpy((pMemSensor) + MemSensorIndex, &cursensor, sizeof(sensordata_mem));
-
-            MemSensorIndex = (MemSensorIndex + 1) % MEMSENSOR_NUM;
-        }
-        
-        
-    }
-
-}
-
-bool get_next_sensor_memory(sensordata_mem *pSensor)
-{    
-    static uint8_t dispSensorIndex = 0;
-
-restart:
-    if (((sensordata_mem*)(pMemSensor) + dispSensorIndex)->DeviceId != 0x00000000 ){//valid data  
-        memcpy(pSensor, (sensordata_mem*)(pMemSensor) + dispSensorIndex, sizeof(sensordata_mem));
-        dispSensorIndex = (dispSensorIndex + 1) % MEMSENSOR_NUM;
-        return true;
-    }
-    else {
-        if(dispSensorIndex == 0)    
-            return false;
-        else {
-            dispSensorIndex = 0;
-            goto restart;
-        }
-    }
-}
-
-#endif
 

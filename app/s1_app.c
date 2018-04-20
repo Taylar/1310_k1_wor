@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-15 10:27:00
+* @Last Modified time: 2018-04-18 17:01:42
 */
 #include "../general.h"
 
@@ -45,8 +45,6 @@ void S1HwInit(void)
     I2c_init();
 
     Flash_init();
-
-    SHT2X_FxnTable.initFxn(SHT2X_I2C_CH0);
 
     configModeTimeCnt = 0;
 }

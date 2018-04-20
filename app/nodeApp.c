@@ -135,7 +135,7 @@ void NodeUploadProcess(void)
 
     while(dataItems)
     {
-        Flash_load_sensor_data(data, 22, offsetUnit);
+        Flash_load_sensor_data_by_offset(data, 22, offsetUnit);
 
         // the radio buf is full 
         if(NodeRadioSendSensorData(data, 22) == false)
@@ -170,7 +170,7 @@ void NodeUploadSucessProcess(void)
     if(offsetUnit)
     {
         offsetUnit--;
-        Falsh_prtpoint_forward();
+        Flash_moveto_next_sensor_data();
     }
 }
 
@@ -244,6 +244,7 @@ void NodeCollectPeriodSet(uint32_t period)
 //***********************************************************************************
 void NodeCollectProcess(void)
 {
+    /*
     uint8_t     data[24];
     uint32_t    temp;
     Calendar    calendarTemp;
@@ -358,7 +359,7 @@ void NodeCollectProcess(void)
     if(nodeParameter.uploadStart)
     {
         Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
-    }
+    }*/
 }
 
 
@@ -485,64 +486,6 @@ void NodeRequestConfig(void)
 
     // send the request
 }
-
-
-//***********************************************************************************
-// brief:the node sensor test
-// 
-// parameter: 
-//***********************************************************************************
-void NodeSensorTest(void)
-{
-    uint16_t voltageTemp;
-
-    testResultInfoLen = 0;
-    if(Flash_external_Selftest() == ES_SUCCESS)
-    {
-        testResultInfo[testResultInfoLen++] = 'F';
-        testResultInfo[testResultInfoLen++] = 'l';
-        testResultInfo[testResultInfoLen++] = 'a';
-        testResultInfo[testResultInfoLen++] = 's';
-        testResultInfo[testResultInfoLen++] = 'h';
-        testResultInfo[testResultInfoLen++] = ':';
-        testResultInfo[testResultInfoLen++] = 'O';
-        testResultInfo[testResultInfoLen++] = 'K';
-        testResultInfo[testResultInfoLen++] = '\n';
-    }
-    else
-    {
-        testResultInfo[testResultInfoLen++] = 'F';
-        testResultInfo[testResultInfoLen++] = 'l';
-        testResultInfo[testResultInfoLen++] = 'a';
-        testResultInfo[testResultInfoLen++] = 's';
-        testResultInfo[testResultInfoLen++] = 'h';
-        testResultInfo[testResultInfoLen++] = ':';
-        testResultInfo[testResultInfoLen++] = 'E';
-        testResultInfo[testResultInfoLen++] = 'R';
-        testResultInfo[testResultInfoLen++] = 'R';
-        testResultInfo[testResultInfoLen++] = 'O';
-        testResultInfo[testResultInfoLen++] = 'R';
-        testResultInfo[testResultInfoLen++] = '\n';
-    }
-
-    SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
-    DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256;
-
-    testResultInfoLen += sprintf((char *)(&testResultInfo[testResultInfoLen]), "TEMP: %02d",
-                DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256);
-
-    testResultInfo[testResultInfoLen++] = '\n';
-
-    voltageTemp = AONBatMonBatteryVoltageGet();
-    voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
-    testResultInfoLen += sprintf((char *)(&testResultInfo[testResultInfoLen]), "VOL: %d mV", voltageTemp);
-
-    testResultInfo[testResultInfoLen++] = '\n';
-
-    NodeBroadcastTestResult();
-}
-
-
 
 
 //***********************************************************************************

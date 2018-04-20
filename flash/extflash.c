@@ -177,7 +177,7 @@ static void Flash_external_page_program(uint32_t flashAddr, uint8_t *pData, uint
     // Write enable
     do {
         Flash_external_write_enable();
-        delay_us(15);    // 10us
+        __delay_cycles(120);    // 10us
     } while (!(Flash_external_read_status() & WEL_BIT));
 
     Flash_spi_enable();
@@ -232,7 +232,7 @@ static void Flash_external_erase(uint32_t flashAddr, uint8_t eraseMode)
     // Write enable
     do {
         Flash_external_write_enable();
-        delay_us(15);    // 10us
+        __delay_cycles(120);    // 10us
     } while (!(Flash_external_read_status() & WEL_BIT));
 
     Flash_spi_enable();
@@ -338,7 +338,7 @@ static void Flash_reset_data(void)
 
 
     sysInfo.swVersion = FW_VERSION;
-    sysInfo.printRecordAddr.start = 0xffffffff;//娌℃湁寮�濮嬭褰�
+    sysInfo.printRecordAddr.start = 0xffffffff;//没有开始记录
     sysInfo.printRecordAddr.end =   0xffffffff;
     Flash_external_write(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
 
@@ -352,10 +352,7 @@ static void Flash_reset_data(void)
 
 }
 
-#ifdef SUPPORT_START_LOGO
-uint8_t logo_x = 0; 
-#define LOGO_X_MAX  128
-#endif
+
 //***********************************************************************************
 //
 // Flash init.
@@ -365,13 +362,8 @@ void Flash_init(void)
 {
     FlashSysInfo_t sysInfo;
 
-#ifdef SUPPORT_START_LOGO
-    Disp_poweron();
-    Lcd_set_font(1, 8, 1);
-    Lcd_clear_area(logo_x++, 4);
-#endif
 
-    Flash_io_init();
+    extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable);
 
     // Time delay before write instruction.
     Task_sleep(10 * CLOCK_UNIT_MS);
@@ -438,17 +430,6 @@ static void Flash_load_sensor_ptr(void)
         rFlashSensorData.ptrDataAddr += FLASH_SENSOR_PTR_SIZE;
 
         
-    #ifdef SUPPORT_START_LOGO
-        if( i% 100 == 0){
-            Lcd_clear_area(logo_x++, 4);        
-            logo_x = logo_x % LOGO_X_MAX;
-            if(logo_x == 0) {
-                Lcd_set_font(128, 32, 0);
-                Lcd_clear_area(0, 2);
-                Lcd_set_font(1, 8, 1);
-            }
-        }
-    #endif
 
     }
 
@@ -479,7 +460,7 @@ void Flash_store_sensor_data(uint8_t *pData, uint16_t length)
     if (length > FLASH_SENSOR_DATA_SIZE)
         return;
 
-    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     addr = (rFlashSensorData.ptrData.rearAddr + FLASH_SENSOR_DATA_SIZE) % (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
     if (addr == rFlashSensorData.ptrData.frontAddr) {
         //Data queue full, drop one object data, Data queue frontAddr increase.
@@ -508,38 +489,110 @@ void Flash_store_sensor_data(uint8_t *pData, uint16_t length)
 
     //Store sensor ptrData.
     Flash_store_sensor_ptr();
-    Semaphore_post(spiSemHandle);
+	Semaphore_post(spiSemHandle);
 }
+
 
 //***********************************************************************************
 //
 // Flash load sensor data.
 //
 //***********************************************************************************
-ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length, uint8_t offsetUnit)
+ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length)
 {
     if (length > FLASH_SENSOR_DATA_SIZE)
         return ES_ERROR;
 
 	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-    if (rFlashSensorData.ptrData.rearAddr == (rFlashSensorData.ptrData.frontAddr + offsetUnit * FLASH_SENSOR_DATA_SIZE)) {
+    if (rFlashSensorData.ptrData.rearAddr == rFlashSensorData.ptrData.frontAddr) {
         //Data queue empty.
     	Semaphore_post(spiSemHandle);
         return ES_ERROR;
     }
 
     //Data queue not empty, dequeue data.
-    Flash_external_read(rFlashSensorData.ptrData.frontAddr + FLASH_SENSOR_DATA_POS + offsetUnit * FLASH_SENSOR_DATA_SIZE, pData, length);
-    
+    Flash_external_read(rFlashSensorData.ptrData.frontAddr + FLASH_SENSOR_DATA_POS, pData, length);
     //Data queue front pointer increase.
-    // rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
-    // rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+    //rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
+    //rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
 
     //Store sensor ptrData.
-    // Flash_store_sensor_ptr();
+    //Flash_store_sensor_ptr();
 	Semaphore_post(spiSemHandle);
 
     return ES_SUCCESS;
+}
+
+
+
+//***********************************************************************************
+//
+// Flash load sensor data by offset.
+//
+//***********************************************************************************
+ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, uint8_t offset)
+{
+    uint32_t LoadAddr;
+
+    if (length > FLASH_SENSOR_DATA_SIZE)
+        return ES_ERROR;
+
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+	LoadAddr = rFlashSensorData.ptrData.frontAddr + offset*FLASH_SENSOR_DATA_SIZE;
+    LoadAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+    if (rFlashSensorData.ptrData.rearAddr == LoadAddr) {
+        //Data queue empty.
+    	Semaphore_post(spiSemHandle);
+        return ES_ERROR;
+    }
+
+
+    
+    //Data queue not empty, dequeue data.
+    Flash_external_read(LoadAddr + FLASH_SENSOR_DATA_POS, pData, length);
+    
+	Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+
+
+//***********************************************************************************
+//
+// Flash moveto offset  sensor data.
+//
+//***********************************************************************************
+void Flash_moveto_offset_sensor_data(uint8_t offset)
+{
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    //Data queue front pointer increase.
+    rFlashSensorData.ptrData.frontAddr += offset*FLASH_SENSOR_DATA_SIZE;
+    rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    Flash_store_sensor_ptr();
+	Semaphore_post(spiSemHandle);
+}
+
+//***********************************************************************************
+//
+// Flash moveto next last sensor data.
+//
+//***********************************************************************************
+void Flash_moveto_next_sensor_data(void)
+{
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    //Data queue front pointer increase.
+    rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
+    rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    Flash_store_sensor_ptr();
+	Semaphore_post(spiSemHandle);
 }
 
 //***********************************************************************************
@@ -553,7 +606,7 @@ void Flash_store_record_addr(uint8_t startOrEnd)
 {
     FlashSysInfo_t sysInfo;
 
-    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
     if (startOrEnd) {
         sysInfo.printRecordAddr.start = rFlashSensorData.ptrData.rearAddr;
@@ -568,7 +621,7 @@ void Flash_store_record_addr(uint8_t startOrEnd)
     }
     Flash_external_erase(FLASH_SYS_POS, FLASH_EXT_SECTOR_ERASE);
     Flash_external_write(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
-    Semaphore_post(spiSemHandle);
+	Semaphore_post(spiSemHandle);
 }
 
 //***********************************************************************************

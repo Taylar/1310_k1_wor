@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-16 14:03:45
+* @Last Modified time: 2018-04-18 17:03:28
 */
 #include "../general.h"
 
@@ -200,7 +200,7 @@ void ConcenterSensorDataUpload(void)
     
     while(dataItems)
     {
-        Flash_load_sensor_data(data, 22, dataItems);
+        Flash_load_sensor_data_by_offset(data, 22, dataItems);
 
         // upload the data to network 
         
@@ -422,7 +422,7 @@ uint32_t ConcenterReadChannel(uint32_t nodeAddr)
 //***********************************************************************************
 void ConcenterStoreConfig(void)
 {
-    InternalFlashStoreConfig();
+    Flash_store_config();
 }
 
 //***********************************************************************************
@@ -503,7 +503,7 @@ void ConcenterCollectPeriodSet(uint32_t period)
 // parameter: 
 //***********************************************************************************
 void ConcenterCollectProcess(void)
-{
+{/*
     uint8_t     data[24];
     uint32_t    temp;
     Calendar    calendarTemp;
@@ -580,6 +580,7 @@ void ConcenterCollectProcess(void)
 #ifdef  BOARD_S6_6
     sensor_unpackage_to_memory(data, data[0]+1);
 #endif
+*/
 }
 
 

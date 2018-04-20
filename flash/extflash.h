@@ -166,7 +166,7 @@ extern void Flash_init(void);
 extern uint32_t Flash_get_sensor_writeaddr(void);
 extern uint32_t Flash_get_sensor_readaddr(void);
 extern void Flash_read_rawdata(uint32_t flashAddr, uint8_t *pData, uint16_t length);
-extern ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length, uint8_t offsetUnit);
+extern ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length);
 extern ErrorStatus Flash_load_sensor_data_history(uint8_t *pData, uint16_t length, uint32_t number);
 extern void Flash_store_sensor_data(uint8_t *pData, uint16_t length);
 extern void Flash_recovery_last_sensor_data(void);
