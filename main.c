@@ -43,11 +43,9 @@
 /* Board Header files */
 #include "Board.h"
 
+#define VARIABLES_DEFINE
+
 #include "general.h"
-#include "interface_app/interface.h"
-#include "radio_app/radio_app.h"
-#include "app/systemApp.h"
-#include "network/network.h"
 
 
 
@@ -60,33 +58,24 @@ int main(void)
     /* Call driver init functions. */
     Board_initGeneral();
 
-    // InternalFlashLoadConfig();
-
-    /* Initialize System Application tasks */
-
-    
-    LedInit();
     
 
-    SysAppTaskCreate();
 
 #ifndef   BOARD_CONFIG_DECEIVE
-    
     // Init the config
     if(InternalFlashLoadConfig() == false)
     {
         InternalFlashConfigReset();
-        InternalFlashStoreConfig();
+        Flash_store_config();
     }
-
 #endif
 
+    SysAppTaskCreate();
 
 
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
     Nwk_task_create();
     InterfaceTaskCreate();
-
 
     /* Initialize radio tasks */
     if(g_rSysConfigInfo.module & MODULE_RADIO)
@@ -95,13 +84,12 @@ int main(void)
     }
 #endif
 
+
 #if (defined BOARD_S1_2) || (defined BOARD_CONFIG_DECEIVE)
 
     RadioAppTaskCreate();
 
 #endif
-    
-    
 
     // test for 32K s
     // IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);

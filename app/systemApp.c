@@ -6,14 +6,7 @@
 /***** Defines *****/
 #define         SYSTEM_APP_STACK_SIZE        1024
 
-// **************************************************************************
 
-
-// /* Clock for the fast report timeout */
-
-// static Clock_Struct sysTimerClock;     /* not static so you can see in ROV */
-
-// static Clock_Handle sysTimerClockHandle;
 
 
 // **************************************************************************
@@ -129,9 +122,9 @@ void SystemAppTaskFxn(void)
    	S1HwInit();
 #endif
 
-	RtcStart();
-
 	Sensor_init();
+
+	RtcStart();
 
 #ifdef		SUPPORT_WATCHDOG
 	WdtInit(WdtResetCb);
@@ -141,20 +134,6 @@ void SystemAppTaskFxn(void)
 	ConcenterConfigDeceiveInit();
 #endif
 
-  //  	if(KeyReadState(KEY_0_SHORT_PRESS) == KEY_PRESSED)
-  //  	{
-  //  		deviceMode = DEVICES_TEST_MODE;
-
-		// Led_toggle(LED_R);
-  //       Led_toggle(LED_B);
-		// Led_toggle(LED_G);
-		// // delay for a minute waite other task Init
-		// Task_sleep(2 * CLOCK_UNIT_S);
-   	// }
-   	
-	// voltageTemp = Clock_getTicks();
-	// Clock_setTimeout(sysTimerClockHandle, 0);
-	// Clock_start(sysTimerClockHandle);
 
 #if (defined BOARD_S6_6) || (defined BOARD_S2_2)
 #ifndef  BOARD_CONFIG_DECEIVE
@@ -297,7 +276,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_NET_UPLOAD)
 		{
-			Nwk_upload_data();
+
 		}
 
 		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)
@@ -310,12 +289,8 @@ void SystemAppTaskFxn(void)
 			UsbIntProcess();
 		}
 
-
-
 		if(eventId & SYSTEMAPP_EVT_TIMER)
 		{
-			// System_printf("start time: %d \n", voltageTemp);
-			// System_printf("period time: %d \n", b);
 		}
 
 	}

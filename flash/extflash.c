@@ -383,6 +383,13 @@ void Flash_init(void)
     
 }
 
+void Flash_read_rawdata(uint32_t flashAddr, uint8_t *pData, uint16_t length)
+{
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    Flash_external_read( flashAddr,  pData,  length);
+	Semaphore_post(spiSemHandle);
+}
+
 //***********************************************************************************
 //
 // Flash store sensor data pointer.
@@ -447,6 +454,25 @@ static void Flash_load_sensor_ptr(void)
     }
 }
 
+uint32_t Flash_get_sensor_writeaddr(void)
+{
+    uint32_t addr;
+
+   Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+   addr = rFlashSensorData.ptrData.rearAddr;   
+   Semaphore_post(spiSemHandle);
+   return addr;
+}
+
+uint32_t Flash_get_sensor_readaddr(void)
+{
+    uint32_t addr;
+
+   Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+   addr = rFlashSensorData.ptrData.frontAddr;   
+   Semaphore_post(spiSemHandle);
+   return addr;
+}
 
 //***********************************************************************************
 //
@@ -593,6 +619,31 @@ void Flash_moveto_next_sensor_data(void)
     //Store sensor ptrData.
     Flash_store_sensor_ptr();
 	Semaphore_post(spiSemHandle);
+}
+
+//***********************************************************************************
+//
+// Flash load sensor history data.
+//
+//***********************************************************************************
+ErrorStatus Flash_load_sensor_data_history(uint8_t *pData, uint16_t length, uint32_t number)
+{
+    uint32_t historyAddr;
+
+    if (length > FLASH_SENSOR_DATA_SIZE)
+        length = FLASH_SENSOR_DATA_SIZE;
+
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+	#if 0
+	historyAddr = (rFlashSensorData.ptrData.frontAddr + (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER) - number*FLASH_SENSOR_DATA_SIZE)
+					% (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+	#else
+	historyAddr =  (number % FLASH_SENSOR_DATA_NUMBER)*FLASH_SENSOR_DATA_SIZE;
+	#endif
+    Flash_external_read(historyAddr + FLASH_SENSOR_DATA_POS, pData, length);
+	Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
 }
 
 //***********************************************************************************

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-18 17:01:24
+* @Last Modified time: 2018-04-20 18:29:57
 */
 #include "../general.h"
 
@@ -19,13 +19,62 @@
 /***** Variable declarations *****/
 uint8_t  screenSleepMonitorCnt;
 
-
+Clock_Struct sysLcdShutClkStruct;
+Clock_Handle sysLcdShutClkHandle;
 
 /***** Prototypes *****/
 
 
 
 /***** Function definitions *****/
+
+
+
+//***********************************************************************************
+//
+// System LCD shutdown callback function.
+//
+//***********************************************************************************
+void Sys_lcdShutFxn(UArg arg0)
+{
+    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
+        return;
+    }
+
+    if (!(g_rSysConfigInfo.status & STATUS_LCD_ALWAYS_ON))
+        Disp_poweroff();
+}
+
+
+//***********************************************************************************
+//
+// System LCD auto shutdown start timing function.
+//
+//***********************************************************************************
+void Sys_lcd_start_timing(void)
+{
+    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
+        return;
+    }
+
+    if (!(g_rSysConfigInfo.status & STATUS_LCD_ALWAYS_ON))
+        Clock_start(sysLcdShutClkHandle);
+}
+
+//***********************************************************************************
+//
+// System LCD auto shutdown stop timing function.
+//
+//***********************************************************************************
+void Sys_lcd_stop_timing(void)
+{
+    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
+        return;
+    }
+
+    if (!(g_rSysConfigInfo.status & STATUS_LCD_ALWAYS_ON))
+        Clock_stop(sysLcdShutClkHandle);
+}
 
 
 //***********************************************************************************
@@ -35,23 +84,23 @@ uint8_t  screenSleepMonitorCnt;
 //***********************************************************************************
 void S6HwInit(void)
 {
+    LedInit();
+
 	KeyInit();
     KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
-
     KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
 
-	AdcDriverInit();
-    Disp_init();
+    KeyRegister(SystemKey1EventPostIsr, KEY_1_SHORT_PRESS);
+    KeyRegister(SystemLongKey1EventPostIsr, KEY_1_LONG_PRESS);
 
+	AdcDriverInit();
+
+    Disp_init();
 
     Spi_init();
 
     Flash_init();
 
-    KeyRegister(SystemKey1EventPostIsr, KEY_1_SHORT_PRESS);
-
-    KeyRegister(SystemLongKey1EventPostIsr, KEY_1_LONG_PRESS);
-    
     screenSleepMonitorCnt = 0;
 
     UsbIntInit(SystemUsbIntEventPostIsr);
@@ -61,7 +110,27 @@ void S6HwInit(void)
 
     Disp_poweron();
     Disp_proc();
+
+
+
+    /* Construct a one-shot Clock Instance to shutdown display */
+    Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
+    clkParams.period = 0;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&sysLcdShutClkStruct, (Clock_FuncPtr)Sys_lcdShutFxn,
+                        15 * CLOCK_UNIT_S, &clkParams);
+    /* Obtain clock instance handle */
+    sysLcdShutClkHandle = Clock_handle(&sysLcdShutClkStruct);
+    
+    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//Ã»ÓÐlcd,sysLcdShutClkHandleÓÃÀ´×ö¹¤×÷Ö¸Ê¾µÆµÄ¶¨Ê±Æ÷¡£
+        Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);
+        Clock_setTimeout(sysLcdShutClkHandle,  60*CLOCK_UNIT_S);
+        Clock_start(sysLcdShutClkHandle); 
+    }
+
 }
+
 
 
 
@@ -214,15 +283,7 @@ void S6LongKey1App(void)
 //***********************************************************************************
 void S6AppRtcProcess(void)
 {
-    if(Disp_powerState())
-    {
-        screenSleepMonitorCnt ++;
-        if(screenSleepMonitorCnt >= SCREEN_SLEEP_TIME)
-        {
-            Disp_poweroff();
-            deviceMode = DEVICES_SLEEP_MODE;
-        }
-    }
+
 }
 
 

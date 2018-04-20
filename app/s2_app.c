@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:14:22
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-09 16:00:03
+* @Last Modified time: 2018-04-20 14:27:33
 */
 #include "../general.h"
 
@@ -32,21 +32,19 @@
 //***********************************************************************************
 void S2HwInit(void)
 {
+    LedInit();
+    
 	KeyInit();
     KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
-
     KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
 
     Spi_init();
 
     Flash_init();
 
-
-
     AdcDriverInit();
     Battery_init();
     Battery_voltage_measure();
-
 }
 
 //***********************************************************************************

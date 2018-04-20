@@ -231,11 +231,11 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 					default:
 					// error setting parameter
-					InternalFlashStoreConfig();
+					Flash_store_config();
 					goto NodeDispath;
 				}
 			}
-			InternalFlashStoreConfig();	
+			Flash_store_config();
 			break;
 
 			case RADIO_PRO_CMD_SET_PARA_ACK:

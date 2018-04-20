@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-18 17:01:42
+* @Last Modified time: 2018-04-20 14:23:17
 */
 #include "../general.h"
 
@@ -34,10 +34,10 @@ uint32_t configModeTimeCnt;          // the unit is sec
 //***********************************************************************************
 void S1HwInit(void)
 {
+    LedInit();
+    
     KeyInit();
-
     KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
-
     KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
 
     Spi_init();

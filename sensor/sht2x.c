@@ -86,8 +86,7 @@ static void SHT2x_init(uint8_t chNum)
 {
     uint8_t buff[1];
 
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X
-        && rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
+    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
         buff[0] = SOFT_RESET;
         I2c_write(Board_SHT2x_ADDR, buff, 1);
@@ -107,8 +106,7 @@ static void SHT2x_measure(uint8_t chNum)
     uint8_t buff[3];
     uint8_t retrys = 0;//出错时重试3次
 
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X
-        && rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
+    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
         if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
@@ -177,8 +175,7 @@ err_retrys:
 //***********************************************************************************
 static int32_t SHT2x_get_value(uint8_t chNum, SENSOR_FUNCTION function)
 {
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X
-        && rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
+    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
         if(function & SENSOR_TEMP){
             return rSensorData[chNum].temp;

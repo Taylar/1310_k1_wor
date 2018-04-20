@@ -168,7 +168,7 @@ bool InternalFlashLoadConfig(void)
 //***********************************************************************************
 void InternalFlashConfigReset(void)
 {
-	// uint8_t i;
+	uint8_t i;
 
     g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
     g_rSysConfigInfo.swVersion = FW_VERSION;
@@ -180,8 +180,15 @@ void InternalFlashConfigReset(void)
     g_rSysConfigInfo.customId[0] = (uint8_t)(CUSTOM_ID_DEFAULT >> 8);
     g_rSysConfigInfo.customId[1] = (uint8_t)(CUSTOM_ID_DEFAULT);
 
-
     g_rSysConfigInfo.status = 0;
+
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+		g_rSysConfigInfo.sensorModule[i]     = SEN_TYPE_NONE;
+		g_rSysConfigInfo.alarmTemp[i].high   = ALARM_TEMP_HIGH;
+		g_rSysConfigInfo.alarmTemp[i].low    = ALARM_TEMP_LOW;
+		g_rSysConfigInfo.WarningTemp[i].high = ALARM_TEMP_HIGH;
+		g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
+    }
 
 #ifdef		BOARD_S2_2
 
@@ -192,7 +199,7 @@ void InternalFlashConfigReset(void)
 	g_rSysConfigInfo.serverIpAddr[3] = 32;
 	g_rSysConfigInfo.serverIpPort    = 12200;
 
-	g_rSysConfigInfo.batLowVol       = 3600;
+	g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
 	g_rSysConfigInfo.apnuserpwd[0]   = 0;
 	g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
 	g_rSysConfigInfo.rfStatus 		|= STATUS_LORA_MASTER;
@@ -207,7 +214,7 @@ void InternalFlashConfigReset(void)
 	g_rSysConfigInfo.serverIpAddr[3] = 32;
 	g_rSysConfigInfo.serverIpPort    = 12200;
 
-	g_rSysConfigInfo.batLowVol       = 3600;
+	g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
 	g_rSysConfigInfo.apnuserpwd[0]   = 0;
 	g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
 	g_rSysConfigInfo.rfStatus 		|= STATUS_LORA_MASTER;
@@ -217,22 +224,12 @@ void InternalFlashConfigReset(void)
 #ifdef		BOARD_S1_2
 
 	g_rSysConfigInfo.module          = MODULE_RADIO;
-	g_rSysConfigInfo.batLowVol       = 2500;
+	g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
 	g_rSysConfigInfo.apnuserpwd[0]   = 0;
 	g_rSysConfigInfo.rfStatus 		 = 0;
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 #endif
 
-/*
-    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
-        g_rSysConfigInfo.sensorModule[i] = SEN_TYPE_NONE;
-        g_rSysConfigInfo.alarmTemp[i].high = ALARM_TEMP_HIGH;
-        g_rSysConfigInfo.alarmTemp[i].low = ALARM_TEMP_LOW;
-        g_rSysConfigInfo.WarningTemp[i].high = ALARM_TEMP_HIGH;
-        g_rSysConfigInfo.WarningTemp[i].low = ALARM_TEMP_LOW;
-    }
-    
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
-*/
 
 	g_rSysConfigInfo.collectPeriod   = UPLOAD_PERIOD_DEFAULT;   //unit is sec
 	

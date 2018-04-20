@@ -285,6 +285,7 @@
 #define MODULE_CC1310           0x0010
 #define MODULE_GPS              0x0020
 #define MODULE_BTP              0x0040
+#define MODULE_LCD              0x0080
 
 #define MODULE_NWK              (MODULE_GSM | MODULE_WIFI | MODULE_LAN)
 #define MODULE_RADIO            (MODULE_LORA| MODULE_CC1310)
@@ -508,8 +509,8 @@ typedef struct {
 #include "radio_app/node_strategy.h"
 #include "network/network.h"
 #include "interface_app/interface.h"
+#include "usb/usb_proc.h"
 #include "app/concenterApp.h"
-#include "app/usb_prot.h"
 #include "app/radio_protocal.h"
 #include "app/nodeApp.h"
 #include "app/concenterApp.h"

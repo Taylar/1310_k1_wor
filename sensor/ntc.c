@@ -354,8 +354,7 @@ void Ntc_measure(uint8_t chNum)
 {
     float  temp;
 
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC
-        && rSensorHWAttrs[chNum].chNum >= SEN_ADC_CH0 && rSensorHWAttrs[chNum].chNum < SEN_ADC_MAX) {
+    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC) {
        
         temp = Ntc_get_adc_value(chNum);
 
@@ -371,8 +370,7 @@ void Ntc_measure(uint8_t chNum)
 //***********************************************************************************
 static int32_t Ntc_get_value(uint8_t chNum, SENSOR_FUNCTION function)
 {
-    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC
-        && rSensorHWAttrs[chNum].chNum >= SEN_ADC_CH0 && rSensorHWAttrs[chNum].chNum < SEN_ADC_MAX) {
+    if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC) {
 
         if (function & SENSOR_TEMP) {
             return rSensorData[chNum].temp;

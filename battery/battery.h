@@ -14,12 +14,19 @@
 #ifdef SUPPORT_BATTERY
 
 //Battery voltage (mV)
+#ifdef  BOARD_S1_2
+
+#define BAT_VOLTAGE_LOW             2500
+
+#else
+
 #define BAT_VOLTAGE_LOW             3600
 #define BAT_VOLTAGE_L1              3750
 #define BAT_VOLTAGE_L2              3900
 #define BAT_VOLTAGE_L3              4050
 #define BAT_VOLTAGE_FULL            4200
 
+#endif
 
 extern void Battery_init(void);
 extern void Battery_voltage_measure(void);

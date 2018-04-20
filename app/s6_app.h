@@ -15,6 +15,9 @@
 /***** function declarations *****/
 
 
+void Sys_lcd_start_timing(void);
+
+void Sys_lcd_stop_timing(void);
 
 void S6HwInit(void);
 
