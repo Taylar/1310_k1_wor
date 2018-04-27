@@ -90,7 +90,7 @@ void Lcd_io_input(void)
 // LCD screen spi send byte.
 //
 //***********************************************************************************
-void Lcd_spiSendByte(uint8_t value)
+static void Lcd_spiSendByte(uint8_t value)
 {
     uint8_t i;
 
@@ -145,7 +145,7 @@ void Lcd_send_data(uint8_t value)
 // LCD screen reset.
 //
 //***********************************************************************************
-void Lcd_reset(void)
+static void Lcd_reset(void)
 {
     Lcd_reset_ctrl(1);
     Task_sleep(1 * CLOCK_UNIT_MS);

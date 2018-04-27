@@ -32,6 +32,18 @@ void SystemAppTaskFxn(void);
 
 
 /***** Function definitions *****/
+
+//***********************************************************************************
+//
+// System event post.
+//
+//***********************************************************************************
+void SystemEventSet(UInt event)
+{
+    Event_post(systemAppEvtHandle, event);
+}
+
+
 void SystemKeyEventPostIsr(void)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0);
@@ -55,12 +67,6 @@ void SystemLongKey1EventPostIsr(void)
 void SystemUsbIntEventPostIsr(void)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_USBINT);
-}
-
-
-void SysTimerCb(UArg arg0)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_TIMER);
 }
 
 
@@ -134,7 +140,7 @@ void SystemAppTaskFxn(void)
 	ConcenterConfigDeceiveInit();
 #endif
 
-
+	Sensor_measure(0);
 #if (defined BOARD_S6_6) || (defined BOARD_S2_2)
 #ifndef  BOARD_CONFIG_DECEIVE
 	ConcenterWakeup();
@@ -148,15 +154,7 @@ void SystemAppTaskFxn(void)
         eventId = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL, BIOS_WAIT_FOREVER);
 	
 
-        if(eventId &SYSTEMAPP_EVT_RADIO_NODE)
-		{
 
-		}
-
-		if(eventId &SYSTEMAPP_EVT_RADIO_CONCENTER)
-		{
-
-		}
 
 // the config deceive key is disable
 #ifndef   BOARD_CONFIG_DECEIVE
@@ -212,17 +210,8 @@ void SystemAppTaskFxn(void)
 #endif
 
 
-		if(eventId &SYSTEMAPP_EVT_INTERFACE)
-		{
-
-		}
-
 		
 
-		if(eventId &SYSTEMAPP_EVT_SENSOR)
-		{
-
-		}
 
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
@@ -268,17 +257,6 @@ void SystemAppTaskFxn(void)
 		}
 
 
-		if(eventId & SYSTEMAPP_EVT_COLLECT_NODE)
-		{
-			NodeCollectProcess();
-		}
-
-
-		if(eventId & SYSTEMAPP_EVT_NET_UPLOAD)
-		{
-
-		}
-
 		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)
 		{
 			ConcenterSensorDataSave();
@@ -289,10 +267,12 @@ void SystemAppTaskFxn(void)
 			UsbIntProcess();
 		}
 
-		if(eventId & SYSTEMAPP_EVT_TIMER)
+#ifdef SUPPORT_DISP_SCREEN
+		if(eventId & SYSTEMAPP_EVT_DISP)
 		{
+        	Disp_proc();
 		}
-
+#endif
 	}
 }
 

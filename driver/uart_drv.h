@@ -30,7 +30,7 @@ typedef enum CC1310_LAUNCHXL_UARTName {
 
 
 
-#define UART_BUFF_SIZE           288
+#define UART_BUFF_SIZE           350
 
 typedef void (*UART_CB_T)(void);
 

@@ -70,12 +70,49 @@
 
 // #define FACTOR_RADIO_TEST
 
+
+//***********************************************************************************
+// S6_6 board define
+//***********************************************************************************
+#ifdef BOARD_S6_6
+#define SUPPORT_SENSOR
+#define SUPPORT_NTC
+
+#define SUPPORT_RADIO
+#define SUPPORT_DISP_SCREEN
+#define SUPPORT_NETWORK
+#endif
+
+//***********************************************************************************
+// S2_2 board define
+//***********************************************************************************
+#ifdef BOARD_S2_2
+#define SUPPORT_SENSOR
+#define SUPPORT_DEEPTEMP
+
+#define SUPPORT_RADIO
+
+#define SUPPORT_NETWORK
+#endif
+
+//***********************************************************************************
+// S1_2/3 board define
+//***********************************************************************************
+#ifdef BOARD_S1_2
+#define SUPPORT_SENSOR
+#define SUPPORT_SHT2X
+
+#define SUPPORT_RADIO
+#endif
+
+
+
 //***********************************************************************************
 //
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0007
+#define FW_VERSION              0x0009
 
 
 //***********************************************************************************
@@ -85,7 +122,7 @@
 //***********************************************************************************
 #define CONFIG_DECEIVE_ID_DEFAULT       0XFFFFFFFA
 
-#define DECEIVE_ID_DEFAULT              0XFFFFFFFB
+#define DECEIVE_ID_DEFAULT              0X88888886
 
 #define CUSTOM_ID_DEFAULT               0X0000
 
@@ -150,16 +187,7 @@
 //#define MX66L1G45G  //1G flash
 #endif
 
-//Sensor define
-#define SUPPORT_SENSOR
-#ifdef SUPPORT_SENSOR
-#define SUPPORT_SHT2X
-#define SUPPORT_NTC
-#ifdef BOARD_S2_2
-#define SUPPORT_DEEPTEMP
-//#define SUPPORT_GPS
-#endif
-#endif
+
 
 #ifdef SUPPORT_NTC
 //#define NTC_ELIWELL_10K
@@ -182,7 +210,6 @@
 #endif
 
 //Radio define
-//#define SUPPORT_RADIO
 #ifdef SUPPORT_RADIO
 #define SUPPORT_CC1310
 #endif
@@ -196,7 +223,6 @@
 
 
 //LCD define
-#define SUPPORT_DISP_SCREEN
 #ifdef SUPPORT_DISP_SCREEN
 
 
@@ -220,7 +246,6 @@
 #endif
 
 //Network define
-#define SUPPORT_NETWORK
 #ifdef SUPPORT_NETWORK
 #define SUPPORT_GSM
 #define SUPPORT_GSM_SHORT_CONNECT
@@ -232,7 +257,7 @@
 #endif
 #define SUPPORT_IMEI
 
-#define PACKAGE_ITEM_COUNT_MAX 1
+#define PACKAGE_ITEM_COUNT_MAX 10
 #define SUPPORT_ZKS_PROTOCOL
 
 #endif
@@ -263,10 +288,6 @@
 
 //I2C define
 #define I2C_BUS
-
-
-
-
 
 
 
@@ -342,10 +363,10 @@ typedef enum {
 #define         DEVICES_TYPE_NODE               1
 
 // device power mode 
-#define         DEVICES_OFF_MODE               0
-#define         DEVICES_ON_MODE                1
-#define         DEVICES_MENU_MODE              2
-#define         DEVICES_CONFIG_MODE            3
+#define         DEVICES_OFF_MODE               0    // power down mode
+#define         DEVICES_ON_MODE                1    // power on mode
+#define         DEVICES_MENU_MODE              2    // in the menu display
+#define         DEVICES_CONFIG_MODE            3    // 
 #define         DEVICES_SLEEP_MODE             4
 #define         DEVICES_TEST_MODE              5
 
@@ -526,6 +547,7 @@ typedef struct {
 //***********************************************************************************
 EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
 
+EXTERN_ATTR uint16_t     g_bAlarmSensorFlag; //¸ÄÎª16bit¼æÈÝÍø¹Ø±¨¾¯±êÖ¾(0x100)
 
 extern uint8_t deviceMode;
 

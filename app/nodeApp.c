@@ -499,10 +499,13 @@ void NodeRtcProcess(void)
     {
         nodeParameter.collectTimeCnt++;
         
-        if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
+        // if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
+        if(nodeParameter.collectTimeCnt >= 1)
         {
-            nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
-            Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_COLLECT_NODE);
+            nodeParameter.collectTimeCnt -= 1;
+            // nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
+            Sensor_measure(1);
+
         }
 
         nodeParameter.sysTime++;
@@ -513,17 +516,18 @@ void NodeRtcProcess(void)
         }
     }
 
-    // if(nodeParameter.uploadStart)
-    // {
-    //     nodeParameter.uploadTimeCnt++;
-    //     if(nodeParameter.uploadTimeCnt > g_rSysConfigInfo.collectPeriod)
-    //     {
-    //         nodeParameter.uploadTimeCnt = 0;
+    if(nodeParameter.uploadStart)
+    {
+        nodeParameter.uploadTimeCnt++;
+        // if(nodeParameter.uploadTimeCnt >= g_rSysConfigInfo.uploadPeriod)
+        if(nodeParameter.uploadTimeCnt >= 5)
+        {
+            nodeParameter.uploadTimeCnt = 0;
 
-    //         if(deviceMode == DEVICES_ON_MODE)
-    //             Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
-    //     }
-    // }
+            if(deviceMode == DEVICES_ON_MODE)
+                Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+        }
+    }
 }
 
 

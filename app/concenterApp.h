@@ -36,8 +36,6 @@ void ConcenterSensorDataSave(void);
 
 void ConcenterSensorDataUpload(void);
 
-void ConcenterUploadEventSet(void);
-
 uint32_t ConcenterReadChannel(uint32_t nodeAddr);
 
 void ConcenterSaveChannel(uint32_t nodeAddr);

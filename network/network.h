@@ -95,22 +95,7 @@ extern void Nwk_poweroff(void);
 extern uint8_t Nwk_get_rssi(void);
 extern void Nwk_get_simccid(uint8_t *pBuff);
 extern bool SetDevicePara(uint8_t *rxData, uint16_t length);
-
-#ifdef SUPPORT_G7_PROTOCOL
-void SurroundingMonitor(uint16_t value);
-
-void BlePrintRecordStartNotify(void);
-
-void BlePrintRecordStopNotify(void);
-
-void BlePrintingRecordNotify(void);
-
-NwkLocation_t * G7GetLbs(void);
-
-void BleRecordSearch(void);
-
-void G7ProtocalFunctionInit(void);
-#endif  // SUPPORT_G7_PROTOCOL
+uint8_t Nwk_get_state(void);
 
 #endif	/* __ZKSIOT_NETWORK_H__ */
 

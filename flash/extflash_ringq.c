@@ -2,9 +2,13 @@
 * @Author: zxt
 * @Date:   2018-01-11 10:34:13
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-31 16:21:34
+* @Last Modified time: 2018-04-24 14:21:39
 */
 #include "../general.h"
+
+
+Semaphore_Struct queueSemStruct;
+Semaphore_Handle queueSemHandle;
 
 
 /***** Function definitions *****/
@@ -15,12 +19,24 @@
 //***********************************************************************************
 void ExtflashRingQueueInit(extflash_queue_s * p_queue)
 {  
-   p_queue->size = EXTFLASH_QUEUE_MAX ;  
+    static uint8_t init = 0;
+    if(init == 0)
+    {
+        init = 1;
+        Semaphore_Params semParams;
+        Semaphore_Params_init(&semParams);
+        Semaphore_construct(&queueSemStruct, 1, &semParams);
+        queueSemHandle = Semaphore_handle(&queueSemStruct);
+    }
+
+    Semaphore_pend(queueSemHandle, BIOS_WAIT_FOREVER);
+    p_queue->size = EXTFLASH_QUEUE_MAX ;  
      
-   p_queue->head = 0;  
-   p_queue->tail = 0;  
+    p_queue->head = 0;  
+    p_queue->tail = 0;  
      
-   p_queue->tag = 0;  
+    p_queue->tag  = 0;  
+    Semaphore_post(queueSemHandle);
 }  
 
 
@@ -36,13 +52,12 @@ void ExtflashRingQueueInit(extflash_queue_s * p_queue)
 //***********************************************************************************
 bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
 {  
-    UInt key;
     
-    key = Hwi_disable();
+    Semaphore_pend(queueSemHandle, BIOS_WAIT_FOREVER);
 
     if(ExtflashRingQueueIsFull(p_queue))
     {  
-        Hwi_restore(key);
+        Semaphore_post(queueSemHandle);
         return false;  
     }  
         
@@ -55,7 +70,7 @@ bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
     {  
        p_queue->tag = 1;  
     }
-    Hwi_restore(key);
+    Semaphore_post(queueSemHandle);
 
     return true;
 }  
@@ -70,12 +85,11 @@ bool ExtflashRingQueuePush(extflash_queue_s * p_queue, uint8_t *data)
 //***********************************************************************************
 bool ExtflashRingQueuePoll(extflash_queue_s * p_queue, uint8_t * data)
 {  
-    UInt key;
 
-    key = Hwi_disable();
+    Semaphore_pend(queueSemHandle, BIOS_WAIT_FOREVER);
     if(ExtflashRingQueueIsEmpty(p_queue))  
     {  
-        Hwi_restore(key);
+        Semaphore_post(queueSemHandle);
         return false;
     }  
     
@@ -90,7 +104,7 @@ bool ExtflashRingQueuePoll(extflash_queue_s * p_queue, uint8_t * data)
         p_queue->tag = 0;  
     }
     
-    Hwi_restore(key);
+    Semaphore_post(queueSemHandle);
 
     return true;
 }  

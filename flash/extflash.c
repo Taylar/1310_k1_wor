@@ -177,7 +177,7 @@ static void Flash_external_page_program(uint32_t flashAddr, uint8_t *pData, uint
     // Write enable
     do {
         Flash_external_write_enable();
-        __delay_cycles(120);    // 10us
+        __delay_cycles(1625);    // 0.5ms
     } while (!(Flash_external_read_status() & WEL_BIT));
 
     Flash_spi_enable();
@@ -232,7 +232,7 @@ static void Flash_external_erase(uint32_t flashAddr, uint8_t eraseMode)
     // Write enable
     do {
         Flash_external_write_enable();
-        __delay_cycles(120);    // 10us
+        __delay_cycles(1625);    // 0.5us
     } while (!(Flash_external_read_status() & WEL_BIT));
 
     Flash_spi_enable();
@@ -380,6 +380,7 @@ void Flash_init(void)
     }
 
     Flash_load_sensor_ptr();
+    Semaphore_post(spiSemHandle);
     
 }
 

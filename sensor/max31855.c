@@ -39,13 +39,7 @@ static PIN_State   max31855PinState;
 static PIN_Handle  max31855PinHandle;
 
 
-typedef struct{
-    int32_t tempdeep;
-} SensorData_t;
 
-
-
-static SensorData_t rSensorData[MAX31855_SPI_MAX];
 
 
 /*******************************************************************************

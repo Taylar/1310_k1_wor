@@ -134,7 +134,7 @@ void Menu_action_proc(MENU_ACTION action)
             if (rMenuObject.index > 0){
                 rMenuObject.index--;
                 if(rMenuObject.menu->count == 4){//normal menu , not poweroff menu                
-                    if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2 )//??óDà??à?￡?é2???ê?′òó?
+                    if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2 )//没有蓝牙模块不显示打印
                         rMenuObject.index = 1;
                 }
             }
@@ -145,7 +145,7 @@ void Menu_action_proc(MENU_ACTION action)
         case MENU_AC_DOWN:
             rMenuObject.index++;
             if(rMenuObject.menu->count == 4){//normal menu , not poweroff menu                    
-                if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2)//??óDà??à?￡?é2???ê?′òó?
+                if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2)//没有蓝牙模块不显示打印
                         rMenuObject.index = 3;
             }
             
@@ -280,7 +280,6 @@ void Menu_print_proc(void)
 //***********************************************************************************
 void Menu_exit(void)
 {
-    deviceMode = DEVICES_ON_MODE;
     rMenuObject.menu = NULL;
     rMenuObject.index = 0;
     rMenuObject.startItem = 0;

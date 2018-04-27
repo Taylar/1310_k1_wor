@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-15 14:14:47
+* @Last Modified time: 2018-04-25 18:40:36
 */
 #include "../general.h"
 
@@ -18,17 +18,6 @@ radio_protocal_t   protocalTxBuf;
 
 static uint8_t     concenterRemainderCache;
 
-// //***********************************************************************************
-// // brief:   set the node protocal event
-// // 
-// // parameter: 
-// //***********************************************************************************
-// void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket)
-// {
-// 	protocalRxPacket		= rxPacket;
-//     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RADIO_NODE);
-// }
-
 
 //***********************************************************************************
 // brief:   analysis the node protocal 
@@ -37,7 +26,7 @@ static uint8_t     concenterRemainderCache;
 //***********************************************************************************
 void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
-	uint8_t len, lenTemp, baseAddr;
+	uint8_t len, lenTemp, baseAddr, flag;
 	uint32_t	temp, temp2, tickTemp;
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
@@ -53,6 +42,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	SetRadioDstAddr(bufTemp->srcAddr);
 
+	flag = 0;
 	while(len)
 	{
 		// the receive data is not integrated
@@ -261,12 +251,9 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			else
 				NodeUploadSucessProcess();
 
+			flag = 1;
 			// resever more 6 package and is the last ack
-			if((Flash_get_unupload_items() > 6) && (len < 19))
-			{
-				NodeUploadProcess();
-				RadioSend();
-			}
+			
 			break;
 
 
@@ -280,22 +267,15 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	}
 
 NodeDispath:
+	if((Flash_get_unupload_items() > 0) && (flag))
+	{
+		NodeUploadProcess();
+		RadioSend();
+	}
 	NodeBroadcasting();
 }
 
 
-
-
-// //***********************************************************************************
-// // brief:   set the Concenter protocal event
-// // 
-// // parameter: 
-// //***********************************************************************************
-// void ConcenterProtocalEvtSet(EasyLink_RxPacket *rxPacket)
-// {
-// 	protocalRxPacket		= rxPacket;
-//     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RADIO_CONCENTER);
-// }
 
 
 
@@ -342,7 +322,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			// updata the rssi
 			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
 
+#ifdef  SUPPORT_DISP_SCREEN
 			sensor_unpackage_to_memory(bufTemp->load, bufTemp->load[0]+1);
+#endif
 			if(ConcenterSensorDataSaveToQueue(bufTemp->load, bufTemp->load[0]+1) == true)
 			{
 				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);

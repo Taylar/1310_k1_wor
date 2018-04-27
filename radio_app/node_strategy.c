@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-09 15:26:03
+* @Last Modified time: 2018-04-26 16:15:30
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -110,7 +110,7 @@ void NodeStrategyReset(void)
     nodeStrategy.init         = true;
     nodeStrategy.success      = false;
     nodeStrategy.busy         = false;
-    nodeStrategy.period       = 60;
+    nodeStrategy.period       = 5;
     nodeStrategy.offset       = 0;
     nodeStrategy.channel      = INVALID_CHANNEL;
     nodeStrategy.channelNum   = NODE_DECEIVE_MAX_NUM;
@@ -130,8 +130,9 @@ void NodeStrategyReset(void)
 //***********************************************************************************
 void NodeStrategySetPeriod(uint32_t period)
 {
-    nodeStrategy.period         = period;
-    Clock_setPeriod(nodeStrategyStartClockHandle, period * CLOCK_UNIT_S);
+    // nodeStrategy.period         = period;
+    nodeStrategy.period         = 5;
+    Clock_setPeriod(nodeStrategyStartClockHandle, (uint32_t)nodeStrategy.period * CLOCK_UNIT_S);
 }
 
 //***********************************************************************************
@@ -327,7 +328,10 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
     if((nodeStrategy.periodNum >= FAIL_CONNECT_PERIOD_MAX_NUM) ||
         (nodeStrategy.concenterNum > 2) ||
         (channel >= nodeStrategy.channelNum))
+    {
+        nodeStrategy.success = true;
         return;
+    }
 
     // transform to ms
     concenterTick = concenterTick * Clock_tickPeriod / 1000;

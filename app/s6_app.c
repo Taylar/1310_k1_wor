@@ -2,11 +2,11 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-20 18:29:57
+* @Last Modified time: 2018-04-25 14:45:08
 */
 #include "../general.h"
 
-
+#ifdef BOARD_S6_6
 
 
 
@@ -17,7 +17,6 @@
 
 
 /***** Variable declarations *****/
-uint8_t  screenSleepMonitorCnt;
 
 Clock_Struct sysLcdShutClkStruct;
 Clock_Handle sysLcdShutClkHandle;
@@ -37,12 +36,15 @@ Clock_Handle sysLcdShutClkHandle;
 //***********************************************************************************
 void Sys_lcdShutFxn(UArg arg0)
 {
-    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
+    if((!(g_rSysConfigInfo.module & MODULE_LCD)) || (deviceMode == DEVICES_OFF_MODE)){//
         return;
     }
 
     if (!(g_rSysConfigInfo.status & STATUS_LCD_ALWAYS_ON))
+    {
+        deviceMode = DEVICES_SLEEP_MODE;
         Disp_poweroff();
+    }
 }
 
 
@@ -84,6 +86,23 @@ void Sys_lcd_stop_timing(void)
 //***********************************************************************************
 void S6HwInit(void)
 {
+    /* Construct a one-shot Clock Instance to shutdown display */
+    Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
+    clkParams.period = 0;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&sysLcdShutClkStruct, (Clock_FuncPtr)Sys_lcdShutFxn,
+                        15 * CLOCK_UNIT_S, &clkParams);
+    /* Obtain clock instance handle */
+    sysLcdShutClkHandle = Clock_handle(&sysLcdShutClkStruct);
+
+
+    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//Ã»ÓÐlcd,sysLcdShutClkHandleÓÃÀ´×ö¹¤×÷Ö¸Ê¾µÆµÄ¶¨Ê±Æ÷¡£
+        Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);
+        Clock_setTimeout(sysLcdShutClkHandle,  60*CLOCK_UNIT_S);
+        Clock_start(sysLcdShutClkHandle); 
+    }
+
     LedInit();
 
 	KeyInit();
@@ -101,7 +120,6 @@ void S6HwInit(void)
 
     Flash_init();
 
-    screenSleepMonitorCnt = 0;
 
     UsbIntInit(SystemUsbIntEventPostIsr);
 
@@ -109,25 +127,10 @@ void S6HwInit(void)
     Battery_voltage_measure();
 
     Disp_poweron();
-    Disp_proc();
+    SystemEventSet(SYSTEMAPP_EVT_DISP);
 
-
-
-    /* Construct a one-shot Clock Instance to shutdown display */
-    Clock_Params clkParams;
-    Clock_Params_init(&clkParams);
-    clkParams.period = 0;
-    clkParams.startFlag = FALSE;
-    Clock_construct(&sysLcdShutClkStruct, (Clock_FuncPtr)Sys_lcdShutFxn,
-                        15 * CLOCK_UNIT_S, &clkParams);
-    /* Obtain clock instance handle */
-    sysLcdShutClkHandle = Clock_handle(&sysLcdShutClkStruct);
     
-    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//Ã»ÓÐlcd,sysLcdShutClkHandleÓÃÀ´×ö¹¤×÷Ö¸Ê¾µÆµÄ¶¨Ê±Æ÷¡£
-        Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);
-        Clock_setTimeout(sysLcdShutClkHandle,  60*CLOCK_UNIT_S);
-        Clock_start(sysLcdShutClkHandle); 
-    }
+    
 
 }
 
@@ -141,30 +144,26 @@ void S6HwInit(void)
 //***********************************************************************************
 void S6ShortKeyApp(void)
 {
-    screenSleepMonitorCnt = 0;
+    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        Disp_info_switch();
-        Disp_proc();
-        // Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+#ifdef SUPPORT_MENU
+        if (Menu_is_process()) {
+            Menu_action_proc(MENU_AC_DOWN);
+        } else
+#endif
+        {
+            Disp_info_switch();
+        }
         break;
 
         case DEVICES_OFF_MODE:
-        // Disp_info_switch();
-        // Disp_proc();
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        break;
-
-
-        case DEVICES_MENU_MODE:
-        Menu_action_proc(MENU_AC_DOWN);
-        Disp_proc();
         break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
-        Disp_proc();
         deviceMode = DEVICES_ON_MODE;
         break;
     }
@@ -177,7 +176,7 @@ void S6ShortKeyApp(void)
 //***********************************************************************************
 void S6ConcenterLongKeyApp(void)
 {
-    screenSleepMonitorCnt = 0;
+    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -190,12 +189,10 @@ void S6ConcenterLongKeyApp(void)
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         ConcenterWakeup();
         Disp_poweron();
-        Disp_proc();
         break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
-        Disp_proc();
         deviceMode = DEVICES_ON_MODE;
         break;
     }
@@ -208,29 +205,28 @@ void S6ConcenterLongKeyApp(void)
 //***********************************************************************************
 void S6ShortKey1App(void)
 {
-    screenSleepMonitorCnt = 0;
+    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        Disp_info_close();
-        Disp_proc();
+#ifdef SUPPORT_MENU
+        if (Menu_is_process()) {
+            Menu_action_proc(MENU_AC_ENTER);
+        } else
+#endif
+        {
+#ifdef SUPPORT_SENSOR
+            Disp_sensor_switch();
+#endif
+        }
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
 
-        case DEVICES_MENU_MODE:
-        Menu_action_proc(MENU_AC_ENTER);
-        if(DEVICES_ON_MODE == deviceMode)
-        {
-            Disp_proc();
-        }
-        break;
-
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
-        Disp_proc();
         deviceMode = DEVICES_ON_MODE;
         break;
 
@@ -246,13 +242,11 @@ void S6ShortKey1App(void)
 //***********************************************************************************
 void S6LongKey1App(void)
 {
-    screenSleepMonitorCnt = 0;
+    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        deviceMode = DEVICES_MENU_MODE;
         PoweroffMenu_init();
-        Disp_proc();
         break;
 
         case DEVICES_OFF_MODE:
@@ -260,16 +254,11 @@ void S6LongKey1App(void)
         ConcenterWakeup();
         Disp_poweron();
         Disp_info_close();
-        Disp_proc();
         break;
 
-        case DEVICES_MENU_MODE:
-
-        break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
-        Disp_proc();
         deviceMode = DEVICES_ON_MODE;
         break;
     }
@@ -286,4 +275,4 @@ void S6AppRtcProcess(void)
 
 }
 
-
+#endif

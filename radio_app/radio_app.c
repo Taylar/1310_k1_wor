@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-14 18:21:27
+* @Last Modified time: 2018-04-27 11:59:02
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -230,32 +230,6 @@ void RadioAppTaskFxn(void)
         }
 
 
-        if (events & RADIO_EVT_RX)
-        {
-
-            if(radioMode == RADIOMODE_RECEIVEPORT)
-            {
-
-                Led_toggle(LED_B);
-                
-#ifdef  BOARD_S1_2
-                NodeProtocalDispath(&radioRxPacket);
-#else
-                ConcenterProtocalDispath(&radioRxPacket);
-#endif           
-                EasyLink_receiveAsync(RxDoneCallback, 0);
-
-
-            }
-
-            if(radioMode == RADIOMODE_SENDPORT)
-            {
-                // Led_toggle(LED_G);
-                NodeProtocalDispath(&radioRxPacket);
-            }
-
-        }
-
         if (events & RADIO_EVT_TX)
         {
 
@@ -272,30 +246,64 @@ void RadioAppTaskFxn(void)
                 }
             }
 
+            Led_toggle(LED_B);
             if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))
+            {
                 EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
 
-            if(radioMode == RADIOMODE_SENDPORT)
-            {
-                // Led_toggle(LED_G);
-
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
-                EasyLink_receiveAsync(RxDoneCallback, 0);
-            }
-
-            if(radioMode == RADIOMODE_RECEIVEPORT)
-            {
-                RadioFrontRxEnable();
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-                if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
+                if(radioMode == RADIOMODE_SENDPORT)
                 {
-                    System_printf("open 1310 receive fail");
+
+                    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
+                    EasyLink_receiveAsync(RxDoneCallback, 0);
+                }
+
+                if(radioMode == RADIOMODE_RECEIVEPORT)
+                {
+                    RadioFrontRxEnable();
+                    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+                    if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
+                    {
+                        System_printf("open 1310 receive fail");
+                    }
                 }
             }
+            Led_toggle(LED_B);
+
             Semaphore_post(radioAccessSemHandle);
         }
 
 
+        if (events & RADIO_EVT_RX)
+        {
+
+            if(radioMode == RADIOMODE_RECEIVEPORT)
+            {
+
+                Led_toggle(LED_B);
+                Led_toggle(LED_R);
+                
+#ifdef  BOARD_S1_2
+                NodeProtocalDispath(&radioRxPacket);
+#else
+                ConcenterProtocalDispath(&radioRxPacket);
+#endif           
+                EasyLink_receiveAsync(RxDoneCallback, 0);
+
+                Led_toggle(LED_R);
+
+            }
+
+            if(radioMode == RADIOMODE_SENDPORT)
+            {
+                Led_toggle(LED_R);
+                NodeProtocalDispath(&radioRxPacket);
+                Led_toggle(LED_R);
+            }
+
+        }
+
+        
         if (events & RADIO_EVT_TOUT)
         {
             if(radioMode == RADIOMODE_SENDPORT)
@@ -319,6 +327,15 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_FAIL)
         {
+            if(radioMode == RADIOMODE_RECEIVEPORT)
+            {
+                RadioFrontRxEnable();
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+                if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
+                {
+                    System_printf("open 1310 receive fail");
+                }
+            }
 
         }
 
@@ -368,6 +385,7 @@ bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetrie
 //***********************************************************************************
 void RadioSend(void)
 {
+    Led_toggle(LED_B);
     Event_post(radioOperationEventHandle, RADIO_EVT_TX);
 }
 
@@ -384,6 +402,7 @@ void RadioSend(void)
 void RadioSendPacket(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs)
 {
     RadioCopyPacketToBuf(dataP, len, maxNumberOfRetries, ackTimeoutMs, 0);
+    Led_toggle(LED_B);
     Event_post(radioOperationEventHandle, RADIO_EVT_TX);
 }
 
@@ -425,7 +444,7 @@ static void RxDoneCallback(EasyLink_RxPacket * rxPacket, EasyLink_Status status)
         /* The Ack receiption may have been corrupted causing an error.
          * Treat this as a timeout
          */
-        Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
+        Event_post(radioOperationEventHandle, RADIO_EVT_FAIL);
     }
 }
 
@@ -489,7 +508,9 @@ void SetRadioDstAddr(uint32_t addr)
 
 void ClearRadioSendBuf(void)
 {
+    Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
     currentRadioOperation.easyLinkTxPacket.len = 0;
+    Semaphore_post(radioAccessSemHandle);
 }
 
 void RadioTestEnable(void)

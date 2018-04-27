@@ -157,6 +157,8 @@ bool InternalFlashLoadConfig(void)
 			return false;
 	}
 	memcpy((uint8_t*)(&g_rSysConfigInfo), (uint8_t*)CONFIG_DATA_INTERNAL_ADDR, sizeof(ConfigInfo_t));
+	if(g_rSysConfigInfo.swVersion != FW_VERSION)
+		return false;
 	return true;
 }
 
@@ -207,7 +209,7 @@ void InternalFlashConfigReset(void)
 
 #ifdef		BOARD_S6_6
 
-	g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO;
+	g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO | MODULE_LCD;
 	g_rSysConfigInfo.serverIpAddr[0] = 114;
 	g_rSysConfigInfo.serverIpAddr[1] = 215;
 	g_rSysConfigInfo.serverIpAddr[2] = 122;

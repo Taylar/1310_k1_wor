@@ -33,7 +33,5 @@ void S6AppRtcProcess(void);
 
 void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
 
-bool get_next_sensor_memory(sensordata_mem *pSensor);
-
 
 #endif		//	__S6_APP_H__

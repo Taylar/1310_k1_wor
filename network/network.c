@@ -191,7 +191,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
             break;
 #endif      
         default:
-            return false;//鍙傛暟鏈夎
+            return false;//参数有误
     	}	
     }
 
@@ -250,7 +250,9 @@ typedef enum {
 
 typedef struct {
 	uint8_t uuid[2];
-    uint16_t serialNum;
+    uint16_t serialNumSensor;
+    uint16_t serialNumLbs;
+    uint16_t serialNumGSensor;
     uint8_t poweron;
     uint8_t ntp;
     uint8_t moduleIndex;
@@ -316,11 +318,11 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
     NwkMsgPacket_t packet;
     NwkMsgPacket_t *pPacket = pPackets;
     packet.length = 0;
-    //娑堟伅澶�
-    //娑堟伅ID
+    //消息头
+    //消息ID
     packet.buff[packet.length++] = HIBYTE(msgId);
     packet.buff[packet.length++] = LOBYTE(msgId);
-    //娑堟伅浣撳睘鎬�
+    //消息体属性
     packet.buff[packet.length++] = 0;
     packet.buff[packet.length++] = 0;
     //Gateway ID
@@ -330,37 +332,39 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
     //UUID
     packet.buff[packet.length++] = rNwkObject.uuid[0];
     packet.buff[packet.length++] = rNwkObject.uuid[1];
-    //娑堟伅娴佹按鍙�
-    packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNum);
-    packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNum);
-    rNwkObject.serialNum++;
+
 
     if (msgId == NMI_TX_SENSOR) {
-        //娑堟伅浣�
-        //鍥哄畾瀛楁绫诲瀷
+        //消息流水号
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
+
+        //消息体
+        //固定字段类型
         packet.buff[packet.length++] = 0x01;
-        //缃戝叧鐢靛帇
+        //网关电压
 #ifdef SUPPORT_BATTERY
         value = Battery_get_voltage();
 #endif
         packet.buff[packet.length++] = HIBYTE(value);
         packet.buff[packet.length++] = LOBYTE(value);
-        //缃戝叧缃戠粶淇″彿
+        //网关网络信号
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &packet.buff[packet.length++]);
-        //鏃犵嚎淇″彿寮哄害RSSI
+        //无线信号强度RSSI
         //Sensor ID - 4Byte
-        //閲囬泦娴佹按鍙� - 2Byte
-        //閲囬泦鏃堕棿
-        //Sensor鐢靛帇
-        //鍙傛暟椤瑰垪琛ㄦ暟鎹�
+        //采集流水号 - 2Byte
+        //采集时间
+        //Sensor电压
+        //参数项列表数据
 ONEDATA:
         for (i = 0; i < pPacket->buff[0]; i++) {//sensor data: length(1B) rssi(1B) devicedi(4B)...
             packet.buff[packet.length++] = pPacket->buff[1 + i];
         }
 
-        //鍒ゆ柇鏄惁杩樻湁鏁版嵁
+        //判断是否还有数据
         if(pPacket->buff[pPacket->buff[0] + 1]!= 0){
-            //涓�鏉℃暟鎹殑缁撴潫
+            //一条数据的结束
             packet.buff[packet.length++] = 0xFF;
             pPacket = (NwkMsgPacket_t*)&(pPacket->buff[pPacket->buff[0] + 1]);
             goto ONEDATA;
@@ -386,20 +390,36 @@ ONEDATA:
     }
 #endif
     else if(msgId == NMI_TX_G_SENSOR) {
+
+        //消息流水号
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumGSensor);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumGSensor);
+        rNwkObject.serialNumGSensor++;
+
         for (i = 0; i < pPacket->buff[0]; i++) {
             packet.buff[packet.length++] = pPacket->buff[1 + i];
         }
     } else if (msgId == NMI_TX_COM_ACK) {
+        //消息流水号
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
+
         memcpy(&packet.buff[packet.length],pPacket->buff, 5);
         packet.length += 5;
     }
 #ifdef USE_ENGINEERING_MODE_FOR_LBS
     else if(msgId == NMI_TX_CELL_INFO) {
+        //消息流水号
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumLbs);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumLbs);
+        rNwkObject.serialNumLbs++;
+
         packet.buff[packet.length++] = HIBYTE(rNwkObject.location.mcc);
         packet.buff[packet.length++] = LOBYTE(rNwkObject.location.mcc);
         packet.buff[packet.length++] = HIBYTE(rNwkObject.location.mnc);
         packet.buff[packet.length++] = LOBYTE(rNwkObject.location.mnc);
-        packet.buff[packet.length++] = 0;   //灏忓尯搴忓彿锛�0浠ｈ〃褰撳墠鏈嶅姟灏忓尯
+        packet.buff[packet.length++] = 0;   //小区序号，0代表当前服务小区
         packet.buff[packet.length++] = HIBYTE(rNwkObject.location.local.lac);
         packet.buff[packet.length++] = LOBYTE(rNwkObject.location.local.lac);
         packet.buff[packet.length++] = HIBYTE(HIWORD(rNwkObject.location.local.cellid));
@@ -409,10 +429,10 @@ ONEDATA:
         packet.buff[packet.length++] = rNwkObject.location.local.dbm;
 #ifdef SUPPOERT_LBS_NEARBY_CELL
         for (i = 0; i < LBS_NEARBY_CELL_MAX; i++) {
-            // 鏃犳晥鏁版嵁涓嶄笂浼�
+            // 无效数据不上传
             if (rNwkObject.location.nearby[i].cellid == 0)
                 break;
-            packet.buff[packet.length++] = i + 1;   //灏忓尯搴忓彿
+            packet.buff[packet.length++] = i + 1;   //小区序号
             packet.buff[packet.length++] = HIBYTE(rNwkObject.location.nearby[i].lac);
             packet.buff[packet.length++] = LOBYTE(rNwkObject.location.nearby[i].lac);
             packet.buff[packet.length++] = HIBYTE(HIWORD(rNwkObject.location.nearby[i].cellid));
@@ -422,20 +442,25 @@ ONEDATA:
             packet.buff[packet.length++] = rNwkObject.location.nearby[i].dbm;
         }
 #endif
+    }else {//其他打包序列号也需增加 如授时
+        //消息流水号
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
     }
 #endif
 
-    //娑堟伅浣撳睘鎬�
+    //消息体属性
     value = packet.length - 12;
     packet.buff[2] = HIBYTE(value);
     packet.buff[3] = LOBYTE(value);
 
-    //鏍￠獙鐮�
+    //校验码
     packet.buff[packet.length++] = CheckCode8(&packet.buff[0], packet.length);
 
-    //杩涜杞箟
+    //进行转义
     pPackets->length = Protocol_escape(&pPackets->buff[1], &packet.buff[0], packet.length);
-    //娑堟伅鏍囧織浣�
+    //消息标志位
     pPackets->buff[0] = PROTOCOL_TOKEN;
     pPackets->buff[pPackets->length + 1] = PROTOCOL_TOKEN;
     pPackets->length += 2;
@@ -535,7 +560,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                 /*
             case NMI_RX_ALARM:
                 index = NWK_MSG_BODY_START;
-                if((index + 10) <= package_length) {//鍙兘鍖呭惈澶氭潯鎶ヨ鏁版嵁锛岀洰鍓嶅彧澶勭悊1鏉�
+                if((index + 10) <= package_length) {//可能包含多条报警数据，目前只处理1条
                     HIBYTE(HIWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
                     LOBYTE(HIWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
                     HIBYTE(LOWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
@@ -615,7 +640,8 @@ static void Nwk_taskFxn(void)
 {
     UInt eventId;
     bool bsensordata;
-
+    uint8_t  package_count;
+    uint8_t* pbuff;
     /* Construct key process Event */
     Event_construct(&nwkEvtStruct, NULL);
     /* Obtain event instance handle */
@@ -725,20 +751,38 @@ static void Nwk_taskFxn(void)
 #ifdef FLASH_EXTERNAL
                 //send data second.
                 bsensordata = 0;
-                while (Flash_load_sensor_data_by_offset(rNwkMsgPacket.buff, FLASH_SENSOR_DATA_SIZE, 0) == ES_SUCCESS) {
-                    bsensordata = 1;
-                    Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
-                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == TRUE) {
-                        Flash_moveto_next_sensor_data();
+                while(Flash_get_unupload_items()> 0){
+                     package_count = 0;
+                     memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
+                     pbuff = rNwkMsgPacket.buff;
+                     while((Flash_get_unupload_items()> 0)&&(package_count < PACKAGE_ITEM_COUNT_MAX)){
+                        if ((pbuff + FLASH_SENSOR_DATA_SIZE) > (rNwkMsgPacket.buff + NWK_MSG_SIZE)){
+                            break;
+                        }
+
+                        if(Flash_load_sensor_data_by_offset(pbuff, FLASH_SENSOR_DATA_SIZE, package_count) == ES_SUCCESS) {
+                                bsensordata = 1;
+                                package_count++;
+                                pbuff = pbuff+ pbuff[0]+ 1;
+                                pbuff[0] = 0;
+                        }else{
+                            break;
+                         }
+
                     }
-                    else
-                    {
-                        // ret = FALSE;
-                        break;
+
+                    if(bsensordata == 1){
+                        Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
+                        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+                            break;
+                        }
+                        else{
+                            Flash_moveto_offset_sensor_data(package_count);
+                        }
                     }
                 }
                 
-                //褰撶綉鍏虫病鏈塻ensor鏁版嵁鏃朵笂浼犱竴涓棤鏁坰ensor鏁版嵁浠ラ伩鍏嶇綉鍏充俊鎭け鑱斻��
+                //当网关没有sensor数据时上传一个无效sensor数据以避免网关信息失联。
                 if(!bsensordata){
                     Sensor_store_null_package(rNwkMsgPacket.buff);
                     Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
@@ -786,13 +830,6 @@ void Nwk_task_create(void)
     taskParams.stack = &nwkTaskStack;
     taskParams.priority = 1;
     Task_construct(&nwkTaskStruct, (Task_FuncPtr)Nwk_taskFxn, &taskParams, &eb);
-
-    Event_Params eventParam;
-    Event_Params_init(&eventParam);
-    /* Construct key process Event */
-    Event_construct(&nwkEvtStruct, &eventParam);
-    /* Obtain event instance handle */
-    nwkEvtHandle = Event_handle(&nwkEvtStruct);
 }
 
 //***********************************************************************************

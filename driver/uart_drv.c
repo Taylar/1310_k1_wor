@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-16 14:57:08
+* @Last Modified time: 2018-04-27 10:01:12
 */
 #include "../general.h"
 
@@ -132,6 +132,8 @@ void uart0Isr(void)
             // Read and return the next character.
             g_rUart1RxData.buff[g_rUart1RxData.length] = (HWREG(UART0_BASE + UART_O_DR));
             g_rUart1RxData.length++;
+            if(g_rUart1RxData.length >= UART_BUFF_SIZE)
+                g_rUart1RxData.length = 0;
         }
         else
         {

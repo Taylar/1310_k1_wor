@@ -130,12 +130,12 @@ void Sensor_store_null_package(uint8_t *buff)
     rSensorObject.serialNum++;
     //采集时间
     calendar = Rtc_get_calendar();
-    buff[length++] = calendar.Year - CALENDAR_BASE_YEAR;
-    buff[length++] = calendar.Month;
-    buff[length++] = calendar.DayOfMonth;
-    buff[length++] = calendar.Hours;
-    buff[length++] = calendar.Minutes;
-    buff[length++] = calendar.Seconds;
+    buff[length++] = TransHexToBcd(calendar.Year - CALENDAR_BASE_YEAR);
+    buff[length++] = TransHexToBcd(calendar.Month);
+    buff[length++] = TransHexToBcd(calendar.DayOfMonth);
+    buff[length++] = TransHexToBcd(calendar.Hours);
+    buff[length++] = TransHexToBcd(calendar.Minutes);
+    buff[length++] = TransHexToBcd(calendar.Seconds);
     //Sensor电压
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
@@ -179,12 +179,12 @@ static void Sensor_store_package(void)
     rSensorObject.serialNum++;
     //采集时间
     calendar = Rtc_get_calendar();
-    buff[length++] = calendar.Year - CALENDAR_BASE_YEAR;
-    buff[length++] = calendar.Month;
-    buff[length++] = calendar.DayOfMonth;
-    buff[length++] = calendar.Hours;
-    buff[length++] = calendar.Minutes;
-    buff[length++] = calendar.Seconds;
+    buff[length++] = TransHexToBcd((uint8_t)(calendar.Year - 2000));
+    buff[length++] = TransHexToBcd((uint8_t)(calendar.Month));
+    buff[length++] = TransHexToBcd((uint8_t)(calendar.DayOfMonth));
+    buff[length++] = TransHexToBcd((uint8_t)(calendar.Hours));
+    buff[length++] = TransHexToBcd((uint8_t)(calendar.Minutes));
+    buff[length++] = TransHexToBcd((uint8_t)(calendar.Seconds));
     //Sensor电压
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
@@ -205,9 +205,8 @@ static void Sensor_store_package(void)
                 buff[length++] = HIBYTE(rSensorData[i].humi);
                 buff[length++] = LOBYTE(rSensorData[i].humi);
 
-#ifdef SUPPORT_G7_PROTOCOL
-                SurroundingMonitor(rSensorData[i].temp);
-#endif  // SUPPORT_G7_PROTOCOL
+
+
 
             } else if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP)) {
                 value_32 = rSensorData[i].tempdeep;
@@ -230,10 +229,7 @@ static void Sensor_store_package(void)
         }
     }
 
-#ifdef      G7_PROJECT
-    memcpy(&buff[length], (uint8_t *)G7GetLbs(), sizeof(NwkLocation_t));
-    length += sizeof(NwkLocation_t);
-#endif  // G7_PROJECT
+
 
 
     buff[0] = length - 1;
@@ -312,13 +308,13 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 			return;//invalid sensor type
 
 		
-		if (Sensor_FxnTablePtr[cursensor.type]->function == (SENSOR_TEMP | SENSOR_HUMI)) {
+		if (cursensor.type == SEN_TYPE_SHT2X) {
 			HIBYTE(cursensor.value.temp) = pData[Index++];
 			LOBYTE(cursensor.value.temp) = pData[Index++];
 			HIBYTE(cursensor.value.humi) = pData[Index++];
 			LOBYTE(cursensor.value.humi) = pData[Index++];	
 		}
-        else if (Sensor_FxnTablePtr[cursensor.type]->function == (SENSOR_DEEP_TEMP)) {
+        else if (cursensor.type == SEN_TYPE_DEEPTEMP) {
             HIBYTE(HIWORD(cursensor.value.tempdeep)) = pData[Index++];
             LOBYTE(HIWORD(cursensor.value.tempdeep)) = pData[Index++];
 			HIBYTE(LOWORD(cursensor.value.tempdeep)) = pData[Index++];
@@ -548,7 +544,7 @@ void Sensor_collect_time_isr(void)
     if (rSensorObject.collectTime >= g_rSysConfigInfo.collectPeriod) {
         //在时间同步时可能将采集时间点改变，重新调整到30S.
         rSensorObject.collectTime = (rSensorObject.collectTime - g_rSysConfigInfo.collectPeriod)%g_rSysConfigInfo.collectPeriod;
-
+        
     }
 }
 

@@ -2,15 +2,10 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-18 17:03:28
+* @Last Modified time: 2018-04-26 17:54:29
 */
 #include "../general.h"
 
-#include "../radio_app/radio_app.h"
-#include "../APP/concenterApp.h"
-#include "../APP/systemApp.h"
-#include "../APP/radio_protocal.h"
-#include "../interface_app/interface.h"
 
 
 
@@ -179,7 +174,6 @@ void ConcenterSensorDataSave(void)
     {
         Flash_store_sensor_data(dataP, SENSOR_DATA_LENGTH_MAX);
         Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
-        Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_NET_UPLOAD);
     }
 }
 
@@ -235,16 +229,6 @@ void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 }
 
 
-//***********************************************************************************
-// brief: Set the concenter upload event to upload the sensor data to internet
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterUploadEventSet(void)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_NET_UPLOAD);
-}
-
 
 //***********************************************************************************
 // brief:   make the concenter board into sleep mode
@@ -254,13 +238,17 @@ void ConcenterUploadEventSet(void)
 void ConcenterSleep(void)
 {
     concenterParameter.radioReceive = false;
-    Nwk_poweroff();
+
     EasyLink_abort();
     RadioFrontDisable();
     ConcenterCollectStop();
     // wait the nwk disable the uart
+#ifdef  SUPPORT_NETWORK
+    Nwk_poweroff();
     while(Nwk_get_state())
         Task_sleep(100 * CLOCK_UNIT_MS);
+#endif
+
 #ifdef BOARD_S2_2
 
     InterfaceEnable();
@@ -285,7 +273,9 @@ void ConcenterWakeup(void)
     if(GetUsbState() == USB_UNLINK_STATE)
 #endif
     {
+#ifdef  SUPPORT_NETWORK
         Nwk_poweron();
+#endif
     }
     RadioFrontRxEnable();
     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
@@ -312,14 +302,18 @@ void UsbIntProcess(void)
         switch(deviceMode)
         {
             case DEVICES_ON_MODE:
-            case DEVICES_MENU_MODE:
             case DEVICES_SLEEP_MODE:
-            Nwk_poweroff();
+
+#ifdef      SUPPORT_DISP_SCREEN
             Disp_poweroff();
+#endif
             Task_sleep(100 * CLOCK_UNIT_MS);
             // wait for the gsm uart close
+#ifdef  SUPPORT_NETWORK
+            Nwk_poweroff();
             while(Nwk_get_state())
                 Task_sleep(100 * CLOCK_UNIT_MS);
+#endif
 
             InterfaceEnable();
 
@@ -353,10 +347,10 @@ void UsbIntProcess(void)
         switch(deviceMode)
         {
             case DEVICES_ON_MODE:
-            case DEVICES_MENU_MODE:
             case DEVICES_SLEEP_MODE:
+#ifdef  SUPPORT_NETWORK
             Nwk_poweron();
-            
+#endif
             if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
             {
                 RadioTestEnable();
@@ -381,7 +375,9 @@ void UsbIntProcess(void)
 //***********************************************************************************
 void ConcenterConfigDeceiveInit(void)
 {
+#ifdef  SUPPORT_NETWORK
     Nwk_poweroff();
+#endif
 
     deviceMode = DEVICES_CONFIG_MODE;
     concenterParameter.radioReceive = true;
@@ -598,12 +594,12 @@ void ConcenterRtcProcess(void)
         concenterParameter.monitorCnt++;
         if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
         {
-            ConcenterRadioMonitorClear();
-            EasyLink_abort();
-            RadioFrontDisable();
-            RadioFrontRxEnable();
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-            RadioModeSet(RADIOMODE_RECEIVEPORT);
+            // ConcenterRadioMonitorClear();
+            // EasyLink_abort();
+            // RadioFrontDisable();
+            // RadioFrontRxEnable();
+            // EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            // RadioModeSet(RADIOMODE_RECEIVEPORT);
         }
     }
 
@@ -615,7 +611,8 @@ void ConcenterRtcProcess(void)
         if(concenterParameter.collectTimeCnt >= concenterParameter.collectPeriod)
         {
             concenterParameter.collectTimeCnt = 0;
-            ConcenterCollectProcess();
+            Sensor_measure(1);
+            Battery_voltage_measure();
         }
     }
 

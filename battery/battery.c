@@ -78,7 +78,11 @@ void Battery_voltage_measure(void)
 //***********************************************************************************
 uint16_t Battery_get_voltage(void)
 {
+#ifdef  BOARD_S1_2
+    return AONBatMonBatteryVoltageGet();
+#else
     return bBatVoltage;
+#endif
 }
 
 
