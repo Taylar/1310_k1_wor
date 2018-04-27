@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-25 14:45:08
+* @Last Modified time: 2018-04-27 13:50:33
 */
 #include "../general.h"
 
@@ -167,6 +167,7 @@ void S6ShortKeyApp(void)
         deviceMode = DEVICES_ON_MODE;
         break;
     }
+    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 //***********************************************************************************
@@ -196,6 +197,7 @@ void S6ConcenterLongKeyApp(void)
         deviceMode = DEVICES_ON_MODE;
         break;
     }
+    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 //***********************************************************************************
@@ -231,6 +233,7 @@ void S6ShortKey1App(void)
         break;
 
     }
+    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 
@@ -262,6 +265,7 @@ void S6LongKey1App(void)
         deviceMode = DEVICES_ON_MODE;
         break;
     }
+    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 
