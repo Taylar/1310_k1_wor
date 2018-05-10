@@ -351,7 +351,20 @@ static void Flash_reset_data(void)
 
 
 }
+//***********************************************************************************
+//
+// Flash external write enable cmd 
+//
+//***********************************************************************************
+static void Flash_external_unlock(void)
+{
+    uint8_t buff[1];
 
+    Flash_spi_enable();
+    buff[0] = 0x39;
+    Spi_write(buff, 1);
+    Flash_spi_disable();
+}
 
 //***********************************************************************************
 //
@@ -369,6 +382,7 @@ void Flash_init(void)
     Task_sleep(10 * CLOCK_UNIT_MS);
 
 	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    Flash_external_unlock();
 #ifdef FLASH_W25Q256FV
     Flash_extended_address_mode(1);
 #endif
@@ -825,6 +839,8 @@ ErrorStatus Flash_load_upgrade_info(uint8_t *pData, uint16_t length)
 
     return ES_SUCCESS;
 }
+
+
 
 
 

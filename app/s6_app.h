@@ -9,11 +9,19 @@
 
 
 /***** Variable declarations *****/
+extern Clock_Struct sysLcdShutClkStruct, sysAlarmClkStruct, BatAlarmClkStruct;
+extern Clock_Handle sysLcdShutClkHandle, sysAlarmClkHandle, BatAlarmClkHandle;
+
+extern uint8_t buzzerAlarmCnt;
 
 
 
 /***** function declarations *****/
+void Sys_buzzer_init(void);
 
+void Sys_buzzer_enable(void);
+
+void Sys_buzzer_disable(void);
 
 void Sys_lcd_start_timing(void);
 

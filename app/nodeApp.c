@@ -184,30 +184,14 @@ void NodeCollectStart(void)
     uint8_t secTemp;
 
     secTemp                    = RtcGetSec();
-
     nodeParameter.synTimeFlag  = true;
     nodeParameter.collectStart = true;
 
 
     // promise the next collect time is 30s 
-    if(g_rSysConfigInfo.uploadPeriod == 60)
-    {
-        if(secTemp >= 30)
-        {
-            if(nodeParameter.collectTimeCnt >= 30)
-            {
-                nodeParameter.collectTimeCnt = secTemp + 30;
-            }
-            else
-            {
-                nodeParameter.collectTimeCnt = secTemp - 30;
-            }
-        }
-        else
-        {
-            nodeParameter.collectTimeCnt = secTemp + 30;
-        }
-    }
+    secTemp += 30;
+    nodeParameter.collectTimeCnt = secTemp;
+    
 }
 
 
@@ -499,13 +483,14 @@ void NodeRtcProcess(void)
     {
         nodeParameter.collectTimeCnt++;
         
+        if(nodeParameter.collectTimeCnt >= 10)
         // if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
-        if(nodeParameter.collectTimeCnt >= 1)
         {
-            nodeParameter.collectTimeCnt -= 1;
-            // nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
+            nodeParameter.collectTimeCnt -= 10;
+            // nodeParameter.collectTimeCnt = (nodeParameter.collectTimeCnt - g_rSysConfigInfo.collectPeriod) % g_rSysConfigInfo.collectPeriod;
             Sensor_measure(1);
-
+            if(deviceMode == DEVICES_ON_MODE)
+                Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
         }
 
         nodeParameter.sysTime++;
@@ -514,20 +499,15 @@ void NodeRtcProcess(void)
             NodeRadioSendSynReq();
             nodeParameter.sysTime       = 0;
         }
-    }
 
-    if(nodeParameter.uploadStart)
-    {
-        nodeParameter.uploadTimeCnt++;
-        // if(nodeParameter.uploadTimeCnt >= g_rSysConfigInfo.uploadPeriod)
-        if(nodeParameter.uploadTimeCnt >= 5)
+        if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
         {
-            nodeParameter.uploadTimeCnt = 0;
-
-            if(deviceMode == DEVICES_ON_MODE)
-                Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+            NodeSleep();
+            SysCtrlSystemReset();
         }
+
     }
+
 }
 
 

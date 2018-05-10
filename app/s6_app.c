@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-27 13:50:33
+* @Last Modified time: 2018-05-10 16:57:32
 */
 #include "../general.h"
 
@@ -18,14 +18,114 @@
 
 /***** Variable declarations *****/
 
-Clock_Struct sysLcdShutClkStruct;
-Clock_Handle sysLcdShutClkHandle;
+Clock_Struct sysLcdShutClkStruct, sysAlarmClkStruct, BatAlarmClkStruct;
+Clock_Handle sysLcdShutClkHandle, sysAlarmClkHandle, BatAlarmClkHandle;
+
+
+PWM_Handle buzzerHandle = NULL;
+
+
+
+uint8_t buzzerAlarmCnt;
 
 /***** Prototypes *****/
 
 
 
 /***** Function definitions *****/
+
+
+//***********************************************************************************
+//
+// System buzzer init.
+//
+//***********************************************************************************
+void Sys_buzzer_init(void)
+{
+    PWM_Params params;
+
+    PWM_Params_init(&params);
+    params.dutyUnits   = PWM_DUTY_US;
+    params.dutyValue   = 1000000L/ PWM_BUZZER_FRQ / 2;
+    params.periodUnits = PWM_PERIOD_US;
+    params.periodValue = 1000000L/ PWM_BUZZER_FRQ;
+    params.idleLevel   = PWM_IDLE_LOW;
+    buzzerHandle       = PWM_open(Board_PWM0, &params);
+}
+
+
+//***********************************************************************************
+//
+// System buzzer enable.
+//
+//***********************************************************************************
+void Sys_buzzer_enable(void)
+{
+    PWM_start(buzzerHandle);
+    Led_ctrl(LED_R, 1, 0, 0);
+}
+
+
+//***********************************************************************************
+//
+// System buzzer disable.
+//
+//***********************************************************************************
+void Sys_buzzer_disable(void)
+{
+    PWM_stop(buzzerHandle);
+    Led_ctrl(LED_R, 0, 0, 0);
+}
+
+
+//***********************************************************************************
+//
+// System alarm timer.
+//
+//***********************************************************************************
+void Sys_alarmFxn(UArg arg0)
+{
+    if(g_bAlarmSensorFlag == 0){
+        Sys_buzzer_disable();
+        Clock_stop(sysAlarmClkHandle);
+        return;
+    }    
+    
+    if(buzzerAlarmCnt == 0) {
+        buzzerAlarmCnt++;
+        return;
+    }
+
+
+    if(buzzerAlarmCnt == 1) {      
+        Clock_stop(sysAlarmClkHandle);
+        SystemEventSet(SYSTEMAPP_EVT_ALARM);
+        return;        
+    }
+
+    if (++buzzerAlarmCnt >= 21) {
+        Sys_buzzer_disable();
+        Clock_stop(sysAlarmClkHandle);
+        Clock_setPeriod(sysAlarmClkHandle, 60*CLOCK_UNIT_S);
+        buzzerAlarmCnt = 0;
+        Clock_start(sysAlarmClkHandle);
+    } else {
+        if (buzzerAlarmCnt % 2)
+            Sys_buzzer_disable();
+        else
+            Sys_buzzer_enable();
+    }
+}
+
+//***********************************************************************************
+//
+// battery  alarm timer.
+//
+//***********************************************************************************
+void Bat_alarmFxn(UArg arg0)
+{
+    Led_ctrl(LED_R, 1, 500* CLOCK_UNIT_MS, 1);
+}
 
 
 
@@ -96,6 +196,21 @@ void S6HwInit(void)
     /* Obtain clock instance handle */
     sysLcdShutClkHandle = Clock_handle(&sysLcdShutClkStruct);
 
+    /* Construct a 500ms periodic Clock Instance to temperature alarm */
+    clkParams.period = 500 * CLOCK_UNIT_MS;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&sysAlarmClkStruct, (Clock_FuncPtr)Sys_alarmFxn, 500 * CLOCK_UNIT_MS, &clkParams);
+    /* Obtain clock instance handle */
+    sysAlarmClkHandle = Clock_handle(&sysAlarmClkStruct);
+
+    /* Construct a 5s periodic Clock Instance to battery alarm */
+    clkParams.period = 5 * CLOCK_UNIT_S;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&BatAlarmClkStruct, (Clock_FuncPtr)Bat_alarmFxn, 500 * CLOCK_UNIT_MS, &clkParams);
+    /* Obtain clock instance handle */
+    BatAlarmClkHandle = Clock_handle(&BatAlarmClkStruct);
+
+
 
     if(!(g_rSysConfigInfo.module & MODULE_LCD)){//Ã»ÓÐlcd,sysLcdShutClkHandleÓÃÀ´×ö¹¤×÷Ö¸Ê¾µÆµÄ¶¨Ê±Æ÷¡£
         Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);
@@ -156,18 +271,20 @@ void S6ShortKeyApp(void)
         {
             Disp_info_switch();
         }
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        // SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
     }
-    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 //***********************************************************************************
@@ -184,20 +301,22 @@ void S6ConcenterLongKeyApp(void)
         Disp_poweroff();
         ConcenterSleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         ConcenterWakeup();
         Disp_poweron();
+        // SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
     }
-    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 //***********************************************************************************
@@ -221,19 +340,21 @@ void S6ShortKey1App(void)
             Disp_sensor_switch();
 #endif
         }
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        // SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
     }
-    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 
@@ -250,6 +371,7 @@ void S6LongKey1App(void)
     {
         case DEVICES_ON_MODE:
         PoweroffMenu_init();
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
@@ -257,15 +379,16 @@ void S6LongKey1App(void)
         ConcenterWakeup();
         Disp_poweron();
         Disp_info_close();
+        // SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
+        SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
     }
-    SystemEventSet(SYSTEMAPP_EVT_DISP);
 }
 
 

@@ -63,9 +63,9 @@ int main(void)
 
 #ifndef   BOARD_CONFIG_DECEIVE
     // Init the config
-    if(InternalFlashLoadConfig() == false)
+    if(Flash_load_config() == false)
     {
-        InternalFlashConfigReset();
+        Sys_config_reset();
         Flash_store_config();
     }
 #endif

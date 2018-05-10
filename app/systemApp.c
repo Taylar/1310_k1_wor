@@ -267,6 +267,30 @@ void SystemAppTaskFxn(void)
 			UsbIntProcess();
 		}
 
+#ifdef BOARD_S6_6
+		if(eventId & SYSTEMAPP_EVT_ALARM)
+		{
+			buzzerAlarmCnt = 2;
+			Sys_buzzer_enable();
+            Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
+            Clock_start(sysAlarmClkHandle);
+            Disp_info_close();
+            Disp_poweron();
+		}
+#endif
+
+
+		if(eventId & SYSTEMAPP_EVT_STORE_SYS_CONFIG)
+		{
+
+		}
+
+		if(eventId & SYSTEMAPP_EVT_ALARM)
+		{
+
+		}
+
+
 #ifdef SUPPORT_DISP_SCREEN
 		if(eventId & SYSTEMAPP_EVT_DISP)
 		{

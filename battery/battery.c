@@ -17,7 +17,7 @@
 
 
 
-static uint16_t bBatVoltage;
+uint16_t bBatVoltage;
 
 
 ADC_Handle   batteryHandle;
@@ -28,10 +28,12 @@ ADC_Handle   batteryHandle;
 //***********************************************************************************
 void Battery_init(void)
 {
+#ifndef BOARD_S1_2
     ADC_Params   params;
 
     ADC_Params_init(&params);
     batteryHandle = ADC_open(ZKS_BATTERY_ADC, &params);
+#endif
 }
 
 //***********************************************************************************
@@ -41,6 +43,7 @@ void Battery_init(void)
 //***********************************************************************************
 void Battery_voltage_measure(void)
 {
+#ifndef BOARD_S1_2
     uint16_t temp;
     uint32_t value, max, min;
     uint32_t  batSum;
@@ -69,6 +72,8 @@ void Battery_voltage_measure(void)
 
         // Input (V) * 2^12 / VDDS (V)
     bBatVoltage = (uint16_t)((batSum * 2)/1000);
+
+#endif
 }
 
 //***********************************************************************************
@@ -79,7 +84,10 @@ void Battery_voltage_measure(void)
 uint16_t Battery_get_voltage(void)
 {
 #ifdef  BOARD_S1_2
-    return AONBatMonBatteryVoltageGet();
+    uint32_t voltageTemp;
+    voltageTemp = AONBatMonBatteryVoltageGet();
+    voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
+    return voltageTemp;
 #else
     return bBatVoltage;
 #endif

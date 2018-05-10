@@ -62,7 +62,7 @@ bool GetEngModeFlag()
 
 void SetEngModeConfig()
 {
-	g_rSysConfigInfo.rfStatus &= ~STATUS_LORA_MASTER;//lora test as slaver
+	g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;//lora test as slaver
 }
 
 //***********************************************************************************

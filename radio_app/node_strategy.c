@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-26 16:15:30
+* @Last Modified time: 2018-05-10 11:34:59
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -20,7 +20,7 @@
 /***** Defines *****/
 #define     INVALID_CHANNEL             0XFFFFFFFF
 
-#define     NODE_TIME_OFFSET_MAX_MS     (3) 
+#define     NODE_TIME_OFFSET_MAX_MS     (30) 
 
 
 #define     FAIL_CONNECT_MAX_NUM               10
@@ -36,7 +36,6 @@ typedef struct {
     uint8_t     failNum;                    // fail time
     uint8_t     periodNum;                  // fail period time 
     uint32_t    period;                     // the unit is sec
-    int32_t     offset;
     uint32_t    channel;                // 
     uint32_t    channelNum;
     uint32_t    concenterAddr;
@@ -110,8 +109,6 @@ void NodeStrategyReset(void)
     nodeStrategy.init         = true;
     nodeStrategy.success      = false;
     nodeStrategy.busy         = false;
-    nodeStrategy.period       = 5;
-    nodeStrategy.offset       = 0;
     nodeStrategy.channel      = INVALID_CHANNEL;
     nodeStrategy.channelNum   = NODE_DECEIVE_MAX_NUM;
     nodeStrategy.failNum      = 0;
@@ -130,9 +127,19 @@ void NodeStrategyReset(void)
 //***********************************************************************************
 void NodeStrategySetPeriod(uint32_t period)
 {
-    // nodeStrategy.period         = period;
-    nodeStrategy.period         = 5;
-    Clock_setPeriod(nodeStrategyStartClockHandle, (uint32_t)nodeStrategy.period * CLOCK_UNIT_S);
+    period = 10;
+    if(Clock_isActive(nodeStrategyStartClockHandle))
+    {
+        Clock_stop(nodeStrategyStartClockHandle);
+        nodeStrategy.period         = period;
+        Clock_setPeriod(nodeStrategyStartClockHandle, (uint32_t)nodeStrategy.period * CLOCK_UNIT_S);
+        Clock_start(nodeStrategyStartClockHandle);
+    }
+    else
+    {
+        nodeStrategy.period         = period;
+        Clock_setPeriod(nodeStrategyStartClockHandle, (uint32_t)nodeStrategy.period * CLOCK_UNIT_S);
+    }
 }
 
 //***********************************************************************************
@@ -230,7 +237,7 @@ void NodeStrategyReceiveTimeoutProcess(void)
 // 
 // parameter: none
 //***********************************************************************************
-void NodeStrategyReceiveReceiveSuccess(void)
+void NodeStrategyReceiveSuccess(void)
 {
     
     nodeStrategy.busy           = false;
@@ -319,10 +326,10 @@ uint8_t NodeStrategyRemainderCache(void)
 // 
 // parameter: 
 //***********************************************************************************
-void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, uint32_t channel)
+void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint32_t channel)
 {
-    int32_t offsetTemp;
     int32_t launchTime;
+    uint8_t timerFlag = 0;
     
     // 
     if((nodeStrategy.periodNum >= FAIL_CONNECT_PERIOD_MAX_NUM) ||
@@ -334,11 +341,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
     }
 
     // transform to ms
-    concenterTick = concenterTick * Clock_tickPeriod / 1000;
-    nodeTick      = nodeTick * Clock_tickPeriod / 1000;
-
-    offsetTemp    = concenterTick - nodeTick;
-    // get the period tick
+    concenterTick = concenterTick / 100 + (length * 16 / 10);
 
 
     if(nodeStrategy.success)
@@ -349,23 +352,6 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
             goto ReadjustChannel;
         }
 
-        if((offsetTemp - nodeStrategy.offset) > 0)
-        {
-            if((offsetTemp - nodeStrategy.offset) > (NODE_TIME_OFFSET_MAX_MS))
-            {
-                // readjust the timer
-                // goto ReadjustChannel;
-            }
-
-        }
-        else
-        {
-            if((nodeStrategy.offset - offsetTemp) > (NODE_TIME_OFFSET_MAX_MS))
-            {
-                // readjust the timer
-                // goto ReadjustChannel;
-            }
-        }
     }
     else
     {
@@ -373,28 +359,29 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, ui
 ReadjustChannel:
 
         nodeStrategy.success        = true;
-        nodeStrategy.offset         = offsetTemp;
         nodeStrategy.channel        = channel;
 
+        concenterTick = concenterTick % (nodeStrategy.period * 1000);
         // transform to ms
         launchTime  = nodeStrategy.channel * nodeStrategy.period * 1000 / nodeStrategy.channelNum;
         
-        // updata the node tick and transform to ms
-        nodeTick    = Clock_getTicks() * Clock_tickPeriod;
-
-
-        nodeTick    %= nodeStrategy.period * 1000;
-
-        if(nodeTick > launchTime)
+        if(Clock_isActive(nodeStrategyStartClockHandle))
         {
-            Clock_setTimeout(nodeStrategyStartClockHandle, (nodeStrategy.period * 1000 - nodeTick  + launchTime)*CLOCK_UNIT_MS);
+            Clock_stop(nodeStrategyStartClockHandle);       
+            timerFlag = 1;
+        }
+        
+        if(launchTime > concenterTick)
+        {
+            Clock_setTimeout(nodeStrategyStartClockHandle, (launchTime - concenterTick) * CLOCK_UNIT_MS);
         }
         else
         {
-            Clock_setTimeout(nodeStrategyStartClockHandle, launchTime - nodeTick);
+            Clock_setTimeout(nodeStrategyStartClockHandle,((uint32_t)nodeStrategy.period*1000 - concenterTick + launchTime) * CLOCK_UNIT_MS);
         }
         Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
-        Clock_start(nodeStrategyStartClockHandle);
         
+        if(timerFlag)
+            Clock_start(nodeStrategyStartClockHandle);
     }
 }

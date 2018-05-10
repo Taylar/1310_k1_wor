@@ -43,7 +43,7 @@ extern const Sensor_FxnTable  OPT3001_FxnTable;
 #ifdef SUPPORT_LIS2DS12
 extern const Sensor_FxnTable  LIS2D12_FxnTable;
 #endif
-//注意，下表的定义必须与SENSOR_TYPE的定义顺序一致
+//脳垄脪芒拢卢脧脗卤铆碌脛露篓脪氓卤脴脨毛脫毛SENSOR_TYPE碌脛露篓脪氓脣鲁脨貌脪禄脰脗
 static const Sensor_FxnTable *Sensor_FxnTablePtr[]={
     NULL,
         
@@ -115,20 +115,20 @@ void Sensor_store_null_package(uint8_t *buff)
     //sensor data: length(1B) rssi(1B) customid(2B) devicedi(4B)...
     
     length = 0;
-    //消息头
-    //消息长度
+    //脧没脧垄脥路
+    //脧没脧垄鲁陇露脠
     buff[length++] = 0;
-    //无线信号强度RSSI
+    //脦脼脧脽脨脜潞脜脟驴露脠RSSI
     buff[length++] = 0;
 
     //Sensor ID
     for (i = 0; i < 4; i++)
         buff[length++] = g_rSysConfigInfo.DeviceId[i];
-    //消息流水号
+    //脧没脧垄脕梅脣庐潞脜
     buff[length++] = HIBYTE(rSensorObject.serialNum);
     buff[length++] = LOBYTE(rSensorObject.serialNum);
     rSensorObject.serialNum++;
-    //采集时间
+    //虏脡录炉脢卤录盲
     calendar = Rtc_get_calendar();
     buff[length++] = TransHexToBcd(calendar.Year - CALENDAR_BASE_YEAR);
     buff[length++] = TransHexToBcd(calendar.Month);
@@ -136,13 +136,13 @@ void Sensor_store_null_package(uint8_t *buff)
     buff[length++] = TransHexToBcd(calendar.Hours);
     buff[length++] = TransHexToBcd(calendar.Minutes);
     buff[length++] = TransHexToBcd(calendar.Seconds);
-    //Sensor电压
+    //Sensor碌莽脩鹿
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
 #endif
     buff[length++] = HIBYTE(value);
     buff[length++] = LOBYTE(value);
-    //参数项列表数据
+    //虏脦脢媒脧卯脕脨卤铆脢媒戮脻
     buff[0] = length - 1;
 }
 
@@ -162,10 +162,10 @@ static void Sensor_store_package(void)
     //sensor data: length(1B) rssi(1B) customid(2B) devicedi(4B)...
     
     length = 0;
-    //消息头
-    //消息长度
+    //脧没脧垄脥路
+    //脧没脧垄鲁陇露脠
     buff[length++] = 0;
-    //无线信号强度RSSI
+    //脦脼脧脽脨脜潞脜脟驴露脠RSSI
     buff[length++] = 0;
     //customid
     //buff[length++] = g_rSysConfigInfo.customId[0];
@@ -173,11 +173,11 @@ static void Sensor_store_package(void)
     //Sensor ID
     for (i = 0; i < 4; i++)
         buff[length++] = g_rSysConfigInfo.DeviceId[i];
-    //消息流水号
+    //脧没脧垄脕梅脣庐潞脜
     buff[length++] = HIBYTE(rSensorObject.serialNum);
     buff[length++] = LOBYTE(rSensorObject.serialNum);
     rSensorObject.serialNum++;
-    //采集时间
+    //虏脡录炉脢卤录盲
     calendar = Rtc_get_calendar();
     buff[length++] = TransHexToBcd((uint8_t)(calendar.Year - 2000));
     buff[length++] = TransHexToBcd((uint8_t)(calendar.Month));
@@ -185,13 +185,13 @@ static void Sensor_store_package(void)
     buff[length++] = TransHexToBcd((uint8_t)(calendar.Hours));
     buff[length++] = TransHexToBcd((uint8_t)(calendar.Minutes));
     buff[length++] = TransHexToBcd((uint8_t)(calendar.Seconds));
-    //Sensor电压
+    //Sensor碌莽脩鹿
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
 #endif
     buff[length++] = HIBYTE(value);
     buff[length++] = LOBYTE(value);
-    //参数项列表数据
+    //虏脦脢媒脧卯脕脨卤铆脢媒戮脻
 
     for (i = 0; i < MODULE_SENSOR_MAX; i++) {
         if (g_rSysConfigInfo.sensorModule[i] > SEN_TYPE_NONE && 
@@ -245,7 +245,7 @@ static void Sensor_store_package(void)
 #define MEMSENSOR_BUFF_LENGTH USB_BUFF_LENGTH
 sensordata_mem *pMemSensor = (sensordata_mem*)bUsbBuff;// use usb buffer save sensor data in memory  on MSP430F5529
 #else
-#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//支持100台节点数据存储
+#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//脰搂鲁脰100脤篓陆脷碌茫脢媒戮脻麓忙麓垄
 sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
 #endif
 #define MEMSENSOR_NUM  (MEMSENSOR_BUFF_LENGTH/sizeof(sensordata_mem))
@@ -290,7 +290,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 #ifdef SUPPORT_NETGATE_BIND_NODE
     isbind = IsBindNode(cursensor.DeviceId);
 
-    if(((g_rSysConfigInfo.status & STATUS_DISP_NOBINDNODE)==0 ) && !isbind){  //如果支持绑定节点，默认只显示绑定节点信息,除非设置STATUS_DISP_NOBINDNODE
+    if(((g_rSysConfigInfo.status & STATUS_DISP_NOBINDNODE)==0 ) && !isbind){  //脠莽鹿没脰搂鲁脰掳贸露篓陆脷碌茫拢卢脛卢脠脧脰禄脧脭脢戮掳贸露篓陆脷碌茫脨脜脧垄,鲁媒路脟脡猫脰脙STATUS_DISP_NOBINDNODE
         return;
     }
 #endif
@@ -330,7 +330,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
         if(isbind){
             if (Sensor_FxnTablePtr[cursensor.type]->function  & SENSOR_TEMP ) {
 
-                //判断接收的数据是否已绑定设备，是则需要判断是否超温
+                //脜脨露脧陆脫脢脮碌脛脢媒戮脻脢脟路帽脪脩掳贸露篓脡猫卤赂拢卢脢脟脭貌脨猫脪陋脜脨露脧脢脟路帽鲁卢脦脗
                 for( i = 0; i < NETGATE_BIND_NODE_MAX; ++i){
                     if ( (cursensor.DeviceId == g_rSysConfigInfo.bindnode[i].Deviceid) && 
                         ((g_rSysConfigInfo.bindnode[i].ChNo == 0xff) || cursensor.index  == g_rSysConfigInfo.bindnode[i].ChNo) ){
@@ -344,13 +344,13 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
                             //all  data  saved to tempdeep
                             g_AlarmSensor.value.tempdeep = cursensor.value.temp;                                       
 
-                            //设定报警        
+                            //脡猫露篓卤篓戮炉        
                             Sys_event_post(SYS_EVT_ALARM);
                             g_bAlarmSensorFlag |= 0x100;                        
                         }
                         else                   
                         {   
-                             //取消报警
+                             //脠隆脧没卤篓戮炉
                              if(g_bAlarmSensorFlag & (0x100)){
                                 g_bAlarmSensorFlag ^= (0x100);
                              }                         
@@ -437,6 +437,7 @@ void Sensor_init(void)
 
 #ifdef SUPPORT_NETGATE_DISP_NODE
     memset(pMemSensor, 0, MEMSENSOR_BUFF_LENGTH);//init sensor data in  memory
+    MemSensorIndex = 0;                         // maybe receive the sensor data before call Sensor_init, and do not clear the index
 #endif
 
 }
@@ -542,7 +543,7 @@ void Sensor_collect_time_isr(void)
 {
     rSensorObject.collectTime++;
     if (rSensorObject.collectTime >= g_rSysConfigInfo.collectPeriod) {
-        //在时间同步时可能将采集时间点改变，重新调整到30S.
+        //脭脷脢卤录盲脥卢虏陆脢卤驴脡脛脺陆芦虏脡录炉脢卤录盲碌茫赂脛卤盲拢卢脰脴脨脗碌梅脮没碌陆30S.
         rSensorObject.collectTime = (rSensorObject.collectTime - g_rSysConfigInfo.collectPeriod)%g_rSysConfigInfo.collectPeriod;
         
     }

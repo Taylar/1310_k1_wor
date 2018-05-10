@@ -77,7 +77,6 @@
 #define FLASH_SYS_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
 
 
-
 #if (defined BOARD_S6_6) || (defined BOARD_S2_2)
 
 // ************upgrade data ***********************

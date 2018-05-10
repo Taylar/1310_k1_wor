@@ -42,6 +42,9 @@
 #include <ti/drivers/ADC.h>
 #include <ti/drivers/adc/ADCCC26XX.h>
 
+#include <ti/drivers/PWM.h>
+#include <ti/drivers/pwm/PWMTimerCC26XX.h>
+
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/I2C.h>
@@ -62,9 +65,9 @@
 // HW version define.
 //
 //***********************************************************************************
-// #define BOARD_S1_2
+#define BOARD_S1_2
 // #define BOARD_S2_2
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -76,11 +79,13 @@
 //***********************************************************************************
 #ifdef BOARD_S6_6
 #define SUPPORT_SENSOR
-#define SUPPORT_NTC
+#define SUPPORT_SHT2X
 
 #define SUPPORT_RADIO
 #define SUPPORT_DISP_SCREEN
 #define SUPPORT_NETWORK
+
+#define SUPPORT_LIGHT
 #endif
 
 //***********************************************************************************
@@ -112,7 +117,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0009
+#define FW_VERSION              0x0011
 
 
 //***********************************************************************************
@@ -273,6 +278,9 @@
 #endif
 
 
+#ifdef SUPPORT_LIGHT
+#define SUPPORT_OPT3001
+#endif
 
 //Radio define
 
@@ -344,11 +352,11 @@ typedef enum {
 
 
 
-#define STATUS_LORA_MASTER      0x0001//lora做master或slaver
 #define STATUS_LORA_TEST      	0x0002//LORA 测试模式
 #define STATUS_LORA_APC      	0x0004//采集器自动增益控制
 #define STATUS_LORA_ALARM      	0x0008//采集器发送报警信息到网关
 #define STATUS_LORA_CHANGE_FREQ 0x0010//LORA的中心频根据客户码变化
+#define STATUS_1310_MASTER      0x0020//1310做master或slaver
 
 
 
@@ -515,6 +523,7 @@ typedef struct {
 #include "driver/wdt_drv.h"
 #include "driver/uart_drv.h"
 #include "driver/usbInt_drv.h"
+#include "driver/pwm_drv.h"
 #include "flash/extflash.h"
 #include "flash/extflash_ringq.h"
 #include "flash/internalFlash.h"

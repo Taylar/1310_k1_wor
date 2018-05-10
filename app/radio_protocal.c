@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-25 18:40:36
+* @Last Modified time: 2018-05-02 14:04:10
 */
 #include "../general.h"
 
@@ -27,15 +27,14 @@ static uint8_t     concenterRemainderCache;
 void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	uint8_t len, lenTemp, baseAddr, flag;
-	uint32_t	temp, temp2, tickTemp;
+	uint32_t	temp, temp2;
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
 
 
 	len			= protocalRxPacket->len;
 
-	tickTemp    = Clock_getTicks();
-    NodeStrategyReceiveReceiveSuccess();
+    NodeStrategyReceiveSuccess();
 
 	// this buf may be include several message
 	bufTemp		= (radio_protocal_t *)protocalRxPacket->payload;
@@ -72,7 +71,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			temp2 |=  ((uint32_t)bufTemp->load[12]) << 8;
 			temp2 |=  ((uint32_t)bufTemp->load[13]);
 
-			NodeStrategySetOffset_Channel(temp, tickTemp, temp2);
+			NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
 
 			calendarTemp.Year       = 2000 + bufTemp->load[0];
 			calendarTemp.Month      = bufTemp->load[1];
@@ -194,8 +193,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					case PARASETTING_SOFT_VER:
 					if(lenTemp < 3)
 						goto NodeDispath;
-					g_rSysConfigInfo.swVersion    = ((uint32_t)FW_VERSION << 8) + 
-													((uint32_t)FW_VERSION);
+					// g_rSysConfigInfo.swVersion    = FW_VERSION;
 					lenTemp -= 3;
 					break;
 
@@ -244,7 +242,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			temp2 |=  ((uint32_t)bufTemp->load[7]) << 8;
 			temp2 |=  ((uint32_t)bufTemp->load[8]);
 
-			NodeStrategySetOffset_Channel(temp, tickTemp, temp2);
+			NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
 
 			if(bufTemp->load[0] == PROTOCAL_FAIL)
 				NodeUploadFailProcess();

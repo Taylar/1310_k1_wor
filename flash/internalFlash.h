@@ -35,11 +35,13 @@
 
 
 /***** Prototypes *****/
-void InternalFlashConfigReset(void);
 
-void Flash_store_config(void);
 
-bool InternalFlashLoadConfig(void);
+extern void Sys_config_reset(void);
+
+extern void Flash_store_config(void);
+
+extern bool Flash_load_config(void);
 
 void InternalFlashInit(void);
 

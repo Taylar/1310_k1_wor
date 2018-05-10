@@ -885,7 +885,7 @@ void Disp_info_close(void)
 static void Disp_info(void)
 {
     uint8_t temp, buff[21],i,j;
-    uint8_t *gateid;
+//    uint8_t *gateid;
 
     switch (rDispObject.infoIndex) {
         case 1:

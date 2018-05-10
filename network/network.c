@@ -51,7 +51,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
             }
             
     		break;
-    			
+
     	case PTI_UPLOAD_PERIOD:
             if((index + 4)<= length) {
     			HIBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
@@ -62,7 +62,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
                     g_rSysConfigInfo.uploadPeriod = 10;
                 
                 congfig = true;
-            }            
+            }
             else{
                 goto paraerror;
             }
@@ -710,6 +710,8 @@ static void Nwk_taskFxn(void)
         }
 
         if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
+
+            Battery_voltage_measure();
             //wakeup.
             if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
                 continue;
@@ -795,7 +797,7 @@ static void Nwk_taskFxn(void)
             }
             
 #ifdef SUPPORT_GSM_SHORT_CONNECT
-            if(g_rSysConfigInfo.uploadPeriod >= 60*10) {//uploadPeriod>=10min ,shutdown 
+            if(g_rSysConfigInfo.uploadPeriod >= 60*5) {//uploadPeriod>=5min ,shutdown 
                 Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
             }
             else
@@ -851,7 +853,7 @@ void Nwk_upload_time_isr(void)
         }
         else
         #ifdef SUPPORT_GSM_SHORT_CONNECT
-        if (g_rSysConfigInfo.uploadPeriod < 60*10) //uploadPeriod>=10min ,dont send heartbeat 
+        if (g_rSysConfigInfo.uploadPeriod < 60*5) //uploadPeriod>=10min ,dont send heartbeat 
         #endif
         {
             rNwkObject.hbTime++;

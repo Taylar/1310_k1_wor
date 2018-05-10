@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-26 17:54:29
+* @Last Modified time: 2018-05-08 16:25:36
 */
 #include "../general.h"
 
@@ -318,6 +318,7 @@ void UsbIntProcess(void)
             InterfaceEnable();
 
             RadioTestDisable();
+            ConcenterSleep();
 
             deviceModeTemp = DEVICES_SLEEP_MODE;
             deviceMode = DEVICES_CONFIG_MODE;
@@ -344,6 +345,11 @@ void UsbIntProcess(void)
 
         deviceMode = deviceModeTemp;
         InterfaceDisable();
+        SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+                         (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+                         (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+                         g_rSysConfigInfo.DeviceId[3]);
+        SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
         switch(deviceMode)
         {
             case DEVICES_ON_MODE:
@@ -351,6 +357,7 @@ void UsbIntProcess(void)
 #ifdef  SUPPORT_NETWORK
             Nwk_poweron();
 #endif
+            ConcenterWakeup();
             if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
             {
                 RadioTestEnable();
@@ -605,6 +612,11 @@ void ConcenterRtcProcess(void)
 
     Nwk_upload_time_isr();
 
+    if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
+    {
+        ConcenterSleep();
+    }
+    
     if(concenterParameter.collectStart)
     {
         concenterParameter.collectTimeCnt++;

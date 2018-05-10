@@ -16,7 +16,7 @@ void NodeStrategySetPeriod(uint32_t period);
 
 void NodeStrategyReceiveTimeoutProcess(void);
 
-void NodeStrategyReceiveReceiveSuccess(void);
+void NodeStrategyReceiveSuccess(void);
 
 bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len);
 
@@ -28,6 +28,6 @@ uint8_t NodeStrategyRemainderCache(void);
 
 void NodeStrategyStop(void);
 
-void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t nodeTick, uint32_t channel);
+void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint32_t channel);
 
 #endif			// __NODE_STRATEGY_H__

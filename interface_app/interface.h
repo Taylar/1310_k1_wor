@@ -20,7 +20,7 @@ typedef	enum
 
 void InterfaceTaskCreate(void);
 
-void InterfaceSend(uint8_t * datap, uint8_t len);
+void InterfaceSend(uint8_t * datap, uint16_t len);
 
 void InterfaceEnable(void);
 

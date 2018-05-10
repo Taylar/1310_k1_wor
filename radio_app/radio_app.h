@@ -4,11 +4,13 @@
 #include "../easylink/EasyLink.h"
 
 
-#define         RADIO_EVT_RX            Event_Id_00
-#define         RADIO_EVT_TX            Event_Id_01
-#define         RADIO_EVT_TOUT          Event_Id_02
-#define         RADIO_EVT_FAIL          Event_Id_03
-#define         RADIO_EVT_TEST          Event_Id_04
+#define         RADIO_EVT_TEST          Event_Id_00
+#define         RADIO_EVT_RX            Event_Id_01
+#define         RADIO_EVT_TX            Event_Id_02
+#define         RADIO_EVT_TOUT          Event_Id_03
+#define         RADIO_EVT_RX_FAIL       Event_Id_04
+#define         RADIO_EVT_TX_FAIL       Event_Id_05
+#define         RADIO_EVT_FAIL          Event_Id_06
 #define         RADIO_EVT_ALL           0xffff
 
 

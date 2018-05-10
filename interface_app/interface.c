@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-17 14:06:39
+* @Last Modified time: 2018-05-08 11:13:11
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
@@ -92,7 +92,7 @@ void InterfaceReceiveCb(void)
 }
 
 
-void InterfaceSend(uint8_t * datap, uint8_t len)
+void InterfaceSend(uint8_t * datap, uint16_t len)
 {
     uart0TxData.length =  len > UART_BUFF_SIZE? UART_BUFF_SIZE: len;
     memcpy(uart0TxData.buff, datap, uart0TxData.length);
