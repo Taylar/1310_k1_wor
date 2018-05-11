@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-01 16:50:29
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-02 10:04:13
+* @Last Modified time: 2018-05-11 13:50:12
 */
 #include "../general.h"
 
@@ -96,6 +96,8 @@ void UsbIntInit(void (*Cb)(void))
     UsbIntIsrCb     = Cb;
 
     // updata the usb state
+#ifndef   BOARD_CONFIG_DECEIVE
     UsbIntScanFxn();
+#endif
 }
 

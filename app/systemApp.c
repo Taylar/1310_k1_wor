@@ -143,7 +143,8 @@ void SystemAppTaskFxn(void)
 	Sensor_measure(0);
 #if (defined BOARD_S6_6) || (defined BOARD_S2_2)
 #ifndef  BOARD_CONFIG_DECEIVE
-	ConcenterWakeup();
+	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+		ConcenterWakeup();
 #endif
 #endif
 

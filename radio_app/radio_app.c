@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-10 17:41:33
+* @Last Modified time: 2018-05-11 14:07:06
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -304,6 +304,11 @@ void RadioAppTaskFxn(void)
                 Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
 #else
                 ConcenterProtocalDispath(&radioRxPacket);
+
+#ifdef  BOARD_CONFIG_DECEIVE
+                Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 1);
+#endif
+
 #endif           
                 EasyLink_receiveAsync(RxDoneCallback, 0);
 

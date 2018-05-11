@@ -131,6 +131,10 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
             InterfaceSend(pData, len);
+
+#ifdef  BOARD_CONFIG_DECEIVE
+            NodeRadioSendConfig();
+#endif
             break;
 
         case EV_Get_APN:       
@@ -151,7 +155,7 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             pData[0] = 0;            
             len = Usb_group_package(AC_Ack, pData, 1);
             InterfaceSend(pData, len);
-            
+
             break;
 
         case EV_Get_Calendar:
