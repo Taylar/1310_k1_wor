@@ -68,7 +68,7 @@
 // #define BOARD_S1_2
 // #define BOARD_S2_2
 #define BOARD_S6_6
-#define BOARD_CONFIG_DECEIVE
+// #define BOARD_CONFIG_DECEIVE
 
 
 // #define FACTOR_RADIO_TEST
@@ -117,7 +117,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0011
+#define FW_VERSION              0x0012
 
 
 //***********************************************************************************
@@ -297,6 +297,7 @@
 //I2C define
 #define I2C_BUS
 
+#define SUPPORT_ENGMODE
 
 
 
@@ -548,6 +549,7 @@ typedef struct {
 #include "app/s1_app.h"
 #include "app/s2_app.h"
 #include "app/s6_app.h"
+#include "engmode/engmode.h"
 
 //***********************************************************************************
 //
@@ -556,7 +558,7 @@ typedef struct {
 //***********************************************************************************
 EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
 
-EXTERN_ATTR uint16_t     g_bAlarmSensorFlag; //¸ÄÎª16bit¼æÈÝÍø¹Ø±¨¾¯±êÖ¾(0x100)
+EXTERN_ATTR uint16_t     g_bAlarmSensorFlag; //
 
 extern uint8_t deviceMode;
 

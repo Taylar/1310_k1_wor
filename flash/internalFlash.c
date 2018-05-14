@@ -218,6 +218,8 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_OPT3001;
 #endif
 
 
@@ -291,32 +293,32 @@ bool InternalFlashCheckNodeAddr(uint32_t nodeAddr)
 //***********************************************************************************
 bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t *nodeChannel)
 {
-	if(InternalFlashCheckNodeAddr(nodeAddr)	== false)
-	{
-		uint32_t oppositeAddr;
-		uint32_t addrSector;
-		uint32_t addrTemp;
+	// if(InternalFlashCheckNodeAddr(nodeAddr)	== false)
+	// {
+	// 	uint32_t oppositeAddr;
+	// 	uint32_t addrSector;
+	// 	uint32_t addrTemp;
 
-		oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
+	// 	oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
 
-		addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
+	// 	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
 
-		addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE;
+	// 	addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE;
 
-		WriteInternalFlash((uint8_t*)(&nodeAddr), addrTemp + intFlashNodeWritenAddr[addrSector], 4);
-		WriteInternalFlash((uint8_t*)(nodeChannel), addrTemp + intFlashNodeWritenAddr[addrSector] + 4, 4);
+	// 	WriteInternalFlash((uint8_t*)(&nodeAddr), addrTemp + intFlashNodeWritenAddr[addrSector], 4);
+	// 	WriteInternalFlash((uint8_t*)(nodeChannel), addrTemp + intFlashNodeWritenAddr[addrSector] + 4, 4);
 
-		intFlashNodeWritenAddr[addrSector] += NODE_ADDR_INT_FLASH_SIZE;
-		if((intFlashNodeWritenAddr[addrSector] / NODE_ADDR_INT_FLASH_SIZE) >= NODE_ADDR_INT_FLASH_BLOCK_SIZE)
-		{
-			// clear the channel num and erase the node addr and channel record
-			InternalFlashInit();
-			*nodeChannel = 0;
-			return false;
-		}
+	// 	intFlashNodeWritenAddr[addrSector] += NODE_ADDR_INT_FLASH_SIZE;
+	// 	if((intFlashNodeWritenAddr[addrSector] / NODE_ADDR_INT_FLASH_SIZE) >= NODE_ADDR_INT_FLASH_BLOCK_SIZE)
+	// 	{
+	// 		// clear the channel num and erase the node addr and channel record
+	// 		// InternalFlashInit();
+	// 		*nodeChannel = 0;
+	// 		return false;
+	// 	}
 
-		return true;
-	}
+	// 	return true;
+	// }
 
 	return false;
 }

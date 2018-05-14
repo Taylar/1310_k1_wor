@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-11 14:07:06
+* @Last Modified time: 2018-05-14 15:23:29
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -178,7 +178,7 @@ void RadioAppTaskFxn(void)
     if(radioMode == RADIOMODE_SENDPORT)
     {
         NodeAppInit(RadioSend);
-
+        EasyLink_abort();
         /* Set the filter to the generated random address */
         if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
         {
@@ -194,10 +194,11 @@ void RadioAppTaskFxn(void)
         {
             System_abort("EasyLink_enableRxAddrFilter failed");
         }
-            if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success) 
-            {
-                System_abort("EasyLink_receiveAsync failed");
-            }
+        EasyLink_abort();
+        if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success) 
+        {
+            System_abort("EasyLink_receiveAsync failed");
+        }
     }
 
 
@@ -238,7 +239,7 @@ void RadioAppTaskFxn(void)
             
 
             EasyLink_getRssi(&rssi);
-            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi != -128))
+            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi != -127))
             {
                 // stop receive radio, otherwise couldn't send successful
                 if(radioMode == RADIOMODE_RECEIVEPORT)
@@ -282,7 +283,7 @@ void RadioAppTaskFxn(void)
             }
             else
             {
-                if((rssi == -128) && (currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))
+                if((rssi == -127) && (currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))
                 {
                     Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
                 }

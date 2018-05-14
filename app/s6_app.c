@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-11 09:58:58
+* @Last Modified time: 2018-05-14 13:55:45
 */
 #include "../general.h"
 
@@ -233,8 +233,12 @@ void S6HwInit(void)
 
     Spi_init();
 
+    I2c_init();
+    
     Flash_init();
 
+    PwmDriverInit();
+    Sys_buzzer_init();
 
     UsbIntInit(SystemUsbIntEventPostIsr);
 
@@ -258,10 +262,10 @@ void S6HwInit(void)
 //***********************************************************************************
 void S6ShortKeyApp(void)
 {
-    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        Disp_poweron();
 #ifdef SUPPORT_MENU
         if (Menu_is_process()) {
             Menu_action_proc(MENU_AC_DOWN);
@@ -293,7 +297,6 @@ void S6ShortKeyApp(void)
 //***********************************************************************************
 void S6ConcenterLongKeyApp(void)
 {
-    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -304,10 +307,20 @@ void S6ConcenterLongKeyApp(void)
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        ConcenterWakeup();
-        Disp_poweron();
-        // SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Battery_voltage_measure();
+        if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+        {
+            Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+            deviceMode = DEVICES_ON_MODE;
+            ConcenterWakeup();
+            Disp_poweron();
+            Disp_info_close();
+            SystemEventSet(SYSTEMAPP_EVT_DISP);
+        }
+        else
+        {
+            Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        }
         break;
 
         case DEVICES_SLEEP_MODE:
@@ -325,10 +338,10 @@ void S6ConcenterLongKeyApp(void)
 //***********************************************************************************
 void S6ShortKey1App(void)
 {
-    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        Disp_poweron();
 #ifdef SUPPORT_MENU
         if (Menu_is_process()) {
             Menu_action_proc(MENU_AC_ENTER);
@@ -365,20 +378,25 @@ void S6ShortKey1App(void)
 //***********************************************************************************
 void S6LongKey1App(void)
 {
-    Disp_poweron();
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        Disp_poweron();
         PoweroffMenu_init();
         SystemEventSet(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        ConcenterWakeup();
-        Disp_poweron();
-        Disp_info_close();
-        // SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Battery_voltage_measure();
+        if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+        {
+            deviceMode = DEVICES_ON_MODE;
+            ConcenterWakeup();
+            Disp_poweron();
+            Disp_info_close();
+            SystemEventSet(SYSTEMAPP_EVT_DISP);
+        }
         break;
 
 

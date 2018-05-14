@@ -11,6 +11,20 @@
 #ifndef __ZKSIOT_KEY_PROC_H__
 #define __ZKSIOT_KEY_PROC_H__
 
+#ifdef BOARD_S1_2
+#define Board_BUTTON0                            IOID_4
+#endif
+
+#ifdef BOARD_S2_2
+#define Board_BUTTON0                    IOID_1
+#endif
+
+#ifdef BOARD_S6_6
+#define Board_BUTTON1                    IOID_1
+#define Board_BUTTON0                    IOID_18
+#endif
+
+
 // Define key action
 typedef enum {
     KEY_0_SHORT_PRESS,

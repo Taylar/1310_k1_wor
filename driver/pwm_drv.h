@@ -7,6 +7,7 @@
 
 
 
+void PwmDriverInit(void);
 
 
 

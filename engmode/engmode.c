@@ -3,7 +3,7 @@
 #ifdef SUPPORT_ENGMODE
 extern void Lcd_send_cmd(uint8_t cmd);
 extern void Lcd_send_data(uint8_t value);
-extern Event_Handle sysEvtHandle;
+extern Event_Handle systemAppEvtHandle;
 extern void Btp_send_cmd(uint8_t *string);
 extern void Disp_sensor_data(void);
 extern void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light);
@@ -52,17 +52,21 @@ EngMode_Result Eng_Result = {0,};
 //***********************************************************************************
 bool GetEngModeFlag()
 {
-	if ((GPIO_read(Board_BUTTON0) == KEY_PRESSED) &&
-		(GPIO_read(Board_BUTTON1) != KEY_PRESSED))
-		
+	if ((PIN_getInputValue(Board_BUTTON0) != KEY_PRESSED) &&
+		(PIN_getInputValue(Board_BUTTON1) == KEY_PRESSED))
+	{
+		deviceMode = DEVICES_TEST_MODE;
 		return 1;
+	}
+		
 	else
 		return 0;
 }
 
 void SetEngModeConfig()
 {
-	g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;//lora test as slaver
+	g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;//
+	g_rSysConfigInfo.module   &= ~MODULE_RADIO;
 }
 
 //***********************************************************************************
@@ -72,12 +76,13 @@ void SetEngModeConfig()
 //***********************************************************************************
 void EngMode()
 {
-    uint8_t keyCode,i;
+    uint8_t i;
     uint8_t buff[32];
+    uint32_t event;
     
     //close watchdog.    
-    extern Watchdog_Handle watchdogHandle;
-    Watchdog_close(watchdogHandle);  
+    // extern Watchdog_Handle watchdogHandle;
+    // Watchdog_close(watchdogHandle);  
     
 #ifdef SUPPORT_DISP_SCREEN
 	g_rSysConfigInfo.status |= STATUS_LCD_ALWAYS_ON;
@@ -90,14 +95,13 @@ void EngMode()
 	Disp_msg(0, 0, "Enter EngMode...", FONT_8X16);
 	Disp_msg(0, 2, "Release Power Key", FONT_8X16);
 	while(GetEngModeFlag());
-	Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_NO_WAIT);
+	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_NO_WAIT);
 
 	//key	
 	Disp_clear_all();
 	Disp_msg(0, 0, "Power Key:", FONT_8X16);
-	Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
-	keyCode = Key_get();
-	if (keyCode == _VK_SELECT) {
+	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
+	if (event & SYSTEMAPP_EVT_KEY1) {
 		Disp_msg(10, 0, "OK", FONT_8X16);
 		Eng_Result.powerkey = true;
 	}
@@ -109,9 +113,8 @@ void EngMode()
 	}
 		
 	Disp_msg(0, 2, "Menu Key:", FONT_8X16);
-	Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
-	keyCode = Key_get();
-	if (keyCode == _VK_MENU_DOWN) {
+	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
+	if (event & SYSTEMAPP_EVT_KEY0) {
 		Disp_msg(10, 2, "OK", FONT_8X16);
 		Eng_Result.menukey = true;
 	}
@@ -123,7 +126,7 @@ void EngMode()
 	}
 
 	Disp_msg(0, 6, "Press AnyKey ...", FONT_8X16);
-	Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
+	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
 
 	//alarm
 #if 1
@@ -136,13 +139,13 @@ void EngMode()
 	Sys_buzzer_enable();
     //Clock_start(sysAlarmClkHandle);
 
-	Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
+	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
 
 	Sys_buzzer_disable();
 	//Clock_stop(sysAlarmClkHandle);
 
-	keyCode = Key_get();
-	if (keyCode == _VK_SELECT) {
+
+	if (event) {
 		Eng_Result.alarm = true;
 	}
 	else {
@@ -154,9 +157,8 @@ void EngMode()
 	//lcd
 	Lcd_fill_screen();
 	
-	Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
-	keyCode = Key_get();
-	if (keyCode == _VK_SELECT) {
+	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
+	if (event) {
 		Eng_Result.lcd = true;
 	}
 	else {
@@ -170,28 +172,22 @@ void EngMode()
     Disp_clear_all();
     Disp_msg(0, 0, "Sensor test:", FONT_8X16);
 	Sensor_measure(0);
-    
+
+	Disp_sensor_index_search();    
 	for (i = 0; i < MODULE_SENSOR_MAX; i++) {        
         if (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {  
             Disp_clear_all();
             sprintf((char*)buff, "Sensor test: %d", i);
             Disp_msg(0, 0, buff, FONT_8X16);
 
-            #ifdef SUPPORT_GSENSOR
-            if(SEN_TYPE_GSENSOR == g_rSysConfigInfo.sensorModule[i]){
-                Disp_number(0, 2, Lis2d12_get_acc(), 5, FONT_8X16);
-            }
-            else
-            #endif                
-                Disp_sensor_data();		
+            Disp_sensor_data();
             
-			Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
+			event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
 			Disp_sensor_switch();
         }
     }
 	
-	keyCode = Key_get();
-	if (keyCode == _VK_SELECT) {
+	if (event) {
 		Eng_Result.sensor= true;
 	}
 	else {
@@ -238,9 +234,8 @@ void EngMode()
 		else
 			Disp_icon(col, row, ICON_16X16_SIGNAL0, 1);
 
-		Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
-		keyCode = Key_get();
-		if (keyCode == _VK_SELECT) {
+		event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
+		if (event) {
 			Eng_Result.gsm = true;
 		}
 		else {
@@ -249,20 +244,18 @@ void EngMode()
     }
 #endif
 
-#ifdef SUPPORT_LORA
-    if (g_rSysConfigInfo.module & MODULE_LORA) {
+#ifdef SUPPORT_RADIO
+    // if (g_rSysConfigInfo.module & MODULE_CC1310) {
 
 		//lora
 		Disp_clear_all();
-		Disp_msg(0, 0, "Lora test:", FONT_8X16);	
-		Lora_PowerOn();	
-		extern int8_t Lora_Get_last_rssi();
+		Disp_msg(0, 0, "1310 test:", FONT_8X16);	
 		int8_t rssi;
 
         //display rssi
 		Lcd_set_font(16, 32, 0);
         while(1){
-            rssi = Lora_Get_last_rssi();
+        	EasyLink_getRssi(&rssi);
             
     		if (rssi < 0) {
     	        rssi = -rssi;
@@ -272,18 +265,18 @@ void EngMode()
     	    }
 
     	   	Disp_number(3,2,rssi,3,FONT_8X16);
-
-            if(Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_NO_WAIT)!=0)
+    	   	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_NO_WAIT);
+            if(event !=0)
                 break;
         }        
-		keyCode = Key_get();
-		if (keyCode == _VK_SELECT) {
+		
+		if (event) {
 			Eng_Result.lora = true;
 		}
 		else {
 			Eng_Result.lora = false;
 		}
-    }
+    // }
 	
 #endif
 
@@ -313,7 +306,7 @@ void EngMode()
 		Task_sleep(3 * CLOCK_UNIT_S);
 		Btp_poweroff();
 
-		Event_pend(sysEvtHandle, 0, SYS_EVT_KEY, BIOS_WAIT_FOREVER);
+		event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
 		keyCode = Key_get();
 		if (keyCode == _VK_SELECT) {
 			Eng_Result.bt = true;
@@ -327,7 +320,7 @@ void EngMode()
 
 	Disp_clear_all();
 
-    Sys_software_reset();
+    SysCtrlSystemReset();
 #endif
 
 }

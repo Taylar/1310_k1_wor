@@ -167,6 +167,7 @@ extern void Disp_proc(void);
 extern void Disp_init(void);
 extern bool Disp_poweron(void);
 extern void Disp_poweroff(void);
+extern void Disp_sensor_index_search(void);
 
 #endif  /* SUPPORT_DISP_SCREEN */
 

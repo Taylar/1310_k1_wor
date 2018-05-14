@@ -439,7 +439,7 @@ static void Disp_temperature(uint8_t col, uint8_t row, int32_t value, bool deep)
 	Lcd_set_font(TPICON_W, TPICON_H, 0);
     
     if ((deep == false && value == TEMPERATURE_OVERLOAD) ||
-        (deep == true && value == DEEP_TEMP_OVERLOAD)){
+        (deep == true && value == (DEEP_TEMP_OVERLOAD >> 4))){
         Disp_icon(col, row, TPICON_SUB, 0);
         col += TPICON_W + TPICON_GAP;
         Disp_icon(col, row, TPICON_SUB, 1);
@@ -554,46 +554,11 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 {
 
     uint8_t buff[21];
-    sprintf((char *)buff, "%d.%dL", value/100, (value%100)/10);
+
+    sprintf((char *)buff, "%ld.%dLx", (uint32_t)(value/100), (uint16_t)round(((value%100))/10));
+    Lcd_clear_area(1, 4);
     Disp_msg(1, 2, buff, FONT_12X24);
-	
-    /*
-     uint8_t thousand,hundreds,integer, decimal;
-     Lcd_set_font(TPICON_W, TPICON_H, 0);
-    //value = (int32_t)round((float)value / 10.0);
-    thousand = value / 1000;
-        if (thousand !=0 ) {
-            Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
-            col += TPICON_W + TPICON_GAP;
 
-            hundreds = (value % 1000) / 100;
-            Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
-            col += TPICON_W + TPICON_GAP;
-
-            value = (value % 100);
-        } else {
-            hundreds = value / 100;
-            if ( hundreds !=0 ){
-                Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
-                col += TPICON_W + TPICON_GAP;
-                value = value%100;
-            }
-        }
-        integer = value / 10;
-        decimal = value % 10;
-        if (integer >= 10) {
-            Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
-        } else {
-            Disp_icon(col, row, TPICON_DIGIT + integer, 1);
-        }
-        col += TPICON_W + TPICON_GAP;
-        Disp_icon(col, row, TPICON_DIGIT + decimal % 10, 1);
-        col += TPICON_W + TPICON_GAP;
-        Lcd_set_font(TPICON_DOT_W, TPICON_DOT_H, 0);
-        Disp_icon(col, row, TPICON_DOT, 1);
-        col += TPICON_DOT_W + TPICON_GAP;
-        Lcd_set_font(TPICON_W, TPICON_H, 0);
-        Disp_icon(col, row, TPICON_DIGIT + decimal % 10, 1);*/
 }
 //***********************************************************************************
 //
@@ -642,7 +607,7 @@ void Disp_sensor_data(void)
 
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor
-        /*    
+/*
         if (g_bAlarmSensorFlag) {
 
             if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
@@ -670,7 +635,7 @@ void Disp_sensor_data(void)
 
             return;
         }
-        */
+*/
 
         if(get_next_sensor_memory(&Sensor)){
 
@@ -687,7 +652,7 @@ void Disp_sensor_data(void)
             }
             
             if (Sensor.type == SEN_TYPE_SHT2X) {
-
+                Lcd_clear_area(2, 4);
                 if (Sensor.value.temp != TEMPERATURE_OVERLOAD)//temp valid 
                     sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);                  
                 else 
@@ -697,7 +662,7 @@ void Disp_sensor_data(void)
                     sprintf((char*)(buff + strlen((const char *)buff)), " %02d%%", Sensor.value.humi/100);
                 else 
                     sprintf((char*)(buff + strlen((const char *)buff)), " --%%");
-                
+                Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);                
             } else if (Sensor.type == SEN_TYPE_NTC) {   
             
@@ -705,7 +670,7 @@ void Disp_sensor_data(void)
                     sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);   
                 else 
                     sprintf((char*)buff, "--c");                
-                
+                Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);                
             } else if (Sensor.type == SEN_TYPE_DEEPTEMP){
                 if (Sensor.value.temp != DEEP_TEMP_OVERLOAD){
@@ -713,7 +678,16 @@ void Disp_sensor_data(void)
                 }
                 else
                     sprintf((char*)buff, "--c");
-                
+                Lcd_clear_area(2, 4);
+                Disp_msg(2, 4, buff, FONT_8X16);
+            } else if(Sensor.type == SEN_TYPE_OPT3001){
+
+                if (Sensor.value.lux != DEEP_TEMP_OVERLOAD){
+                    sprintf((char *)buff,  "%ld.%dLx", (uint32_t)((Sensor.value.lux&0x00ffffff)/100),(uint16_t)(LOWORD(Sensor.value.lux)%100/10.0));
+                }
+                else
+                    sprintf((char*)buff, "--c");
+                Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
             }
         }
@@ -803,10 +777,10 @@ static void Disp_status_bar(void)
 #endif
 
 //Diaplay Alarm flag
-    col += SBICON_W;/*
+    col += SBICON_W;
     if (g_bAlarmSensorFlag & (1 << rDispObject.sensorIndex))
         Disp_icon(col, row, ICON_16X16_ALARM, 1);
-    else*/
+    else
         Disp_icon(col, row, ICON_16X16_ALARM, 0);
     col += SBICON_W * 4;
 
@@ -935,14 +909,23 @@ static void Disp_info(void)
             //Software version.
             sprintf((char *)buff, "FW:  %x.%x.%x", FW_VERSION >> 12, (FW_VERSION >> 8) & 0x0f, FW_VERSION & 0xff);
             Disp_msg(0, 0, buff, FONT_8X16);
-/*
+
+#ifdef SUPPORT_LORA
+
             if(!(g_rSysConfigInfo.module & MODULE_NWK) && 
                   g_rSysConfigInfo.module & MODULE_RADIO ){//采集器
                 gateid = Lora_get_gatewayid();
                 sprintf((char *)buff, "G&N:%02x%02x%02x%02x-%d", gateid[0],gateid[1],gateid[2],gateid[3], Lora_get_chnno());
                 Disp_msg(0, 2, buff, FONT_8X16);
             }
-*/
+
+            if((g_rSysConfigInfo.module & MODULE_NWK) && 
+                  g_rSysConfigInfo.module & MODULE_RADIO ){//网关
+                sprintf((char *)buff, "F&N:%ldK-%d", Lora_get_freq()/1000, Lora_get_chnno());
+                Disp_msg(0, 2, buff, FONT_8X16);
+            }
+#endif// SUPPORT_LORA            
+
             for(i =0; i< MODULE_SENSOR_MAX; ++i){
                 if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
                     if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
@@ -1038,14 +1021,16 @@ void Disp_proc(void)
 {
     if (rDispObject.init == 0)
         return;
-/*
-    //增加采集器显示注册信息
-   if(!(g_rSysConfigInfo.module & MODULE_NWK) && 
-      g_rSysConfigInfo.module & MODULE_RADIO ) {
+
+#ifdef SUPPORT_LORA
+    //增加采集器/网关显示注册信息
+   if( g_rSysConfigInfo.module & MODULE_RADIO ) {
        if(Lora_get_ntp()!= 0)
            Disp_msg(0, 6, "              ", FONT_8X16);//clear 
    }
-*/
+#endif
+
+
 #ifdef SUPPORT_MENU
     if (Menu_is_process()) {
         Menu_show();
@@ -1060,13 +1045,15 @@ void Disp_proc(void)
 #endif
         Disp_status_bar();
     }
-/*
-    //增加采集器显示注册信息
-   if(!(g_rSysConfigInfo.module & MODULE_NWK) && 
-      g_rSysConfigInfo.module & MODULE_RADIO ) {
+
+#ifdef SUPPORT_LORA
+    //增加采集器/网关显示注册信息
+   if( g_rSysConfigInfo.module & MODULE_RADIO ) {
        if(Lora_get_ntp()== 0)
            Disp_msg(0, 6, "Registering...", FONT_8X16);//display
-   }*/
+   }
+#endif
+
 }
 
 //***********************************************************************************
@@ -1135,6 +1122,23 @@ void Disp_poweroff(void)
     rDispObject.init = 0;
     rDispObject.infoIndex = 0;
     Sys_lcd_stop_timing();
+}
+
+//***********************************************************************************
+//
+// search the sendor index.
+//
+//***********************************************************************************
+void Disp_sensor_index_search(void)
+{
+    uint8_t i;
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        if (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
+            break;
+        }
+    }
+    rDispObject.sensorIndex = i;
+ 
 }
 
 #endif  /* SUPPORT_DISP_SCREEN */

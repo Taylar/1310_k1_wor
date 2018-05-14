@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-11 12:03:40
+* @Last Modified time: 2018-05-14 11:43:19
 */
 #include "../general.h"
 
@@ -76,7 +76,7 @@ void ConcenterAppInit(void)
     concenterParameter.collectStart     = false;
     concenterParameter.radioReceive    = false;
 
-    InternalFlashInit();
+    // InternalFlashInit();
 
     ExtflashRingQueueInit(&extflashWriteQ);
 
@@ -403,8 +403,8 @@ void ConcenterConfigDeceiveInit(void)
 //***********************************************************************************
 void ConcenterSaveChannel(uint32_t nodeAddr)
 {
-    if(InternalFlashSaveNodeAddr(nodeAddr, &concenterParameter.channelDispath))
-        concenterParameter.channelDispath++;
+    // if(InternalFlashSaveNodeAddr(nodeAddr, &concenterParameter.channelDispath))
+    //     concenterParameter.channelDispath++;
 }
 
 //***********************************************************************************
@@ -414,7 +414,7 @@ void ConcenterSaveChannel(uint32_t nodeAddr)
 //***********************************************************************************
 uint32_t ConcenterReadChannel(uint32_t nodeAddr)
 {
-    return InternalFlashReadNodeAddr(nodeAddr);
+    // return InternalFlashReadNodeAddr(nodeAddr);
 }
 
 
@@ -616,6 +616,7 @@ void ConcenterRtcProcess(void)
 
     if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
     {
+        Disp_poweroff();
         ConcenterSleep();
     }
     

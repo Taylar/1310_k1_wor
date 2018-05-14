@@ -18,6 +18,7 @@
 #define         SYSTEMAPP_EVT_DISP                      Event_Id_11
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 
+#define         SYSTEMAPP_EVT_ALL_KEY                   (Event_Id_00 | Event_Id_01 | Event_Id_02 | Event_Id_03)
 
 
 // test result info

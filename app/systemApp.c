@@ -132,23 +132,39 @@ void SystemAppTaskFxn(void)
 
 	RtcStart();
 
-#ifdef		SUPPORT_WATCHDOG
-	WdtInit(WdtResetCb);
-#endif
+
 
 #ifdef BOARD_CONFIG_DECEIVE
 	ConcenterConfigDeceiveInit();
 #endif
 
 	Sensor_measure(0);
+
+
+
+
+
 #if (defined BOARD_S6_6) || (defined BOARD_S2_2)
+
+#ifdef SUPPORT_ENGMODE
+    if (GetEngModeFlag())
+        SetEngModeConfig();
+
+	if (GetEngModeFlag())
+ 		EngMode();
+#endif
+
 #ifndef  BOARD_CONFIG_DECEIVE
 	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
 		ConcenterWakeup();
+	else
+		ConcenterSleep();
 #endif
 #endif
 
-
+#ifdef		SUPPORT_WATCHDOG
+	WdtInit(WdtResetCb);
+#endif
 
 	for(;;)
 	{
