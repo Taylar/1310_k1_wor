@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-15 14:49:47
+* @Last Modified time: 2018-05-16 18:59:02
 */
 #include "../general.h"
 
@@ -489,12 +489,12 @@ void ConcenterRtcProcess(void)
         concenterParameter.monitorCnt++;
         if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
         {
-            // ConcenterRadioMonitorClear();
-            // EasyLink_abort();
-            // RadioFrontDisable();
-            // RadioFrontRxEnable();
-            // EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-            // RadioModeSet(RADIOMODE_RECEIVEPORT);
+            ConcenterRadioMonitorClear();
+            EasyLink_abort();
+            RadioFrontDisable();
+            RadioFrontRxEnable();
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            RadioModeSet(RADIOMODE_RECEIVEPORT);
         }
     }
 
