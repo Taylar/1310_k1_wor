@@ -557,8 +557,15 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 
     Lcd_set_font(TPICON_W, TPICON_H, 0);
     value = value / 10;
+
     col += TPICON_W + TPICON_GAP;
     thousand = value / 10000;
+    if(thousand > 9)
+    {
+        value    = 99999;
+        thousand = value / 10000;
+    }
+    
     if (thousand !=0 ) {
         Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
         col += TPICON_W + TPICON_GAP;
