@@ -41,10 +41,12 @@ void Menu_restart(void);
 
 #ifndef  USE_ENGLISH_MENU
 const MenuItem_t rMainMenu[4] = {
+#ifdef    SUPPORT_BLUETOOTH_PRINT
     {4, &menu128x32[MENU_128X32_START_RECORD * MENU_128X32_OFS],    Menu_start_record,   NULL,   NULL},
     {4, &menu128x32[MENU_128X32_STOP_RECORD * MENU_128X32_OFS],    Menu_stop_record,   NULL,   NULL},
     {4, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS],    Menu_print_proc,   NULL,   NULL},
     {4, &menu128x32[MENU_128X32_EXIT * MENU_128X32_OFS],    Menu_exit,   NULL,   NULL},
+#endif
 };
 #else
 const MenuItem_t rMainMenu[4] = {

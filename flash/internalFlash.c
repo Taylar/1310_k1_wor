@@ -218,8 +218,8 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
-    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_OPT3001;
+    // g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+    // g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_OPT3001;
 #endif
 
 
@@ -243,110 +243,4 @@ void Sys_config_reset(void)
     
     
 }
-
-
-//***********************************************************************************
-// brief: erase the node Addr record
-// 
-// parameter: 
-//***********************************************************************************
-void InternalFlashInit(void)
-{
-	
-	EraseInternalFlash(NODE_ADDR_INT_FLASH_POS);
-
-	memset(intFlashNodeWritenAddr, 0, NODE_ADDR_INT_FLASH_BLOCK_NUM);
-}
-
-//***********************************************************************************
-// brief: check the node channel if in the internal flash
-// 
-// parameter: true : save the node channel to internal flash
-// 			  false: this node channel has save in the internal flash
-//***********************************************************************************
-bool InternalFlashCheckNodeAddr(uint32_t nodeAddr)
-{
-	uint32_t oppositeAddr;
-	uint32_t addrSector;
-	uint32_t addrTemp;
-	uint8_t  i;
-	oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
-
-	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
-
-
-	addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE; 
-	for(i = 0; i < intFlashNodeWritenAddr[addrSector]; i++)
-	{
-		if((*(uint32_t*)(addrTemp+i*NODE_ADDR_INT_FLASH_SIZE)) == nodeAddr)
-			return true;
-	}
-	
-	return false;
-}
-
-//***********************************************************************************
-// brief: save the node addr and the channel to the internal flash
-// 
-// parameter: true : save the node channel to internal flash
-// 			  false: this node channel has save in the internal flash
-//***********************************************************************************
-bool InternalFlashSaveNodeAddr(uint32_t nodeAddr, uint32_t *nodeChannel)
-{
-	// if(InternalFlashCheckNodeAddr(nodeAddr)	== false)
-	// {
-	// 	uint32_t oppositeAddr;
-	// 	uint32_t addrSector;
-	// 	uint32_t addrTemp;
-
-	// 	oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
-
-	// 	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
-
-	// 	addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE;
-
-	// 	WriteInternalFlash((uint8_t*)(&nodeAddr), addrTemp + intFlashNodeWritenAddr[addrSector], 4);
-	// 	WriteInternalFlash((uint8_t*)(nodeChannel), addrTemp + intFlashNodeWritenAddr[addrSector] + 4, 4);
-
-	// 	intFlashNodeWritenAddr[addrSector] += NODE_ADDR_INT_FLASH_SIZE;
-	// 	if((intFlashNodeWritenAddr[addrSector] / NODE_ADDR_INT_FLASH_SIZE) >= NODE_ADDR_INT_FLASH_BLOCK_SIZE)
-	// 	{
-	// 		// clear the channel num and erase the node addr and channel record
-	// 		// InternalFlashInit();
-	// 		*nodeChannel = 0;
-	// 		return false;
-	// 	}
-
-	// 	return true;
-	// }
-
-	return false;
-}
-
-
-//***********************************************************************************
-// brief: read the node addr and the channel to the internal flash
-// 
-// parameter: 
-//***********************************************************************************
-uint32_t InternalFlashReadNodeAddr(uint32_t nodeAddr)
-{
-	uint32_t oppositeAddr;
-	uint32_t addrSector;
-	uint32_t addrTemp;
-	uint8_t  i;
-	oppositeAddr = nodeAddr % NODE_DECEIVE_MAX_NUM;
-
-	addrSector	= oppositeAddr / NODE_ADDR_INT_FLASH_BLOCK_NUM;
-
-	addrTemp	= NODE_ADDR_INT_FLASH_POS + addrSector * NODE_ADDR_INT_FLASH_BLOCK_SIZE; 
-	for(i = 0; i < intFlashNodeWritenAddr[addrSector]; i++)
-	{
-		if((*(uint32_t*)(addrTemp+i*NODE_ADDR_INT_FLASH_SIZE)) == nodeAddr)
-			return (*(uint32_t*)(addrTemp+i*NODE_ADDR_INT_FLASH_SIZE + 4));
-	}
-
-	return 0xffffffff;
-}
-
 

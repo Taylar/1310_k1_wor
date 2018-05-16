@@ -10,9 +10,9 @@
 #include "../general.h"
 #ifndef SUPPORT_SFKJ_UI
 #ifdef SUPPORT_DISP_SCREEN
-const uint8_t font5x8[]= {
-    #include "font\font5x8.txt"
-};
+// const uint8_t font5x8[]= {
+//     #include "font\font5x8.txt"
+// };
 
 const uint8_t font8x16[]= {
     #include "font\font8x16.txt"
@@ -108,7 +108,7 @@ const uint8_t icon16x32[]= {
 #define TEMP0_COL_POS           0
 #define TEMP0_ROW_POS           2
 #define TEMP1_COL_POS           20
-#define LUX_COL_POS             30
+#define LUX_COL_POS             0
 #define TEMP1_ROW_POS           2
 #define HUMI_COL_POS            89
 #define HUMI_ROW_POS            3
@@ -161,15 +161,15 @@ static void Disp_character(uint8_t bColStart, uint8_t bPageStart, uint8_t bChar,
         fgInv = 0;
 
     switch (bFont & 0x7f) {
-        case FONT_5X8:
-            bColStart *= 6;
-            bColStart += LCD_FONT5X8_START_COL;
-            Lcd_set_font(5, 8, fgInv);
-//            Lcd_write_character(bColStart, bPageStart, &font5x8[bChar * 5]);
-            // We use font 5x8, there are one space between char, so need clear the space.
-            Lcd_set_font(1, 8, fgInv);
-//            Lcd_write_character(bColStart + 5, bPageStart, &font5x8[0]);
-        break;
+//         case FONT_5X8:
+//             bColStart *= 6;
+//             bColStart += LCD_FONT5X8_START_COL;
+//             Lcd_set_font(5, 8, fgInv);
+// //            Lcd_write_character(bColStart, bPageStart, &font5x8[bChar * 5]);
+//             // We use font 5x8, there are one space between char, so need clear the space.
+//             Lcd_set_font(1, 8, fgInv);
+// //            Lcd_write_character(bColStart + 5, bPageStart, &font5x8[0]);
+        // break;
 
         case FONT_8X16:
             bColStart *= 8;
@@ -179,27 +179,27 @@ static void Disp_character(uint8_t bColStart, uint8_t bPageStart, uint8_t bChar,
             Lcd_write_character(bColStart, bPageStart, &font8x16[bChar * 16]);
         break;
 
-        case FONT_12X24:
-            bColStart *= 12;
-            bColStart += LCD_FONT12X24_START_COL;
-            Lcd_set_font(12, 24, fgInv);
-           // bPageStart = bPageStart * 3 + 2;
-            Lcd_write_character(bColStart, bPageStart, &font12x24[bChar * 36]);
-        break;
+        // case FONT_12X24:
+        //     bColStart *= 12;
+        //     bColStart += LCD_FONT12X24_START_COL;
+        //     Lcd_set_font(12, 24, fgInv);
+        //    // bPageStart = bPageStart * 3 + 2;
+        //     Lcd_write_character(bColStart, bPageStart, &font12x24[bChar * 36]);
+        // break;
 
-        case FONT_16X32:
-            bColStart *= 16;
-            Lcd_set_font(16, 32, fgInv);
-//            Lcd_write_character(bColStart, bPageStart, Font16X32Tab[bChar]);
-        break;
+       //  case FONT_16X32:
+       //      bColStart *= 16;
+       //      Lcd_set_font(16, 32, fgInv);
+       //     Lcd_write_character(bColStart, bPageStart, Font16X32Tab[bChar]);
+       // break;
 
-        case FONT_24X48:
-            bColStart *= 24;
-            bColStart += LCD_FONT24X48_START_COL;
-            Lcd_set_font(24, 48, fgInv);
-            bPageStart += 5;
-//            Lcd_write_character(bColStart, bPageStart, &font24x48[bChar * 144]);
-        break;
+       //  case FONT_24X48:
+       //      bColStart *= 24;
+       //      bColStart += LCD_FONT24X48_START_COL;
+       //      Lcd_set_font(24, 48, fgInv);
+       //      bPageStart += 5;
+       //     Lcd_write_character(bColStart, bPageStart, &font24x48[bChar * 144]);
+       // break;
     }
     rDispObject.refresh = 1;
 }
@@ -552,12 +552,49 @@ static void Disp_humidty(uint8_t col, uint8_t row, uint16_t value)
 //***********************************************************************************
 static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 {
-
+    uint8_t thousand,hundreds,integer, decimal;
     uint8_t buff[21];
 
-    sprintf((char *)buff, "%ld.%dLx", (uint32_t)(value/100), (uint16_t)round(((value%100))/10));
-    Lcd_clear_area(1, 4);
-    Disp_msg(1, 2, buff, FONT_12X24);
+    Lcd_set_font(TPICON_W, TPICON_H, 0);
+    value = value / 10;
+    col += TPICON_W + TPICON_GAP;
+    thousand = value / 10000;
+    if (thousand !=0 ) {
+        Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
+        col += TPICON_W + TPICON_GAP;
+
+        hundreds = (value % 10000) / 1000;
+        Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
+        col += TPICON_W + TPICON_GAP;
+
+        value = (value % 1000);
+    } else {
+        hundreds = value / 1000;
+        if ( hundreds !=0 ){
+            Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
+            col += TPICON_W + TPICON_GAP;
+            value = value%1000;
+        }
+    }
+    integer = value / 10;
+    decimal = value % 10;
+    if (integer >= 10) {
+        Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
+    } else {
+        Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 0);
+    }
+    col += TPICON_W + TPICON_GAP;
+    Disp_icon(col, row, TPICON_DIGIT + integer % 10, 1);
+    col += TPICON_W + TPICON_GAP;
+    Lcd_set_font(TPICON_DOT_W, TPICON_DOT_H, 0);
+    Disp_icon(col, row, TPICON_DOT, 1);
+    col += TPICON_DOT_W + TPICON_GAP;
+    Lcd_set_font(TPICON_W, TPICON_H, 0);
+    Disp_icon(col, row, TPICON_DIGIT + decimal % 10, 1);
+    col += TPICON_W + TPICON_GAP;
+    col = (col + 7) / 8;
+    sprintf((char *)buff, "Lx");
+    Disp_msg(col, row+2, buff, FONT_8X16);
 
 }
 //***********************************************************************************
@@ -639,9 +676,9 @@ void Disp_sensor_data(void)
 
         if(get_next_sensor_memory(&Sensor)){
 
-/*            if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
-                cursensorno = Flash_load_sensor_codec(Sensor.DeviceId); //find sensor no in sensor codec table             
-*/
+            // if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
+            //     cursensorno = Flash_load_sensor_codec(Sensor.DeviceId); //find sensor no in sensor codec table             
+
             if (cursensorno){
                 sprintf((char*)buff, "%02d#", cursensorno);
                 Disp_msg(4, 2, buff, FONT_8X16);
@@ -909,22 +946,7 @@ static void Disp_info(void)
             //Software version.
             sprintf((char *)buff, "FW:  %x.%x.%x", FW_VERSION >> 12, (FW_VERSION >> 8) & 0x0f, FW_VERSION & 0xff);
             Disp_msg(0, 0, buff, FONT_8X16);
-
-#ifdef SUPPORT_LORA
-
-            if(!(g_rSysConfigInfo.module & MODULE_NWK) && 
-                  g_rSysConfigInfo.module & MODULE_RADIO ){//²É¼¯Æ÷
-                gateid = Lora_get_gatewayid();
-                sprintf((char *)buff, "G&N:%02x%02x%02x%02x-%d", gateid[0],gateid[1],gateid[2],gateid[3], Lora_get_chnno());
-                Disp_msg(0, 2, buff, FONT_8X16);
-            }
-
-            if((g_rSysConfigInfo.module & MODULE_NWK) && 
-                  g_rSysConfigInfo.module & MODULE_RADIO ){//Íø¹Ø
-                sprintf((char *)buff, "F&N:%ldK-%d", Lora_get_freq()/1000, Lora_get_chnno());
-                Disp_msg(0, 2, buff, FONT_8X16);
-            }
-#endif// SUPPORT_LORA            
+           
 
             for(i =0; i< MODULE_SENSOR_MAX; ++i){
                 if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {

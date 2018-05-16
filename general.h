@@ -86,6 +86,8 @@
 #define SUPPORT_NETWORK
 
 #define SUPPORT_LIGHT
+
+#define SUPPORT_ENGMODE
 #endif
 
 //***********************************************************************************
@@ -297,7 +299,6 @@
 //I2C define
 #define I2C_BUS
 
-#define SUPPORT_ENGMODE
 
 
 

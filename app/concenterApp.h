@@ -64,9 +64,5 @@ void ConcenterCollectStart(void);
 
 void ConcenterCollectStop(void);
 
-void ConcenterCollectPeriodSet(uint32_t period);
-
-void ConcenterCollectProcess(void);
-
 
 #endif			// _CONCENTERAPP_H__

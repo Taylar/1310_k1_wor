@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-14 11:43:19
+* @Last Modified time: 2018-05-15 14:49:47
 */
 #include "../general.h"
 
@@ -13,7 +13,7 @@
 
 #define     NODE_SETTING_CMD_LENGTH    10
 
-#define     CONCENTER_RADIO_MONITOR_CNT_MAX     10
+#define     CONCENTER_RADIO_MONITOR_CNT_MAX     60
 
 
 
@@ -22,9 +22,7 @@ typedef struct
 {
     uint32_t channelDispath;
     uint32_t synchronTimeCnt;
-    uint32_t uploadPeriod;          // the unit is sec
     uint32_t uploadTimeCnt;          // the unit is sec
-    uint32_t collectPeriod;         // the unit is sec
     uint32_t collectTimeCnt;         // the unit is sec
     uint32_t serialNum;         // the unit is sec
     
@@ -68,15 +66,12 @@ void ConcenterAppInit(void)
     concenterParameter.channelDispath  = 0;
     concenterParameter.monitorCnt      = 0;
     concenterParameter.synchronTimeCnt = 0;
-    concenterParameter.collectPeriod   = UPLOAD_PERIOD_DEFAULT;
     concenterParameter.collectTimeCnt  = 0;
     concenterParameter.serialNum       = 0;
 
     concenterParameter.synTimeFlag     = false;
     concenterParameter.collectStart     = false;
     concenterParameter.radioReceive    = false;
-
-    // InternalFlashInit();
 
     ExtflashRingQueueInit(&extflashWriteQ);
 
@@ -396,27 +391,6 @@ void ConcenterConfigDeceiveInit(void)
     InterfaceEnable();
 }
 
-//***********************************************************************************
-// brief:   save the node addr and channel to the internal flash
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterSaveChannel(uint32_t nodeAddr)
-{
-    // if(InternalFlashSaveNodeAddr(nodeAddr, &concenterParameter.channelDispath))
-    //     concenterParameter.channelDispath++;
-}
-
-//***********************************************************************************
-// brief:   read the node channel from the internal flash according to the node addr
-// 
-// parameter: 
-//***********************************************************************************
-uint32_t ConcenterReadChannel(uint32_t nodeAddr)
-{
-    // return InternalFlashReadNodeAddr(nodeAddr);
-}
-
 
 
 
@@ -471,11 +445,21 @@ void ConcenterRadioMonitorClear(void)
 void ConcenterCollectStart(void)
 {
     uint8_t i;
+    uint8_t secTemp;
+
+    secTemp                    = RtcGetSec();
+
     for(i = 0; i < MODULE_SENSOR_MAX; i++)
     {
-        if((g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X) || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X))
+        if((g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X) || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_OPT3001))
+        {
             concenterParameter.collectStart      = true;
-        break;
+
+            // promise the next collect time is 30s 
+            secTemp += 30;
+            concenterParameter.collectTimeCnt = secTemp;
+            break;
+        }
     }
 }
 
@@ -488,104 +472,6 @@ void ConcenterCollectStart(void)
 void ConcenterCollectStop(void)
 {
     concenterParameter.collectStart      = false;
-}
-
-
-//***********************************************************************************
-// brief:   set the collect sensor timer period
-// 
-// parameter: 
-// period:  the uint is sec
-//***********************************************************************************
-void ConcenterCollectPeriodSet(uint32_t period)
-{
-    concenterParameter.collectPeriod         = period;
-}
-
-//***********************************************************************************
-// brief:   concenter collect the sensor data and save to extflash
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterCollectProcess(void)
-{/*
-    uint8_t     data[24];
-    uint32_t    temp;
-    Calendar    calendarTemp;
-
-#ifdef BOARD_S2_2
-    // save the deep temperature data
-    DeepTemp_FxnTable.measureFxn(MAX31855_SPI_CH0);
-        // sensor type
-    data[17] = PARATYPE_TEMP_MAX31855;
-
-    // length, note:do not include length self
-    data[0] = 20;
-
-    // sensor data
-    temp     = DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP);
-    data[18] = (uint8_t)(temp >> 16);
-    data[19] = (uint8_t)(temp >> 8);
-    data[20] = (uint8_t)(temp);
-#endif
-
-
-#ifdef BOARD_S6_6
-    // save the deep temperature data
-    NTC_FxnTable.measureFxn(NTC_CH0);
-        // sensor type
-    data[17] = PARATYPE_NTC;
-
-    // length, note:do not include length self
-    data[0] = 19;
-
-    // sensor data
-    temp     = NTC_FxnTable.getValueFxn(NTC_CH0, SENSOR_TEMP);
-    data[18] = (uint8_t)(temp >> 8);
-    data[19] = (uint8_t)(temp);
-#endif    
-    
-
-    calendarTemp    = Rtc_get_calendar();
-    
-    // rssi
-    data[1] = 0;
-
-    // deceive ID
-    data[2] = g_rSysConfigInfo.DeviceId[0];
-    data[3] = g_rSysConfigInfo.DeviceId[1];
-    data[4] = g_rSysConfigInfo.DeviceId[2];
-    data[5] = g_rSysConfigInfo.DeviceId[3];
-    
-    // serial num
-    data[6] = (uint8_t)(concenterParameter.serialNum>>8);
-    data[7] = (uint8_t)concenterParameter.serialNum;
-    
-    // collect time
-    data[8]  = TransHexToBcd((uint8_t)(calendarTemp.Year - 2000));
-    data[9]  = TransHexToBcd((uint8_t)(calendarTemp.Month));
-    data[10] = TransHexToBcd((uint8_t)(calendarTemp.DayOfMonth));
-    data[11] = TransHexToBcd((uint8_t)(calendarTemp.Hours));
-    data[12] = TransHexToBcd((uint8_t)(calendarTemp.Minutes));
-    data[13] = TransHexToBcd((uint8_t)(calendarTemp.Seconds));
-
-    // voltage
-    temp     = Battery_get_voltage();
-    data[14] = (uint8_t)(temp >> 8);
-    data[15] = (uint8_t)(temp);
-
-    // sensor id
-    data[16] = 0;
-
-
-    Flash_store_sensor_data(data, data[0]+1);
-
-    concenterParameter.serialNum++;
-
-#ifdef  BOARD_S6_6
-    sensor_unpackage_to_memory(data, data[0]+1);
-#endif
-*/
 }
 
 
@@ -623,14 +509,13 @@ void ConcenterRtcProcess(void)
     if(concenterParameter.collectStart)
     {
         concenterParameter.collectTimeCnt++;
-        if(concenterParameter.collectTimeCnt >= concenterParameter.collectPeriod)
+        if(concenterParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
         {
-            concenterParameter.collectTimeCnt = 0;
+            concenterParameter.collectTimeCnt = (concenterParameter.collectTimeCnt - g_rSysConfigInfo.collectPeriod) % g_rSysConfigInfo.collectPeriod;
             Sensor_measure(1);
             Battery_voltage_measure();
         }
     }
-
 }
 
 
