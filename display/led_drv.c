@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-03-15 10:26:41
+* @Last Modified time: 2018-05-18 10:07:55
 */
 #include "../general.h"
 
@@ -13,9 +13,8 @@
 #ifdef BOARD_S1_2
 
 #define LED_R_PIN_NODE                       IOID_25
-#define LED_G_PIN_NODE                       IOID_24
-#define LED_B_PIN_NODE                       IOID_23
-#define LED_GND_PIN_NODE                     IOID_21
+#define LED_G_PIN_NODE                       IOID_23
+#define LED_B_PIN_NODE                       IOID_24
 
 
 static const uint8_t LED_ID_CONST[LED_MAX] =
@@ -23,7 +22,6 @@ static const uint8_t LED_ID_CONST[LED_MAX] =
     LED_R_PIN_NODE,
     LED_B_PIN_NODE,
     LED_G_PIN_NODE,
-    LED_GND_PIN_NODE,
 };
 
 
@@ -32,7 +30,6 @@ const PIN_Config ledPinTable[] = {
     LED_R_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     LED_G_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     LED_B_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    LED_GND_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /* LED GND initially off          */
     PIN_TERMINATE
 };
 
@@ -90,6 +87,8 @@ static Semaphore_Handle ledSemHandle;
 
 static PIN_State   ledState;
 static PIN_Handle  ledHandle;
+
+singleport_drive_t singlePort[LED_MAX];
 
 //***********************************************************************************
 //

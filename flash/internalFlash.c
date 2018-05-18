@@ -152,10 +152,10 @@ bool Flash_load_config(void)
     }
 
     memcpy((uint8_t*)&g_rSysConfigInfo, (uint8_t *)CONFIG_DATA_INTERNAL_ADDR, sizeof(ConfigInfo_t));
-    if(g_rSysConfigInfo.swVersion != FW_VERSION)
-    {
-        return false;
-    }
+    // if(g_rSysConfigInfo.swVersion != FW_VERSION)
+    // {
+    //     return false;
+    // }
 
     return true;
 }

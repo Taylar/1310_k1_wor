@@ -15,9 +15,19 @@ typedef enum {
     LED_R,
     LED_B,
     LED_G,
-    LED_GND,
     LED_MAX
 } LED_ID;
+
+// variable typedef
+typedef struct 
+{
+	uint8_t portType;
+	uint8_t enable;
+	uint8_t state;
+	uint8_t times;
+	uint32_t period;
+} singleport_drive_t;
+
 
 extern void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times);
 extern void Led_set(uint8_t ledId, uint8_t status);

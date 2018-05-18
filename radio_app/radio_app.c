@@ -239,7 +239,7 @@ void RadioAppTaskFxn(void)
             
 
             EasyLink_getRssi(&rssi);
-            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0) && (rssi != -127))
+            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0) && (rssi <= -110))
             {
                 // stop receive radio, otherwise couldn't send successful
                 if(radioMode == RADIOMODE_RECEIVEPORT)
@@ -283,7 +283,7 @@ void RadioAppTaskFxn(void)
             }
             else
             {
-                if((rssi == -127) && (currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))
+                if((rssi > -110) && (currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))
                 {
                     Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
                 }

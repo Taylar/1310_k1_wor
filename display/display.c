@@ -565,7 +565,7 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
         value    = 99999;
         thousand = value / 10000;
     }
-    
+
     if (thousand !=0 ) {
         Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
         col += TPICON_W + TPICON_GAP;
@@ -803,7 +803,9 @@ static void Disp_status_bar(void)
 
 #ifdef SUPPORT_SENSOR
 //Display external sensor flag
-    if (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) {
+    if ((rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
+        (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_NONE) ||
+        (rDispObject.sensorIndex  ==  2 && g_rSysConfigInfo.sensorModule[2] == SEN_TYPE_OPT3001)) {
         Disp_icon(col, row, ICON_16X16_EXTERNAL, 0);            
     } else {
         Disp_icon(col, row, ICON_16X16_EXTERNAL, 1);
