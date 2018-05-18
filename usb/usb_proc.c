@@ -133,7 +133,7 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             InterfaceSend(pData, len);
 
 #ifdef  BOARD_CONFIG_DECEIVE
-            NodeRadioSendConfig();
+            ConcenterRadioSendParaSet(GetRadioSrcAddr(), GetRadioDstAddr());
 #endif
             break;
 
