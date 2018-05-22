@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-18 10:07:55
+* @Last Modified time: 2018-05-21 16:02:13
 */
 #include "../general.h"
 
@@ -88,7 +88,11 @@ static Semaphore_Handle ledSemHandle;
 static PIN_State   ledState;
 static PIN_Handle  ledHandle;
 
+#define     LED_PERIOD_CLOCK_TIME_MS       10
 singleport_drive_t singlePort[LED_MAX];
+
+Clock_Struct ledProcessClk;     /* not static so you can see in ROV */
+Clock_Handle ledProcessClkHandle;
 
 //***********************************************************************************
 //
@@ -113,11 +117,17 @@ void LedIoInit(void)
 //***********************************************************************************
 void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
 {
+    uint8_t i;
     /* Get access to resource */
 #ifdef BOARD_S6_6
     if(ledId >= LED_G)
         return;
 #endif
+
+    period /= CLOCK_UNIT_MS; 
+
+    if(Clock_isActive(ledProcessClkHandle))
+        Clock_stop(ledProcessClkHandle);
 
     Semaphore_pend(ledSemHandle, BIOS_WAIT_FOREVER);
 
@@ -125,23 +135,33 @@ void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
 
     if (period == 0 || times == 0) {
         /* Unlock resource */
+
+        for(i = 0; i < LED_MAX; i++)
+        {
+            if(singlePort[i].enable)
+                break;
+        }
+        if(i < LED_MAX)
+        {
+            Clock_start(ledProcessClkHandle);
+        }
+
         Semaphore_post(ledSemHandle);
         return;
     }
 
-    Task_sleep(period);
-    PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], !state);
-    times--;
-
-    while (times--) {
-        Task_sleep(period);
-        PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], state);
-        Task_sleep(period);
-        PIN_setOutputValue(ledHandle, LED_ID_CONST[ledId], !state);
-    }
+    singlePort[ledId].enable      = true;
+    singlePort[ledId].times       = times;
+    singlePort[ledId].state       = state;
+    singlePort[ledId].periodT1Set = (period >= LED_PERIOD_CLOCK_TIME_MS)?period/LED_PERIOD_CLOCK_TIME_MS:1;
+    singlePort[ledId].periodT2Set = (period >= LED_PERIOD_CLOCK_TIME_MS)?period/LED_PERIOD_CLOCK_TIME_MS:1;
+    singlePort[ledId].periodT1    = singlePort[ledId].periodT1Set;
+    singlePort[ledId].periodT2    = singlePort[ledId].periodT2Set;
 
     /* Unlock resource */
     Semaphore_post(ledSemHandle);
+
+    Clock_start(ledProcessClkHandle);
 }
 
 //***********************************************************************************
@@ -180,6 +200,59 @@ void Led_set(uint8_t ledId, uint8_t status)
     Semaphore_post(ledSemHandle);
 }
 
+//***********************************************************************************
+//
+// Led init.
+//
+//***********************************************************************************
+void Led_clk_cb(UArg arg0)
+{
+    uint8_t i;
+    for(i = 0; i < LED_MAX; i++)
+    {
+        if(singlePort[i].enable)
+        {
+            if(singlePort[i].times)
+            {
+                if(singlePort[i].periodT1)
+                {
+                    singlePort[i].periodT1--;
+                    if(singlePort[i].periodT1 == 0)
+                        PIN_setOutputValue(ledHandle, LED_ID_CONST[i], !singlePort[i].state);
+                }
+                else
+                {
+                    if(singlePort[i].periodT2)
+                    {
+                        singlePort[i].periodT2--;
+                    }
+                    else
+                    {
+                        singlePort[i].times--;
+                        if(singlePort[i].times)
+                            PIN_setOutputValue(ledHandle, LED_ID_CONST[i], singlePort[i].state);
+                        singlePort[i].periodT1    = singlePort[i].periodT1Set;
+                        singlePort[i].periodT2    = singlePort[i].periodT2Set;
+                    }
+                }
+            }
+            else
+            {
+                PIN_setOutputValue(ledHandle, LED_ID_CONST[i], !singlePort[i].state);
+                singlePort[i].enable = 0;
+            }
+        }
+    }
+    for(i = 0; i < LED_MAX; i++)
+    {
+        if(singlePort[i].enable == true)
+            break;
+    }
+    if(i >= LED_MAX)
+    {
+        Clock_stop(ledProcessClkHandle);
+    }
+}
 
 
 //***********************************************************************************
@@ -198,6 +271,15 @@ void LedInit(void)
     Semaphore_construct(&ledSemStruct, 1, &ledSemParams);
     /* Obtain instance handle */
     ledSemHandle = Semaphore_handle(&ledSemStruct);
+
+    Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
+    clkParams.period    = 1;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&ledProcessClk, Led_clk_cb, 1, &clkParams);
+    ledProcessClkHandle = Clock_handle(&ledProcessClk);
+    Clock_setTimeout(ledProcessClkHandle, LED_PERIOD_CLOCK_TIME_MS * CLOCK_UNIT_MS);
+    Clock_setPeriod(ledProcessClkHandle, LED_PERIOD_CLOCK_TIME_MS * CLOCK_UNIT_MS);
 }
 
 #else

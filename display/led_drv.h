@@ -21,11 +21,13 @@ typedef enum {
 // variable typedef
 typedef struct 
 {
-	uint8_t portType;
 	uint8_t enable;
 	uint8_t state;
 	uint8_t times;
-	uint32_t period;
+	uint8_t periodT1Set;
+	uint8_t periodT2Set;
+	uint8_t periodT1;
+	uint8_t periodT2;
 } singleport_drive_t;
 
 
