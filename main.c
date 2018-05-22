@@ -55,6 +55,7 @@
  */
 int main(void)
 {
+    __delay_cycles(10000);
     /* Call driver init functions. */
     Board_initGeneral();
 

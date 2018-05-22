@@ -479,6 +479,7 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
+    uint8_t temp;
     if(nodeParameter.collectStart)
     {
         nodeParameter.collectTimeCnt++;
@@ -487,7 +488,23 @@ void NodeRtcProcess(void)
         if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
         {
             // nodeParameter.collectTimeCnt -= 10;
-            nodeParameter.collectTimeCnt = (nodeParameter.collectTimeCnt - g_rSysConfigInfo.collectPeriod) % g_rSysConfigInfo.collectPeriod;
+            temp = RtcGetSec();
+            if(temp != 30)
+            {
+                if(temp > 30)
+                {
+                    nodeParameter.collectTimeCnt = temp - 30;
+                }
+                else
+                {
+                    nodeParameter.collectTimeCnt = temp + 30;
+                }
+            }
+            else
+            {
+                nodeParameter.collectTimeCnt = 0;
+            }
+            
             Sensor_measure(1);
             if(deviceMode == DEVICES_ON_MODE)
                 Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);

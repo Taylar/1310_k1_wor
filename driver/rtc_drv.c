@@ -187,7 +187,10 @@ void Rtc_set_calendar(Calendar *currentTime)
 //***********************************************************************************
 Calendar Rtc_get_calendar(void)
 {
+    UInt key;
+    key = Hwi_disable();
     return rtc;
+    Hwi_restore(key);
 }
 
 
@@ -198,5 +201,8 @@ Calendar Rtc_get_calendar(void)
 //***********************************************************************************
 uint8_t RtcGetSec(void)
 {
+    UInt key;
+    key = Hwi_disable();
     return rtc.Seconds;
+    Hwi_restore(key);
 }

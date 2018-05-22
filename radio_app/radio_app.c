@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-16 09:36:21
+* @Last Modified time: 2018-05-22 14:19:58
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -239,7 +239,7 @@ void RadioAppTaskFxn(void)
             
 
             EasyLink_getRssi(&rssi);
-            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0) && (rssi <= -110))
+            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= -110))
             {
                 // stop receive radio, otherwise couldn't send successful
                 if(radioMode == RADIOMODE_RECEIVEPORT)

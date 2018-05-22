@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-21 16:05:00
+* @Last Modified time: 2018-05-22 10:49:24
 */
 #include "../general.h"
 
@@ -99,6 +99,7 @@ void S1LongKeyApp(void)
         case DEVICES_CONFIG_MODE:
         NodeSleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
+        Task_sleep(3000 * CLOCK_UNIT_MS);
         SysCtrlSystemReset();
         break;
 

@@ -110,7 +110,7 @@ void NodeStrategyReset(void)
     nodeStrategy.success      = false;
     nodeStrategy.busy         = false;
     nodeStrategy.channel      = INVALID_CHANNEL;
-    nodeStrategy.channelNum   = NODE_DECEIVE_MAX_NUM;
+    nodeStrategy.channelNum   = 0;
     nodeStrategy.failNum      = 0;
     nodeStrategy.periodNum    = 0;
     nodeStrategy.concenterNum = 0;

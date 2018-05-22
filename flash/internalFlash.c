@@ -11,7 +11,6 @@
 /***** Variable declarations *****/
 
 
-uint32_t intFlashNodeWritenAddr[NODE_ADDR_INT_FLASH_BLOCK_NUM];
 
 
 
