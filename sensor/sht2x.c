@@ -109,7 +109,7 @@ static void SHT2x_measure(uint8_t chNum)
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
         if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
-
+            SHT2x_init(chNum);
 err_retrys:
             I2c_regRead(Board_SHT2x_ADDR, USER_REG_R, &userReg, 1);
             userReg &= ~SHT2x_RES_MASK;

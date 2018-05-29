@@ -62,14 +62,14 @@ int main(void)
     
 
 
-#ifndef   BOARD_CONFIG_DECEIVE
-    // Init the config
-    if(Flash_load_config() == false)
-    {
-        Sys_config_reset();
-        Flash_store_config();
-    }
-#endif
+// #ifndef   BOARD_CONFIG_DECEIVE
+//     // Init the config
+//     if(Flash_load_config() == false)
+//     {
+//         Sys_config_reset();
+//         Flash_store_config();
+//     }
+// #endif
 
     SysAppTaskCreate();
 

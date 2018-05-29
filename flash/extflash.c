@@ -386,6 +386,16 @@ void Flash_init(void)
 #ifdef FLASH_W25Q256FV
     Flash_extended_address_mode(1);
 #endif
+
+#ifndef   BOARD_CONFIG_DECEIVE
+    // Init the config
+    if(Flash_load_config() == false)
+    {
+        Sys_config_reset();
+        Flash_store_config();
+    }
+#endif
+    
     sysInfo.printRecordAddr.start = 0xffffffff;
     sysInfo.printRecordAddr.end = 0xffffffff;
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
@@ -840,6 +850,153 @@ ErrorStatus Flash_load_upgrade_info(uint8_t *pData, uint16_t length)
 
 
 
+
+#define     CONFIG_VALID_FLAG                   "valid config"
+
+const uint8_t configFlag[12] = CONFIG_VALID_FLAG;
+//***********************************************************************************
+// brief: store the config from the ext flash   
+// 
+// note: every sector is 4K
+// parameter: 
+//***********************************************************************************
+void Flash_store_config(void)
+{
+
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+        
+    Flash_external_erase(FLASH_SYS_CONFIG_INFO_POS, FLASH_EXT_SECTOR_ERASE);
+    //
+    Flash_external_write(FLASH_SYS_CONFIG_INFO_POS, configFlag, 12);
+    Flash_external_write(FLASH_SYS_CONFIG_DATA_POS, (uint8_t*)(&g_rSysConfigInfo), sizeof(ConfigInfo_t));
+
+    Semaphore_post(spiSemHandle);
+}
+
+//***********************************************************************************
+// brief: load the config from the ext flash   
+// 
+// parameter: 
+//***********************************************************************************
+bool Flash_load_config(void)
+{
+    uint8_t i, buf[16];
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    //
+    Flash_external_read(FLASH_SYS_CONFIG_INFO_POS, buf, 12);
+
+    Semaphore_post(spiSemHandle);
+
+    for(i = 0; i < 12; i++)
+    {
+        if(configFlag[i] != buf[i])
+        {
+            return false;
+        }
+    }
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    //
+    Flash_external_read(FLASH_SYS_CONFIG_DATA_POS, (uint8_t*)&g_rSysConfigInfo, sizeof(ConfigInfo_t));
+
+    Semaphore_post(spiSemHandle);
+
+    // if(g_rSysConfigInfo.swVersion != FW_VERSION)
+    // {
+    //     return false;
+    // }
+
+    return true;
+}
+
+
+//***********************************************************************************
+// brief: reset the config data  
+// 
+// parameter: 
+//***********************************************************************************
+void Sys_config_reset(void)
+{
+    uint8_t i;
+
+    g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
+    g_rSysConfigInfo.swVersion = FW_VERSION;
+    g_rSysConfigInfo.DeviceId[0] = (uint8_t)((DECEIVE_ID_DEFAULT>>24)&0xff);
+    g_rSysConfigInfo.DeviceId[1] = (uint8_t)((DECEIVE_ID_DEFAULT>>16)&0xff);
+    g_rSysConfigInfo.DeviceId[2] = (uint8_t)((DECEIVE_ID_DEFAULT>>8)&0xff);
+    g_rSysConfigInfo.DeviceId[3] = (uint8_t)((DECEIVE_ID_DEFAULT)&0xff);;
+
+    g_rSysConfigInfo.customId[0] = (uint8_t)(CUSTOM_ID_DEFAULT >> 8);
+    g_rSysConfigInfo.customId[1] = (uint8_t)(CUSTOM_ID_DEFAULT);
+
+    g_rSysConfigInfo.status = 0;
+
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        g_rSysConfigInfo.sensorModule[i]     = SEN_TYPE_NONE;
+        g_rSysConfigInfo.alarmTemp[i].high   = ALARM_TEMP_HIGH;
+        g_rSysConfigInfo.alarmTemp[i].low    = ALARM_TEMP_LOW;
+        g_rSysConfigInfo.WarningTemp[i].high = ALARM_TEMP_HIGH;
+        g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
+    }
+
+#ifdef      BOARD_S2_2
+
+    g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO;
+    g_rSysConfigInfo.serverIpAddr[0] = 114;
+    g_rSysConfigInfo.serverIpAddr[1] = 215;
+    g_rSysConfigInfo.serverIpAddr[2] = 122;
+    g_rSysConfigInfo.serverIpAddr[3] = 32;
+    g_rSysConfigInfo.serverIpPort    = 12200;
+
+    g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
+    g_rSysConfigInfo.apnuserpwd[0]   = 0;
+    g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
+    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+#endif
+
+#ifdef      BOARD_S6_6
+
+    g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO | MODULE_LCD;
+    g_rSysConfigInfo.serverIpAddr[0] = 114;
+    g_rSysConfigInfo.serverIpAddr[1] = 215;
+    g_rSysConfigInfo.serverIpAddr[2] = 122;
+    g_rSysConfigInfo.serverIpAddr[3] = 32;
+    g_rSysConfigInfo.serverIpPort    = 12200;
+
+    g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
+    g_rSysConfigInfo.apnuserpwd[0]   = 0;
+    g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
+    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    // g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+    // g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_OPT3001;
+#endif
+
+
+#ifdef      BOARD_S1_2
+
+    g_rSysConfigInfo.module          = MODULE_RADIO;
+    g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
+    g_rSysConfigInfo.apnuserpwd[0]   = 0;
+    g_rSysConfigInfo.rfStatus        = 0;
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+#endif
+
+
+    g_rSysConfigInfo.collectPeriod   = UPLOAD_PERIOD_DEFAULT;   //unit is sec
+    
+    g_rSysConfigInfo.uploadPeriod    = UPLOAD_PERIOD_DEFAULT; // unit is sec
+    
+    g_rSysConfigInfo.ntpPeriod       = NTC_DEFAULT;    // 
+    
+    g_rSysConfigInfo.gnssPeriod      = 10;  // 10sec
+    
+    
+}
 
 
 
