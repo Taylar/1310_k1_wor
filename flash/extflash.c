@@ -386,6 +386,7 @@ void Flash_init(void)
 #ifdef FLASH_W25Q256FV
     Flash_extended_address_mode(1);
 #endif
+    Semaphore_post(spiSemHandle);
 
 #ifndef   BOARD_CONFIG_DECEIVE
     // Init the config
@@ -396,6 +397,7 @@ void Flash_init(void)
     }
 #endif
     
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     sysInfo.printRecordAddr.start = 0xffffffff;
     sysInfo.printRecordAddr.end = 0xffffffff;
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
