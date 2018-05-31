@@ -387,7 +387,7 @@ rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup =
     .config.bNoFsPowerUp = 0x0,
     .txPower = 0x003F,
     .pRegOverride = pOverrides,
-    .centerFreq = 0x01B2,
+    .centerFreq = 0x01B1,
     .intFreq = 0x8000,
     .loDivider = 0x0A,
 };
@@ -407,7 +407,7 @@ rfc_CMD_FS_t RF_cmdFs =
     .condition.rule = 0x1,
     .condition.nSkip = 0x0,
     .frequency = 0x01B1,
-    .fractFreq = 0xEB85,
+    .fractFreq = 0x0000,
     .synthConf.bTxMode = 0x0,
     .synthConf.refFreq = 0x0,
     .__dummy0 = 0x00,
