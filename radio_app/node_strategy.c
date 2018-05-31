@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-10 11:34:59
+* @Last Modified time: 2018-05-31 16:15:58
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -127,7 +127,7 @@ void NodeStrategyReset(void)
 //***********************************************************************************
 void NodeStrategySetPeriod(uint32_t period)
 {
-    period = 10;
+    // period = 5;
     if(Clock_isActive(nodeStrategyStartClockHandle))
     {
         Clock_stop(nodeStrategyStartClockHandle);

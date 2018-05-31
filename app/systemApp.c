@@ -1,7 +1,5 @@
 #include "../general.h"
-#include "../app/systemApp.h"
-#include "../app/nodeApp.h"
-#include "../app/concenterApp.h"
+
 
 /***** Defines *****/
 #define         SYSTEM_APP_STACK_SIZE        1024
@@ -99,7 +97,7 @@ void SysAppTaskCreate(void)
 
 }
 
-
+//#define BOARD_S6_6
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
@@ -132,6 +130,24 @@ void SystemAppTaskFxn(void)
 
 	RtcStart();
 
+
+#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+    Nwk_task_create();
+    InterfaceTaskCreate();
+
+    /* Initialize radio tasks */
+    if(g_rSysConfigInfo.module & MODULE_RADIO)
+    {
+        RadioAppTaskCreate();
+    }
+#endif
+
+#if (defined BOARD_S1_2) || (defined BOARD_CONFIG_DECEIVE)
+
+    RadioAppTaskCreate();
+
+#endif
+    Task_sleep(10 * CLOCK_UNIT_MS);
 
 
 #ifdef BOARD_CONFIG_DECEIVE

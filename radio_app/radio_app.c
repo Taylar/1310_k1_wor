@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-22 14:19:58
+* @Last Modified time: 2018-05-31 11:26:43
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -130,6 +130,9 @@ void RadioModeSet(RadioOperationMode modeSet)
 void RadioAppTaskFxn(void)
 {
     int8_t rssi;
+
+    // the sys task process first, should read the g_rSysConfigInfo
+    Task_sleep(10 * CLOCK_UNIT_MS);
 
 
 #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
