@@ -871,7 +871,7 @@ void Flash_store_config(void)
         
     Flash_external_erase(FLASH_SYS_CONFIG_INFO_POS, FLASH_EXT_SECTOR_ERASE);
     //
-    Flash_external_write(FLASH_SYS_CONFIG_INFO_POS, configFlag, 12);
+    Flash_external_write(FLASH_SYS_CONFIG_INFO_POS, (uint8_t *)configFlag, 12);
     Flash_external_write(FLASH_SYS_CONFIG_DATA_POS, (uint8_t*)(&g_rSysConfigInfo), sizeof(ConfigInfo_t));
 
     Semaphore_post(spiSemHandle);

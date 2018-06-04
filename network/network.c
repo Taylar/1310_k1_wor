@@ -822,8 +822,8 @@ void Nwk_task_create(void)
 	Error_Block eb;
 	Error_init(&eb);
 
-    if (!(g_rSysConfigInfo.module & MODULE_NWK))
-        return;
+    // if (!(g_rSysConfigInfo.module & MODULE_NWK))
+    //     return;
 
     /* Construct main system process Task threads */
     Task_Params taskParams;
