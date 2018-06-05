@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-08 11:13:11
+* @Last Modified time: 2018-06-05 16:21:19
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
@@ -191,11 +191,6 @@ void InterfaceTaskFxn(void)
     interfaceEvtHandle = Event_handle(&interfaceEvtStruct);
 
     interfaceFlag       = FALSE;
-    // Semaphore_pend(interfaceSemHandle, BIOS_WAIT_FOREVER);
-    // InterfaceEnable();
-    // Semaphore_post(interfaceSemHandle);
-
-    // UartClose(UART_0);
 
     for(;;)
     {
@@ -204,7 +199,6 @@ void InterfaceTaskFxn(void)
         if(eventId & INTERFACE_EVT_RX)
         {
             Usb_data_parse(uart0RxData.buff, uart0RxData.length);
-            // InterfaceSend(uart0RxData.buff, uart0RxData.length);
         }
 
         if(eventId & INTERFACE_EVT_TX)
@@ -213,7 +207,6 @@ void InterfaceTaskFxn(void)
 
             if(interfaceFlag)
                 UartSend(uart0TxData.buff, uart0TxData.length);
-
 
             Semaphore_post(interfaceSemHandle);
         }

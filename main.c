@@ -59,38 +59,19 @@ int main(void)
     /* Call driver init functions. */
     Board_initGeneral();
 
-    
-
-
-// #ifndef   BOARD_CONFIG_DECEIVE
-//     // Init the config
-//     if(Flash_load_config() == false)
-//     {
-//         Sys_config_reset();
-//         Flash_store_config();
-//     }
-// #endif
-
     SysAppTaskCreate();
 
+#ifdef  BOARD_S6_6
 
-#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+#ifdef SUPPORT_NETWORK
     Nwk_task_create();
+#endif // SUPPORT_NETWORK
+
     InterfaceTaskCreate();
-
     /* Initialize radio tasks */
-    if(g_rSysConfigInfo.module & MODULE_RADIO)
-    {
-        RadioAppTaskCreate();
-    }
-#endif
-
-#if (defined BOARD_S1_2) || (defined BOARD_CONFIG_DECEIVE)
+#endif  // BOARD_S6_6
 
     RadioAppTaskCreate();
-
-#endif
-
 
     // test for 32K s
     // IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);
