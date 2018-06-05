@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-08 16:46:40
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-23 10:43:58
+* @Last Modified time: 2018-06-05 15:00:38
 */
 
 #include "../general.h"
@@ -39,6 +39,11 @@ static PIN_Handle  radioPinHandle;
 void RadioFrontInit(void)
 {
     radioPinHandle = PIN_open(&radioPinState, radioPinTable_gateway);
+
+    // Map RFC_GPO0 to IO 23
+    PINCC26XX_setMux(radioPinHandle, RADIO_CTX_PIN, PINCC26XX_MUX_RFC_GPO0);
+    // Map IO 26 to RFC_GPI1
+    PINCC26XX_setMux(radioPinHandle, RADIO_CSD_PIN, PINCC26XX_MUX_RFC_GPI1);
 }
 
 

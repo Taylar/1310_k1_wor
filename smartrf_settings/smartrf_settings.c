@@ -60,6 +60,10 @@ static uint32_t pOverrides[] =
     HW_REG_OVERRIDE(0x4038,0x0037),
     // Synth: Set Fref to 4 MHz
     (uint32_t)0x000684A3,
+#ifdef  SKY_66115
+    // Set the SYSGPOCTL register
+    HW_REG_OVERRIDE(0x1110, RFC_DBELL_SYSGPOCTL_GPOCTL0_RATGPO2 | RFC_DBELL_SYSGPOCTL_GPOCTL1_MCEGPO0),
+#endif  // SKY_66115
     // Synth: Configure fine calibration setting
     HW_REG_OVERRIDE(0x4020,0x7F00),
     // Synth: Configure fine calibration setting
@@ -300,6 +304,10 @@ static uint32_t pOverrides[] =
     HW_REG_OVERRIDE(0x4038,0x0037),
     // Synth: Set Fref to 4 MHz
     (uint32_t)0x000684A3,
+#ifdef  SKY_66115
+    // Set the SYSGPOCTL register
+    HW_REG_OVERRIDE(0x1110, RFC_DBELL_SYSGPOCTL_GPOCTL0_RATGPO2 | RFC_DBELL_SYSGPOCTL_GPOCTL1_MCEGPO0),
+#endif  // SKY_66115
     // Synth: Configure fine calibration setting
     HW_REG_OVERRIDE(0x4020,0x7F00),
     // Synth: Configure fine calibration setting

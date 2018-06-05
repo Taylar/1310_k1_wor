@@ -34,6 +34,7 @@
 #include <ti/sysbios/knl/Swi.h>
 #include <ti/sysbios/hal/Hwi.h>
 
+#include <ti/devices/cc13x0/inc/hw_rfc_dbell.h>
 #include <ti/devices/cc13x0/driverlib/aon_batmon.h>
 #include <ti/devices/cc13x0/driverlib/flash.h>
 #include <ti/devices/cc13x0/driverlib/aon_ioc.h>
@@ -89,6 +90,8 @@
 #define SUPPORT_LIGHT
 
 #define SUPPORT_ENGMODE
+
+#define SKY_66115
 #endif
 
 //***********************************************************************************
