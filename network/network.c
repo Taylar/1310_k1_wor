@@ -647,6 +647,10 @@ static void Nwk_taskFxn(void)
     /* Obtain event instance handle */
     nwkEvtHandle = Event_handle(&nwkEvtStruct);
 
+    // the systask process first
+    Task_sleep(10 * CLOCK_UNIT_MS);
+
+
     Nwk_init();
 
     while (1) {

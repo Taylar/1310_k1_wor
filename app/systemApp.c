@@ -130,9 +130,7 @@ void SystemAppTaskFxn(void)
 
 	RtcStart();
 
-
     Task_sleep(10 * CLOCK_UNIT_MS);
-
 
 #ifdef BOARD_CONFIG_DECEIVE
 	ConcenterConfigDeceiveInit();
@@ -142,25 +140,26 @@ void SystemAppTaskFxn(void)
 
 
 
-
-
-#if (defined BOARD_S6_6) || (defined BOARD_S2_2)
+#ifdef 		BOARD_S6_6
 
 #ifdef SUPPORT_ENGMODE
     if (GetEngModeFlag())
+    {
         SetEngModeConfig();
-
-	if (GetEngModeFlag())
  		EngMode();
-#endif
+    }
+#endif  // SUPPORT_ENGMODE
 
 #ifndef  BOARD_CONFIG_DECEIVE
+
 	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
 		ConcenterWakeup();
 	else
 		ConcenterSleep();
-#endif
-#endif
+
+#endif // BOARD_CONFIG_DECEIVE
+
+#endif // BOARD_S6_6
 
 #ifdef		SUPPORT_WATCHDOG
 	WdtInit(WdtResetCb);
@@ -171,17 +170,11 @@ void SystemAppTaskFxn(void)
         eventId = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL, BIOS_WAIT_FOREVER);
 	
 
-
-
 // the config deceive key is disable
 #ifndef   BOARD_CONFIG_DECEIVE
 
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
-#ifdef BOARD_S2_2
-			S2ShortKeyApp();
-#endif
-
 
 #ifdef BOARD_S1_2
 			S1ShortKeyApp();
@@ -195,11 +188,6 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
 		{
-
-#ifdef BOARD_S2_2
-			S2LongKeyApp();
-#endif
-
 
 #ifdef BOARD_S1_2
 			S1LongKeyApp();
@@ -235,11 +223,6 @@ void SystemAppTaskFxn(void)
 #ifdef		SUPPORT_WATCHDOG
 			WdtClear();
 #endif	
-
-
-#ifdef BOARD_S2_2
-			ConcenterRtcProcess();
-#endif
 
 #ifdef BOARD_S6_6
 			ConcenterRtcProcess();

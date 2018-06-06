@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-31 11:26:43
+* @Last Modified time: 2018-06-06 14:58:48
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -76,8 +76,6 @@ void RadioResendPacket(void);
 static void RadioDefaultParaInit(void)
 {
 
-    // memset(&srcRadioAddr, 0, sizeof(srcRadioAddr));
-    // memset(&dstRadioAddr, 0, sizeof(dstRadioAddr));
     srcAddrLen      = RADIO_ADDR_LEN;
     dstAddrLen      = RADIO_ADDR_LEN;
     // set the radio addr length
@@ -134,16 +132,23 @@ void RadioAppTaskFxn(void)
     // the sys task process first, should read the g_rSysConfigInfo
     Task_sleep(10 * CLOCK_UNIT_MS);
 
+    EasyLink_Params easyLink_params;
+    EasyLink_Params_init(&easyLink_params);
+    
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    
+    if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
+        System_abort("EasyLink_init failed");
+    }
 
-#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
-    radioMode = RADIOMODE_RECEIVEPORT;
+#ifdef  BOARD_S6_6
     RadioFrontInit();
 
 #ifdef  BOARD_CONFIG_DECEIVE
     
     g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
 
-#endif
+#endif  // BOARD_CONFIG_DECEIVE
 
     if(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)
     {
@@ -154,29 +159,19 @@ void RadioAppTaskFxn(void)
     {
         radioMode = RADIOMODE_SENDPORT;
     }
-#endif
+    
+#endif  // BOARD_S6_6
 
 #ifdef  BOARD_S1_2
 
     radioMode = RADIOMODE_SENDPORT;
 
-#endif
-
-    EasyLink_Params easyLink_params;
-    EasyLink_Params_init(&easyLink_params);
-    
-    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
-    
-    if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
-        System_abort("EasyLink_init failed");
-    }   
+#endif // BOARD_S1_2
 
 
     //EasyLink_setFrequency(433000000);
 
-
     RadioDefaultParaInit();
-    // radioMode       = RADIOMODE_RECEIVEPORT;
 
     if(radioMode == RADIOMODE_SENDPORT)
     {
@@ -256,7 +251,6 @@ void RadioAppTaskFxn(void)
                 if(EasyLink_abort() != EasyLink_Status_Success)
                 {
                     // System_printf("abort 1310 radio fail before sending");
-
                 }
                 
                 if (EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket) != EasyLink_Status_Success)

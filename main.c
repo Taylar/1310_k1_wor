@@ -68,7 +68,6 @@ int main(void)
 #endif // SUPPORT_NETWORK
 
     InterfaceTaskCreate();
-    /* Initialize radio tasks */
 #endif  // BOARD_S6_6
 
     RadioAppTaskCreate();

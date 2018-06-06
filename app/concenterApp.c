@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-16 18:59:02
+* @Last Modified time: 2018-06-06 15:03:42
 */
 #include "../general.h"
 
@@ -260,9 +260,7 @@ void ConcenterSleep(void)
 void ConcenterWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
-#ifdef BOARD_S2_2
-    InterfaceDisable();
-#endif
+    
     concenterParameter.radioReceive = true;
 #ifdef BOARD_S6_6
     if(GetUsbState() == USB_UNLINK_STATE)

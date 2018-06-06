@@ -66,10 +66,10 @@
 // HW version define.
 //
 //***********************************************************************************
-// #define BOARD_S1_2
+#define BOARD_S1_2
 // #define BOARD_S2_2
-#define BOARD_S6_6
-//#define BOARD_CONFIG_DECEIVE
+// #define BOARD_S6_6
+// #define BOARD_CONFIG_DECEIVE
 
 
 // #define FACTOR_RADIO_TEST
@@ -122,7 +122,6 @@
 //***********************************************************************************
 #ifdef  BOARD_CONFIG_DECEIVE
 
-#undef  SUPPORT_NETWORK
 
 #endif //BOARD_CONFIG_DECEIVE
 

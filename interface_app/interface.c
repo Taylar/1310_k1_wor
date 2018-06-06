@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-05 16:21:19
+* @Last Modified time: 2018-06-06 10:46:06
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
@@ -189,6 +189,9 @@ void InterfaceTaskFxn(void)
     Event_construct(&interfaceEvtStruct, &eventParam);
     /* Obtain event instance handle */
     interfaceEvtHandle = Event_handle(&interfaceEvtStruct);
+
+    // the systask process first
+    Task_sleep(10 * CLOCK_UNIT_MS);
 
     interfaceFlag       = FALSE;
 
