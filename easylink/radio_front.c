@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-08 16:46:40
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-05 15:00:38
+* @Last Modified time: 2018-06-07 11:27:00
 */
 
 #include "../general.h"
@@ -40,9 +40,11 @@ void RadioFrontInit(void)
 {
     radioPinHandle = PIN_open(&radioPinState, radioPinTable_gateway);
 
-    // Map RFC_GPO0 to IO 23
+    HWREG(RFC_DBELL_BASE + RFC_DBELL_O_SYSGPOCTL) =
+        RFC_DBELL_SYSGPOCTL_GPOCTL0_RATGPO2 | RFC_DBELL_SYSGPOCTL_GPOCTL1_MCEGPO0;
+    // Map RFC_GPO0 to
     PINCC26XX_setMux(radioPinHandle, RADIO_CTX_PIN, PINCC26XX_MUX_RFC_GPO0);
-    // Map IO 26 to RFC_GPI1
+    // Map  to RFC_GPI1
     PINCC26XX_setMux(radioPinHandle, RADIO_CSD_PIN, PINCC26XX_MUX_RFC_GPI1);
 }
 
@@ -66,8 +68,10 @@ void RadioFrontTxEnable(void)
 //***********************************************************************************
 void RadioFrontRxEnable(void)
 {
+    Task_sleep(10 * CLOCK_UNIT_MS);
     PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1);
     PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);
+    Task_sleep(10 * CLOCK_UNIT_MS);
 }
 
 
@@ -78,8 +82,10 @@ void RadioFrontRxEnable(void)
 //***********************************************************************************
 void RadioFrontDisable(void)
 {
+    Task_sleep(10 * CLOCK_UNIT_MS);
     PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 0);
     PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);
+    Task_sleep(10 * CLOCK_UNIT_MS);
 }
 
 #else
