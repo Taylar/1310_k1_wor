@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-31 16:15:58
+* @Last Modified time: 2018-06-08 14:36:13
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -49,7 +49,8 @@ typedef struct {
 Clock_Struct nodeStrategyStartClock;     /* not static so you can see in ROV */
 Clock_Handle nodeStrategyStartClockHandle;
 
-
+Semaphore_Struct radomFuncSem;  /* not static so you can see in ROV */
+Semaphore_Handle radomFuncSemHandle;
 
 // the 
 static node_strategy_t      nodeStrategy;
@@ -89,7 +90,12 @@ void NodeStrategyInit(void (*Cb)(void), void (*StrategyFailCb)(void))
         Clock_construct(&nodeStrategyStartClock, NodeStrategyStartCb, 1, &clkParams);
         nodeStrategyStartClockHandle = Clock_handle(&nodeStrategyStartClock);
 
-
+        /* Create semaphore used for exclusive radio access */ 
+    
+        Semaphore_Params semParam;
+        Semaphore_Params_init(&semParam);
+        Semaphore_construct(&radomFuncSem, 1, &semParam);
+        radomFuncSemHandle = Semaphore_handle(&radomFuncSem); 
 
         NodeStrategyPeriodCb        = Cb;
 
@@ -127,7 +133,6 @@ void NodeStrategyReset(void)
 //***********************************************************************************
 void NodeStrategySetPeriod(uint32_t period)
 {
-    // period = 5;
     if(Clock_isActive(nodeStrategyStartClockHandle))
     {
         Clock_stop(nodeStrategyStartClockHandle);
@@ -170,10 +175,9 @@ static void NodeStrategyStart(void)
     if(Clock_isActive(nodeStrategyStartClockHandle))
         Clock_stop(nodeStrategyStartClockHandle);
 
-
-
     // gennerate a ramdom num maybe waste almost 1sec
-    /* Use the True Random Number Generator to generate sensor node address randomly */;
+    /* Use the True Random Number Generator to generate sensor node address randomly */
+    Semaphore_pend(radomFuncSemHandle, BIOS_WAIT_FOREVER);
     Power_setDependency(PowerCC26XX_PERIPH_TRNG);
     TRNGEnable();
     while (!(TRNGStatusGet() & TRNG_NUMBER_READY))
@@ -191,6 +195,7 @@ static void NodeStrategyStart(void)
 
     TRNGDisable();
     Power_releaseDependency(PowerCC26XX_PERIPH_TRNG);
+    Semaphore_post(radomFuncSemHandle);
 
     Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
     Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
@@ -270,16 +275,15 @@ bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
     if(len > nodeStrategy.remainderCache)
         return false;
     
+
+    RadioCopyPacketToBuf(dataP, len, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS, EASYLINK_MAX_DATA_LENGTH - nodeStrategy.remainderCache);
+    nodeStrategy.remainderCache -= len;
+    nodeStrategy.busy       = true;
+
     if(nodeStrategy.success == false)
     {
         NodeStrategyStart();
     }
-
-
-    RadioCopyPacketToBuf(dataP, len, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS, EASYLINK_MAX_DATA_LENGTH - nodeStrategy.remainderCache);
-
-    nodeStrategy.remainderCache -= len;
-    nodeStrategy.busy       = true;
 
     return true;
 }
@@ -318,6 +322,26 @@ bool NodeStrategyBusyRead(void)
 uint8_t NodeStrategyRemainderCache(void)
 {
     return nodeStrategy.remainderCache;
+}
+
+//***********************************************************************************
+// brief: get the register status   
+// 
+// parameter: 
+//***********************************************************************************
+bool GetStrategyRegisterStatus(void)
+{
+    return nodeStrategy.success;
+}
+
+//***********************************************************************************
+// brief: set register success   
+// 
+// parameter: 
+//***********************************************************************************
+void StrategyRegisterSuccess(void)
+{
+    nodeStrategy.success = true;
 }
 
 

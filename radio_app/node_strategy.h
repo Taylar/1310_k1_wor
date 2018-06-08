@@ -30,4 +30,8 @@ void NodeStrategyStop(void);
 
 void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint32_t channel);
 
+bool GetStrategyRegisterStatus(void);
+
+void StrategyRegisterSuccess(void);
+
 #endif			// __NODE_STRATEGY_H__

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-06 15:03:42
+* @Last Modified time: 2018-06-07 18:05:12
 */
 #include "../general.h"
 
@@ -234,8 +234,7 @@ void ConcenterSleep(void)
 {
     concenterParameter.radioReceive = false;
 
-    EasyLink_abort();
-    RadioFrontDisable();
+    RadioDisable();
     ConcenterCollectStop();
     // wait the nwk disable the uart
 #ifdef  SUPPORT_NETWORK
@@ -482,19 +481,19 @@ void ConcenterCollectStop(void)
 void ConcenterRtcProcess(void)
 {
 
-    if(concenterParameter.radioReceive)
-    {
-        concenterParameter.monitorCnt++;
-        if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
-        {
-            ConcenterRadioMonitorClear();
-            EasyLink_abort();
-            RadioFrontDisable();
-            RadioFrontRxEnable();
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-            RadioModeSet(RADIOMODE_RECEIVEPORT);
-        }
-    }
+    // if(concenterParameter.radioReceive)
+    // {
+    //     concenterParameter.monitorCnt++;
+    //     if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
+    //     {
+    //         ConcenterRadioMonitorClear();
+    //         EasyLink_abort();
+    //         RadioFrontDisable();
+    //         RadioFrontRxEnable();
+    //         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+    //         RadioModeSet(RADIOMODE_RECEIVEPORT);
+    //     }
+    // }
 
     Nwk_upload_time_isr();
 

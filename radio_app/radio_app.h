@@ -11,6 +11,9 @@
 #define         RADIO_EVT_RX_FAIL       Event_Id_04
 #define         RADIO_EVT_TX_FAIL       Event_Id_05
 #define         RADIO_EVT_FAIL          Event_Id_06
+#define         RADIO_EVT_SET_RX_MODE   Event_Id_07
+#define         RADIO_EVT_SET_TX_MODE   Event_Id_08
+#define         RADIO_EVT_DISABLE	    Event_Id_09
 #define         RADIO_EVT_ALL           0xffff
 
 
@@ -20,9 +23,10 @@
 #define RADIO_EASYLINK_MODULATION     EasyLink_Phy_Custom
 
 enum RadioOperationStatus {
-    RADIOSTATUS_SUCCESS,
-    RADIOSTATUS_FAILED,
-    RADIOSTATUS_FAILEDNOTCONNECTED,
+    RADIOSTATUS_IDLE,
+    RADIOSTATUS_RECEIVING,
+    RADIOSTATUS_TRANSMITTING,
+    RADIOSTATUS_ABSORT,
 };
 
 
@@ -69,5 +73,11 @@ void ClearRadioSendBuf(void);
 void RadioTestEnable(void);
 
 void RadioTestDisable(void);
+
+void RadioSetRxMode(void);
+
+void RadioSetTxMode(void);
+
+void RadioDisable(void);
 
 #endif		// __RADIO_APP_H__

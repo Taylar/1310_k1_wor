@@ -122,6 +122,7 @@ void NodeUploadProcess(void)
 {
     uint8_t     data[24];
     uint32_t    dataItems;
+
     // reverse the buf to other command
     dataItems  = Flash_get_unupload_items();
     if(dataItems >= offsetUnit)

@@ -25,6 +25,7 @@ uint8_t deviceMode;
 uint8_t testResultInfo[32];
 uint8_t testResultInfoLen;
 
+
 /***** Prototypes *****/
 void SystemAppTaskFxn(void);
 
