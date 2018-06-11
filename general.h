@@ -1,7 +1,7 @@
 //***********************************************************************************
 // Copyright 2017, Zksiot Development Ltd.
-// Created by Zhengxuntai, 2017.12.15
-// MCU:	cc1310
+// Created by Linjie, 2017.08.08
+// MCU:	MSP430F5529
 // OS: TI-RTOS
 // Project:
 // File name: general.h
@@ -66,9 +66,9 @@
 // HW version define.
 //
 //***********************************************************************************
-#define BOARD_S1_2
+// #define BOARD_S1_2
 // #define BOARD_S2_2
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -84,7 +84,14 @@
 #define SUPPORT_SHT2X
 
 #define SUPPORT_RADIO
+
+
 #define SUPPORT_DISP_SCREEN
+
+#define SUPPORT_NETGATE_DISP_NODE
+
+#define SUPPORT_MENU
+
 #define SUPPORT_NETWORK
 
 #define SUPPORT_LIGHT
@@ -92,6 +99,10 @@
 #define SUPPORT_ENGMODE
 
 #define SKY_66115
+
+#define SUPPORT_REMOTE_UPGRADE
+
+
 #endif
 
 
@@ -245,12 +256,11 @@
 //LCD define
 #ifdef SUPPORT_DISP_SCREEN
 
-
 //#define EPD_GDE0213B1
 #define LCD_ST7567A
 #define SUPPORT_MENU
 
-#define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
+
 //#define SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
 #define NETGATE_BIND_NODE_MAX       30
 
@@ -311,7 +321,7 @@
 
 //I2C define
 #define I2C_BUS
-
+#define SOFT_I2C_BUS
 
 
 
@@ -533,7 +543,13 @@ typedef struct {
 #include "function.h"
 #include "driver/adc_drv.h"
 #include "driver/rtc_drv.h"
+
+#ifdef   SOFT_I2C_BUS
+#include "driver/soft_i2c_drv.h"
+#else
 #include "driver/i2c_drv.h"
+#endif
+
 #include "driver/spi_drv.h"
 #include "driver/wdt_drv.h"
 #include "driver/uart_drv.h"
@@ -553,6 +569,7 @@ typedef struct {
 #include "radio_app/radio_app.h"
 #include "radio_app/node_strategy.h"
 #include "network/network.h"
+#include "network/upgrade.h"
 #include "interface_app/interface.h"
 #include "usb/usb_proc.h"
 #include "app/concenterApp.h"
@@ -573,6 +590,7 @@ typedef struct {
 EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
 
 EXTERN_ATTR uint16_t     g_bAlarmSensorFlag; //
+EXTERN_ATTR  Alarmdata_t    g_AlarmSensor;
 
 extern uint8_t deviceMode;
 

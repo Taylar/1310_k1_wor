@@ -67,6 +67,10 @@ static void OPT3001_measure(uint8_t chNum)
     uint32_t pow_n = 0;
 
     I2c_regRead(Board_OPT3001_ADDR, CMD_RESULT_REG,buff_read, 2);
+    if(buff_read[0] == 0xff && buff_read[1] == 0xff){
+        rSensorData[chNum].lux = LIGHT_OVERLOAD;
+        return;
+    }
 
     HIBYTE(LOWORD(lux_hex)) = buff_read[0];
     LOBYTE(LOWORD(lux_hex)) = buff_read[1];
@@ -133,7 +137,7 @@ static int32_t OPT3001_get_value(uint8_t chNum, SENSOR_FUNCTION function)
             return rSensorData[chNum].lux&0x00ffffff;
         }
     }
-    return TEMPERATURE_OVERLOAD;
+    return LIGHT_OVERLOAD;
 }
 
 const Sensor_FxnTable  OPT3001_FxnTable = {

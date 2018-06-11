@@ -58,8 +58,10 @@ extern ErrorStatus DeQueue(QueueDef *queue, uint8_t *obj);
 extern uint32_t htoi(char *str);
 extern void SetContinueCRC16(void);
 extern uint16_t ContinueCRC16(uint8_t *pData,  uint16_t length);
+extern uint8_t* mystrchar(uint8_t *buf, uint8_t c, uint16_t len);
 extern uint8_t TransHexToBcd(uint8_t hex);
 extern uint8_t TransBcdToHex(uint8_t bcd);
+
 
 #endif	/* __ZKSIOT_FUNCTION_H__ */
 

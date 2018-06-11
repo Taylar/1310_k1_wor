@@ -36,15 +36,27 @@ typedef struct {
 	uint8_t startRecord;
 } MenuObject_t;
 
+typedef enum {
+    ALRM_TYPE_NONE = 0x00,
+    ALRM_TYPE_TEMP = 0x01,
+    ALRM_TYPE_HUMI = 0x02,
+    ALRM_TYPE_LIGHT   = 0x03,
+    ALRM_TYPE_HCHO    = 0x04,
+    ALRM_TYPE_PM25    = 0x05,
+    ALRM_TYPE_CO2     = 0x06,
+    ALRM_TYPE_HCL     = 0x07,
+} ALRM_TYPE;
 #define MENU_PAGE_ITEM          1
 
 
+extern void Menu_init_byflash(void);
 extern void Menu_init(void);
 extern void Menu_action_proc(MENU_ACTION action);
 extern void Menu_show(void);
 extern void Menu_exit(void);
 extern uint8_t Menu_is_process(void);
 extern uint8_t Menu_is_record(void);
+extern void Menu_set_record(uint8_t flag);
 extern void PoweroffMenu_init(void);
 
 

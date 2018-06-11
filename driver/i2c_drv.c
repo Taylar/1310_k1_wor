@@ -9,6 +9,8 @@
 //***********************************************************************************
 #include "../general.h"
 
+#ifndef  SOFT_I2C_BUS
+
 
 #ifdef  BOARD_S1_2
 #define CC1310_LAUNCHXL_I2C0_SCL0             IOID_19
@@ -142,3 +144,4 @@ ErrorStatus I2c_regRead(uint8_t devAddr, uint8_t regAddr, uint8_t *pBuff, uint8_
 }
 
 
+#endif // ! SOFT_I2C_BUS

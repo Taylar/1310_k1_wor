@@ -81,6 +81,14 @@ static FlashSensorData_t rFlashSensorData;
 
 
 //***********************************************************************************
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+//static FlashSensorData_t rFlashAlarmInfo;
+#endif
+
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+static FlashSensorData_t rFlashSysRunState;
+#endif
+bool flash_inited = 0;
 
 #ifdef FLASH_W25Q256FV
 //***********************************************************************************
@@ -172,7 +180,7 @@ static void Flash_external_page_program(uint32_t flashAddr, uint8_t *pData, uint
 
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        ;
+        Task_sleep(1);
 
     // Write enable
     do {
@@ -227,7 +235,7 @@ static void Flash_external_erase(uint32_t flashAddr, uint8_t eraseMode)
 #endif
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        ;
+        Task_sleep(1);
 
     // Write enable
     do {
@@ -305,7 +313,7 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
 #endif
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        ;
+        Task_sleep(1);
 
     Flash_spi_enable();
 #ifdef FLASH_W25Q256FV    
@@ -320,6 +328,13 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
 
 static void Flash_load_sensor_ptr(void);
 
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+static void Flash_load_deviced_state_ptr(void);
+#endif
+
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+static void Flash_load_alarm_record_ptr(void);
+#endif
 
 //***********************************************************************************
 //
@@ -336,6 +351,9 @@ static void Flash_reset_data(void)
 
 
 
+#ifdef SUPPORT_FLASH_LOG    
+    Flash_external_erase(FLASH_LOG_POS, FLASH_EXT_SECTOR_ERASE);
+#endif
 
     sysInfo.swVersion = FW_VERSION;
     sysInfo.printRecordAddr.start = 0xffffffff;//没有开始记录
@@ -349,23 +367,26 @@ static void Flash_reset_data(void)
     Flash_external_write(FLASH_SENSOR_PTR_POS, (uint8_t *)&rFlashSensorData.ptrData, sizeof(FlashPointerData_t));
 
 
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+    rFlashSysRunState.ptrDataAddr = 0;
+    rFlashSysRunState.ptrData.head = FLASH_PTRDATA_VALID;
+    rFlashSysRunState.ptrData.frontAddr = 0;
+    rFlashSysRunState.ptrData.rearAddr = 0;
+    Flash_external_write(FLASH_DEVICED_STATE_PTR_POS, (uint8_t *)&rFlashSysRunState.ptrData, sizeof(FlashPointerData_t));
+#endif
 
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+    Flash_external_erase(FLASH_ALARM_RECODRD_POS, FLASH_EXT_SECTOR_ERASE);
+    Flash_external_erase(FLASH_ALARM_RECODRD_POS + FLASH_EXT_SECTOR_ERASE, FLASH_EXT_SECTOR_ERASE);
+
+
+#endif
 }
-//***********************************************************************************
-//
-// Flash external write enable cmd 
-//
-//***********************************************************************************
-static void Flash_external_unlock(void)
-{
-    uint8_t buff[1];
 
-    Flash_spi_enable();
-    buff[0] = 0x39;
-    Spi_write(buff, 1);
-    Flash_spi_disable();
-}
-
+#ifdef SUPPORT_START_LOGO
+uint8_t logo_x = 0; 
+#define LOGO_X_MAX  128
+#endif
 //***********************************************************************************
 //
 // Flash init.
@@ -375,14 +396,17 @@ void Flash_init(void)
 {
     FlashSysInfo_t sysInfo;
 
-
+#ifdef SUPPORT_START_LOGO
+    Disp_poweron();
+    Lcd_set_font(1, 8, 1);
+    Lcd_clear_area(logo_x++, 4);
+#endif
     extFlashPinHandle = PIN_open(&extFlashPinState, extFlashPinTable);
 
     // Time delay before write instruction.
     Task_sleep(10 * CLOCK_UNIT_MS);
 
 	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-    Flash_external_unlock();
 #ifdef FLASH_W25Q256FV
     Flash_extended_address_mode(1);
 #endif
@@ -406,10 +430,30 @@ void Flash_init(void)
     }
 
     Flash_load_sensor_ptr();
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+    Flash_load_deviced_state_ptr();
+#endif
+
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+    Flash_load_alarm_record_ptr();
+#endif
     Semaphore_post(spiSemHandle);
+    flash_inited = 1;
     
+#ifdef SUPPORT_START_LOGO    
+    Lcd_set_font(LOGO_X_MAX, 8, 1);
+    Lcd_clear_area(0, 4);        
+#endif
 }
 
+void Flash_reset_all(void)
+{
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    Flash_reset_data();
+    Semaphore_post(spiSemHandle);
+    
+    //Flash_init();
+}
 void Flash_read_rawdata(uint32_t flashAddr, uint8_t *pData, uint16_t length)
 {
 	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
@@ -464,6 +508,17 @@ static void Flash_load_sensor_ptr(void)
         rFlashSensorData.ptrDataAddr += FLASH_SENSOR_PTR_SIZE;
 
         
+    #ifdef SUPPORT_START_LOGO
+        if( i% 100 == 0){
+            Lcd_clear_area(logo_x++, 4);        
+            logo_x = logo_x % LOGO_X_MAX;
+            if(logo_x == 0) {
+                Lcd_set_font(128, 32, 0);
+                Lcd_clear_area(0, 2);
+                Lcd_set_font(1, 8, 1);
+            }
+        }
+    #endif
 
     }
 
@@ -648,6 +703,26 @@ void Flash_moveto_next_sensor_data(void)
 	Semaphore_post(spiSemHandle);
 }
 
+
+//***********************************************************************************
+//
+// Flash recovery last sensor data.
+//
+//***********************************************************************************
+void Flash_recovery_last_sensor_data(void)
+{
+	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    //Data queue front pointer decrease.
+    rFlashSensorData.ptrData.frontAddr += (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+    rFlashSensorData.ptrData.frontAddr -= FLASH_SENSOR_DATA_SIZE;
+    rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    Flash_store_sensor_ptr();
+	Semaphore_post(spiSemHandle);
+
+}
+
 //***********************************************************************************
 //
 // Flash load sensor history data.
@@ -720,7 +795,221 @@ FlashPrintRecordAddr_t Flash_get_record_addr(void)
 
 //***********************************************************************************
 //
-// Flash get record data.
+//***********************************************************************************
+//
+// Flash get System run state data and set alarm recode.
+//
+//***********************************************************************************
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+//***********************************************************************************
+//
+// Flash store sensor data pointer.
+//
+//***********************************************************************************
+static void Flash_store_deviced_state_ptr(void)
+{
+    //Abolish current ptrData in flash.
+    rFlashSysRunState.ptrData.head = FLASH_PTRDATA_INVALID;
+    Flash_external_write(rFlashSysRunState.ptrDataAddr + FLASH_DEVICED_STATE_PTR_POS, (uint8_t *)&rFlashSysRunState.ptrData.head, sizeof(rFlashSysRunState.ptrData.head));
+
+    //Go to next ptrData position.
+    rFlashSysRunState.ptrDataAddr += FLASH_DEVICED_STATE_PTR_SIZE;
+    rFlashSysRunState.ptrDataAddr %= (FLASH_DEVICED_STATE_PTR_SIZE * FLASH_DEVICED_STATE_PTR_NUMBER);
+
+    //If the position is the first byte of a sector, clear the sector.
+    if ((rFlashSysRunState.ptrDataAddr % (FLASH_SECTOR_SIZE)) == 0) {
+        Flash_external_erase(rFlashSysRunState.ptrDataAddr + FLASH_DEVICED_STATE_PTR_POS, FLASH_EXT_SECTOR_ERASE);
+    }
+
+    //Store new ptrData to flash.
+    rFlashSysRunState.ptrData.head = FLASH_PTRDATA_VALID;
+    Flash_external_write(rFlashSysRunState.ptrDataAddr + FLASH_DEVICED_STATE_PTR_POS, (uint8_t *)&rFlashSysRunState.ptrData, sizeof(FlashPointerData_t));
+}
+
+
+//***********************************************************************************
+//
+// Flash load sensor data pointer.
+//
+//***********************************************************************************
+static void Flash_load_deviced_state_ptr(void)
+{
+    uint8_t ret;
+    uint32_t i;
+
+    ret = ES_ERROR;
+    rFlashSysRunState.ptrDataAddr = 0;
+    for (i = 0; i < FLASH_DEVICED_STATE_PTR_NUMBER; i++) {
+        Flash_external_read(rFlashSysRunState.ptrDataAddr + FLASH_DEVICED_STATE_PTR_POS, (uint8_t *)&rFlashSysRunState.ptrData, sizeof(FlashPointerData_t));
+        if (rFlashSysRunState.ptrData.head == FLASH_PTRDATA_VALID) {
+            ret = ES_SUCCESS;
+            break;
+        }
+        rFlashSysRunState.ptrDataAddr += FLASH_DEVICED_STATE_PTR_SIZE;
+    }
+
+
+    if (ret == ES_ERROR) {
+        i = 0;
+        while (i < FLASH_DEVICED_STATE_PTR_SIZE * FLASH_DEVICED_STATE_PTR_NUMBER) {
+            Flash_external_erase(FLASH_DEVICED_STATE_PTR_POS + i, FLASH_EXT_SECTOR_ERASE);
+            i += FLASH_SECTOR_SIZE;
+        }
+        rFlashSysRunState.ptrDataAddr = 0;
+        rFlashSysRunState.ptrData.head = FLASH_PTRDATA_VALID;
+        rFlashSysRunState.ptrData.frontAddr = 0;
+        rFlashSysRunState.ptrData.rearAddr = 0;
+        Flash_external_write(FLASH_DEVICED_STATE_PTR_POS, (uint8_t *)&rFlashSysRunState.ptrData, sizeof(FlashPointerData_t));
+    }
+}
+
+
+//***********************************************************************************
+//
+// Flash store one sensor data.
+//
+//***********************************************************************************
+void Flash_store_deviced_state_data(uint8_t *pData, uint16_t length)
+{
+    uint32_t addr;
+
+    if (length > FLASH_DEVICED_STATE_DATA_SIZE)
+        return;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    addr = (rFlashSysRunState.ptrData.rearAddr + FLASH_DEVICED_STATE_DATA_SIZE) % (FLASH_DEVICED_STATE_DATA_SIZE * FLASH_DEVICED_STATE_DATA_NUMBER);
+    if (addr == rFlashSysRunState.ptrData.frontAddr) {
+        //Data queue full, drop one object data, Data queue frontAddr increase.
+        rFlashSysRunState.ptrData.frontAddr += FLASH_DEVICED_STATE_DATA_SIZE;
+        rFlashSysRunState.ptrData.frontAddr %= (FLASH_DEVICED_STATE_DATA_SIZE * FLASH_DEVICED_STATE_DATA_NUMBER);
+    }
+
+    //If the position is the first byte of a sector, clear the sector.
+    if ((rFlashSysRunState.ptrData.rearAddr % (FLASH_SECTOR_SIZE)) == 0) {
+        //If frontAddr in the sector which need clear.
+        if ((rFlashSysRunState.ptrData.frontAddr > rFlashSysRunState.ptrData.rearAddr)
+            && (rFlashSysRunState.ptrData.frontAddr < rFlashSysRunState.ptrData.rearAddr + FLASH_SECTOR_SIZE)) {
+            //Data queue frontAddr point to next sector first byte.
+            rFlashSysRunState.ptrData.frontAddr = rFlashSysRunState.ptrData.rearAddr + FLASH_SECTOR_SIZE;
+            rFlashSysRunState.ptrData.frontAddr %= (FLASH_DEVICED_STATE_DATA_SIZE * FLASH_DEVICED_STATE_DATA_NUMBER);
+        }
+        Flash_external_erase(rFlashSysRunState.ptrData.rearAddr + FLASH_DEVICED_STATE_DATA_POS, FLASH_EXT_SECTOR_ERASE);
+    }
+
+
+    //Data queue not empty, dequeue data.
+    Flash_external_write(rFlashSysRunState.ptrData.rearAddr + FLASH_DEVICED_STATE_DATA_POS, pData, length);
+    //Data queue rearAddr increase.
+    rFlashSysRunState.ptrData.rearAddr += FLASH_DEVICED_STATE_DATA_SIZE;
+    rFlashSysRunState.ptrData.rearAddr %= (FLASH_DEVICED_STATE_DATA_SIZE * FLASH_DEVICED_STATE_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    Flash_store_deviced_state_ptr();
+    Semaphore_post(spiSemHandle);
+}
+
+
+//***********************************************************************************
+//
+// Flash store one sensor data.
+//
+//***********************************************************************************
+void Flash_store_devices_state(uint8_t StateType){
+    //²É¼¯Ê±¼ä
+    Calendar calendar;
+    uint8_t buff[FLASH_DEVICED_STATE_DATA_SIZE];
+    buff[0]  = StateType;
+    calendar = Rtc_get_calendar();
+    buff[1]  = 0x20;
+    buff[2]  = calendar.Year - CALENDAR_BASE_YEAR;
+    buff[3]   = calendar.Month;
+    buff[4]  =  calendar.DayOfMonth;
+    buff[5]  =  calendar.Hours;
+    buff[6]  =  calendar.Minutes;
+    buff[7]  =  calendar.Seconds;
+
+
+
+    Flash_store_deviced_state_data((uint8_t *)buff,FLASH_DEVICED_STATE_DATA_SIZE);
+
+}
+
+//***********************************************************************************
+//
+// Flash load sensor data.
+//
+//***********************************************************************************
+ErrorStatus Flash_load_deviced_state_data(uint8_t *pData, uint16_t length)
+{
+    if (length > FLASH_G7_ALARM_DATA_SIZE)
+        return ES_ERROR;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    if (rFlashSysRunState.ptrData.rearAddr == rFlashSysRunState.ptrData.frontAddr) {
+        //Data queue empty.
+        Semaphore_post(spiSemHandle);
+        return ES_ERROR;
+    }
+
+    //Data queue not empty, dequeue data.
+    Flash_external_read(rFlashSysRunState.ptrData.frontAddr + FLASH_DEVICED_STATE_DATA_POS, pData, length);
+    //Data queue front pointer increase.
+    //rFlashAlarmInfo.ptrData.frontAddr += FLASH_G7_ALARM_DATA_SIZE;
+    //rFlashAlarmInfo.ptrData.frontAddr %= (FLASH_G7_ALARM_DATA_SIZE * FLASH_G7_ALARM_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    //Flash_store_g7_alarm_ptr();
+    Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+
+
+//***********************************************************************************
+//
+// Flash moveto next last sensor data.
+//
+//***********************************************************************************
+void Flash_moveto_next_deviced_state_data(void)
+{
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    //Data queue front pointer increase.
+    rFlashSysRunState.ptrData.frontAddr += FLASH_DEVICED_STATE_DATA_SIZE;
+    rFlashSysRunState.ptrData.frontAddr %= (FLASH_DEVICED_STATE_DATA_SIZE * FLASH_DEVICED_STATE_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    Flash_store_deviced_state_ptr();
+    Semaphore_post(spiSemHandle);
+}
+
+
+//***********************************************************************************
+//
+// Flash get un-upload items.
+//
+//***********************************************************************************
+uint32_t Flash_get_deviced_state_items(void)
+{
+    uint32_t  num;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    if (rFlashSysRunState.ptrData.frontAddr > rFlashSysRunState.ptrData.rearAddr)
+        num =  FLASH_DEVICED_STATE_DATA_NUMBER - (rFlashSysRunState.ptrData.frontAddr - rFlashSysRunState.ptrData.rearAddr) / FLASH_DEVICED_STATE_DATA_SIZE;
+    else
+        num =  (rFlashSysRunState.ptrData.rearAddr - rFlashSysRunState.ptrData.frontAddr) / FLASH_DEVICED_STATE_DATA_SIZE;
+
+    Semaphore_post(spiSemHandle);
+
+    return num;
+}
+
+
+#endif
+//***********************************************************************************
+//
+// Flash get one record data.
 //
 //***********************************************************************************
 void Flash_get_record(uint32_t addr, uint8_t *pData, uint16_t length)
@@ -775,6 +1064,271 @@ uint32_t Flash_get_record_items(void)
 }
 
 
+#ifdef SUPPORT_NETGATE_DISP_NODE
+
+//***********************************************************************************
+//
+// Flash load sensor codec 
+//
+//***********************************************************************************
+uint16_t Flash_load_sensor_codec( uint32_t deviceid)
+{
+    uint32_t id;
+    uint16_t i;
+    
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    
+    for (i = 0; i < FLASH_SENSOR_CODEC_NUM; ++i) {
+        Flash_external_read(FLASH_SENSOR_CODEC_POS + i*FLASH_SENSOR_CODEC_SIZE, (uint8_t*)&id, FLASH_SENSOR_CODEC_SIZE);
+
+        if(deviceid == id){            
+            Semaphore_post(spiSemHandle);
+            return i;
+        }
+    }    
+
+    Semaphore_post(spiSemHandle);
+    return 0;
+}
+
+//***********************************************************************************
+//
+// Flash store sensor codec.
+//
+//***********************************************************************************
+void Flash_store_sensor_codec(uint16_t no, uint32_t deviceid)
+{
+#if 0//Î´ÊµÏÖ
+    uint8_t tmp[FLASH_SECTOR_SIZE];
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    Flash_external_read(FLASH_SENSOR_CODEC_POS, tmp, FLASH_SECTOR_SIZE);
+    
+    Flash_external_erase(FLASH_SENSOR_CODEC_POS, FLASH_EXT_SECTOR_ERASE);
+
+    *(uint32_t*)&tmp[no*FLASH_SENSOR_CODEC_SIZE] = deviceid;
+    
+    Flash_external_write(FLASH_SENSOR_CODEC_POS, tmp, FLASH_SECTOR_SIZE);
+
+    Semaphore_post(spiSemHandle);
+#endif    
+}
+#endif
+
+#ifdef SUPPORT_FLASH_LOG
+void Flash_log(uint8_t *log)
+{
+    static uint32_t log_pos = FLASH_LOG_AREA_SIZE;
+    uint8_t startsec, endsec, i = 0;
+    uint8_t buff[FLASH_LOG_SIZE];
+    Calendar currentTime;
+    uint8_t len = strlen((const char *)log);
+    
+    #define TIME_LEN  16
+
+    if(!flash_inited)return;
+
+    
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    if(log_pos >= FLASH_LOG_AREA_SIZE){//find writeable position
+        
+        log_pos = 0;
+
+        while(log_pos < FLASH_LOG_AREA_SIZE){
+            
+            Flash_external_read(FLASH_LOG_POS + log_pos, (uint8_t*)&buff, FLASH_LOG_SIZE);
+
+            for(i = 0; i < FLASH_LOG_SIZE; ++i){
+
+                if(buff[i] == 0xff){//there is  no data, as write position.
+                    break;        
+                }       
+            }
+
+            if( i < FLASH_LOG_SIZE ){//there is  no data, as write position.
+                log_pos += i;
+                break;
+            }        
+            else{
+                log_pos += FLASH_LOG_SIZE;
+            }
+        }
+
+        if(log_pos >= FLASH_LOG_AREA_SIZE){//there is  no space , move to first section.           
+            log_pos = 0;
+        }        
+    }
+
+
+    #if 1//use time 
+    
+    if((log_pos + TIME_LEN) >= FLASH_LOG_AREA_SIZE){//there is  no enough space , move to first section.          
+        log_pos = 0;
+    }
+
+    startsec = log_pos / FLASH_SECTOR_SIZE;
+    endsec = (log_pos + TIME_LEN) / FLASH_SECTOR_SIZE;
+
+    if((log_pos % FLASH_SECTOR_SIZE) == 0){//first write in the section, earse first
+        //earse...
+        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);  
+    }
+        
+    while(startsec++ < endsec){//erase all need  section
+         //earse...
+        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);    
+    }
+    
+    currentTime = Rtc_get_calendar();        
+    sprintf((char*)buff, "T%04x%02x%02x%02x%02x%02x:",currentTime.Year,
+                                               currentTime.Month, 
+                                               currentTime.DayOfMonth,
+                                               currentTime.Hours,
+                                               currentTime.Minutes,
+                                               currentTime.Seconds);
+    Flash_external_write(FLASH_LOG_POS + log_pos, buff, TIME_LEN);
+    log_pos+= TIME_LEN;    
+
+    #endif
+
+    if(len >= 255) len = 255;//max length of string  no more 255
+       
+    if((log_pos + len) >= FLASH_LOG_AREA_SIZE){//there is  no enough space , move to  first section.  
+        log_pos = 0;
+    }
+
+    startsec = log_pos / FLASH_SECTOR_SIZE;
+    endsec = (log_pos + len) / FLASH_SECTOR_SIZE;
+
+    if((log_pos % FLASH_SECTOR_SIZE) == 0){//first write in the section, earse first
+        //earse...
+        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);  
+    }
+    
+    while(startsec++ < endsec){//erase all need  section
+         //earse...
+        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);    
+    }
+        
+    Flash_external_write(FLASH_LOG_POS + log_pos, log, len);
+    log_pos += len;
+
+    
+    Semaphore_post(spiSemHandle);
+}
+#endif 
+   
+//***********************************************************************************
+//
+// Flash load alarm reocord data.
+//
+//***********************************************************************************
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+static uint32_t alarm_pos = FLASH_ALARM_RECODRD_POS;
+
+static void Flash_load_alarm_record_ptr(void)
+{
+        uint8_t flag = 0xff;
+        //uint8_t temp[16] ={0};
+        //uint8_t index ;
+
+
+        Flash_external_read(alarm_pos, &flag, 1);
+        //Flash_external_erase(FLASH_ALARM_RECODRD_POS, FLASH_EXT_SECTOR_ERASE);
+        while(flag != 0xff){
+            alarm_pos+= FLASH_ALARM_RECODRD_SIZE;
+            Flash_external_read(alarm_pos, &flag, 1);
+            if(alarm_pos == FLASH_ALARM_RECODRD_POS +FLASH_ALARM_RECODRD_AREA_SIZE)
+                break;
+        }
+
+}
+//***********************************************************************************
+//
+//Flash store alarm record.
+//
+//***********************************************************************************
+void Flash_store_alarm_record(uint8_t *buff, uint8_t len)
+{
+
+    uint8_t temp[16] ={0};
+    uint8_t index ;
+    if(!flash_inited)return;
+
+    if(len > FLASH_ALARM_RECODRD_SIZE)
+        len = FLASH_ALARM_RECODRD_SIZE;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    if(alarm_pos == (FLASH_ALARM_RECODRD_POS + FLASH_ALARM_RECODRD_AREA_SIZE)){
+
+        Flash_external_erase(FLASH_ALARM_RECODRD_POS, FLASH_EXT_SECTOR_ERASE);
+
+        for(index = 1 ;index < ALARM_RECORD_QURERY_MAX_ITEM; index ++){
+
+           Flash_external_read(alarm_pos - FLASH_ALARM_RECODRD_SIZE*index, temp, FLASH_ALARM_RECODRD_SIZE);
+           Flash_external_write(FLASH_ALARM_RECODRD_POS + (index -1)*FLASH_ALARM_RECODRD_SIZE,temp,FLASH_ALARM_RECODRD_SIZE);
+
+        }
+        Flash_external_erase(FLASH_ALARM_RECODRD_POS + FLASH_EXT_SECTOR_ERASE, FLASH_EXT_SECTOR_ERASE);
+
+        alarm_pos = FLASH_ALARM_RECODRD_POS + FLASH_ALARM_RECODRD_SIZE*(ALARM_RECORD_QURERY_MAX_ITEM - 1);
+    }
+
+    Flash_external_write(alarm_pos, buff, len);
+
+
+    alarm_pos+= FLASH_ALARM_RECODRD_SIZE;
+
+    Semaphore_post(spiSemHandle);
+}
+
+//***********************************************************************************
+//
+// Flash loard alarm reocord data.
+//
+//***********************************************************************************
+ErrorStatus Flash_load_alarm_record_by_offset(uint8_t *buff, uint8_t length,uint8_t offset)
+{
+    uint32_t LoadAddr;
+    if ((length > FLASH_ALARM_RECODRD_SIZE) || (offset > 10) )
+        return ES_ERROR;
+
+
+
+    LoadAddr = alarm_pos - offset*FLASH_ALARM_RECODRD_SIZE;
+    if(LoadAddr < FLASH_ALARM_RECODRD_POS )
+        return ES_ERROR;
+
+    //Data queue not empty, dequeue data.
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    Flash_external_read(LoadAddr, buff, FLASH_ALARM_RECODRD_SIZE);
+
+    Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+
+//***********************************************************************************
+//
+// Flash get alarm reocord data items.
+//
+//***********************************************************************************
+uint8_t Flash_get_alarm_record_items(void){
+    uint8_t num;
+    if((alarm_pos - FLASH_ALARM_RECODRD_POS)/FLASH_ALARM_RECODRD_SIZE >= ALARM_RECORD_QURERY_MAX_ITEM){
+
+        num = ALARM_RECORD_QURERY_MAX_ITEM;
+    }else{
+
+        num = (alarm_pos - FLASH_ALARM_RECODRD_POS)/FLASH_ALARM_RECODRD_SIZE;
+    }
+
+    return num;
+}
+#endif
+
 //***********************************************************************************
 //
 // Flash store upgrade data.
@@ -789,6 +1343,15 @@ void Flash_store_upgrade_data(uint32_t addr, uint8_t *pData, uint16_t length)
         //If frontAddr in the sector which need clear.
         
         Flash_external_erase(addr + FLASH_UPGRADE_DATA_POS, FLASH_EXT_SECTOR_ERASE);
+    }
+
+    // Check if the write length is greater than the remaining space in the sector
+    if(length > (FLASH_SECTOR_SIZE - (addr % FLASH_SECTOR_SIZE))){
+        // Cross-sector erase the required space behind
+        uint32_t i;
+        for(i=0; i < length; i+=FLASH_SECTOR_SIZE){
+            Flash_external_erase(addr+i+FLASH_SECTOR_SIZE + FLASH_UPGRADE_DATA_POS, FLASH_EXT_SECTOR_ERASE);
+        }
     }
     //
     Flash_external_write(addr + FLASH_UPGRADE_DATA_POS, pData, length);

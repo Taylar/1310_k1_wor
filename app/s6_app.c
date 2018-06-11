@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-14 13:55:45
+* @Last Modified time: 2018-06-11 13:53:20
 */
 #include "../general.h"
 
@@ -99,7 +99,7 @@ void Sys_alarmFxn(UArg arg0)
 
     if(buzzerAlarmCnt == 1) {      
         Clock_stop(sysAlarmClkHandle);
-        SystemEventSet(SYSTEMAPP_EVT_ALARM);
+        Sys_event_post(SYSTEMAPP_EVT_ALARM);
         return;        
     }
 
@@ -248,7 +248,7 @@ void S6HwInit(void)
     if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
     {
         Disp_poweron();
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
     }
 }
 
@@ -274,18 +274,18 @@ void S6ShortKeyApp(void)
         {
             Disp_info_switch();
         }
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        // SystemEventSet(SYSTEMAPP_EVT_DISP);
+        // Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
     }
 }
@@ -303,7 +303,7 @@ void S6ConcenterLongKeyApp(void)
         Disp_poweroff();
         ConcenterSleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
@@ -315,7 +315,7 @@ void S6ConcenterLongKeyApp(void)
             ConcenterWakeup();
             Disp_poweron();
             Disp_info_close();
-            SystemEventSet(SYSTEMAPP_EVT_DISP);
+            Sys_event_post(SYSTEMAPP_EVT_DISP);
         }
         else
         {
@@ -326,7 +326,7 @@ void S6ConcenterLongKeyApp(void)
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
     }
 }
@@ -352,18 +352,18 @@ void S6ShortKey1App(void)
             Disp_sensor_switch();
 #endif
         }
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        // SystemEventSet(SYSTEMAPP_EVT_DISP);
+        // Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
 
     }
@@ -383,7 +383,7 @@ void S6LongKey1App(void)
         case DEVICES_ON_MODE:
         Disp_poweron();
         PoweroffMenu_init();
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
 
         case DEVICES_OFF_MODE:
@@ -395,7 +395,7 @@ void S6LongKey1App(void)
             ConcenterWakeup();
             Disp_poweron();
             Disp_info_close();
-            SystemEventSet(SYSTEMAPP_EVT_DISP);
+            Sys_event_post(SYSTEMAPP_EVT_DISP);
         }
         break;
 
@@ -403,7 +403,7 @@ void S6LongKey1App(void)
         case DEVICES_SLEEP_MODE:
         Disp_poweron();
         deviceMode = DEVICES_ON_MODE;
-        SystemEventSet(SYSTEMAPP_EVT_DISP);
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
     }
 }

@@ -19,7 +19,7 @@ uint8_t bUsbBuff[USB_BUFF_LENGTH];
 // Usb protocol group package.
 //
 //***********************************************************************************
-static uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataLen)
+uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataLen)
 {
     uint8_t  buff[USB_BUFF_LENGTH];
     uint16_t length,i;
@@ -198,6 +198,15 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
 		case EV_Usb_Upgrade:
 			break;
 
+        case EV_Reset_Data:
+            Flash_reset_all();
+            pData[0] = 0;
+            len = Usb_group_package(AC_Ack, pData, 1);
+            InterfaceSend(pData, len);
+            __delay_cycles(60000);
+            SysCtrlSystemReset();//重启
+            break;
+            
 		case EV_Get_History_Data://len(2B) cmd(1B)  no(2B or 4B)
             if (length == 5) { //old  support 16bit
                 HIBYTE(HIWORD(addr)) = 0;
@@ -224,7 +233,18 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             
 #ifdef FLASH_EXTERNAL
         case EV_Get_Device_Data://len(2B) cmd(1B) deviceid(4B)  startdate(6B):ymdhm 201801011259 enddate(6B)   mode(1B)
-            
+            if(Menu_is_record())
+            {
+                Menu_set_record(0);
+                Flash_store_record_addr(0);
+#ifdef  G7_PROJECT                
+                BlePrintRecordStopNotify();
+            }
+            BlePrintingRecordNotify();
+#else
+            }
+#endif  // G7_PROJECT
+           
             memcpy(tmpData,&pData[3], 16);//deviceid(4B)  startdate(6B) enddate(6B)
             transmode = pData[19];
 
@@ -310,6 +330,14 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             }
             break;
 #endif
+        case EV_Get_DevicePara://len(2B) cmd(1B)  para  chk
+        
+            len = GetDevicePara(pData[3],pData);
+            len = Usb_group_package(AC_Send_DevicePara, pData, len);
+            InterfaceSend(pData, len);
+                
+            break;
+            
         case EV_Set_DevicePara://len(2B) cmd(1B)  para  chk
             if(SetDevicePara(pData+3, length-3))
                 pData[0] = 0;     

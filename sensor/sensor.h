@@ -11,11 +11,12 @@
 #ifndef __ZKSIOT_SENSOR_H__
 #define __ZKSIOT_SENSOR_H__
 
-#ifdef SUPPORT_SENSOR
+
 
 #define TEMPERATURE_OVERLOAD        0x7fff
 #define HUMIDTY_OVERLOAD            0xffff
 #define DEEP_TEMP_OVERLOAD          0x7fffffff
+#define LIGHT_OVERLOAD              0x3fffffff
 typedef enum {
     SENSOR_NONE = 0x00,
 	SENSOR_TEMP = 0x01,
@@ -105,9 +106,20 @@ typedef struct {
     SensorData_t value;
 }sensordata_mem;
 
-#endif 
+
+#endif
 
 
+typedef struct {
+    uint32_t DeviceId;
+    uint8_t index;
+    uint8_t type;
+    SensorData_t value;
+    uint8_t time[6];
+}Alarmdata_t;
+
+
+#ifdef SUPPORT_SENSOR
 extern SensorData_t rSensorData[MODULE_SENSOR_MAX];
 extern const SensorHWAttrs_t rSensorHWAttrs[MODULE_SENSOR_MAX];
 
@@ -120,15 +132,15 @@ extern uint32_t Sensor_get_deepTemperatureC(uint8_t chNum);
 extern uint32_t Sensor_get_lux(uint8_t chNum);
 extern void Sensor_collect_time_isr(void);
 extern void Sensor_set_collect_time(uint32_t  collectTime);
+
+#endif  /* SUPPORT_SENSOR */
+
 extern void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
 #ifdef SUPPORT_NETGATE_DISP_NODE
 extern bool get_next_sensor_memory(sensordata_mem *pSensor);
 #endif
 extern uint32_t Sensor_get_function_by_type(uint8_t type);
 extern void Sensor_store_null_package(uint8_t *buff);
-
-
-#endif  /* SUPPORT_SENSOR */
 
 #endif	/* __ZKSIOT_SENSOR_H__ */
 

@@ -108,7 +108,7 @@ const uint8_t icon16x32[]= {
 #define TEMP0_COL_POS           0
 #define TEMP0_ROW_POS           2
 #define TEMP1_COL_POS           20
-#define LUX_COL_POS             0
+#define LUX_COL_POS             2
 #define TEMP1_ROW_POS           2
 #define HUMI_COL_POS            89
 #define HUMI_ROW_POS            3
@@ -223,7 +223,7 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
             }
             break;
 
-        case ICON_16X16_EXTERNAL ... ICON_16X16_BATTERY3:
+        case ICON_16X16_EXTERNAL ... ICON_16X16_FLIGHT://ICON_16X16_BATTERY3:
             if (light) {
                 Lcd_write_character(col, row, &icon16x16[(icon - ICON_16X16_EXTERNAL) * FONT_16X16_OFS]);
             } else {
@@ -552,56 +552,88 @@ static void Disp_humidty(uint8_t col, uint8_t row, uint16_t value)
 //***********************************************************************************
 static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 {
-    uint8_t thousand,hundreds,integer, decimal;
-    uint8_t buff[21];
 
-    Lcd_set_font(TPICON_W, TPICON_H, 0);
-    value = value / 10;
+    uint8_t thousand,hundreds,integer, decimal,flag = 0;
+    Lcd_set_font(132, 32, 0);
+    Lcd_clear_area(0, 2);
+        if(value == 0x00ffffff){
 
-    col += TPICON_W + TPICON_GAP;
-    thousand = value / 10000;
-    if(thousand > 9)
-    {
-        value    = 99999;
+            Lcd_set_font(TPICON_W, TPICON_H, 0);
+            Disp_icon(col, row, TPICON_SUB, 0);
+            col += TPICON_W + TPICON_GAP;
+            Disp_icon(col, row, TPICON_SUB, 1);
+            col += TPICON_W + TPICON_GAP;
+            Disp_icon(col, row, TPICON_SUB, 1);
+            return;
+        }
+
+        uint8_t buff[21];
+        memset(buff,0x00,21);
+        if(value > 999999)
+        {
+            flag = 1;
+            value = value / 1000;
+        }
+
+        Lcd_set_font(TPICON_W, TPICON_H, 0);
+        value = value / 10;
+
+        col += TPICON_W + TPICON_GAP;
         thousand = value / 10000;
-    }
+        if(thousand > 9)
+        {
+            value    = 99999;
+            thousand = value / 10000;
+        }
 
-    if (thousand !=0 ) {
-        Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
-        col += TPICON_W + TPICON_GAP;
+        if (thousand !=0 ) {
+            Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
+            col += TPICON_W + TPICON_GAP;
 
-        hundreds = (value % 10000) / 1000;
-        Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
-        col += TPICON_W + TPICON_GAP;
-
-        value = (value % 1000);
-    } else {
-        hundreds = value / 1000;
-        if ( hundreds !=0 ){
+            hundreds = (value % 10000) / 1000;
             Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
             col += TPICON_W + TPICON_GAP;
-            value = value%1000;
+
+            value = (value % 1000);
+        } else {
+            hundreds = value / 1000;
+            if ( hundreds !=0 ){
+                Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
+                col += TPICON_W + TPICON_GAP;
+                value = value%1000;
+            }
         }
-    }
-    integer = value / 10;
-    decimal = value % 10;
-    if (integer >= 10) {
-        Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
-    } else {
-        Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 0);
-    }
-    col += TPICON_W + TPICON_GAP;
-    Disp_icon(col, row, TPICON_DIGIT + integer % 10, 1);
-    col += TPICON_W + TPICON_GAP;
-    Lcd_set_font(TPICON_DOT_W, TPICON_DOT_H, 0);
-    Disp_icon(col, row, TPICON_DOT, 1);
-    col += TPICON_DOT_W + TPICON_GAP;
-    Lcd_set_font(TPICON_W, TPICON_H, 0);
-    Disp_icon(col, row, TPICON_DIGIT + decimal % 10, 1);
-    col += TPICON_W + TPICON_GAP;
-    col = (col + 7) / 8;
-    sprintf((char *)buff, "Lx");
-    Disp_msg(col, row+2, buff, FONT_8X16);
+        integer = value / 10;
+        decimal = value % 10;
+        if (integer >= 10) {
+            Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
+        } else {
+            if(hundreds !=0){
+                Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
+            }else{
+                Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 0);
+            }
+        }
+        col += TPICON_W + TPICON_GAP;
+        Disp_icon(col, row, TPICON_DIGIT + integer % 10, 1);
+        col += TPICON_W + TPICON_GAP;
+        Lcd_set_font(TPICON_DOT_W, TPICON_DOT_H, 0);
+        Disp_icon(col, row, TPICON_DOT, 1);
+        col += TPICON_DOT_W + TPICON_GAP;
+        Lcd_set_font(TPICON_W, TPICON_H, 0);
+        Disp_icon(col, row, TPICON_DIGIT + decimal % 10, 1);
+        col += TPICON_W + TPICON_GAP;
+        col = (col + 7) / 8;
+        if(flag){
+            sprintf((char *)buff, "Klx");
+        }else
+        sprintf((char *)buff, "Lx");
+        Disp_msg(col, row+2, buff, FONT_8X16);
+/*    uint8_t buff[21];
+
+    sprintf((char *)buff, "%ld.%dLx", (uint32_t)(value/100), (uint16_t)round(((value%100))/10));
+    Lcd_clear_area(1, 4);
+    Disp_msg(1, 2, buff, FONT_12X24);*/
 
 }
 //***********************************************************************************
@@ -643,6 +675,7 @@ void Disp_sensor_data(void)
         return;
     }
 
+
     
 #ifdef SUPPORT_NETGATE_DISP_NODE
     sensordata_mem Sensor = {0,0,0,0};
@@ -651,7 +684,7 @@ void Disp_sensor_data(void)
 
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor
-/*
+            
         if (g_bAlarmSensorFlag) {
 
             if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
@@ -669,23 +702,27 @@ void Disp_sensor_data(void)
             //all  data  saved to tempdeep
             if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {   
                 sprintf((char*)buff, "%2d.%dc", (uint16_t)g_AlarmSensor.value.tempdeep/100, (uint16_t)round((g_AlarmSensor.value.tempdeep/10)) % 10);
+                Lcd_set_font(132, 16, 0);
+				Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);    
             }
             else if (g_AlarmSensor.type == SENSOR_DATA_HUMI) {
                 sprintf((char*)buff, "%02d%%", (uint16_t)g_AlarmSensor.value.tempdeep/100);
+                Lcd_set_font(132, 16, 0);
+                Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);    
             }
             
 
             return;
         }
-*/
+
 
         if(get_next_sensor_memory(&Sensor)){
 
-            // if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
-            //     cursensorno = Flash_load_sensor_codec(Sensor.DeviceId); //find sensor no in sensor codec table             
-
+            if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
+                cursensorno = Flash_load_sensor_codec(Sensor.DeviceId); //find sensor no in sensor codec table             
+            
             if (cursensorno){
                 sprintf((char*)buff, "%02d#", cursensorno);
                 Disp_msg(4, 2, buff, FONT_8X16);
@@ -696,7 +733,6 @@ void Disp_sensor_data(void)
             }
             
             if (Sensor.type == SEN_TYPE_SHT2X) {
-                Lcd_clear_area(2, 4);
                 if (Sensor.value.temp != TEMPERATURE_OVERLOAD)//temp valid 
                     sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);                  
                 else 
@@ -713,7 +749,8 @@ void Disp_sensor_data(void)
                 if (Sensor.value.temp != TEMPERATURE_OVERLOAD)//temp valid 
                     sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);   
                 else 
-                    sprintf((char*)buff, "--c");                
+                    sprintf((char*)buff, "--c");
+                Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);                
             } else if (Sensor.type == SEN_TYPE_DEEPTEMP){
@@ -722,6 +759,7 @@ void Disp_sensor_data(void)
                 }
                 else
                     sprintf((char*)buff, "--c");
+                Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
             } else if(Sensor.type == SEN_TYPE_OPT3001){
@@ -731,6 +769,7 @@ void Disp_sensor_data(void)
                 }
                 else
                     sprintf((char*)buff, "--c");
+                Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
             }
@@ -803,9 +842,9 @@ static void Disp_status_bar(void)
 
 #ifdef SUPPORT_SENSOR
 //Display external sensor flag
-    if ((rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
+    if ( (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
         (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_NONE) ||
-        (rDispObject.sensorIndex  ==  2 && g_rSysConfigInfo.sensorModule[2] == SEN_TYPE_OPT3001)) {
+        (rDispObject.sensorIndex  ==  2 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_OPT3001) ){
         Disp_icon(col, row, ICON_16X16_EXTERNAL, 0);            
     } else {
         Disp_icon(col, row, ICON_16X16_EXTERNAL, 1);
@@ -830,7 +869,13 @@ static void Disp_status_bar(void)
         Disp_icon(col, row, ICON_16X16_ALARM, 0);
     col += SBICON_W * 4;
 
-//Display signal
+//Display signal    or flight
+#ifdef SUPPORT_FLIGHT_MODE
+    if(Flight_mode_isFlightMode() && (!Nwk_is_Active())){
+        Disp_icon(col, row, ICON_16X16_FLIGHT, 1);
+    }else
+#endif
+    {
     value = Nwk_get_rssi();
     if (value < 2 || value == 99)
         Disp_icon(col, row, ICON_16X16_SIGNAL0, 0);
@@ -842,6 +887,7 @@ static void Disp_status_bar(void)
         Disp_icon(col, row, ICON_16X16_SIGNAL1, 1);
     else
         Disp_icon(col, row, ICON_16X16_SIGNAL0, 1);
+    }
     col += SBICON_W;
 
 #ifdef SUPPORT_BATTERY
@@ -857,7 +903,6 @@ static void Disp_status_bar(void)
         Disp_icon(col, row, ICON_16X16_BATTERY0, 1);
 #endif
 }
-
 //***********************************************************************************
 //
 // Display info switch.
@@ -941,11 +986,15 @@ static void Disp_info(void)
             Disp_msg(0, 2, buff, FONT_8X16);
 #ifdef FLASH_EXTERNAL
             //Collect period.
+            memset(buff, 0 ,21);
             sprintf((char *)buff, "RMIT: %ld", Flash_get_unupload_items());
+            Lcd_set_font(132, 16, 0);
             Lcd_clear_area(0,4);
             Disp_msg(0, 4, buff, FONT_8X16);
             //upload period.
+            memset(buff, 0 ,21);
             sprintf((char *)buff, "RCIT: %ld", Flash_get_record_items());
+            Lcd_set_font(132, 16, 0);
             Lcd_clear_area(0,6);
             Disp_msg(0, 6, buff, FONT_8X16);
 #endif

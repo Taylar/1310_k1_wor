@@ -37,7 +37,7 @@ void SystemAppTaskFxn(void);
 // System event post.
 //
 //***********************************************************************************
-void SystemEventSet(UInt event)
+void Sys_event_post(UInt event)
 {
     Event_post(systemAppEvtHandle, event);
 }

@@ -16,6 +16,8 @@
 #define         SYSTEMAPP_EVT_ALARM                     Event_Id_09
 #define         SYSTEMAPP_EVT_STORE_SYS_CONFIG			Event_Id_10
 #define         SYSTEMAPP_EVT_DISP                      Event_Id_11
+#define         SYS_EVT_ALARM                      		Event_Id_12
+#define         SYS_EVT_SENSOR                      	Event_Id_13
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 
 #define         SYSTEMAPP_EVT_ALL_KEY                   (Event_Id_00 | Event_Id_01 | Event_Id_02 | Event_Id_03)
@@ -31,7 +33,7 @@ extern Event_Handle systemAppEvtHandle;
 
 
 /***** Prototypes *****/
-void SystemEventSet(UInt event);
+void Sys_event_post(UInt event);
 
 void SysAppTaskCreate(void);
 

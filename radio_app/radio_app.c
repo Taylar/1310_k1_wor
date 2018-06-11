@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-08 12:01:28
+* @Last Modified time: 2018-06-11 13:53:11
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -552,7 +552,7 @@ static void RxDoneCallback(EasyLink_RxPacket * rxPacket, EasyLink_Status status)
 
         case EasyLink_Status_Tx_Error:
         // could not abort the easylink tx in the cb, maybe occur error
-        // SystemEventSet(SYSTEMAPP_EVT_RADIO_ABORT);
+        // Sys_event_post(SYSTEMAPP_EVT_RADIO_ABORT);
         break;
 
 

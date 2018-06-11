@@ -356,7 +356,7 @@ static void AT_tcp_start_send_data(uint16_t length)
 
     strcpy((char *)buff, ATCMD_SEND_DATA);
     index = sizeof(ATCMD_SEND_DATA) - 1;
-    len = sprintf((char *)(buff + index), "%d\r\n", length);
+    len = sprintf((char *)(buff + index), "%d\r", length);
     index += len;
     buff[index] = '\0';
     rGsmObject.cmdType = AT_CMD_START_SEND_DATA;
@@ -594,9 +594,9 @@ static void Gsm_reset(void)
         rGsmObject.resetCnt++;
 
     if (rGsmObject.resetCnt >= 3) {
-        eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN, 30 * 60 * CLOCK_UNIT_S);
+        eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN, 10 * 60 * CLOCK_UNIT_S);//修改GSM复位时间为10min和5min
     } else if (rGsmObject.resetCnt >= 2) {
-        eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN, 10 * 60 * CLOCK_UNIT_S);
+        eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN, 5 * 60 * CLOCK_UNIT_S);
     }
 
     if (!(eventId & GSM_EVT_SHUTDOWN)) {
@@ -922,7 +922,7 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
     }
 
     //tcp send data ack query
-    for (i = 300; i > 0; i--) {
+    for (i = 700; i > 0; i--) {
         AT_ack_query();
         eventId = Gsm_wait_ack(300);
         if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
@@ -964,19 +964,24 @@ LAB_UPLOAD_CLOSE_CONNECT:
 static GSM_RESULT Gsm_query_csq(void)
 {
     UInt eventId;
-
+    uint8_t i ;
     rGsmObject.error = GSM_NO_ERR;
 
     //Get csq value
-    AT_csq_query();
-    eventId = Gsm_wait_ack(500);
+    for (i = 5; i > 0; i--) {
+        AT_csq_query();
+        eventId = Gsm_wait_ack(500);
+        if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
+            break;
+    }
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
     } else if (!(eventId & GSM_EVT_CMD_OK)) {
         //timeout or error
-        rGsmObject.error = GSM_ERR_CSQ_QUERY;
-        return RESULT_RESET;
+         rGsmObject.error = GSM_ERR_CSQ_QUERY;
+         return RESULT_RESET;
     }
+
 
     return RESULT_OK;
 }
@@ -1003,7 +1008,7 @@ static GSM_RESULT Gsm_get_lbs(void)
 #elif defined(USE_ENGINEERING_MODE_FOR_LBS)
     for (i = 3; i > 0; i--) {
         AT_eng_mode_query();
-        eventId = Gsm_wait_ack(2000);
+        eventId = Gsm_wait_ack(4000);
         if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
             break;
     }
@@ -1283,10 +1288,18 @@ static void Gsm_rxSwiFxn(void)
     key = Hwi_disable();
     tempRx.length = gsmRxLength;
     memcpy((char *)tempRx.buff, (char *)g_rUart1RxData.buff, tempRx.length);
-    Hwi_restore(key);
     tempRx.buff[tempRx.length] = '\0';
-
     ptr = strstr((char *)tempRx.buff, "IPD");
+    if(ptr == NULL)
+    {
+        if(g_rUart1RxData.length > tempRx.length)
+        {
+            memcpy((char*)g_rUart1RxData.buff,  (char*)g_rUart1RxData.buff+gsmRxLength, g_rUart1RxData.length - tempRx.length);
+        }
+        g_rUart1RxData.length = g_rUart1RxData.length - tempRx.length;
+    }
+    Hwi_restore(key);
+
     if (ptr != NULL) {
         index = ptr - (char *)tempRx.buff;
         rxLen = atoi(ptr + 3);
@@ -1608,7 +1621,7 @@ static void Gsm_event_post(UInt event)
 
 //***********************************************************************************
 //
-// Gsm receive timeout cb
+// Gsm event post.
 //
 //***********************************************************************************
 static void GsmRxToutCb(UArg arg0)
@@ -1777,6 +1790,13 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
 
 #ifdef SUPPORT_LBS
         case NWK_CONTROL_LBS_QUERY:
+            result = Gsm_transmit_process(NULL, 0);
+            if (result == RESULT_SHUTDOWN) {
+                return FALSE;
+            } else if (result == RESULT_RESET) {
+                Gsm_reset();
+                return FALSE;
+            }
             if (rGsmObject.state == GSM_STATE_TCP_UPLOAD) {
                 result = Gsm_get_lbs();
 #ifdef USE_QUECTEL_API_FOR_LBS

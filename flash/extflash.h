@@ -2,6 +2,8 @@
 #define         __EXTFLASH_H__
 
 
+#ifdef FLASH_EXTERNAL
+#define SUPPORT_FLASH_LOG
 
 #define FLASH_EXT_SECTOR_ERASE          0
 #define FLASH_EXT_BLOCK_ERASE           1
@@ -61,12 +63,20 @@
 
 /***************flash area start************/
 /*---    MISC   ----------512KB ---*/
+/*---      |-- FlashSysInfo ----4KB ---*/
+/*---      |-- LORA_CHN   ----4KB ---*/
+/*---      |-- Flash log--- ----8KB ---*/
+/*---      |-- sensor_code-----4KB ---*/
+/*---      |-- other             ----140KB ---*/
+/*---      |-- upgrade data ----352KB ---*/
+
 /*---    SENSORPTR  ----512KB---*/
 /*---    SENSORDATA  -----XMB---*/
 /*---    OTHER ------------XMB---*/
 /**************flash area  end**************/
 
 
+#if (defined BOARD_S6_6) || (defined BOARD_S2_2)
 
 /*---    MISC   ----------512KB ---*/
 //External flash system info store position
@@ -87,12 +97,41 @@
 #define FLASH_SYS_CONFIG_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
 
 
+#define FLASH_LOG_POS               (FLASH_SYS_CONFIG_INFO_POS + FLASH_SYS_CONFIG_AREA_SIZE)
+#define FLASH_LOG_SIZE              (32)
+#ifdef SUPPORT_FLASH_LOG
+#define FLASH_LOG_AREA_SIZE         (FLASH_SECTOR_SIZE*2)           //8KB
+#else
+#define FLASH_LOG_AREA_SIZE         (0)
+#endif
+#define FLASH_LOG_NUMBER            (FLASH_LOG_AREA_SIZE/FLASH_LOG_SIZE)
 
 
-#if (defined BOARD_S6_6) || (defined BOARD_S2_2)
+
+#define FLASH_ALARM_RECODRD_POS               (FLASH_LOG_POS + FLASH_LOG_AREA_SIZE)
+#define FLASH_ALARM_RECODRD_SIZE              (16)
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+#define FLASH_ALARM_RECODRD_AREA_SIZE         (FLASH_SECTOR_SIZE*2)           //8KB
+#else
+#define FLASH_ALARM_RECODRD_AREA_SIZE         (0)
+#endif
+#define FLASH_ALARM_RECODRD_NUMBER            (FLASH_ALARM_RECODRD_AREA_SIZE/FLASH_ALARM_RECODRD_SIZE)
+
+
+
+#define FLASH_SENSOR_CODEC_POS            (FLASH_ALARM_RECODRD_POS + FLASH_ALARM_RECODRD_AREA_SIZE)
+
+#define FLASH_SENSOR_CODEC_SIZE           (4)
+#define FLASH_SENSOR_CODEC_NUM            (1024L)
+#ifdef SUPPORT_NETGATE_DISP_NODE
+#define FLASH_SENSOR_CODEC_AREA_SIZE      (INTERNAL_SEGMEMT_SIZE*FLASH_SENSOR_CODEC_NUM)  //4KB
+#else
+#define FLASH_SENSOR_CODEC_AREA_SIZE      (0)
+#endif
+
 
 // ************upgrade data ***********************
-#define FLASH_UPGRADE_INFO_POS           (352 * 1024L)// 
+#define FLASH_UPGRADE_INFO_POS           (352 * 1024L)  // 
 
 #define FLASH_UPGRADE_INFO_LENGTH        (sizeof(upgrade_flag_t))
 
@@ -112,7 +151,7 @@
 //External flash sensor data pointer size
 #define FLASH_SENSOR_PTR_SIZE           16
 //External flash sensor data pointer number
-#define FLASH_SENSOR_PTR_NUMBER         32*1024L  // 1·??ó1ì? 60*24*365*500(ì¨) =262800000 = 2628*10íò′?/?ê  12?êêù?ü=32*1024  6?êêù?ü 16*1024￡? 
+#define FLASH_SENSOR_PTR_NUMBER         32*1024L  // 1分钟1条 60*24*365*500(台) =262800000 = 2628*10万次/年  12年寿命=32*1024  6年寿命 16*1024， 
 //External flash sensor data pointer position offset
 #define FLASH_SENSOR_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)  //512 KB
 
@@ -121,9 +160,9 @@
 #define FLASH_SENSOR_DATA_POS           (1*1024*1024L)// 1MB
 //External flash sensor data size
 #ifdef FLASH_SENSOR_DATA_32BYTE
-#define FLASH_SENSOR_DATA_SIZE          32  //32 ?§3?2í¨μà
+#define FLASH_SENSOR_DATA_SIZE          32  //32 支持2通道
 #else
-#define FLASH_SENSOR_DATA_SIZE          64  //64 ?§3?8í¨μà,
+#define FLASH_SENSOR_DATA_SIZE          64  //64 支持8通道,
 #endif
 //External flash sensor data number
 
@@ -136,11 +175,85 @@
 //External flash sensor data position offset
 #define FLASH_SENSOR_DATA_AREA_SIZE     (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER)
 
+
+/*---    OTHER ------------XMB---*/
+#ifdef SUPPORT_GSENSOR
+#define FLASH_G_SENSOR_PTR_POS            (FLASH_SENSOR_DATA_POS + FLASH_SENSOR_DATA_AREA_SIZE)
+#define FLASH_G_SENSOR_PTR_SIZE           16
+#define FLASH_G_SENSOR_PTR_NUMBER         1024L    //16KB
+#define FLASH_G_SENSOR_PTR_AREA_SIZE      (FLASH_G_SENSOR_PTR_SIZE * FLASH_G_SENSOR_PTR_NUMBER)
+
+#define FLASH_G_SENSOR_DATA_POS           (FLASH_G_SENSOR_PTR_POS + FLASH_G_SENSOR_PTR_AREA_SIZE)
+#define FLASH_G_SENSOR_DATA_SIZE          32
+#define FLASH_G_SENSOR_DATA_NUMBER        (8*8* 1024L)// 2MB
+#define FLASH_G_SENSOR_DATA_AREA_SIZE     (FLASH_G_SENSOR_DATA_SIZE * FLASH_G_SENSOR_DATA_NUMBER)
+#else
+#define FLASH_G_SENSOR_PTR_POS            (FLASH_SENSOR_DATA_POS + FLASH_SENSOR_DATA_AREA_SIZE)
+#define FLASH_G_SENSOR_PTR_AREA_SIZE      0
+
+#define FLASH_G_SENSOR_DATA_POS           (FLASH_G_SENSOR_PTR_POS + FLASH_G_SENSOR_PTR_AREA_SIZE)
+#define FLASH_G_SENSOR_DATA_AREA_SIZE     0
 #endif
 
+#ifdef SUPPORT_GPS
+#define FLASH_GPS_PTR_POS            (FLASH_G_SENSOR_DATA_POS + FLASH_G_SENSOR_DATA_AREA_SIZE)
+#define FLASH_GPS_PTR_SIZE           16
+#define FLASH_GPS_PTR_NUMBER         1024L   //16KB
+#define FLASH_GPS_PTR_AREA_SIZE      (FLASH_GPS_PTR_SIZE * FLASH_GPS_PTR_NUMBER)
+
+#define FLASH_GPS_DATA_POS           (FLASH_GPS_PTR_POS + FLASH_GPS_PTR_AREA_SIZE)
+#define FLASH_GPS_DATA_SIZE          32
+#define FLASH_GPS_DATA_NUMBER        (8*8* 1024L)  //2MB
+#define FLASH_GPS_DATA_AREA_SIZE     (FLASH_GPS_DATA_SIZE * FLASH_GPS_DATA_NUMBER)
+#else
+#define FLASH_GPS_PTR_POS            (FLASH_G_SENSOR_DATA_POS + FLASH_G_SENSOR_DATA_AREA_SIZE)
+#define FLASH_GPS_PTR_AREA_SIZE      0
+
+#define FLASH_GPS_DATA_POS           (FLASH_GPS_PTR_POS + FLASH_GPS_PTR_AREA_SIZE)
+#define FLASH_GPS_DATA_AREA_SIZE     0
+#endif
+
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+#define FLASH_DEVICED_STATE_PTR_POS            (FLASH_GPS_DATA_POS + FLASH_GPS_DATA_AREA_SIZE)
+#define FLASH_DEVICED_STATE_PTR_SIZE           16
+#define FLASH_DEVICED_STATE_PTR_NUMBER         512L   //16KB
+#define FLASH_DEVICED_STATE_PTR_AREA_SIZE      (FLASH_DEVICED_STATE_PTR_SIZE * FLASH_DEVICED_STATE_PTR_NUMBER)
+
+#define FLASH_DEVICED_STATE_DATA_POS           (FLASH_DEVICED_STATE_PTR_POS + FLASH_DEVICED_STATE_PTR_AREA_SIZE)
+#define FLASH_DEVICED_STATE_DATA_SIZE          8
+#define FLASH_DEVICED_STATE_DATA_NUMBER        (1024L)  //2MB
+#define FLASH_DEVICED_STATE_DATA_AREA_SIZE     (FLASH_DEVICED_STATE_DATA_SIZE * FLASH_DEVICED_STATE_DATA_NUMBER)
+#else
+#define FLASH_DEVICED_STATE_PTR_POS            (FLASH_GPS_DATA_POS + FLASH_GPS_DATA_AREA_SIZE)
+#define FLASH_DEVICED_STATE_PTR_AREA_SIZE      0
+
+#define FLASH_DEVICED_STATE_DATA_POS           (FLASH_DEVICED_STATE_PTR_POS + FLASH_DEVICED_STATE_PTR_AREA_SIZE)
+#define FLASH_DEVICED_STATE_DATA_AREA_SIZE     0
+#endif
+
+#endif  //(defined BOARD_S6_6) || (defined BOARD_S2_2)
 
 #ifdef BOARD_S1_2
 // ************upgrade data ***********************
+/*---    MISC   ----------512KB ---*/
+//External flash system info store position
+#define FLASH_SYS_POS                   0   
+//External flash system info length
+#define FLASH_SYS_LENGTH                sizeof(FlashSysInfo_t)
+//External flash system info area size
+#define FLASH_SYS_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
+
+
+//External flash system config info store position
+#define FLASH_SYS_CONFIG_INFO_POS                   (FLASH_SYS_POS + FLASH_SYS_AREA_SIZE) 
+//External flash system config info store position
+#define FLASH_SYS_CONFIG_DATA_POS                   (FLASH_SYS_CONFIG_INFO_POS + 0X20)   
+//External flash system config info length
+#define FLASH_SYS_CONFIG_LENGTH                sizeof(FlashSysInfo_t)
+//External flash system config info area size
+#define FLASH_SYS_CONFIG_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
+
+
 #define FLASH_UPGRADE_INFO_POS           (FLASH_SYS_CONFIG_INFO_POS + FLASH_SYS_CONFIG_AREA_SIZE)// 
 
 #define FLASH_UPGRADE_INFO_LENGTH        (sizeof(upgrade_flag_t))
@@ -173,6 +286,9 @@
 
 
 #endif
+
+
+
 
 
 //FlashPointerData_t.head, means ptrData is valid data.
@@ -211,8 +327,20 @@ typedef struct {
     FlashPrintRecordAddr_t printRecordAddr;
 } FlashSysInfo_t;
 
-
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+typedef enum {
+   TYPE_NONE = 0,
+   TYPE_POWER_ON,
+   TYPE_POWER_DOWN,
+   TYPE_RECORD_START,
+   TYPE_RECORD_STOP,
+   TYPE_FLIGHT_MODE_START,
+   TYPE_FLIGHT_MODE_STOP,
+   TYPE_POWER_RESTART,
+}DevicesSysStateType;
+#endif
 extern void Flash_init(void);
+extern void Flash_reset_all(void);
 extern uint32_t Flash_get_sensor_writeaddr(void);
 extern uint32_t Flash_get_sensor_readaddr(void);
 extern void Flash_read_rawdata(uint32_t flashAddr, uint8_t *pData, uint16_t length);
@@ -236,7 +364,35 @@ extern void Flash_store_sensor_codec(uint16_t no, uint32_t deviceid);
 extern bool Flash_store_sensor_data_async(uint8_t *pData, uint16_t length);
 extern void Flash_store_sensor_data_sync();
 
+extern void Flash_recovery_last_g_sensor_data(void);
+extern void Flash_store_g_sensor_data(uint8_t *pData, uint16_t length);
+extern ErrorStatus Flash_load_g_sensor_data(uint8_t *pData, uint16_t length);
 
+extern void Flash_store_gps_data(uint8_t *pData, uint16_t length);
+extern ErrorStatus Flash_load_gps_data_history(uint8_t *pData, uint16_t length, uint16_t number);
+extern void Flash_moveto_next_gps_data(void);
+extern void Flash_recovery_last_gps_data(void);
+ErrorStatus Flash_load_gps_data(uint8_t *pData, uint16_t length);
+#ifdef SUPPORT_FLASH_LOG
+extern void Flash_log(uint8_t *log);
+#else
+#define  Flash_log(x)   //
+#endif
+
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+uint8_t Flash_get_alarm_record_items(void);
+ErrorStatus Flash_load_alarm_record_by_offset(uint8_t *buff, uint8_t length,uint8_t offset);
+void Flash_store_alarm_record(uint8_t *buff, uint8_t len);
+#endif
+
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+void Flash_store_deviced_state_data(uint8_t *pData, uint16_t length);
+void Flash_moveto_next_deviced_state_data(void);
+uint32_t Flash_get_deviced_state_items(void);
+ErrorStatus Flash_load_deviced_state_data(uint8_t *pData, uint16_t length);
+void Flash_store_devices_state(uint8_t StateType);
+ErrorStatus Flash_load_alarm_data_by_offset(uint8_t *pData, uint16_t length, uint8_t offset);
+#endif
 void Flash_store_upgrade_data(uint32_t addr, uint8_t *pData, uint16_t length);
 
 ErrorStatus Flash_load_upgrade_data(uint32_t addr, uint8_t *pData, uint16_t length);
@@ -247,13 +403,14 @@ ErrorStatus Flash_load_upgrade_info(uint8_t *pData, uint16_t length);
 
 
 
-extern void Sys_config_reset(void);
+void Flash_store_config(void);
 
-extern void Flash_store_config(void);
+bool Flash_load_config(void);
 
-extern bool Flash_load_config(void);
+void Sys_config_reset(void);
 
 
+#endif  /* FLASH_EXTERNAL */
 
 
 #endif          // __EXTFLASH_H__

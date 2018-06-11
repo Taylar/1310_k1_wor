@@ -16,7 +16,8 @@ typedef enum {
 	PTI_LOWTEMP_ALARM,	
 	PTI_BIND_GATEWAY,
 	PTI_BIND_NODE,
-	PTI_SENSOR_CODEC,	    	
+	PTI_SENSOR_CODEC,
+	PTI_SEND_ALARM,
 }PARA_TYPE_ID;
 
 bool SetDevicePara(uint8_t *rxData, uint16_t length)
@@ -51,7 +52,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
             }
             
     		break;
-
+    			
     	case PTI_UPLOAD_PERIOD:
             if((index + 4)<= length) {
     			HIBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
@@ -62,7 +63,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
                     g_rSysConfigInfo.uploadPeriod = 10;
                 
                 congfig = true;
-            }
+            }            
             else{
                 goto paraerror;
             }
@@ -140,6 +141,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
 
             num = rxData[index++];
 
+            memset(&g_rSysConfigInfo.bindnode, 0, sizeof(g_rSysConfigInfo.bindnode));
             if (num <= NETGATE_BIND_NODE_MAX  && (index + num*9 <= length )){
                 for(i=0; i < num; ++i) {
                     HIBYTE(HIWORD(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
@@ -176,7 +178,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
                 index += (5 + rxData[4]);
 
                 if(rxData[4] == 1) {// is sensor  codec
-                    // Flash_store_sensor_codec(rxData[5], deviceid);
+                    Flash_store_sensor_codec(rxData[5], deviceid);                            
                     sensorcodec = true;
                 }
                 else {// is sensor name                       //support later.
@@ -189,7 +191,25 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
             }
             
             break;
-#endif      
+#endif   
+
+        case PTI_SEND_ALARM:
+            /*
+            if(((index + 1)<= length) && (g_rSysConfigInfo.rfStatus & STATUS_LORA_MASTER)) {// maseter is sensor 
+
+                if(rxData[index++])
+                    g_rSysConfigInfo.rfStatus |= STATUS_LORA_ALARM;
+                else
+        			g_rSysConfigInfo.rfStatus &= ~STATUS_LORA_ALARM;
+                    
+                congfig = true;
+            }
+            else{
+                goto paraerror;
+            }
+            */
+    		break;            
+
         default:
             return false;//参数有误
     	}	
@@ -207,6 +227,115 @@ paraerror:
     return false;
 }
 
+uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
+{
+	uint8_t i;
+    uint16_t index = 0;    
+#ifdef     SUPPORT_NETGATE_DISP_NODE        
+    uint32_t deviceid;
+#endif
+#ifdef SUPPORT_NETGATE_BIND_NODE
+    uint8_t num;
+#endif
+
+	rxData[index++] = paratype;		
+
+	switch (paratype) {			
+	case PTI_COLLECT_PERIOD:
+		rxData[index++] = HIBYTE(HIWORD(g_rSysConfigInfo.collectPeriod));
+		rxData[index++] = LOBYTE(HIWORD(g_rSysConfigInfo.collectPeriod));
+        rxData[index++] = HIBYTE(LOWORD(g_rSysConfigInfo.collectPeriod));
+        rxData[index++] = LOBYTE(LOWORD(g_rSysConfigInfo.collectPeriod));                 
+		break;
+			
+	case PTI_UPLOAD_PERIOD:
+		rxData[index++] = HIBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod));
+		rxData[index++] = LOBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod));
+        rxData[index++] = HIBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod));
+        rxData[index++] = LOBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod));
+		break;
+		
+	case PTI_HIGHTEMP_ALARM:
+        for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
+            rxData[index++] = i;
+            rxData[index++] = HIBYTE(g_rSysConfigInfo.alarmTemp[i].high);
+            rxData[index++] = LOBYTE(g_rSysConfigInfo.alarmTemp[i].high);
+        }
+		break;
+		
+	case PTI_LOWTEMP_ALARM:		
+        for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
+            rxData[index++] = i;
+            rxData[index++] = HIBYTE(g_rSysConfigInfo.alarmTemp[i].low);
+            rxData[index++] = LOBYTE(g_rSysConfigInfo.alarmTemp[i].low);
+        }        
+		break;
+
+    case PTI_BIND_GATEWAY:        
+        rxData[index++] = g_rSysConfigInfo.BindGateway[0];
+        rxData[index++] = g_rSysConfigInfo.BindGateway[1];
+        rxData[index++] = g_rSysConfigInfo.BindGateway[2];
+        rxData[index++] = g_rSysConfigInfo.BindGateway[3];
+        break;
+
+
+#ifdef SUPPORT_NETGATE_BIND_NODE
+    case PTI_BIND_NODE:///nodenum(1B)  [  Deviceid(4B ) chno(1B) alarmTemp(4B)  ...]  chk(1B)
+
+        num = 0;
+        rxData[index++] = num;//index =1
+
+        
+        for( i = 0 ; i < NETGATE_BIND_NODE_MAX; ++i) {
+            
+            if(g_rSysConfigInfo.bindnode[i].Deviceid != 0){
+                
+                num++;     
+                rxData[index++] = HIBYTE(HIWORD(g_rSysConfigInfo.bindnode[i].Deviceid));
+                rxData[index++] = LOBYTE(HIWORD(g_rSysConfigInfo.bindnode[i].Deviceid));
+                rxData[index++] = HIBYTE(LOWORD(g_rSysConfigInfo.bindnode[i].Deviceid));
+                rxData[index++] = LOBYTE(LOWORD(g_rSysConfigInfo.bindnode[i].Deviceid));                
+                rxData[index++] = g_rSysConfigInfo.bindnode[i].ChNo;                
+                rxData[index++] = HIBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
+                rxData[index++] = LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
+                rxData[index++] = HIBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;
+                rxData[index++] = LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;            
+            }    
+        }
+
+        rxData[1] = num;       
+        break;
+        
+#endif    
+
+        
+#ifdef SUPPORT_NETGATE_DISP_NODE
+    case PTI_SENSOR_CODEC:
+        rxData[index++] = HIBYTE(HIWORD(deviceid));
+        rxData[index++] = LOBYTE(HIWORD(deviceid));
+        rxData[index++] = HIBYTE(LOWORD(deviceid));
+        rxData[index++] = LOBYTE(LOWORD(deviceid));
+        rxData[index++] = 1;
+        rxData[index++] = Flash_load_sensor_codec(deviceid);                            
+        break;
+        
+#endif  
+
+    case PTI_SEND_ALARM:
+        /*
+        if((g_rSysConfigInfo.rfStatus & STATUS_LORA_MASTER))// maseter is sensor        
+            rxData[index++] = (g_rSysConfigInfo.rfStatus & STATUS_LORA_ALARM);
+        else
+            rxData[index++] = 0xff;*/
+        break;
+        
+    default:
+        return 0;//paratype is error
+	}	
+
+    return index;//return the length of para
+}
+
 
 #ifdef SUPPORT_ZKS_PROTOCOL
 #ifdef SUPPORT_NETWORK
@@ -217,7 +346,7 @@ typedef enum {
     NMI_TX_HEARTBEAT= 0x2002,
     NMI_TX_SETTING  = 0x2003,
     NMI_TX_NTP      = 0x2004,
-    
+    NMI_TX_SYS_STATE= 0x2005,
     NMI_TX_GETIP_ACK= 0x2006,
 
     NMI_TX_SENSOR   = 0x2010,
@@ -225,6 +354,10 @@ typedef enum {
     NMI_TX_LBS 	    = 0x2021,
     NMI_TX_G_SENSOR = 0x2022,
     NMI_TX_CELL_INFO = 0x2023,
+
+    NMI_TX_UPGRADE_INFO_REQ = 0x2024,
+    NMI_TX_UPGRADE_DATA_REQ = 0x2025,
+    NMI_TX_UPGRADE_ACK      = 0x2026,
 
 //Receive MSG
     NMI_RX_COM_ACK  = 0xA001,
@@ -234,6 +367,11 @@ typedef enum {
     NMI_RX_SETIP    = 0xA005,
     NMI_RX_GETIP    = 0xA006,
     NMI_RX_RESET    = 0xA007,
+    NMI_RX_UPGRADE_INFO_ACK = 0xA008,
+    NMI_RX_UPGRADE_DATA_ACK = 0xA009,
+    NMI_RX_UPGRADE_REQ      = 0xA00A,
+    NMI_RX_FLIGHT_MODE      = 0xA00B,    
+
 } NWK_MSG_ID;
 
 #define NWK_MSG_BODY_START  12
@@ -253,6 +391,10 @@ typedef struct {
     uint16_t serialNumSensor;
     uint16_t serialNumLbs;
     uint16_t serialNumGSensor;
+#ifdef  SUPPORT_REMOTE_UPGRADE
+    uint8_t upgradeState;
+#endif
+    uint16_t serialNumSysState;
     uint8_t poweron;
     uint8_t ntp;
     uint8_t moduleIndex;
@@ -272,6 +414,7 @@ typedef struct {
 #define NWK_EVT_HEARTBEAT           Event_Id_03
 #define NWK_EVT_TEST                Event_Id_04
 #define NWK_EVT_ACK                 Event_Id_05
+#define NWK_EVT_UPGRADE             Event_Id_06
 
 
 #define NWK_EVT_ALL                 0xffff
@@ -302,6 +445,149 @@ static const Nwk_FxnTable *Nwk_FxnTablePtr[NWK_MODULE_MAX] = {
     &Gsm_FxnTable,
 #endif
 };
+
+#ifdef  SUPPORT_REMOTE_UPGRADE
+
+extern Watchdog_Handle watchdogHandle;
+static void Nwk_event_post(UInt event);
+static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets);
+typedef enum{
+    UPGRADE_STATE_OFF = 0,
+    UPGRADE_STATE_CHANGE_SEVER,
+    UPGRADE_STATE_START,    
+    UPGRADE_STATE_WAIT_INFO,
+    UPGRADE_STATE_LOADING,
+}UPGRADE_STATE_E;
+
+
+//***********************************************************************************
+//
+// Network upgrade process.
+//
+//***********************************************************************************
+void Nwk_upgrade_process(void)
+{
+    uint16_t result;
+
+    UpgradePackTimeoutReset();
+    if(UpgradeMonitorGet() >= UPGRADE_TIMEOUT)
+    {
+        UpgradeMonitorReset();
+        rNwkMsgPacket.buff[0] = 0xff;
+        goto UpgradeTimeout;
+    }
+
+
+    switch(rNwkObject.upgradeState)
+    {
+        case UPGRADE_STATE_CHANGE_SEVER:
+        Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
+        memcpy((char*)g_rSysConfigInfo.serverAddr, "114.215.122.32", 40);
+        g_rSysConfigInfo.serverIpPort = 12201;
+
+        rNwkObject.upgradeState = UPGRADE_STATE_START;
+        Nwk_event_post(NWK_EVT_UPGRADE);
+        break;
+
+        case UPGRADE_STATE_OFF:
+        // send the ack to upgrade server
+        rNwkObject.upgradeState = UPGRADE_STATE_START;
+        Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
+        Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
+        Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
+        memcpy((char*)g_rSysConfigInfo.serverAddr, "114.215.122.32", 40);
+        g_rSysConfigInfo.serverIpPort = 12201;
+
+        rNwkObject.upgradeState = UPGRADE_STATE_START;
+        Nwk_event_post(NWK_EVT_UPGRADE);
+        break;
+
+        case UPGRADE_STATE_START:
+        // send the requestion to request the updata version
+        Nwk_group_package(NMI_TX_UPGRADE_INFO_REQ, &rNwkMsgPacket);
+        Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
+        rNwkObject.upgradeState = UPGRADE_STATE_WAIT_INFO;
+        break;
+
+        case UPGRADE_STATE_WAIT_INFO:
+        result = UpgradeSetInfo(((uint16_t)rNwkMsgPacket.buff[0] << 8) + rNwkMsgPacket.buff[1], 
+                                ((uint32_t)rNwkMsgPacket.buff[2] << 24) + ((uint32_t)rNwkMsgPacket.buff[3] << 16) +
+                                ((uint16_t)rNwkMsgPacket.buff[4] << 8) + ((uint16_t)rNwkMsgPacket.buff[5]));
+
+        if(result == UPGRADE_RESULT_NEEDNOT_UPDATA)
+        {
+            rNwkObject.upgradeState = UPGRADE_STATE_OFF;
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
+            Flash_load_config();
+            // send the ack to the g7 server
+
+        }
+        else
+        {
+            // request the code data
+            rNwkObject.upgradeState = UPGRADE_STATE_LOADING;
+            Nwk_group_package(NMI_TX_UPGRADE_DATA_REQ, &rNwkMsgPacket);
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
+        }
+
+        break;
+
+        case UPGRADE_STATE_LOADING:
+        result = UpgradeLoading(((uint16_t)rNwkMsgPacket.buff[0] << 8) + rNwkMsgPacket.buff[1], 
+                                ((uint16_t)rNwkMsgPacket.buff[2] << 8) + rNwkMsgPacket.buff[3], 
+                                ((uint16_t)rNwkMsgPacket.buff[4] << 8) + rNwkMsgPacket.buff[5], 
+                                    &rNwkMsgPacket.buff[6]);
+
+        switch(result)
+        {
+            case UPGRADE_RESULT_LOADING_COMPLETE:
+            // send the updata sucess to upgrade server
+            rNwkMsgPacket.buff[0] = 0x00;
+            Nwk_group_package(NMI_TX_UPGRADE_ACK, &rNwkMsgPacket);
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
+            
+#ifdef SUPPORT_WATCHDOG
+            if (watchdogHandle != NULL) 
+                Watchdog_close(watchdogHandle); 
+#endif
+            // __disable_interrupt();
+            Task_sleep(200*CLOCK_UNIT_MS);
+            // UpgradeBootLoader();
+            break;
+
+            case UPGRADE_RESULT_NEXT_PACKAGE:
+            case UPGRADE_RESULT_PACKNUM_ERR:
+            // request the next package
+            Nwk_group_package(NMI_TX_UPGRADE_DATA_REQ, &rNwkMsgPacket);
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);            
+
+            break;
+
+            case UPGRADE_RESULT_CRC_ERR:
+            // send the updata crc error to upgrade server
+            rNwkMsgPacket.buff[0] = 0x01;
+            goto UpgradeFail;
+
+            case UPGRADE_RESULT_ERR:
+            // send the updata fail to upgrade server
+            rNwkMsgPacket.buff[0] = 0xff;
+UpgradeFail:
+            UpgradeCancel();
+UpgradeTimeout:
+            Nwk_group_package(NMI_TX_UPGRADE_ACK, &rNwkMsgPacket);
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
+            rNwkObject.upgradeState = UPGRADE_STATE_OFF;
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
+            Flash_load_config();
+            break;
+
+        }
+        break;
+    }
+}
+#endif
+
+
 
 //***********************************************************************************
 //
@@ -342,7 +628,12 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
 
         //消息体
         //固定字段类型
+        #ifdef SUPPORT_BB_TIME
+        packet.buff[packet.length++] = 0x03;
+        #else
         packet.buff[packet.length++] = 0x01;
+        #endif
+        
         //网关电压
 #ifdef SUPPORT_BATTERY
         value = Battery_get_voltage();
@@ -351,6 +642,17 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
         packet.buff[packet.length++] = LOBYTE(value);
         //网关网络信号
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &packet.buff[packet.length++]);
+
+        #ifdef SUPPORT_BB_TIME
+        Calendar calendar;
+        calendar = Rtc_get_calendar();        
+        packet.buff[packet.length++] = calendar.Year - CALENDAR_BASE_YEAR;
+        packet.buff[packet.length++] = calendar.Month;
+        packet.buff[packet.length++] =  calendar.DayOfMonth;
+        packet.buff[packet.length++] =  calendar.Hours;
+        packet.buff[packet.length++] =  calendar.Minutes;
+        packet.buff[packet.length++] =  calendar.Seconds;
+        #endif
         //无线信号强度RSSI
         //Sensor ID - 4Byte
         //采集流水号 - 2Byte
@@ -442,14 +744,75 @@ ONEDATA:
             packet.buff[packet.length++] = rNwkObject.location.nearby[i].dbm;
         }
 #endif
-    }else {//其他打包序列号也需增加 如授时
+    }
+#endif
+
+#ifdef      SUPPORT_REMOTE_UPGRADE
+    else if(msgId == NMI_TX_UPGRADE_INFO_REQ) {
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
+        // current version
+        packet.buff[packet.length++] = (uint8_t)(FW_VERSION>>8);
+        packet.buff[packet.length++] = (uint8_t)(FW_VERSION);
+
+        // project name
+        packet.buff[packet.length++] = sizeof(PROJECT_NAME);
+        strcpy((char*)&packet.buff[packet.length], PROJECT_NAME);
+        packet.length += sizeof(PROJECT_NAME);
+        
+    }
+    else if(msgId == NMI_TX_UPGRADE_DATA_REQ)
+    {
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
+        // updata software version
+        packet.buff[packet.length++] = (uint8_t)(UpgradeGetVersion() >> 8);
+        packet.buff[packet.length++] = (uint8_t)UpgradeGetVersion();
+
+        packet.buff[packet.length++] = (uint8_t)(UpgradeGetNextPackNum() >> 8);
+        packet.buff[packet.length++] = (uint8_t)UpgradeGetNextPackNum();
+
+        packet.buff[packet.length++] = (uint8_t)(NWK_UPGRADE_PACKAGE_LENGTH >> 8);
+        packet.buff[packet.length++] = (uint8_t)NWK_UPGRADE_PACKAGE_LENGTH;
+
+        // project name
+        packet.buff[packet.length++] = sizeof(PROJECT_NAME);
+        strcpy((char*)&packet.buff[packet.length], PROJECT_NAME);
+        packet.length += sizeof(PROJECT_NAME);
+    }
+    else if(msgId == NMI_TX_UPGRADE_ACK)
+    {
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
+        // current version
+        packet.buff[packet.length++] = (uint8_t)(FW_VERSION>>8);
+        packet.buff[packet.length++] = (uint8_t)(FW_VERSION);
+
+        // the upgrade result
+        packet.buff[packet.length++] = pPacket->buff[0];
+    }
+#endif
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+    else if(NMI_TX_SYS_STATE){
+        //消息流水号
+        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSysState);
+        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSysState);
+        rNwkObject.serialNumSysState++;
+
+        for (i = 0; i < FLASH_DEVICED_STATE_DATA_SIZE; i++) {
+            packet.buff[packet.length++] = pPacket->buff[i];
+        }
+    }
+#endif
+    else {//其他打包序列号也需增加 如授时
         //消息流水号
         packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
     }
-#endif
-
     //消息体属性
     value = packet.length - 12;
     packet.buff[2] = HIBYTE(value);
@@ -477,16 +840,6 @@ static void Nwk_event_post(UInt event)
     Event_post(nwkEvtHandle, event);
 }
 
-static uint8_t* mystrchar(uint8_t *buf, uint8_t c, uint16_t len)
-{
-    uint16_t i;
-    
-    for ( i = 0; i < len; i++) {
-        if(buf[i] == c)
-            return &buf[i];
-    }
-    return NULL;
-}
 
 //***********************************************************************************
 //
@@ -497,7 +850,8 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 {
     uint16_t msgId, index;
     Calendar calendar;
-    uint8_t  rxData[128];
+    uint8_t  *rxData = 0;
+    // uint8_t  rxData[128];
 	//uint8_t  paratype;
 	uint8_t *ptrstart,*ptrend;
     uint16_t package_length;
@@ -518,7 +872,8 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
           
         package_length = ptrend - ptrstart + 1;
             
-        memcpy((char *)rxData, (char *)ptrstart, package_length);
+        // memcpy((char *)rxData, (char *)ptrstart, package_length);
+        rxData = ptrstart;
 
        ptrstart = ptrend + 1;
        length -= package_length;
@@ -555,9 +910,8 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                 }
                     
                 break;
-                
-#ifdef SUPPORT_NETGATE_DISP_NODE                
-                /*
+
+#ifdef SUPPORT_NETGATE_DISP_NODE
             case NMI_RX_ALARM:
                 index = NWK_MSG_BODY_START;
                 if((index + 10) <= package_length) {//可能包含多条报警数据，目前只处理1条
@@ -574,8 +928,20 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     HIBYTE(HIWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
                     LOBYTE(HIWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
                     HIBYTE(LOWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
-                    LOBYTE(LOWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];                      
+                    LOBYTE(LOWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
 
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+                    if((index + 6) <= package_length){
+
+                        g_AlarmSensor.time[0] = rxData[index++];
+                        g_AlarmSensor.time[1] = rxData[index++];
+                        g_AlarmSensor.time[2] = rxData[index++];
+                        g_AlarmSensor.time[3] = rxData[index++];
+                        g_AlarmSensor.time[4] = rxData[index++];
+                        g_AlarmSensor.time[5] = rxData[index++];
+                    }
+                    Sys_event_post(SYS_EVT_ALARM_SAVE);
+#endif
                     g_bAlarmSensorFlag = 0x100;
                     Sys_event_post(SYS_EVT_ALARM);
 
@@ -589,7 +955,6 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     Nwk_event_post(NWK_EVT_ACK);
                 }                
                 break;
-                */
 #endif
             case NMI_RX_NTP:
                 index = NWK_MSG_BODY_START;
@@ -605,6 +970,60 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     ConcenterCollectStart();
     			}
                 break;
+
+#ifdef SUPPORT_FLIGHT_MODE
+            case NMI_RX_FLIGHT_MODE:
+                index = NWK_MSG_BODY_START;
+
+                // Message: UINT16 2(B)<TIMES-MINUTES>
+                // Get MINUTES TO FLIGHT MODE
+                uint16_t minutes_flight = 0;
+
+                HIBYTE(minutes_flight) = rxData[index++];
+                LOBYTE(minutes_flight) = rxData[index++];
+
+                //send ack to server
+                rNwkMsgPacket.buff[0] = rxData[10];
+                rNwkMsgPacket.buff[1] = rxData[11];
+                rNwkMsgPacket.buff[2] = rxData[0];
+                rNwkMsgPacket.buff[3] = rxData[1];
+                rNwkMsgPacket.buff[4] = TCA_OK;
+                // Record <0-1> MSG serial NUM, <2-3>MSG-ID <4> ACK
+                Flight_mode_ack_data_store( &rNwkMsgPacket);
+
+                Flight_mode_setting( minutes_flight);
+
+                Nwk_event_post(NWK_EVT_ACK);
+                break;
+#endif
+
+#ifdef      SUPPORT_REMOTE_UPGRADE
+
+            case NMI_RX_UPGRADE_INFO_ACK:
+                index = NWK_MSG_BODY_START;
+                memcpy(rNwkMsgPacket.buff, &rxData[index], 6);
+                Nwk_event_post(NWK_EVT_UPGRADE);
+                break;
+
+            case NMI_RX_UPGRADE_DATA_ACK:
+                index = NWK_MSG_BODY_START;
+
+                rNwkMsgPacket.length = 6 + ((uint16_t)rxData[index+4]<<8) + rxData[index+5];
+
+                memcpy(rNwkMsgPacket.buff, &rxData[index], rNwkMsgPacket.length);
+                Nwk_event_post(NWK_EVT_UPGRADE);
+                break;
+
+            case NMI_RX_UPGRADE_REQ:
+                rNwkMsgPacket.buff[0] = rxData[10];
+                rNwkMsgPacket.buff[1] = rxData[11];
+                rNwkMsgPacket.buff[2] = rxData[0];
+                rNwkMsgPacket.buff[3] = rxData[1];
+                rNwkMsgPacket.buff[4] = TCA_OK;
+                rNwkObject.upgradeState = UPGRADE_STATE_CHANGE_SEVER;
+                Nwk_event_post(NWK_EVT_UPGRADE);
+                break;
+#endif
         }
     }
 }
@@ -624,11 +1043,12 @@ static void Nwk_init(void)
         Nwk_FxnTablePtr[i]->initFxn(&params);
     }
 
-    rNwkObject.poweron = 0;
-    rNwkObject.ntp = 0;
-    rNwkObject.hbTime = 0;
-    rNwkObject.uploadTime = 0;
-    rNwkObject.ntpTime = 0;
+    rNwkObject.poweron      = 0;
+    rNwkObject.ntp          = 0;
+    rNwkObject.upgradeState = UPGRADE_STATE_OFF;
+    rNwkObject.hbTime       = 0;
+    rNwkObject.uploadTime   = 0;
+    rNwkObject.ntpTime      = 0;
 }
 
 //***********************************************************************************
@@ -652,8 +1072,10 @@ static void Nwk_taskFxn(void)
 
 
     Nwk_init();
+    UpgradeInit();
 
     while (1) {
+        
         if(rNwkObject.poweron){
             Led_ctrl(LED_R, 0, 0, 0);
             Led_ctrl(LED_G, 0, 0, 0);
@@ -680,11 +1102,58 @@ static void Nwk_taskFxn(void)
                 continue;
             }
             rNwkObject.poweron = 0;
+            //Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_SHUTDOWN_MSG, NULL);
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
         }
 
         if (rNwkObject.poweron == 0)
             continue;
+
+#ifdef SUPPORT_FLIGHT_MODE
+        // When in flight mode, priority process ACK event
+		if(Flight_mode_isFlightMode()){
+			if (eventId & NWK_EVT_ACK) {
+
+#ifdef  SUPPORT_DEVICED_STATE_UPLOAD
+	            Flash_store_devices_state(TYPE_FLIGHT_MODE_START);
+#endif
+
+			    Flight_mode_ack_data_readback(&rNwkMsgPacket);
+                Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
+				//send ack data.
+				if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+
+				}
+
+			}
+#ifdef  SUPPORT_DEVICED_STATE_UPLOAD
+               while(Flash_get_deviced_state_items() > 0 )
+                {
+                    memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
+                    pbuff = rNwkMsgPacket.buff;
+                    if(Flash_load_deviced_state_data(pbuff, FLASH_DEVICED_STATE_DATA_SIZE) == ES_SUCCESS){
+                        Nwk_group_package(NMI_TX_SYS_STATE, &rNwkMsgPacket);
+
+                        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+                            break;
+                        }
+                        else
+                        {
+                            Flash_moveto_next_deviced_state_data();
+                        }
+                    }
+
+                }
+#endif
+			// flush event,
+            Flight_mode_entry(Flight_mode_get_timesetting());
+            Nwk_event_post(NWK_EVT_SHUTDOWN);
+            // close GSM immediate
+            Nwk_poweroff();
+            continue;
+        }
+#endif
+
 
 #ifdef SUPPORT_GSM_SHORT_CONNECT
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->openFxn();
@@ -707,6 +1176,22 @@ static void Nwk_taskFxn(void)
         }
 
         Led_ctrl(LED_B, 1, 0, 0);
+
+
+#ifdef  SUPPORT_REMOTE_UPGRADE
+        if(eventId & NWK_EVT_UPGRADE)
+        {
+            Nwk_upgrade_process();
+        }
+
+// code updata process
+        if(rNwkObject.upgradeState != UPGRADE_STATE_OFF)
+        {
+            continue;
+        }
+
+#endif
+
         if (rNwkObject.ntp == 0) {
             Nwk_group_package(NMI_TX_NTP, &rNwkMsgPacket);
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
@@ -714,8 +1199,6 @@ static void Nwk_taskFxn(void)
         }
 
         if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
-
-            Battery_voltage_measure();
             //wakeup.
             if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
                 continue;
@@ -758,6 +1241,14 @@ static void Nwk_taskFxn(void)
                 //send data second.
                 bsensordata = 0;
                 while(Flash_get_unupload_items()> 0){
+
+            #ifdef SUPPORT_FLIGHT_MODE
+                    // When Get Flight Mode, terminate UPLOAD data
+                    if(Flight_mode_isFlightMode()){
+                        break;
+                    }
+            #endif
+
                      package_count = 0;
                      memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
                      pbuff = rNwkMsgPacket.buff;
@@ -790,12 +1281,60 @@ static void Nwk_taskFxn(void)
                 
                 //当网关没有sensor数据时上传一个无效sensor数据以避免网关信息失联。
                 if(!bsensordata){
+                    memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
                     Sensor_store_null_package(rNwkMsgPacket.buff);
                     Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
                     Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
                 }
                 
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
+                //系统状态信息
 
+                    while(Flash_get_deviced_state_items() > 0 )
+                    {
+                        memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
+                        pbuff = rNwkMsgPacket.buff;
+                        if(Flash_load_deviced_state_data(pbuff, FLASH_DEVICED_STATE_DATA_SIZE) == ES_SUCCESS){
+                            Nwk_group_package(NMI_TX_SYS_STATE, &rNwkMsgPacket);
+                        }
+                        else{
+                            break;
+                        }
+
+
+                        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+                            break;
+                        }
+                        else
+                        {
+                            Flash_moveto_next_deviced_state_data();
+                        }
+                    }
+
+#endif
+#ifdef SUPPORT_GSENSOR
+                //send g_sensor data second.
+                while (Flash_load_g_sensor_data(rNwkMsgPacket.buff, FLASH_G_SENSOR_DATA_SIZE) == ES_SUCCESS) {
+                    Nwk_group_package(NMI_TX_G_SENSOR, &rNwkMsgPacket);
+                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+                        Flash_recovery_last_g_sensor_data();
+                        //ret = FALSE;
+                        break;
+                    }
+                }
+#endif
+
+#ifdef SUPPORT_GPS
+                //send gps data second.
+                while (Flash_load_gps_data(rNwkMsgPacket.buff, FLASH_GPS_DATA_SIZE) == ES_SUCCESS) {
+                    Nwk_group_package(NMI_TX_GPS, &rNwkMsgPacket);
+                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+                        Flash_recovery_last_gps_data();
+                        //ret = FALSE;
+                        break;
+                    }
+                }
+#endif
 #endif             
 
             }
@@ -872,6 +1411,13 @@ void Nwk_upload_time_isr(void)
             rNwkObject.ntpTime = 0;
             rNwkObject.ntp = 0;
         }
+#ifdef  SUPPORT_REMOTE_UPGRADE
+        if(rNwkObject.upgradeState != UPGRADE_STATE_OFF)
+        {
+            if(UpgradeMonitor() == 1)
+                Nwk_event_post(NWK_EVT_UPGRADE);
+        }
+#endif
     }
 }
 
@@ -905,6 +1451,15 @@ void Nwk_poweroff(void)
     Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_SHUTDOWN_MSG, NULL);
 }
 
+void Nwk_send_upload_event(void)
+{
+    if (!(g_rSysConfigInfo.module & MODULE_NWK))
+        return;
+
+    if (rNwkObject.poweron) {
+        Nwk_event_post(NWK_EVT_DATA_UPLOAD);
+    }
+}
 //***********************************************************************************
 //
 // Network get rssi.
@@ -912,8 +1467,11 @@ void Nwk_poweroff(void)
 //***********************************************************************************
 uint8_t Nwk_get_rssi(void)
 {
-    uint8_t rssi;
+    uint8_t rssi=0;
     if (!(g_rSysConfigInfo.module & MODULE_NWK))
+        return 0;
+
+    if (rNwkObject.poweron == 0)
         return 0;
 
     Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &rssi);
@@ -934,15 +1492,12 @@ void Nwk_get_simccid(uint8_t *pBuff)
 }
 
 
-//***********************************************************************************
-//
-// get network power state.
-//
-//***********************************************************************************
-uint8_t Nwk_get_state(void)
+ // 1,actived, 0 shutdown
+char Nwk_is_Active(void)
 {
     if (!(g_rSysConfigInfo.module & MODULE_NWK))
-        return false;
+        return 0;
+
     return rNwkObject.poweron;
 }
 

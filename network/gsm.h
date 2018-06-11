@@ -48,7 +48,7 @@
 
 //Start Task and Set APN, USER NAME, PASSWORD
 //#define ATCMD_SET_APN               "AT+QIREGAPP="
-#define ATCMD_SET_APN               "AT+QICSGP=1,%s"
+#define ATCMD_SET_APN               "AT+QICSGP=1,%s\r\n"
 #define ATCMD_START_TASK            "AT+QIREGAPP\r\n"
 
 //Activity mobile scene
@@ -201,7 +201,6 @@ typedef struct {
 #endif
 //Sim card ccid
 	uint8_t simCcid[20];
-
 //callback function
 	Nwk_CallbackFxn dataProcCallbackFxn;
 } GsmObject_t;

@@ -53,8 +53,8 @@ static uint16_t SHT2x_calc_humidty(uint16_t humidty)
     //-- calculate relative humidity [%RH] --
     humidity = (uint16_t)round(-6.0 + 125.0/65536 * (float)humidty * 100); // RH = -6 + 125 * SRH/2^16
 
-    if(humidity > 10000)//将humidity限制在100
-        humidity = 10000;
+    if(humidity >= 10000)//?humidity???99.99
+        humidity = 9999;
     
     return humidity;
 }
@@ -71,7 +71,7 @@ static int16_t SHT2x_calc_temperatureC(uint16_t temperature)
     if (temperature == 0)
         return TEMPERATURE_OVERLOAD;
 
-    //-- calculate temperature [℃] --
+    //-- calculate temperature [?] --
     temperatureC= (int16_t)round((-46.85 + 175.72/65536 *(float)temperature) * 100); // T = -46.85 + 175.72 * ST/2^16
 
     return temperatureC;
@@ -84,16 +84,153 @@ static int16_t SHT2x_calc_temperatureC(uint16_t temperature)
 //***********************************************************************************
 static void SHT2x_init(uint8_t chNum)
 {
-    uint8_t buff[1];
-
+    uint8_t error;
+    error  = 0;
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
-        buff[0] = SOFT_RESET;
-        I2c_write(Board_SHT2x_ADDR, buff, 1);
-        Task_sleep(25 * CLOCK_UNIT_MS);
+
+        I2C_start();
+        I2C_send_byte (Board_SHT2x_ADDR<<1); // I2C Adr
+        if(I2C_ack_receive() == false)
+        error |= 0x01;
+        I2C_send_byte (SOFT_RESET); // Command
+        if(I2C_ack_receive() == false)
+        error |= 0x01;
+        I2C_stop();
+
+        Task_sleep(150 * CLOCK_UNIT_MS);
 
     }
 }
+
+//***********************************************************************************
+//
+// sort data.
+//
+//***********************************************************************************
+void sort_data(int16_t *data, uint16_t len)
+{
+    uint16_t i , j;
+    int16_t temp;
+
+    for (i = 0; i < (len - 1); i++)
+    {   
+        for (j = 0; j < (len - 1 - i); j++)
+            if (data[j] > data[j+1])   
+            {   
+                  temp = data[j];   
+                  data[j] = data[j+1];   
+                  data[j+1] = temp;   
+            }   
+    }  
+}
+
+
+//===========================================================================
+//===========================================================================
+uint8_t SHT2x_ReadUserRegister(uint8_t *pRegisterValue)
+{
+    uint8_t checksum; //variable for checksum byte
+    uint8_t error=0; //variable for error code
+    I2C_start();
+    I2C_send_byte (Board_SHT2x_ADDR<<1);
+    if(I2C_ack_receive() == false)
+        error |= 0x01;
+    I2C_send_byte (USER_REG_R);
+    if(I2C_ack_receive() == false)
+        error |= 0x01;
+    I2C_start();
+    I2C_send_byte (Board_SHT2x_ADDR<<1|0x01);
+    if(I2C_ack_receive() == false)
+        error |= 0x01;
+    *pRegisterValue = I2C_receive_byte();
+    I2C_ack_send();
+
+    checksum=I2C_receive_byte();
+    I2C_noack_send();
+    error |= SHT2x_check_crc (pRegisterValue,1,checksum);
+    I2C_stop();
+    return error;
+}
+
+
+//===========================================================================
+//===========================================================================
+uint8_t SHT2x_WriteUserRegister(uint8_t *pRegisterValue)
+{
+    uint8_t error=0; //variable for error code
+    I2C_start();
+    I2C_send_byte (Board_SHT2x_ADDR<<1);
+    if(I2C_ack_receive() == false)
+        error |= 0x01;
+    I2C_send_byte (USER_REG_W);
+    if(I2C_ack_receive() == false)
+        error |= 0x01;
+    I2C_send_byte (*pRegisterValue);
+    if(I2C_ack_receive() == false)
+        error |= 0x01;
+    I2C_stop();
+    return error;
+}
+
+
+//===========================================================================
+uint8_t SHT2x_MeasurePoll(uint8_t eSHT2xMeasureType, uint8_t *pMeasurand)
+//===========================================================================
+{
+    uint8_t checksum; //checksum
+    uint8_t error=0; //error variable
+    uint16_t i=0; //counting variable
+
+    //-- write I2C sensor address and command --
+    I2C_start();
+    I2C_send_byte (Board_SHT2x_ADDR<<1); // I2C Adr
+    if(I2C_ack_receive() == false)
+        error |= 0x01;
+    switch(eSHT2xMeasureType)
+    { 
+        // HUMIDITY
+        case 0: 
+        I2C_send_byte (TRIG_H_MEASURE_POLL);
+        if(I2C_ack_receive() == false)
+        error |= 0x01;
+        break;
+        // TEMP
+        case 1 :
+        I2C_send_byte (TRIG_T_MEASURE_POLL);
+        if(I2C_ack_receive() == false)
+        error |= 0x01;
+        break;
+    }
+    //-- poll every 10ms for measurement ready. Timeout after 20 retries (200ms)--
+
+    do
+    { 
+        I2C_start();
+        if(i++ >= 20) break;
+        Task_sleep(25 * CLOCK_UNIT_MS);
+        I2C_send_byte(Board_SHT2x_ADDR<<1 | 0x01);
+    } while(I2C_ack_receive() == false);
+    
+    if (i>=20) error |= 0x01;
+
+    //-- read two data bytes and one checksum byte --
+    pMeasurand[0] = I2C_receive_byte();
+    I2C_ack_send();
+
+    pMeasurand[1] = I2C_receive_byte();
+    I2C_ack_send();
+
+    checksum      = I2C_receive_byte();
+    I2C_noack_send();
+    //-- verify checksum --
+    error |= SHT2x_check_crc (pMeasurand,2,checksum);
+    I2C_stop();
+    return error;
+}
+
+
+
 
 //***********************************************************************************
 //
@@ -102,63 +239,55 @@ static void SHT2x_init(uint8_t chNum)
 //***********************************************************************************
 static void SHT2x_measure(uint8_t chNum)
 {
-    uint8_t userReg;
+    uint8_t userRegister;
+    uint8_t error;
     uint8_t buff[3];
-    uint8_t retrys = 0;//出错时重试3次
+    uint8_t retrys = 0;//?????3?
 
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
         if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
             SHT2x_init(chNum);
+            retrys = 0;
+            // Task_sleep(300 * CLOCK_UNIT_MS);
 err_retrys:
-            I2c_regRead(Board_SHT2x_ADDR, USER_REG_R, &userReg, 1);
-            userReg &= ~SHT2x_RES_MASK;
+            
+            error |= SHT2x_ReadUserRegister(&userRegister); //get actual user reg
+            userRegister = (userRegister & ~SHT2x_RES_MASK) | SHT2x_RES_8_12BIT;
+            error |= SHT2x_WriteUserRegister(&userRegister); //write changed user reg
 
-            //Set temperature measure resolution.
-            buff[0] = USER_REG_W; 
-            buff[1] = userReg | SHT2x_RES_8_12BIT; 
-            I2c_write(Board_SHT2x_ADDR, buff, 2);
-            //Start temperature measure.
-            buff[0] = TRIG_T_MEASURE_POLL; 
-            I2c_write(Board_SHT2x_ADDR, buff, 1);
-            //Wait temperature measure finish.
-            // 11ms for 11bit, 22ms for 12bit, 43ms for 13bit, 85ms for 14bit.
-            Task_sleep(25 * CLOCK_UNIT_MS);
-            I2c_read(Board_SHT2x_ADDR, buff, 3);
-            //Check crc.
-            if (SHT2x_check_crc(buff, 2, buff[2]) == ES_SUCCESS) {
-                //clear bits [1..0] (status bits)
+            error |= SHT2x_MeasurePoll(1, buff);
+            if(error == 0)
+            {
                 buff[1] &= ~0x03;
 
                 HIBYTE(rSensorData[chNum].temp) = buff[0];
                 LOBYTE(rSensorData[chNum].temp) = buff[1];
-            } else {
+            }
+            else
+            {
                 rSensorData[chNum].temp = 0;
                 if(retrys++ < 3)goto err_retrys;
             }
 
-            //Set humidity measure resolution.
-            buff[0] = USER_REG_W; 
-            buff[1] = userReg | SHT2x_RES_10_13BIT; 
-            I2c_write(Board_SHT2x_ADDR, buff, 2);
-            //Start humidity measure.
-            buff[0] = TRIG_H_MEASURE_POLL; 
-            I2c_write(Board_SHT2x_ADDR, buff, 1);
-            //Wait humidity measure finish.
-            // 4ms for 8bit, 9ms for 10bit, 15ms for 11bit, 29ms for 12bit.
-            Task_sleep(12 * CLOCK_UNIT_MS);
-            I2c_read(Board_SHT2x_ADDR, buff, 3);
-            //Check crc.
-            if (SHT2x_check_crc(buff, 2, buff[2]) == ES_SUCCESS) {
-                //clear bits [1..0] (status bits)
+            error |= SHT2x_ReadUserRegister(&userRegister); //get actual user reg
+            userRegister = (userRegister & ~SHT2x_RES_MASK) | SHT2x_RES_10_13BIT;
+            error |= SHT2x_WriteUserRegister(&userRegister); //write changed user reg
+
+            error |= SHT2x_MeasurePoll(0, buff);
+            if(error == 0)
+            {
                 buff[1] &= ~0x03;
 
                 HIBYTE(rSensorData[chNum].humi) = buff[0];
                 LOBYTE(rSensorData[chNum].humi) = buff[1];
-            } else {
-                rSensorData[chNum].humi = 0;
+            }
+            else
+            {
+                rSensorData[chNum].temp = 0;
                 if(retrys++ < 3)goto err_retrys;
-            }           
+            }
+
             //convert rawdata to temperature
             rSensorData[chNum].temp = SHT2x_calc_temperatureC(rSensorData[chNum].temp );
             //convert rawdata to humidty

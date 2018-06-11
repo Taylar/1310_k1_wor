@@ -136,7 +136,11 @@ uint16_t CRC16(uint8_t *pData,  uint16_t length)
 #endif  /* CRC16_HW_MODULE */
 }
 
-
+/* Notice:
+ * Just for Upgrade CRC16
+ * void SetContinueCRC16(void)
+ * uint16_t ContinueCRC16(uint8_t *pData,  uint16_t length)
+ * */
 static  uint16_t continueCrc;
 
 
@@ -146,7 +150,7 @@ static  uint16_t continueCrc;
 //***********************************************************************************
 void SetContinueCRC16(void)
 {
-#ifdef CRC16_HW_MODULE
+#if 0 //def CRC16_HW_MODULE
     CRC_setSeed(CRC_BASE, CRC_SEED);
 #else   /* Software method */
     continueCrc = CRC_SEED;
@@ -162,7 +166,7 @@ void SetContinueCRC16(void)
 //***********************************************************************************
 uint16_t ContinueCRC16(uint8_t *pData,  uint16_t length)
 {
-    #ifdef CRC16_HW_MODULE
+#if 0 //def CRC16_HW_MODULE
     uint16_t i;
 
     for (i = 0; i < length; i++) {
@@ -177,7 +181,7 @@ uint16_t ContinueCRC16(uint8_t *pData,  uint16_t length)
 
     uint16_t i, j;
 
-#ifdef CRC16_MSB
+#if 0 //def CRC16_MSB
     for (i = 0; i < length; i++) {
         continueCrc ^= pData[i] << 8;
         for (j = 0; j < 8; j++) {
@@ -187,7 +191,7 @@ uint16_t ContinueCRC16(uint8_t *pData,  uint16_t length)
                 continueCrc <<= 1;
         } 
     } 
-#elif defined(CRC16_LSB)
+#else //elif defined(CRC16_LSB)
     for (i = 0; i < length; i++) {
         continueCrc ^= pData[i];
         for (j = 0; j < 8; j++) {
@@ -332,6 +336,16 @@ uint32_t htoi(char *str)
     return num;
 }
 
+uint8_t* mystrchar(uint8_t *buf, uint8_t c, uint16_t len)
+{
+    uint16_t i;
+
+    for ( i = 0; i < len; i++) {
+        if(buf[i] == c)
+            return &buf[i];
+    }
+    return NULL;
+}
 
 //***********************************************************************************
 // 
@@ -356,3 +370,4 @@ uint8_t TransBcdToHex(uint8_t bcd)
     temp = (bcd & 0x0f) + (bcd >> 4) * 10;
     return temp;
 }
+

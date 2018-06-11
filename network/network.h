@@ -13,7 +13,11 @@
 
 #ifdef SUPPORT_NETWORK
 
-#define NWK_MSG_SIZE            160
+
+
+
+#define NWK_MSG_SIZE            UART_BUFF_SIZE
+
 
 typedef struct {
     uint8_t buff[NWK_MSG_SIZE];
@@ -94,7 +98,9 @@ extern void Nwk_poweron(void);
 extern void Nwk_poweroff(void);
 extern uint8_t Nwk_get_rssi(void);
 extern void Nwk_get_simccid(uint8_t *pBuff);
+extern char Nwk_is_Active(void);
 extern bool SetDevicePara(uint8_t *rxData, uint16_t length);
+extern uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData);
 uint8_t Nwk_get_state(void);
 
 #endif	/* __ZKSIOT_NETWORK_H__ */

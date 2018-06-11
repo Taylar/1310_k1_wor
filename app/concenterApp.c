@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-07 18:05:12
+* @Last Modified time: 2018-06-11 16:48:57
 */
 #include "../general.h"
 
@@ -239,7 +239,7 @@ void ConcenterSleep(void)
     // wait the nwk disable the uart
 #ifdef  SUPPORT_NETWORK
     Nwk_poweroff();
-    while(Nwk_get_state())
+    while(Nwk_is_Active())
         Task_sleep(100 * CLOCK_UNIT_MS);
 #endif
 
@@ -303,7 +303,7 @@ void UsbIntProcess(void)
             // wait for the gsm uart close
 #ifdef  SUPPORT_NETWORK
             Nwk_poweroff();
-            while(Nwk_get_state())
+            while(Nwk_is_Active())
                 Task_sleep(100 * CLOCK_UNIT_MS);
 #endif
 
@@ -376,7 +376,7 @@ void ConcenterConfigDeceiveInit(void)
 {
 #ifdef  SUPPORT_NETWORK
     Nwk_poweroff();
-    while(Nwk_get_state())
+    while(Nwk_is_Active())
     Task_sleep(100 * CLOCK_UNIT_MS);
 #endif
 

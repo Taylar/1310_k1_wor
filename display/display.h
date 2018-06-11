@@ -13,6 +13,7 @@
 #ifdef SUPPORT_DISP_SCREEN
 #include "lcd_drv.h"
 
+
 #define FONT_5X8_OFS                5
 #define FONT_16X16_OFS              32
 #define FONT_9X24_OFS               27
@@ -72,6 +73,7 @@ typedef enum {
     ICON_16X16_BATTERY1,
     ICON_16X16_BATTERY2,
     ICON_16X16_BATTERY3,
+    ICON_16X16_FLIGHT,
 
     ICON_9X24_DIGIT_0,
     ICON_9X24_DIGIT_1,
