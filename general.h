@@ -39,6 +39,7 @@
 #include <ti/devices/cc13x0/driverlib/flash.h>
 #include <ti/devices/cc13x0/driverlib/aon_ioc.h>
 #include <ti/devices/cc13x0/driverlib/sys_ctrl.h>
+#include <ti/devices/cc13x0/driverlib/rf_prop_cmd.h>
 
 #include <ti/drivers/ADC.h>
 #include <ti/drivers/adc/ADCCC26XX.h>

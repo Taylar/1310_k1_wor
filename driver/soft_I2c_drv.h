@@ -25,26 +25,26 @@
 #define I2C_SDA				PIN_getInputValue(SOFT_I2C_SDA_PIN)
 #define I2C_SCL				PIN_getInputValue(SOFT_I2C_SCL_PIN)
 
-#define I2C_BUS_OUTPUT		if(softI2cSdaPinHandle == NULL)	\
+#define I2C_BUS_OUTPUT		if(softI2cSdaPinHandle != NULL)	\
 							{	\
 						    	PIN_close(softI2cSdaPinHandle);	\
 							}	\
 						    softI2cSdaPinHandle = PIN_open(&softI2cSdaPinState, soft_i2c_sda_output_config);
 
 
-#define I2C_SCL_OUTPUT		if(softI2cSclPinHandle == NULL)	\
+#define I2C_SCL_OUTPUT		if(softI2cSclPinHandle != NULL)	\
 							{	\
 						    	PIN_close(softI2cSclPinHandle);	\
 							}	\
 						    softI2cSclPinHandle = PIN_open(&softI2cSclPinState, soft_i2c_scl_output_config);
 
-#define I2C_SDA_INPUT		if(softI2cSdaPinHandle == NULL)	\
+#define I2C_SDA_INPUT		if(softI2cSdaPinHandle != NULL)	\
 							{	\
 						    	PIN_close(softI2cSdaPinHandle);	\
 							}	\
 						    softI2cSdaPinHandle = PIN_open(&softI2cSdaPinState, soft_i2c_sda_input_config);
 
-#define I2C_SCL_INPUT		if(softI2cSclPinHandle == NULL)	\
+#define I2C_SCL_INPUT		if(softI2cSclPinHandle != NULL)	\
 							{	\
 						    	PIN_close(softI2cSclPinHandle);	\
 							}	\
