@@ -510,6 +510,15 @@ static EasyLink_Status enableTestMode(EasyLink_CtrlOption mode)
 
 EasyLink_Status EasyLink_init(EasyLink_Params *params)
 {
+    if (configured)
+    {
+        memset(&EasyLink_params, 0, sizeof(EasyLink_params));
+        configured = 0;
+        rfParamsConfigured = 0;
+        RF_close(rfHandle);
+        Task_sleep(1000 * Clock_tickPeriod);
+    }
+
     if (params == NULL)
     {
 		EasyLink_Params_init(&EasyLink_params);
@@ -589,6 +598,14 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
         memcpy(&EasyLink_RF_prop, &RF_prop, sizeof(RF_Mode));
         memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
         memcpy(&EasyLink_cmdPropTx, &RF_cmdPropTx, sizeof(rfc_CMD_PROP_TX_t));
+    }
+    else if ((EasyLink_params.ui32ModType == EasyLink_Phy_50K_GPSK) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650))
+    {
+        memcpy(&EasyLink_cmdPropRadioSetup.divSetup, &RF_cmdPropRadioDivSetup_50K, sizeof(rfc_CMD_PROP_RADIO_DIV_SETUP_t));
+        memcpy(&EasyLink_cmdFs, &RF_cmdFs_50K, sizeof(rfc_CMD_FS_t));
+        memcpy(&EasyLink_RF_prop, &RF_prop_50K, sizeof(RF_Mode));
+        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
+        memcpy(&EasyLink_cmdPropTx, &RF_cmdPropTx_50K, sizeof(rfc_CMD_PROP_TX_t));
     }
     else if ( (EasyLink_params.ui32ModType == EasyLink_Phy_50kbps2gfsk) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650) )
     {
@@ -1546,3 +1563,9 @@ EasyLink_Status EasyLink_getIeeeAddr(uint8_t *ieeeAddr)
 
     return status;
 }
+
+EasyLink_PhyType GetEasyLinkParamsModType(void)
+{
+    return EasyLink_params.ui32ModType;
+}
+

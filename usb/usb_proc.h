@@ -87,5 +87,9 @@ typedef struct {
 
 void Usb_data_parse(uint8_t *pData, uint16_t length);
 
+void UsbSend(USB_TX_MSG_ID msgId);
+
+
+
 
 #endif	/* __ZKSIOT_USB_PROC_H__ */

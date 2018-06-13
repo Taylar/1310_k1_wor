@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-11 13:53:11
+* @Last Modified time: 2018-06-13 10:12:23
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -154,12 +154,20 @@ void RadioAppTaskFxn(void)
     // the sys task process first, should read the g_rSysConfigInfo
     Task_sleep(50 * CLOCK_UNIT_MS);
 
+    RadioUpgrade_Init();
     // init the easylink
     EasyLink_Params easyLink_params;
     EasyLink_Params_init(&easyLink_params);
     
     easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
     
+#ifdef   RADIO_1310_50K_GPSK
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION_50K;
+#else
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+#endif
+
+
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
     }
@@ -208,6 +216,7 @@ void RadioAppTaskFxn(void)
 #ifdef FACTOR_RADIO_TEST
     while(1)
     {
+        EasyLink_setRfPower(14);
         RadioFrontTxEnable();
         EasyLink_abort();
         EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
@@ -241,9 +250,7 @@ void RadioAppTaskFxn(void)
             if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= -110))
             {
                 // stop receive radio, otherwise couldn't send successful
-
-
-                if(radioMode == RADIOMODE_RECEIVEPORT)
+                if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
                 {
 #ifndef  BOARD_S1_2
                     Led_toggle(LED_B);
@@ -271,7 +278,7 @@ void RadioAppTaskFxn(void)
                     EasyLink_receiveAsync(RxDoneCallback, 0);
                 }
 
-                if(radioMode == RADIOMODE_RECEIVEPORT)
+                if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
                 {
                     radioStatus = RADIOSTATUS_RECEIVING;
                     RadioFrontRxEnable();
@@ -304,8 +311,8 @@ void RadioAppTaskFxn(void)
 
                 radioStatus = RADIOSTATUS_IDLE;
 
-                if(radioMode == RADIOMODE_RECEIVEPORT)
-                {
+            if((radioMode == RADIOMODE_RECEIVEPORT) || (radioMode == RADIOMODE_UPGRADE))
+            {
            
     #ifdef  BOARD_S1_2
                     NodeProtocalDispath(&radioRxPacket);
@@ -389,11 +396,16 @@ void RadioAppTaskFxn(void)
             }
         }
 
+        if (events & RADIO_EVT_UPGRADE_SEND)
+        {
+//            System_printf("US\r\n");
+            RadioUpgrade_FileDataSend();
+        }
 
         if (events & (RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL))
         {
             radioStatus = RADIOSTATUS_IDLE;
-            if(radioMode == RADIOMODE_RECEIVEPORT)
+            if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
             {
                 radioStatus = RADIOSTATUS_RECEIVING;
                 RadioFrontRxEnable();
@@ -484,7 +496,15 @@ void RadioDisable(void)
     Event_post(radioOperationEventHandle, RADIO_EVT_DISABLE);
 }
 
-
+//***********************************************************************************
+// brief:   send the Bin File in the Node
+//
+// parameter:   none
+//***********************************************************************************
+void RadioUpgradeSendFile(void)
+{
+    Event_post(radioOperationEventHandle, RADIO_EVT_UPGRADE_SEND);
+}
 
 
 //***********************************************************************************
@@ -696,3 +716,64 @@ uint8_t RadioStatueRead(void)
     return radioStatus;
 }
 
+extern EasyLink_PhyType GetEasyLinkParamsModType(void);
+// Wireless rate is switched to upgrade rate
+void RadioSwitchingUpgradeRate(void)
+{
+    EasyLink_Params easyLink_params;
+    if (RADIO_EASYLINK_MODULATION_50K == GetEasyLinkParamsModType()) {
+        return;
+    }
+
+    EasyLink_abort();
+    EasyLink_Params_init(&easyLink_params);
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION_50K;
+    if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
+        System_abort("EasyLink_init failed");
+    }
+
+    Task_sleep(500 * CLOCK_UNIT_MS);
+    RadioDefaultParaInit();
+
+    EasyLink_abort();
+    /* Set the filter to the generated random address */
+    if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
+    {
+        System_abort("EasyLink_enableRxAddrFilter failed");
+    }
+    EasyLink_abort();
+    if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
+    {
+        System_abort("EasyLink_receiveAsync failed");
+    }
+}
+
+// Wireless rate is switched to user rate
+void RadioSwitchingUserRate(void)
+{
+    EasyLink_Params easyLink_params;
+    if (RADIO_EASYLINK_MODULATION == GetEasyLinkParamsModType()) {
+        return;
+    }
+
+    EasyLink_abort();
+    EasyLink_Params_init(&easyLink_params);
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
+        System_abort("EasyLink_init failed");
+    }
+
+    Task_sleep(400 * CLOCK_UNIT_MS);
+
+    RadioDefaultParaInit();
+    /* Set the filter to the generated random address */
+    if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
+    {
+        System_abort("EasyLink_enableRxAddrFilter failed");
+    }
+    EasyLink_abort();
+    if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
+    {
+        System_abort("EasyLink_receiveAsync failed");
+    }
+}

@@ -49,6 +49,12 @@
 
 #define     RADIO_PRO_CMD_ACK               0X20
 
+#define     RADIO_PRO_CMD_UPGRADE           0x24
+#define     RADIO_PRO_CMD_UPGRADE_ACK       0x04
+
+#define     RADIO_PRO_CMD_RATE_SWITCH       0x25
+#define     RADIO_PRO_CMD_RATE_SWTICH_ACK   0x05
+
 
 
 

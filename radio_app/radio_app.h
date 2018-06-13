@@ -14,13 +14,15 @@
 #define         RADIO_EVT_SET_RX_MODE   Event_Id_07
 #define         RADIO_EVT_SET_TX_MODE   Event_Id_08
 #define         RADIO_EVT_DISABLE	    Event_Id_09
+#define         RADIO_EVT_UPGRADE_SEND  Event_Id_10
 #define         RADIO_EVT_ALL           0xffff
 
 
 
 #define PASSRADIO_ACK_TIMEOUT_TIME_MS (200)
 
-#define RADIO_EASYLINK_MODULATION     EasyLink_Phy_Custom
+#define RADIO_EASYLINK_MODULATION      EasyLink_Phy_Custom
+#define RADIO_EASYLINK_MODULATION_50K  EasyLink_Phy_50K_GPSK
 
 enum RadioOperationStatus {
     RADIOSTATUS_IDLE,
@@ -33,6 +35,7 @@ enum RadioOperationStatus {
 typedef enum {
 	RADIOMODE_SENDPORT,
 	RADIOMODE_RECEIVEPORT,
+	RADIOMODE_UPGRADE,
 }RadioOperationMode ;
 
 
@@ -46,11 +49,16 @@ void RadioAppTaskCreate(void) ;
 
 void RadioModeSet(RadioOperationMode modeSet);
 
+RadioOperationMode RadioModeGet(void);
+
 void RadioAppTaskFxn(void);
 
 bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs, uint8_t baseAddr);
 
 void RadioSend(void);
+
+void RadioUpgradeSendFile(void);
+
 
 void RadioSendPacket(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs);
 
@@ -79,5 +87,9 @@ void RadioSetRxMode(void);
 void RadioSetTxMode(void);
 
 void RadioDisable(void);
+
+void RadioSwitchingUpgradeRate(void);
+
+void RadioSwitchingUserRate(void);
 
 #endif		// __RADIO_APP_H__

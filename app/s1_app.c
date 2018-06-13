@@ -114,10 +114,10 @@ void S1LongKeyApp(void)
 
 void S1AppRtcProcess(void)
 {
-	if(deviceMode == DEVICES_CONFIG_MODE)
+	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
     {
         configModeTimeCnt++;
-        if(configModeTimeCnt >= 60)
+        if(configModeTimeCnt >= 180)
         {
             ClearRadioSendBuf();
             RadioModeSet(RADIOMODE_SENDPORT);

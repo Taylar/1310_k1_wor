@@ -1460,6 +1460,7 @@ bool Flash_load_config(void)
     {
         if(configFlag[i] != buf[i])
         {
+            Semaphore_post(spiSemHandle);
             return false;
         }
     }

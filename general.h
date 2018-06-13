@@ -70,10 +70,9 @@
 // #define BOARD_S1_2
 // #define BOARD_S2_2
 #define BOARD_S6_6
-// #define BOARD_CONFIG_DECEIVE
+//#define BOARD_CONFIG_DECEIVE
 
-
-// #define FACTOR_RADIO_TEST
+//#define FACTOR_RADIO_TEST
 
 // #define RADIO_1310_50K_GPSK
 
@@ -103,9 +102,8 @@
 
 #define SUPPORT_REMOTE_UPGRADE
 
-
+#define SUPPORT_USB_UPGRADE
 #endif
-
 
 //***********************************************************************************
 // S2_2 board define
@@ -127,6 +125,9 @@
 #define SUPPORT_SHT2X
 
 #define SUPPORT_RADIO
+
+#define SUPPORT_RADIO_UPGRADE
+
 #endif
 
 //***********************************************************************************
@@ -153,6 +154,7 @@
 //
 //***********************************************************************************
 #define CONFIG_DECEIVE_ID_DEFAULT       0XFFFFFFFA
+#define RADIO_UPGRADE_ADDRESS           0x99999999
 
 #define DECEIVE_ID_DEFAULT              0X88888886
 
@@ -582,6 +584,8 @@ typedef struct {
 #include "app/s2_app.h"
 #include "app/s6_app.h"
 #include "engmode/engmode.h"
+#include "usb/usb_bsl.h"
+#include "radio_app/radio_upgrade.h"
 
 //***********************************************************************************
 //

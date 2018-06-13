@@ -133,6 +133,7 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             InterfaceSend(pData, len);
 
 #ifdef  BOARD_CONFIG_DECEIVE
+            RadioUpgrade_stop();
             ConcenterRadioSendParaSet(GetRadioSrcAddr(), GetRadioDstAddr());
 #endif
             break;
@@ -196,6 +197,9 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 
 		case EV_Usb_Upgrade:
+#ifdef SUPPORT_USB_UPGRADE
+            Usb_BSL_data_parse(pData, length);
+#endif
 			break;
 
         case EV_Reset_Data:

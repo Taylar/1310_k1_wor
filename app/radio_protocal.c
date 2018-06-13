@@ -257,6 +257,16 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			
 			break;
 
+#ifdef SUPPORT_RADIO_UPGRADE
+			case RADIO_PRO_CMD_UPGRADE :
+			    RadioUpgrade_CmdDataParse(bufTemp->load, lenTemp - 10);
+			    Led_ctrl(LED_G, 1, 30 * CLOCK_UNIT_MS, 1);
+			break;
+
+			case RADIO_PRO_CMD_RATE_SWITCH :
+			    RadioUpgrade_CmdRateSwitch();
+			break;
+#endif
 
 			default:
 			goto NodeDispath;
@@ -268,12 +278,15 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	}
 
 NodeDispath:
-	if((Flash_get_unupload_items() > 0) && (flag))
-	{
-		NodeUploadProcess();
-		RadioSend();
-	}
-	NodeBroadcasting();
+    if (RadioModeGet() != RADIOMODE_UPGRADE)
+    {
+	    if((Flash_get_unupload_items() > 0) && (flag))
+	    {
+		    NodeUploadProcess();
+		    RadioSend();
+	    }
+	    NodeBroadcasting();
+    }
 }
 
 
@@ -483,7 +496,15 @@ ConcenterConfigRespondEnd:
 #endif
 			break;
 
+#ifdef BOARD_CONFIG_DECEIVE
+			case RADIO_PRO_CMD_UPGRADE_ACK :
+			    RadioUpgrade_CmdACKDataParse(bufTemp->load, lenTemp - 10);
+			break;
 
+			case RADIO_PRO_CMD_RATE_SWTICH_ACK :
+			    RadioUpgrade_CmdACKRateSwitch(bufTemp->load, lenTemp - 10);
+			break;
+#endif
 			case RADIO_PRO_CMD_RESPOND_PARA_ACK:
 
 			break;
@@ -498,7 +519,10 @@ ConcenterConfigRespondEnd:
 	}
 
 	// receive several cmd in one radio packet, must return in one radio packet;
-	RadioSend();
+	if (RadioModeGet() != RADIOMODE_UPGRADE)
+	{
+	    RadioSend();
+	}
 }
 
 

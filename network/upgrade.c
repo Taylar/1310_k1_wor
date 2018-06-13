@@ -32,8 +32,8 @@ typedef struct
 
 upgrade_info_t upgradeInfo;
 
-// #pragma DATA_SECTION ( PROJECT_INFO_NAME , "PROJ_NAME_SEC");
-// #pragma DATA_SECTION ( PROJECT_INFO_VERSION , "PROJ_VER_SEC");
+#pragma DATA_SECTION ( PROJECT_INFO_NAME , "PROJ_NAME_SEC");
+#pragma DATA_SECTION ( PROJECT_INFO_VERSION , "PROJ_VER_SEC");
 
 const uint8_t PROJECT_INFO_NAME[]  = PROJECT_NAME;
 const uint16_t PROJECT_INFO_VERSION   = FW_VERSION;
