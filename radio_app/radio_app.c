@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-13 10:12:23
+* @Last Modified time: 2018-06-14 10:23:48
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -140,6 +140,16 @@ void RadioModeSet(RadioOperationMode modeSet)
     {
         RadioSetRxMode();
     }
+}
+
+//***********************************************************************************
+// brief:   get the radio mode
+// 
+// parameter:   
+//***********************************************************************************
+RadioOperationMode RadioModeGet(void)
+{
+    return (RadioOperationMode)radioMode;
 }
 
 //***********************************************************************************

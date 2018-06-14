@@ -52,6 +52,7 @@ const rfPowerConfig_t rfPowerTable[] =
 
 const uint8_t rfPowerTableSize = (sizeof(rfPowerTable) / sizeof(rfPowerConfig_t));
 
+/*
 // TI-RTOS RF Mode Object
 RF_Mode RF_prop_fsk =
 {
@@ -68,6 +69,7 @@ RF_Mode RF_prop_lrm =
     .mcePatchFxn = 0,
     .rfePatchFxn = &rf_patch_rfe_lrm,
 };
+*/
 
 RF_Mode RF_prop_ook =
 {
@@ -85,6 +87,7 @@ RF_Mode RF_prop_hsm =
     .rfePatchFxn =  &rf_patch_rfe_hsp_4mbps,
 };
 
+/*
 RF_Mode RF_prop_sl_lr =
 {
     .rfMode = RF_MODE_PROPRIETARY_SUB_1,
@@ -92,6 +95,7 @@ RF_Mode RF_prop_sl_lr =
     .mcePatchFxn =  &rf_patch_mce_sl_longrange,
     .rfePatchFxn =  &rf_patch_rfe_sl_longrange,
 };
+*/
 
 // Overrides for CMD_PROP_RADIO_DIV_SETUP FSK
 uint32_t pOverrides_fsk[] =
@@ -367,6 +371,7 @@ uint32_t pOverrides_sl_lr[] =
     (uint32_t)0xFFFFFFFF,
 };
 
+/*
 // CMD_PROP_RADIO_DIV_SETUP FSK
 rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_fsk =
 {
@@ -402,7 +407,9 @@ rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_fsk =
     .intFreq = 0x8000,
     .loDivider = 0x05,
 };
+*/
 
+/*
 // CMD_PROP_RADIO_DIV_SETUP LRM
 rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_lrm =
 {
@@ -438,6 +445,7 @@ rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_lrm =
     .intFreq = 0x8000,
     .loDivider = 0x05,
 };
+*/
 
 // CMD_PROP_RADIO_DIV_SETUP OOK
 rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_ook =
@@ -497,6 +505,7 @@ rfc_CMD_RADIO_SETUP_t RF_cmdRadioSetup_hsm =
     .pRegOverride = pOverrides_hsm,
 };
 
+/*
 // CMD_PROP_RADIO_DIV_SETUP SIMPLELINK LONGRANGE
 rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_sl_lr =
 {
@@ -532,6 +541,7 @@ rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_sl_lr =
     .intFreq = 0x8000,
     .loDivider = 0x05,
 };
+*/
 
 // CMD_TX_HS
 rfc_CMD_HS_TX_t RF_cmdTxHS =
@@ -589,6 +599,7 @@ rfc_CMD_HS_RX_t RF_cmdRxHS =
     .pOutput = 0,
 };
 
+/*
 // CMD_FS
 rfc_CMD_FS_t RF_cmdFs_preDef =
 {
@@ -611,6 +622,7 @@ rfc_CMD_FS_t RF_cmdFs_preDef =
     .__dummy2 = 0x00,
     .__dummy3 = 0x0000,
 };
+*/
 
 // CMD_PROP_TX
 rfc_CMD_PROP_TX_t RF_cmdPropTx_preDef =
@@ -683,24 +695,24 @@ rfc_CMD_PROP_RX_ADV_t RF_cmdPropRxAdv_preDef =
 };
 
 /* RF command pointers for easylink */
-RF_Mode *RF_pProp_fsk = &RF_prop_fsk;
-RF_Mode *RF_pProp_lrm = &RF_prop_lrm;
+//RF_Mode *RF_pProp_fsk = &RF_prop_fsk;
+//RF_Mode *RF_pProp_lrm = &RF_prop_lrm;
 RF_Mode *RF_pProp_ook = &RF_prop_ook;
 RF_Mode *RF_pProp_hsm = &RF_prop_hsm;
-RF_Mode *RF_pProp_sl_lr = &RF_prop_sl_lr;
+//RF_Mode *RF_pProp_sl_lr = &RF_prop_sl_lr;
 /* Stub out nsupported modes */
-RF_Mode *RF_pProp_2_4G_fsk = 0;
+//RF_Mode *RF_pProp_2_4G_fsk = 0;
 
-rfc_CMD_PROP_RADIO_DIV_SETUP_t *RF_pCmdPropRadioDivSetup_fsk = &RF_cmdPropRadioDivSetup_fsk;
-rfc_CMD_PROP_RADIO_DIV_SETUP_t *RF_pCmdPropRadioDivSetup_lrm = &RF_cmdPropRadioDivSetup_lrm;
+//rfc_CMD_PROP_RADIO_DIV_SETUP_t *RF_pCmdPropRadioDivSetup_fsk = &RF_cmdPropRadioDivSetup_fsk;
+//rfc_CMD_PROP_RADIO_DIV_SETUP_t *RF_pCmdPropRadioDivSetup_lrm = &RF_cmdPropRadioDivSetup_lrm;
 rfc_CMD_PROP_RADIO_DIV_SETUP_t *RF_pCmdPropRadioDivSetup_ook = &RF_cmdPropRadioDivSetup_ook;
 rfc_CMD_RADIO_SETUP_t *RF_pCmdRadioSetup_hsm = &RF_cmdRadioSetup_hsm;
-rfc_CMD_PROP_RADIO_DIV_SETUP_t *RF_pCmdPropRadioDivSetup_sl_lr = &RF_cmdPropRadioDivSetup_sl_lr;
+//rfc_CMD_PROP_RADIO_DIV_SETUP_t *RF_pCmdPropRadioDivSetup_sl_lr = &RF_cmdPropRadioDivSetup_sl_lr;
 /* Stub out nsupported modes */
-rfc_CMD_PROP_RADIO_SETUP_t *RF_pCmdPropRadioSetup_2_4G_fsk = 0;
+//rfc_CMD_PROP_RADIO_SETUP_t *RF_pCmdPropRadioSetup_2_4G_fsk = 0;
 
 rfc_CMD_HS_TX_t *RF_pCmdTxHS = &RF_cmdTxHS;
 rfc_CMD_HS_RX_t *RF_pCmdRxHS = &RF_cmdRxHS;
-rfc_CMD_FS_t *RF_pCmdFs_preDef = &RF_cmdFs_preDef;
+//rfc_CMD_FS_t *RF_pCmdFs_preDef = &RF_cmdFs_preDef;
 rfc_CMD_PROP_TX_t *RF_pCmdPropTx_preDef = &RF_cmdPropTx_preDef;
 rfc_CMD_PROP_RX_ADV_t *RF_pCmdPropRxAdv_preDef = &RF_cmdPropRxAdv_preDef;
