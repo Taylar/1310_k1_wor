@@ -140,6 +140,13 @@ void RadioModeSet(RadioOperationMode modeSet)
     {
         RadioSetRxMode();
     }
+
+    if(modeSet == RADIOMODE_UPGRADE)
+    {
+        radioMode   = RADIOMODE_UPGRADE;
+//        EasyLink_abort();
+//        EasyLink_receiveAsync(RxDoneCallback, 0);
+    }
 }
 
 //***********************************************************************************
@@ -300,6 +307,11 @@ void RadioAppTaskFxn(void)
 #ifndef  BOARD_S1_2
                     Led_toggle(LED_B);
 #endif
+                }
+
+                if (radioMode == RADIOMODE_UPGRADE)
+                {
+                    RadioSwitchingUpgradeRate();
                 }
             }
             else

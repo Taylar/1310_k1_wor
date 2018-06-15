@@ -12,7 +12,7 @@
 // #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
 
 /***** Defines *****/
-#define         INTERFACE_STACK_SIZE        512
+#define         INTERFACE_STACK_SIZE        840
 
 #define         INTERFACE_REC_TIMEOUT_MS    3
 

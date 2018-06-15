@@ -427,6 +427,8 @@ void Flash_init(void)
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
     if (sysInfo.swVersion != FW_VERSION) {
         Flash_reset_data();
+        g_rSysConfigInfo.swVersion = FW_VERSION;
+        Flash_store_config();
     }
 
     Flash_load_sensor_ptr();

@@ -9,6 +9,7 @@
 //***********************************************************************************
 #include "../general.h"
 
+
 #ifdef SUPPORT_SENSOR
 
 typedef struct {
@@ -111,7 +112,7 @@ const Sensor_FxnTable  LIS2D12_FxnTable = {
 
 #endif
 
-//注意，下表的定义必须与SENSOR_TYPE的定义顺序一致
+//娉ㄦ剰锛屼笅琛ㄧ殑瀹氫箟蹇呴』涓嶴ENSOR_TYPE鐨勫畾涔夐『搴忎竴鑷�
 static const Sensor_FxnTable *Sensor_FxnTablePtr[]={
     NULL,
 #ifdef SUPPORT_SHT2X
@@ -129,17 +130,17 @@ static const Sensor_FxnTable *Sensor_FxnTablePtr[]={
 };
 
 
-
 #ifdef SUPPORT_NETGATE_DISP_NODE
 #if 1
 #define MEMSENSOR_BUFF_LENGTH USB_BUFF_LENGTH
 sensordata_mem *pMemSensor = (sensordata_mem*)bUsbBuff;// use usb buffer save sensor data in memory  on MSP430F5529
 #else
-#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//支持100台节点数据存储
+#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//鏀寔100鍙拌妭鐐规暟鎹瓨鍌�
 sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
-#endif
+#endif // none
 #define MEMSENSOR_NUM  (MEMSENSOR_BUFF_LENGTH/sizeof(sensordata_mem))
 
+#endif
 //***********************************************************************************
 //
 // Network protocol group package.
@@ -159,7 +160,7 @@ static void Sensor_store_package(void)
     calendar = Rtc_get_calendar();
     curMin = TransBcdToHex(calendar.Minutes);
     
-    if(g_rSysConfigInfo.collectPeriod % 60 == 0){//只对采集周期为整分钟的情况进行计数器调整。
+    if(g_rSysConfigInfo.collectPeriod % 60 == 0){//鍙閲囬泦鍛ㄦ湡涓烘暣鍒嗛挓鐨勬儏鍐佃繘琛岃鏁板櫒璋冩暣銆�
 
         if(abs(curMin - lastMin) <=  (g_rSysConfigInfo.collectPeriod / 60) ){
             
@@ -173,10 +174,10 @@ static void Sensor_store_package(void)
     }
     
     length = 0;
-    //消息头
-    //消息长度
+    //娑堟伅澶�
+    //娑堟伅闀垮害
     buff[length++] = 0;
-    //无线信号强度RSSI
+    //鏃犵嚎淇″彿寮哄害RSSI
     buff[length++] = 0;
     //customid
     //buff[length++] = g_rSysConfigInfo.customId[0];
@@ -184,11 +185,11 @@ static void Sensor_store_package(void)
     //Sensor ID
     for (i = 0; i < 4; i++)
         buff[length++] = g_rSysConfigInfo.DeviceId[i];
-    //消息流水号
+    //娑堟伅娴佹按鍙�
     buff[length++] = HIBYTE(rSensorObject.serialNum);
     buff[length++] = LOBYTE(rSensorObject.serialNum);
     rSensorObject.serialNum++;
-    //采集时间    
+    //閲囬泦鏃堕棿
     buff[length++] = calendar.Year - CALENDAR_BASE_YEAR;
     buff[length++] = calendar.Month;
     buff[length++] = calendar.DayOfMonth;
@@ -200,13 +201,13 @@ static void Sensor_store_package(void)
     else
         buff[length++] = calendar.Seconds;
 
-    //Sensor电压
+    //Sensor鐢靛帇
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
-#endif
+#endif // SUPPORT_BATTERY
     buff[length++] = HIBYTE(value);
     buff[length++] = LOBYTE(value);
-    //参数项列表数据
+    //鍙傛暟椤瑰垪琛ㄦ暟鎹�
 
     for (i = 0; i < MODULE_SENSOR_MAX; i++) {
         if (g_rSysConfigInfo.sensorModule[i] > SEN_TYPE_NONE && 
@@ -239,7 +240,7 @@ static void Sensor_store_package(void)
                 buff[length++] = HIBYTE(rSensorData[i].temp);
                 buff[length++] = LOBYTE(rSensorData[i].temp);
             }
-
+#ifdef      BOARD_S6_6
             if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function & (SENSOR_TEMP | SENSOR_DEEP_TEMP)) {
                 if (Menu_is_record() ||  !(g_rSysConfigInfo.module & MODULE_BTP)) {
 
@@ -252,13 +253,13 @@ static void Sensor_store_package(void)
                        (g_rSysConfigInfo.alarmTemp[i].low != ALARM_TEMP_LOW && temp <= g_rSysConfigInfo.alarmTemp[i].low)) {
 
 #ifdef SUPPORT_ALARM_RECORD_QURERY
-                        //设备ID
+                        //璁惧ID
                         HIBYTE((HIWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[0];
                         LOBYTE((HIWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[1];
                         HIBYTE((LOWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[2];
                         LOBYTE((LOWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[3];
 
-                        //采集时间
+                        //閲囬泦鏃堕棿
                         calendar = Rtc_get_calendar();
                         g_AlarmSensor.time[0] = calendar.Year - CALENDAR_BASE_YEAR;
                         g_AlarmSensor.time[1] = calendar.Month;
@@ -267,24 +268,24 @@ static void Sensor_store_package(void)
                         g_AlarmSensor.time[4] = calendar.Minutes;
                         g_AlarmSensor.time[5] = calendar.Seconds;
 
-                        //通道号
+                        //閫氶亾鍙�
                         g_AlarmSensor.index   = i;
 
-                        //类型
+                        //绫诲瀷
                         g_AlarmSensor.type    = SENSOR_DATA_TEMP;                        
 
-                        //数据
+                        //鏁版嵁
                         g_AlarmSensor.value.tempdeep = temp;
 
                         Flash_store_alarm_record((uint8_t*)(&g_AlarmSensor),sizeof(Alarmdata_t));
 
-#endif
+#endif // SUPPORT_ALARM_RECORD_QURERY
                         Sys_event_post(SYS_EVT_ALARM);
                         g_bAlarmSensorFlag |= (1 << i);
                     }
                     else                   
                     {   
-                         //取消报警
+                         //鍙栨秷鎶ヨ
                          if(g_bAlarmSensorFlag & (1 << i)){
                             g_bAlarmSensorFlag ^= (1 << i);
                          }
@@ -292,6 +293,7 @@ static void Sensor_store_package(void)
                     
                 }
             }
+#endif  // BOARD_S6_6
         }
     }
 
@@ -328,7 +330,7 @@ void Sensor_init(void)
 
 #ifdef SUPPORT_NETGATE_DISP_NODE
     memset(pMemSensor, 0, MEMSENSOR_BUFF_LENGTH);//init sensor data in  memory
-#endif
+#endif // SUPPORT_NETGATE_DISP_NODE
 
 }
 
@@ -438,7 +440,7 @@ void Sensor_collect_time_isr(void)
 {
     rSensorObject.collectTime++;
     if (rSensorObject.collectTime >= g_rSysConfigInfo.collectPeriod) {
-        //在时间同步时可能将采集时间点改变，重新调整到30S.
+        //鍦ㄦ椂闂村悓姝ユ椂鍙兘灏嗛噰闆嗘椂闂寸偣鏀瑰彉锛岄噸鏂拌皟鏁村埌30S.
         rSensorObject.collectTime = (rSensorObject.collectTime - g_rSysConfigInfo.collectPeriod)%g_rSysConfigInfo.collectPeriod;
         Sys_event_post(SYS_EVT_SENSOR);
     }
@@ -446,7 +448,7 @@ void Sensor_collect_time_isr(void)
 
 void Sensor_set_collect_time(uint32_t  collectTime)
 {
-    rSensorObject.collectTime = (rSensorObject.collectTime/60)*60 + collectTime - 1;//考虑采集周期大于1分钟，保留采集计数器已流失时间的分钟数。
+    rSensorObject.collectTime = (rSensorObject.collectTime/60)*60 + collectTime - 1;//鑰冭檻閲囬泦鍛ㄦ湡澶т簬1鍒嗛挓锛屼繚鐣欓噰闆嗚鏁板櫒宸叉祦澶辨椂闂寸殑鍒嗛挓鏁般��
 }
 
 uint32_t Sensor_get_function(uint8_t chNum)
@@ -518,20 +520,20 @@ void Sensor_store_null_package(uint8_t *buff)
     //sensor data: length(1B) rssi(1B) customid(2B) devicedi(4B)...
     
     length = 0;
-    //消息头
-    //消息长度
+    //娑堟伅澶�
+    //娑堟伅闀垮害
     buff[length++] = 0;
-    //无线信号强度RSSI
+    //鏃犵嚎淇″彿寮哄害RSSI
     buff[length++] = 0;
 
     //Sensor ID
     for (i = 0; i < 4; i++)
         buff[length++] = g_rSysConfigInfo.DeviceId[i];
-    //消息流水号
+    //娑堟伅娴佹按鍙�
     buff[length++] = 0;//HIBYTE(rSensorObject.serialNum);
     buff[length++] = 0;//LOBYTE(rSensorObject.serialNum);
     //rSensorObject.serialNum++;
-    //采集时间
+    //閲囬泦鏃堕棿
     calendar = Rtc_get_calendar();
     buff[length++] = calendar.Year - CALENDAR_BASE_YEAR;
     buff[length++] = calendar.Month;
@@ -539,13 +541,13 @@ void Sensor_store_null_package(uint8_t *buff)
     buff[length++] = calendar.Hours;
     buff[length++] = calendar.Minutes;
     buff[length++] = calendar.Seconds;
-    //Sensor电压
+    //Sensor鐢靛帇
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
-#endif
+#endif  // SUPPORT_BATTERY
     buff[length++] = HIBYTE(value);
     buff[length++] = LOBYTE(value);
-    //参数项列表数据
+    //鍙傛暟椤瑰垪琛ㄦ暟鎹�
     buff[0] = length - 1;
 }
 
@@ -566,7 +568,9 @@ static bool IsBindNode(uint32_t DeviceId)
     }
     return false;
 }
-#endif
+#endif // SUPPORT_NETGATE_BIND_NODE
+
+#ifdef BOARD_S6_6
 //***********************************************************************************
 //
 // unpackage  sensor data and save  sensor mac , index, type and value to mem
@@ -579,7 +583,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 	sensordata_mem cursensor;
 #ifdef SUPPORT_NETGATE_BIND_NODE
     bool isbind = false;
-#endif
+#endif  // SUPPORT_NETGATE_BIND_NODE
     
 	Index = 2;//DeviceId  start
 
@@ -591,10 +595,10 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 #ifdef SUPPORT_NETGATE_BIND_NODE
     isbind = IsBindNode(cursensor.DeviceId);
 
-    if(((g_rSysConfigInfo.status & STATUS_DISP_BIND_ONLY)) && !isbind){  //如果支持绑定节点，默认显示所有节点信息,除非设置STATUS_DISP_BIND_ONLY
+    if(((g_rSysConfigInfo.status & STATUS_DISP_BIND_ONLY)) && !isbind){  //濡傛灉鏀寔缁戝畾鑺傜偣锛岄粯璁ゆ樉绀烘墍鏈夎妭鐐逛俊鎭�,闄ら潪璁剧疆STATUS_DISP_BIND_ONLY
         return;
     }
-#endif
+#endif  //SUPPORT_NETGATE_BIND_NODE
 
     
     
@@ -637,7 +641,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
         if(isbind){
             if (Sensor_get_function_by_type(cursensor.type) & SENSOR_TEMP ) {
 
-                //判断接收的数据是否已绑定设备，是则需要判断是否超温
+                //鍒ゆ柇鎺ユ敹鐨勬暟鎹槸鍚﹀凡缁戝畾璁惧锛屾槸鍒欓渶瑕佸垽鏂槸鍚﹁秴娓�
                 for( i = 0; i < NETGATE_BIND_NODE_MAX; ++i){
                     if ( (cursensor.DeviceId == g_rSysConfigInfo.bindnode[i].Deviceid) && 
                         ((g_rSysConfigInfo.bindnode[i].ChNo == 0xff) || cursensor.index  == g_rSysConfigInfo.bindnode[i].ChNo) ){
@@ -651,13 +655,13 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
                             //all  data  saved to tempdeep
                             g_AlarmSensor.value.tempdeep = cursensor.value.temp;                                       
 
-                            //设定报警        
+                            //璁惧畾鎶ヨ
                             Sys_event_post(SYS_EVT_ALARM);
                             g_bAlarmSensorFlag |= 0x100;                        
                         }
                         else                   
                         {   
-                             //取消报警
+                             //鍙栨秷鎶ヨ
                              if(g_bAlarmSensorFlag & (0x100)){
                                 g_bAlarmSensorFlag ^= (0x100);
                              }                         
@@ -715,5 +719,6 @@ restart:
         }    
     }
 }
-#endif
+#endif // BOARD_S6_6
+
 

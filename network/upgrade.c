@@ -2,9 +2,17 @@
 * @Author: zxt
 * @Date:   2018-04-08 16:25:04
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-11 17:16:01
+* @Last Modified time: 2018-06-14 14:46:28
 */
 #include "../general.h"
+
+
+#pragma DATA_SECTION ( PROJECT_INFO_NAME , "PROJ_NAME_SEC");
+#pragma DATA_SECTION ( PROJECT_INFO_VERSION , "PROJ_VER_SEC");
+
+const uint8_t PROJECT_INFO_NAME[]  = PROJECT_NAME;
+const uint16_t PROJECT_INFO_VERSION   = FW_VERSION;
+
 #ifdef SUPPORT_NETWORK
 
 #define				CODE_DATA_LENGTH		64
@@ -32,11 +40,6 @@ typedef struct
 
 upgrade_info_t upgradeInfo;
 
-#pragma DATA_SECTION ( PROJECT_INFO_NAME , "PROJ_NAME_SEC");
-#pragma DATA_SECTION ( PROJECT_INFO_VERSION , "PROJ_VER_SEC");
-
-const uint8_t PROJECT_INFO_NAME[]  = PROJECT_NAME;
-const uint16_t PROJECT_INFO_VERSION   = FW_VERSION;
 
 const UpgradeBL_t UpgradeBootLoader =  (UpgradeBL_t)BOOT_LOADER_ADDR;
 

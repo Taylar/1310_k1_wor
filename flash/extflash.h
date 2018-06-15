@@ -253,8 +253,17 @@
 //External flash system config info area size
 #define FLASH_SYS_CONFIG_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
 
+#define FLASH_LOG_POS               (FLASH_SYS_CONFIG_INFO_POS + FLASH_SYS_CONFIG_AREA_SIZE)
+#define FLASH_LOG_SIZE              (32)
+#ifdef SUPPORT_FLASH_LOG
+#define FLASH_LOG_AREA_SIZE         (FLASH_SECTOR_SIZE*2)           //8KB
+#else
+#define FLASH_LOG_AREA_SIZE         (0)
+#endif
+#define FLASH_LOG_NUMBER            (FLASH_LOG_AREA_SIZE/FLASH_LOG_SIZE)
 
-#define FLASH_UPGRADE_INFO_POS           (FLASH_SYS_CONFIG_INFO_POS + FLASH_SYS_CONFIG_AREA_SIZE)// 
+
+#define FLASH_UPGRADE_INFO_POS           (FLASH_LOG_POS + FLASH_LOG_AREA_SIZE)// 
 
 #define FLASH_UPGRADE_INFO_LENGTH        (sizeof(upgrade_flag_t))
 
