@@ -18,6 +18,7 @@ typedef enum {
 	PTI_BIND_NODE,
 	PTI_SENSOR_CODEC,
 	PTI_SEND_ALARM,
+	PTI_DEVICE_ID = 0x10,
 }PARA_TYPE_ID;
 
 bool SetDevicePara(uint8_t *rxData, uint16_t length)
@@ -431,6 +432,8 @@ static Event_Handle nwkEvtHandle;
 
 NwkObject_t rNwkObject;
 NwkMsgPacket_t rNwkMsgPacket;
+#define COM_ACK_BUF_LEN  5
+uint8_t ComAckBuff[COM_ACK_BUF_LEN];
 
 typedef enum {
 #ifdef SUPPORT_GSM
@@ -552,7 +555,7 @@ void Nwk_upgrade_process(void)
 #endif
             // __disable_interrupt();
             Task_sleep(200*CLOCK_UNIT_MS);
-            // UpgradeBootLoader();
+            SysCtrlSystemReset();
             break;
 
             case UPGRADE_RESULT_NEXT_PACKAGE:
@@ -587,7 +590,15 @@ UpgradeTimeout:
 }
 #endif
 
-
+static void Send_ack_to_server(uint8_t* rxData)
+{
+    ComAckBuff[0] = rxData[10];
+    ComAckBuff[1] = rxData[11];
+    ComAckBuff[2] = rxData[0];
+    ComAckBuff[3] = rxData[1];
+    ComAckBuff[4] = TCA_OK;
+    Nwk_event_post(NWK_EVT_ACK);
+}
 
 //***********************************************************************************
 //
@@ -707,8 +718,8 @@ ONEDATA:
         packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
 
-        memcpy(&packet.buff[packet.length],pPacket->buff, 5);
-        packet.length += 5;
+        memcpy(&packet.buff[packet.length],ComAckBuff, COM_ACK_BUF_LEN);
+        packet.length += COM_ACK_BUF_LEN;
     }
 #ifdef USE_ENGINEERING_MODE_FOR_LBS
     else if(msgId == NMI_TX_CELL_INFO) {
@@ -788,22 +799,44 @@ ONEDATA:
         packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
         // current version
-        packet.buff[packet.length++] = (uint8_t)(FW_VERSION>>8);
-        packet.buff[packet.length++] = (uint8_t)(FW_VERSION);
+        if(pPacket->buff[0] == 0x00)
+        {
+            packet.buff[packet.length++] = (uint8_t)(UpgradeGetVersion()>>8);
+            packet.buff[packet.length++] = (uint8_t)(UpgradeGetVersion());
+        }
+        else
+        {
+            packet.buff[packet.length++] = (uint8_t)(FW_VERSION>>8);
+            packet.buff[packet.length++] = (uint8_t)(FW_VERSION);
+        }
 
         // the upgrade result
         packet.buff[packet.length++] = pPacket->buff[0];
     }
 #endif
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
-    else if(NMI_TX_SYS_STATE){
+    else if(msgId == NMI_TX_SYS_STATE){
         //消息流水号
         packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSysState);
         packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSysState);
         rNwkObject.serialNumSysState++;
+        memcpy(packet.buff + packet.length,pPacket->buff+1,pPacket->buff[0] - 1);
+        packet.length = packet.length + pPacket->buff[0] - 1;
 
-        for (i = 0; i < FLASH_DEVICED_STATE_DATA_SIZE; i++) {
-            packet.buff[packet.length++] = pPacket->buff[i];
+        if( pPacket->buff[1]== TYPE_POWER_ON){
+            extern const uint8_t PROJECT_INFO_NAME[];
+            extern const uint32_t PROJECT_INFO_VERSION;
+
+            packet.buff[packet.length++] = strlen(PROJECT_NAME) + 5;
+
+            memcpy((char *) packet.buff + packet.length,  PROJECT_NAME, strlen(PROJECT_NAME));
+            packet.length = packet.length + strlen(PROJECT_NAME);   
+
+            packet.buff[packet.length++] = ':';
+            packet.buff[packet.length++] = '0'+ ((FW_VERSION & 0xf000)>>12);
+            packet.buff[packet.length++] = '0'+ ((FW_VERSION & 0x0f00)>>8);
+            packet.buff[packet.length++] = '0'+ ((FW_VERSION & 0x00f0)>>4);
+            packet.buff[packet.length++] = '0'+ ((FW_VERSION & 0x000f)>>0);
         }
     }
 #endif
@@ -897,16 +930,9 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 
             case NMI_RX_SETTING:
                 congfig = SetDevicePara(rxData + NWK_MSG_BODY_START ,package_length - NWK_MSG_BODY_START);
-                if(congfig){
-                    
+                if(congfig){                    
                     //send ack to server
-                    rNwkMsgPacket.buff[0] = rxData[10];
-                    rNwkMsgPacket.buff[1] = rxData[11];
-                    rNwkMsgPacket.buff[2] = rxData[0];
-                    rNwkMsgPacket.buff[3] = rxData[1];
-                    rNwkMsgPacket.buff[4] = TCA_OK;
-                    Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
-                    Nwk_event_post(NWK_EVT_ACK);
+                    Send_ack_to_server(rxData);
                 }
                     
                 break;
@@ -943,16 +969,12 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     Sys_event_post(SYS_EVT_ALARM_SAVE);
 #endif
                     g_bAlarmSensorFlag = 0x100;
+
                     Sys_event_post(SYS_EVT_ALARM);
 
+
                     //send ack to server
-                    rNwkMsgPacket.buff[0] = rxData[10];
-                    rNwkMsgPacket.buff[1] = rxData[11];
-                    rNwkMsgPacket.buff[2] = rxData[0];
-                    rNwkMsgPacket.buff[3] = rxData[1];
-                    rNwkMsgPacket.buff[4] = TCA_OK;
-                    Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
-                    Nwk_event_post(NWK_EVT_ACK);
+                    Send_ack_to_server(rxData);
                 }                
                 break;
 #endif
@@ -982,18 +1004,10 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                 HIBYTE(minutes_flight) = rxData[index++];
                 LOBYTE(minutes_flight) = rxData[index++];
 
-                //send ack to server
-                rNwkMsgPacket.buff[0] = rxData[10];
-                rNwkMsgPacket.buff[1] = rxData[11];
-                rNwkMsgPacket.buff[2] = rxData[0];
-                rNwkMsgPacket.buff[3] = rxData[1];
-                rNwkMsgPacket.buff[4] = TCA_OK;
-                // Record <0-1> MSG serial NUM, <2-3>MSG-ID <4> ACK
-                Flight_mode_ack_data_store( &rNwkMsgPacket);
-
                 Flight_mode_setting( minutes_flight);
 
-                Nwk_event_post(NWK_EVT_ACK);
+                //send ack to server
+                Send_ack_to_server(rxData);
                 break;
 #endif
 
@@ -1015,11 +1029,8 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                 break;
 
             case NMI_RX_UPGRADE_REQ:
-                rNwkMsgPacket.buff[0] = rxData[10];
-                rNwkMsgPacket.buff[1] = rxData[11];
-                rNwkMsgPacket.buff[2] = rxData[0];
-                rNwkMsgPacket.buff[3] = rxData[1];
-                rNwkMsgPacket.buff[4] = TCA_OK;
+                //send ack to server
+                Send_ack_to_server(rxData);
                 rNwkObject.upgradeState = UPGRADE_STATE_CHANGE_SEVER;
                 Nwk_event_post(NWK_EVT_UPGRADE);
                 break;
@@ -1117,8 +1128,6 @@ static void Nwk_taskFxn(void)
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
 	            Flash_store_devices_state(TYPE_FLIGHT_MODE_START);
 #endif
-
-			    Flight_mode_ack_data_readback(&rNwkMsgPacket);
                 Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
 				//send ack data.
 				if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
@@ -1181,6 +1190,17 @@ static void Nwk_taskFxn(void)
 #ifdef  SUPPORT_REMOTE_UPGRADE
         if(eventId & NWK_EVT_UPGRADE)
         {
+            //wakeup.
+            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
+                continue;
+            }
+            if(eventId & NWK_EVT_ACK)
+            {
+                Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
+                if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+                    continue;
+                }
+            }
             Nwk_upgrade_process();
         }
 
@@ -1211,7 +1231,7 @@ static void Nwk_taskFxn(void)
                 }
             } else if (eventId & NWK_EVT_ACK) {
                 //send ack data.
-                //Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
+                Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
                 if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
                     continue;
                 }

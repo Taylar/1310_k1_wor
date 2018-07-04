@@ -356,7 +356,7 @@ static void Flash_reset_data(void)
 #endif
 
     sysInfo.swVersion = FW_VERSION;
-    sysInfo.printRecordAddr.start = 0xffffffff;//没有开始记录
+    sysInfo.printRecordAddr.start = 0xffffffff;//没有开始记�?
     sysInfo.printRecordAddr.end =   0xffffffff;
     Flash_external_write(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
 
@@ -425,12 +425,15 @@ void Flash_init(void)
     sysInfo.printRecordAddr.start = 0xffffffff;
     sysInfo.printRecordAddr.end = 0xffffffff;
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
+    Semaphore_post(spiSemHandle);
+
     if (sysInfo.swVersion != FW_VERSION) {
         Flash_reset_data();
         g_rSysConfigInfo.swVersion = FW_VERSION;
         Flash_store_config();
     }
 
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     Flash_load_sensor_ptr();
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
     Flash_load_deviced_state_ptr();
@@ -943,7 +946,7 @@ void Flash_store_devices_state(uint8_t StateType){
 //***********************************************************************************
 ErrorStatus Flash_load_deviced_state_data(uint8_t *pData, uint16_t length)
 {
-    if (length > FLASH_G7_ALARM_DATA_SIZE)
+    if (length > FLASH_DEVICED_STATE_DATA_SIZE)
         return ES_ERROR;
 
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
@@ -1563,7 +1566,12 @@ void Sys_config_reset(void)
     
     g_rSysConfigInfo.gnssPeriod      = 10;  // 10sec
     
-    
+    g_rSysConfigInfo.rtc.Seconds = 1;
+    g_rSysConfigInfo.rtc.Minutes = 1;
+    g_rSysConfigInfo.rtc.Hours   = 1;
+    g_rSysConfigInfo.rtc.DayOfMonth = 28;
+    g_rSysConfigInfo.rtc.Month  = 6;
+    g_rSysConfigInfo.rtc.Year   = 2018;
 }
 
 

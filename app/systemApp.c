@@ -53,6 +53,12 @@ void SystemLongKeyEventPostIsr(void)
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_LONG);
 }
 
+void SystemDoubleKeyEventPostIsr(void)
+{
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_DOUBLE);
+}
+
+
 void SystemKey1EventPostIsr(void)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY1);
@@ -72,6 +78,10 @@ void SystemUsbIntEventPostIsr(void)
 void WdtResetCb(uintptr_t handle)
 {
 
+#ifdef SUPPORT_BOARD_OLD_S1
+        g_rSysConfigInfo.rtc =Rtc_get_calendar();
+        Flash_store_config();
+#endif
 	// call this function will reset immediately, otherwise will waite another wdt timeout to reset
 	SysCtrlSystemReset();
 }
@@ -113,7 +123,7 @@ void SystemAppTaskFxn(void)
 
     deviceMode = DEVICES_OFF_MODE;
 
-	RtcInit(RtcEventSet);
+//	RtcInit(RtcEventSet);
 
 #ifdef  BOARD_S6_6
 	S6HwInit();
@@ -126,7 +136,7 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S1_2
    	S1HwInit();
 #endif
-
+   	RtcInit(RtcEventSet);
 	Sensor_init();
 
 	RtcStart();
@@ -161,6 +171,10 @@ void SystemAppTaskFxn(void)
 #endif // BOARD_CONFIG_DECEIVE
 
 #endif // BOARD_S6_6
+
+#ifdef  SUPPORT_DEVICED_STATE_UPLOAD
+			Flash_store_devices_state(TYPE_POWER_ON);
+#endif // SUPPORT_DEVICED_STATE_UPLOAD
 
 #ifdef		SUPPORT_WATCHDOG
 	WdtInit(WdtResetCb);
@@ -200,6 +214,16 @@ void SystemAppTaskFxn(void)
 
 		}
 
+		if(eventId & SYSTEMAPP_EVT_KEY0_DOUBLE)
+		{
+
+#ifdef BOARD_S1_2
+			S1DoubleKeyApp();
+#endif
+			
+		}
+
+
 
 #ifdef BOARD_S6_6
 		if(eventId & SYSTEMAPP_EVT_KEY1)
@@ -225,9 +249,17 @@ void SystemAppTaskFxn(void)
 			WdtClear();
 #endif	
 
+
 #ifdef BOARD_S6_6
-			ConcenterRtcProcess();
-			S6AppRtcProcess();
+			if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
+			{
+				NodeRtcProcess();
+			}
+			else
+			{
+				ConcenterRtcProcess();
+			}
+			// S6AppRtcProcess();
 #endif
 
 #ifdef BOARD_S1_2
@@ -296,6 +328,12 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_DISP)
 		{
         	Disp_proc();
+		}
+#endif
+
+#ifdef SUPPORT_BOARD_OLD_S1
+		if(eventId &   SYS_EVT_EVT_OLD_S1_UPLOAD_NODE) {
+		    OldS1NodeAPP_Mode2NodeUploadProcess();
 		}
 #endif
 	}

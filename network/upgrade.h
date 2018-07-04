@@ -9,32 +9,28 @@
 
 
 
-#ifdef 			BOARD_S6_1
+#ifdef 			BOARD_S6_6
 
-#ifdef			S_A
 
-#ifdef 			G7_PROJECT
-#define 		PROJECT_NAME				"G7_B1"
+#ifdef 			BOARD_CONFIG_DECEIVE
+#define 		PROJECT_NAME				"ZKS_S6_6_CONFIG"
 #else
-#define 		PROJECT_NAME				"ZKS_S6_1_A"
-#endif	// G7_PROJECT
-
-#endif // S_A
-
-#endif	// BOARD_S6_1
+#define 		PROJECT_NAME				"ZKS_S6_6"
+#endif	// BOARD_CONFIG_DECEIVE
 
 
-#ifdef 			BOARD_S6_2
+#endif	// BOARD_S6_6
 
-#ifdef 			S_G
-#define 		PROJECT_NAME				"ZKS_S6_2_G"
-#endif // S_G
 
-#ifdef 			S_A
-#define 		PROJECT_NAME				"ZKS_S6_2_A"
-#endif // S_A
+#ifdef 			BOARD_S1_2
 
-#endif	// BOARD_S6_2
+#ifdef          SUPPORT_BOARD_OLD_S1
+#define         PROJECT_NAME                "ZKS_S1_1"
+#else
+#define 		PROJECT_NAME				"ZKS_S3_1"
+#endif
+
+#endif	// BOARD_S1_2
 
 #ifndef		PROJECT_NAME
 #define 	PROJECT_NAME 			"ZKS"
@@ -101,8 +97,8 @@ void UpgradeMonitorReset(void);
 
 uint32_t UpgradeMonitorGet(void);
 
-extern const uint8_t PROJECT_INFO_NAME[];
-extern const uint16_t PROJECT_INFO_VERSION;
+extern const uint8_t PROJECT_INFO_NAME[64];
+extern const uint32_t PROJECT_INFO_VERSION;
 
 
 #endif 			// UPGRADE_H

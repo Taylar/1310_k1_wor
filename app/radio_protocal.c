@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-08 14:22:13
+* @Last Modified time: 2018-07-04 14:23:45
 */
 #include "../general.h"
 
@@ -219,6 +219,20 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					lenTemp -= 5;
 					break;
 
+					case PARASETTING_RTC_SET:
+	                if(lenTemp < 7) {
+	                    goto NodeDispath;
+	                }
+			        calendarTemp.Year       = ((bufTemp->load[baseAddr + 1] << 8) | bufTemp->load[baseAddr + 2]);
+			        calendarTemp.Month      = bufTemp->load[baseAddr + 3];
+			        calendarTemp.DayOfMonth = bufTemp->load[baseAddr + 4];
+			        calendarTemp.Hours      = bufTemp->load[baseAddr + 5];
+			        calendarTemp.Minutes    = bufTemp->load[baseAddr + 6];
+			        calendarTemp.Seconds    = bufTemp->load[baseAddr + 7];
+			        Rtc_set_calendar(&calendarTemp);
+			        lenTemp -= 6;
+			        break;
+
 					default:
 					// error setting parameter
 					Flash_store_config();
@@ -283,6 +297,8 @@ NodeDispath:
 	    if((Flash_get_unupload_items() > 0) && (flag))
 	    {
 		    NodeUploadProcess();
+		    // waiting the gateway to change to receive
+	        Task_sleep(12 * CLOCK_UNIT_MS);
 		    RadioSend();
 	    }
 	    NodeBroadcasting();
@@ -303,6 +319,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	uint8_t len, lenTemp, baseAddr;
 	uint32_t	temp;
 	radio_protocal_t	*bufTemp;
+	Calendar    calendarTemp;
 
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
 	len                     = protocalRxPacket->len;
@@ -484,6 +501,20 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 													((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 					break;
+
+                    case PARASETTING_RTC_SET:
+                    if(lenTemp < 6) {
+                        goto ConcenterConfigRespondEnd;
+                    }
+                    calendarTemp.Year       = ((bufTemp->load[baseAddr + 1] << 8) | bufTemp->load[baseAddr + 2]);
+                    calendarTemp.Month      = bufTemp->load[baseAddr +3];
+                    calendarTemp.DayOfMonth = bufTemp->load[baseAddr + 4];
+                    calendarTemp.Hours      = bufTemp->load[baseAddr + 5];
+                    calendarTemp.Minutes    = bufTemp->load[baseAddr + 6];
+                    calendarTemp.Seconds    = bufTemp->load[baseAddr + 7];
+                    Rtc_set_calendar(&calendarTemp);
+                    lenTemp -= 6;
+                    break;
 
 					default:
 					// error setting parameter
@@ -683,6 +714,17 @@ bool NodeRadioSendConfig(void)
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module>>8);
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module);
 
+    Calendar rtc = Rtc_get_calendar();
+    rtc = Rtc_get_calendar();
+    protocalTxBuf.load[temp++]      = PARASETTING_RTC_SET;
+    protocalTxBuf.load[temp++]      = ((rtc.Year >> 8) & 0xff);
+    protocalTxBuf.load[temp++]      = rtc.Year & 0xff;
+    protocalTxBuf.load[temp++]      = rtc.Month;
+    protocalTxBuf.load[temp++]      = rtc.DayOfMonth;
+    protocalTxBuf.load[temp++]      = rtc.Hours;
+    protocalTxBuf.load[temp++]      = rtc.Minutes;
+    protocalTxBuf.load[temp++]      = rtc.Seconds;
+
 	protocalTxBuf.len = 10 + temp;
 
 	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
@@ -868,6 +910,17 @@ void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.status);
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module>>8);
 	protocalTxBuf.load[temp++]		= (uint8_t)(g_rSysConfigInfo.module);
+
+	Calendar rtc = Rtc_get_calendar();
+	rtc = Rtc_get_calendar();
+    protocalTxBuf.load[temp++]      = PARASETTING_RTC_SET;
+    protocalTxBuf.load[temp++]      = ((rtc.Year >> 8) & 0xff);
+    protocalTxBuf.load[temp++]      = rtc.Year & 0xff;
+    protocalTxBuf.load[temp++]      = rtc.Month;
+    protocalTxBuf.load[temp++]      = rtc.DayOfMonth;
+    protocalTxBuf.load[temp++]      = rtc.Hours;
+    protocalTxBuf.load[temp++]      = rtc.Minutes;
+    protocalTxBuf.load[temp++]      = rtc.Seconds;
 
 	protocalTxBuf.len = 10 + temp;
 

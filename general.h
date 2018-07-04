@@ -70,7 +70,7 @@
 #define BOARD_S1_2
 // #define BOARD_S2_2
 // #define BOARD_S6_6
-//#define BOARD_CONFIG_DECEIVE
+// #define BOARD_CONFIG_DECEIVE
 
 //#define FACTOR_RADIO_TEST
 
@@ -103,6 +103,9 @@
 #define SUPPORT_REMOTE_UPGRADE
 
 #define SUPPORT_USB_UPGRADE
+
+// system state info upload
+#define SUPPORT_DEVICED_STATE_UPLOAD
 #endif
 
 //***********************************************************************************
@@ -128,6 +131,8 @@
 
 #define SUPPORT_RADIO_UPGRADE
 
+/* old S1*/
+//#define SUPPORT_BOARD_OLD_S1
 #endif
 
 //***********************************************************************************
@@ -145,7 +150,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0015
+#define FW_VERSION              0x0017
 
 
 //***********************************************************************************
@@ -406,6 +411,10 @@ typedef enum {
 #define         DEVICES_SLEEP_MODE             4
 #define         DEVICES_TEST_MODE              5
 
+#ifdef SUPPORT_BOARD_OLD_S1
+#define        OLD_S1_DEVICES_RADIO_UPGRADE    6
+#endif
+
 //***********************************************************************************
 //
 //system event define.
@@ -586,6 +595,10 @@ typedef struct {
 #include "engmode/engmode.h"
 #include "usb/usb_bsl.h"
 #include "radio_app/radio_upgrade.h"
+
+#ifdef SUPPORT_BOARD_OLD_S1
+    #include "app/old_s1/old_s1_node_app.h"
+#endif
 
 //***********************************************************************************
 //

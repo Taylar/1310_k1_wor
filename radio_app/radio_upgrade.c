@@ -253,6 +253,9 @@ void RadioUpgrade_CmdACKDataParse(uint8_t *pData, uint16_t length)
     uint16_t pack_len = pData[0];
     uint32_t data_offset_addr = ((uint32_t)(pData[1]) << 24) | ((uint32_t)(pData[2]) << 16) | ((uint32_t)(pData[3]) << 8) | (uint32_t)pData[4];
 
+    if (RADIOMODE_UPGRADE != RadioModeGet()) {
+        return;
+    }
 
     Led_ctrl(LED_R, 1, 30 * CLOCK_UNIT_MS, 1);
     if (pData == NULL || length == 0) {
@@ -294,6 +297,10 @@ void RadioUpgrade_CmdRateSwitch(void)
 //0x25 Instruction analysis
 void RadioUpgrade_CmdACKRateSwitch(uint8_t *pData, uint16_t length)
 {
+    if (RADIOMODE_UPGRADE != RadioModeGet()) {
+        return;
+    }
+
     if (pData[0] == 0) {
         Clock_stop(radioUpgradeClkHandle);
         clkRadioUpgradeTimeoutCallback = radioUpgradeTxTimeoutFxn;
@@ -319,8 +326,6 @@ static void radioUpgradeRxTimeoutFx(UArg arg0)
 {
     Clock_stop(radioUpgradeRxClkHandle);
 
-    RadioSwitchingUserRate();
-
     RadioModeSet(RADIOMODE_SENDPORT);
     deviceMode = DEVICES_ON_MODE;
 
@@ -328,6 +333,8 @@ static void radioUpgradeRxTimeoutFx(UArg arg0)
     sRadio_upgrade_info.pack_offset = 0;
     sRadio_upgrade_info.pack_size = 0;
     sRadio_upgrade_info.fileLength = 0;
+
+    RadioUpgradeRxFileDataTimout();
 }
 
 // Send timeout processing
@@ -420,7 +427,7 @@ static bool RadioUpgrade_isResend(void)
             }
 
             // Switching waiting time
-            Clock_setPeriod(radioUpgradeClkHandle, RADIO_UPGRADE_TX_TIMEOUT * 5);
+            Clock_setPeriod(radioUpgradeClkHandle, RADIO_UPGRADE_TX_TIMEOUT * 2);
             RadioUpgrade_startFileSendTimer();
 
             radio_upgrade_tx_info.info[i].resendCount = 0;

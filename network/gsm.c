@@ -922,9 +922,10 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
     }
 
     //tcp send data ack query
-    for (i = 700; i > 0; i--) {
+    for (i = 300; i > 0; i--) {
         AT_ack_query();
-        eventId = Gsm_wait_ack(300);
+        eventId = Gsm_wait_ack(30);
+        Task_sleep(270 * CLOCK_UNIT_MS);
         if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
             break;
     }
@@ -1807,6 +1808,7 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
                 }
 #elif defined(USE_ENGINEERING_MODE_FOR_LBS)
                 if (result != RESULT_OK) {
+                    Gsm_reset();
                     // ((NwkLocation_t *)arg)->mcc = 0;
                     return FALSE;
                 }

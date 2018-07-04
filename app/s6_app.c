@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-11 13:53:20
+* @Last Modified time: 2018-07-03 17:05:21
 */
 #include "../general.h"
 
@@ -210,14 +210,6 @@ void S6HwInit(void)
     /* Obtain clock instance handle */
     BatAlarmClkHandle = Clock_handle(&BatAlarmClkStruct);
 
-
-
-    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//Ã»ÓÐlcd,sysLcdShutClkHandleÓÃÀ´×ö¹¤×÷Ö¸Ê¾µÆµÄ¶¨Ê±Æ÷¡£
-        Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);
-        Clock_setTimeout(sysLcdShutClkHandle,  60*CLOCK_UNIT_S);
-        Clock_start(sysLcdShutClkHandle); 
-    }
-
     LedInit();
 
 	KeyInit();
@@ -244,6 +236,15 @@ void S6HwInit(void)
 
     Battery_init();
     Battery_voltage_measure();
+
+
+
+    if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
+        Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);
+        Clock_setTimeout(sysLcdShutClkHandle,  60*CLOCK_UNIT_S);
+        Clock_start(sysLcdShutClkHandle); 
+    }
+
 
     if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
     {
@@ -416,7 +417,20 @@ void S6LongKey1App(void)
 //***********************************************************************************
 void S6AppRtcProcess(void)
 {
-
+#ifndef BOARD_CONFIG_DECEIVE
+    static uint32_t timingSendDataCnt = 0;
+    if (deviceMode == DEVICES_OFF_MODE || (!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))) {
+        return;
+    }
+    /* Send data regularly to ensure that the gateway can receive*/
+    if (timingSendDataCnt > (5 * 60)) {
+        RadioModeSet(RADIOMODE_RECEIVEPORT);
+        timingSendDataCnt = 0;
+        SetRadioDstAddr(0xdadadada);
+        ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+    }
+    timingSendDataCnt++;
+#endif
 }
 
 #endif

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-01-30 11:24:34
+* @Last Modified time: 2018-07-03 10:09:52
 */
 
 #include "../general.h"
@@ -12,10 +12,6 @@ static Clock_Handle keyClkHandle;
 
 static KeyTask_t rKeyTask;
 
-enum{
-    KEY0,
-    KEY1,
-};
 
 // node board
 #ifdef BOARD_S1_2
@@ -63,7 +59,14 @@ static PIN_Handle  key1Handle;
 static PIN_State   keyState;
 static PIN_Handle  keyHandle;
 
+static const uint8_t key_pin_id[KEY_MAX_NUM] = 
+{
+    Board_BUTTON0,
 
+#ifdef BOARD_S6_6
+    Board_BUTTON1,
+#endif
+};
 
 
 typedef void (*AppKeyIsrCb_t)(void);
@@ -105,7 +108,10 @@ void Key1IoInit(PIN_IntCb pCb)
 static void KeyScanStop(void)
 {
     rKeyTask.holdTime        = 0;
+    rKeyTask.doublePressTime = 0;
     rKeyTask.holdPress       = 0;
+    rKeyTask.doublePress     = 0;
+
     Clock_stop(keyClkHandle);
 }
 
@@ -116,79 +122,51 @@ static void KeyScanStop(void)
 //***********************************************************************************
 static void KeyScanFxn(UArg arg0)
 {
-    switch(rKeyTask.keyNum)
+    if(KeyReadState(rKeyTask.keyNum) == KEY_PRESSED)
     {
-        case KEY0:
-        if(PIN_getInputValue(Board_BUTTON0) == KEY_PRESSED)
+        if(rKeyTask.doublePress)
         {
-            if(rKeyTask.holdPress == 0)
-            {
-                rKeyTask.holdPress       = 1;
-                rKeyTask.holdTime        = 0;
-            }
-            else
-            {
-                rKeyTask.holdTime++;
-                if(rKeyTask.holdTime > TIME_KEY0_LONG)
-                {
-                    KeyScanStop();
-                    if(AppKeyIsrCb[KEY_0_LONG_PRESS])
-                        AppKeyIsrCb[KEY_0_LONG_PRESS]();
-                }
-            }
+            KeyScanStop();
+            if(AppKeyIsrCb[KEY_0_DOUBLE_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
+                AppKeyIsrCb[KEY_0_DOUBLE_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
+        }
+
+        if(rKeyTask.holdPress == 0)
+        {
+            rKeyTask.holdPress       = 1;
+            rKeyTask.holdTime        = 0;
         }
         else
         {
-            if(rKeyTask.holdTime > TIME_KEY_NEW)
+            rKeyTask.holdTime++;
+            if(rKeyTask.holdTime > TIME_KEY0_LONG)
             {
-            rKeyTask.holdTime = 0;
-                if(AppKeyIsrCb[KEY_0_SHORT_PRESS])
-                    AppKeyIsrCb[KEY_0_SHORT_PRESS]();
-            }
-            rKeyTask.holdTime = 0;
-            KeyScanStop();
-            
-        }
-        break;
-
-        case KEY1:
-#ifdef BOARD_S6_6
-        if(PIN_getInputValue(Board_BUTTON1) == KEY_PRESSED)
-        {
-            if(rKeyTask.holdPress == 0)
-            {
-                rKeyTask.holdPress       = 1;
-                rKeyTask.holdTime        = 0;
-            }
-            else
-            {
-                rKeyTask.holdTime++;
-                if(rKeyTask.holdTime > TIME_KEY0_LONG)
-                {
-                    KeyScanStop();
-                    if(AppKeyIsrCb[KEY_1_LONG_PRESS])
-                        AppKeyIsrCb[KEY_1_LONG_PRESS]();
-                }
+                KeyScanStop();
+                if(AppKeyIsrCb[KEY_0_LONG_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
+                    AppKeyIsrCb[KEY_0_LONG_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
             }
         }
-        else
-        {
-            if(rKeyTask.holdTime > TIME_KEY_NEW)
-            {
-                rKeyTask.holdTime = 0;
-                if(AppKeyIsrCb[KEY_1_SHORT_PRESS])
-                    AppKeyIsrCb[KEY_1_SHORT_PRESS]();
-            }
-            rKeyTask.holdTime = 0;
-            KeyScanStop();
-        }
-#endif
-        break;
-
-        
     }
-        
+    else
+    {
+        if(rKeyTask.doublePress)
+        {
+            rKeyTask.doublePressTime++;
 
+            if(rKeyTask.doublePressTime > TIME_KEY_DOUBLE)
+            {
+                KeyScanStop();    
+                if(AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
+                    AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
+            }
+        }
+        else
+        {
+            rKeyTask.doublePress     = 1;
+            rKeyTask.doublePressTime = 0;
+            rKeyTask.holdTime        = 0;
+        }
+    }
 }
 
 
@@ -201,7 +179,7 @@ static void KeyIsrFxn(UInt index)
 {
     if (Clock_isActive(keyClkHandle) == FALSE)
     {
-        rKeyTask.keyNum = KEY0;
+        rKeyTask.keyNum = KEY0_NUM;
         Clock_start(keyClkHandle);
     }
 }
@@ -216,7 +194,7 @@ static void Key1IsrFxn(UInt index)
 {
     if (Clock_isActive(keyClkHandle) == FALSE)
     {
-        rKeyTask.keyNum = KEY1;
+        rKeyTask.keyNum = KEY1_NUM;
         Clock_start(keyClkHandle);
     }
 }
@@ -274,22 +252,10 @@ void KeyRegister(void (*Cb)(void), KEY_ACTION action)
 //
 //***********************************************************************************
 
-uint8_t KeyReadState(KEY_ACTION action)
+uint8_t KeyReadState(KEY_NUM_E key)
 {
-    switch(action)
-    {
-        case KEY_0_SHORT_PRESS:
-        case KEY_0_LONG_PRESS:
+    if(key < KEY_MAX_NUM)
+        return(PIN_getInputValue(key_pin_id[key]));
 
-        return PIN_getInputValue(Board_BUTTON0);
-
-#ifdef BOARD_S6_6
-        case KEY_1_SHORT_PRESS:
-        case KEY_1_LONG_PRESS:
-
-        return PIN_getInputValue(Board_BUTTON1);
-#endif
-
-    }
     return KEY_RELEASE;
 }

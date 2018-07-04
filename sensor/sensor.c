@@ -189,8 +189,14 @@ static void Sensor_store_package(void)
     buff[length++] = HIBYTE(rSensorObject.serialNum);
     buff[length++] = LOBYTE(rSensorObject.serialNum);
     rSensorObject.serialNum++;
-    //閲囬泦鏃堕棿
-    buff[length++] = calendar.Year - CALENDAR_BASE_YEAR;
+    //闁插洭娉﹂弮鍫曟？
+    calendar.Year       = TransHexToBcd((uint8_t)(calendar.Year - 2000));
+    calendar.Month      = TransHexToBcd((uint8_t)(calendar.Month));
+    calendar.DayOfMonth = TransHexToBcd((uint8_t)(calendar.DayOfMonth));
+    calendar.Hours      = TransHexToBcd((uint8_t)(calendar.Hours));
+    calendar.Minutes    = TransHexToBcd((uint8_t)(calendar.Minutes));
+
+    buff[length++] = calendar.Year;
     buff[length++] = calendar.Month;
     buff[length++] = calendar.DayOfMonth;
     buff[length++] = calendar.Hours;

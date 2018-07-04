@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-22 10:49:24
+* @Last Modified time: 2018-06-29 16:43:24
 */
 #include "../general.h"
 
@@ -39,6 +39,7 @@ void S1HwInit(void)
     KeyInit();
     KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
     KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
+    KeyRegister(SystemDoubleKeyEventPostIsr, KEY_0_DOUBLE_PRESS);
 
     Spi_init();
 
@@ -63,19 +64,9 @@ void S1ShortKeyApp(void)
     {
         case DEVICES_ON_MODE:
         case DEVICES_CONFIG_MODE:
-        // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
-        NodeStrategyReset();
-        deviceMode                      = DEVICES_CONFIG_MODE;
-        configModeTimeCnt = 0;
-        NodeUploadStop();
-        NodeUploadFailProcess();
-        NodeStrategyBusySet(false);
-        RadioModeSet(RADIOMODE_RECEIVEPORT);
-        SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
-
-        ClearRadioSendBuf();
-        NodeRadioSendConfig();
-
+#ifdef SUPPORT_BOARD_OLD_S1
+        case OLD_S1_DEVICES_RADIO_UPGRADE:
+#endif
 
         Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
@@ -100,12 +91,60 @@ void S1LongKeyApp(void)
         NodeSleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         Task_sleep(3000 * CLOCK_UNIT_MS);
+
+#ifdef SUPPORT_BOARD_OLD_S1
+        g_rSysConfigInfo.rtc =Rtc_get_calendar();
+        Flash_store_config();
+#endif
         SysCtrlSystemReset();
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        NodeWakeup();
+        if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
+        {
+            Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 1);
+        }
+        else
+        {
+            Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+            NodeWakeup();
+        }
+        break;
+    }
+}
+
+
+//***********************************************************************************
+// brief:the node long key application
+// 
+// parameter: 
+//***********************************************************************************
+void S1DoubleKeyApp(void)
+{
+    switch(deviceMode)
+    {
+        case DEVICES_ON_MODE:
+        case DEVICES_CONFIG_MODE:
+#ifdef SUPPORT_BOARD_OLD_S1
+            OldS1NodeApp_stopSendSensorData();
+#endif
+        // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
+        NodeStrategyReset();
+        deviceMode                      = DEVICES_CONFIG_MODE;
+        configModeTimeCnt = 0;
+        NodeUploadStop();
+        NodeUploadFailProcess();
+        NodeStrategyBusySet(false);
+        RadioModeSet(RADIOMODE_RECEIVEPORT);
+        SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
+#ifdef SUPPORT_BOARD_OLD_S1
+        RadioSwitchingUserRate();
+#endif
+        ClearRadioSendBuf();
+        NodeRadioSendConfig();
+
+
+        Led_ctrl(LED_G, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
     }
 }
@@ -117,7 +156,7 @@ void S1AppRtcProcess(void)
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
     {
         configModeTimeCnt++;
-        if(configModeTimeCnt >= 180)
+        if(configModeTimeCnt >= 120)
         {
             ClearRadioSendBuf();
             RadioModeSet(RADIOMODE_SENDPORT);

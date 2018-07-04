@@ -32,6 +32,7 @@
 #define 	PARASETTING_SOFT_VER			0X14
 #define 	PARASETTING_RF_PARA				0X15
 #define 	PARASETTING_MODULE_SET			0X16
+#define     PARASETTING_RTC_SET             0x17
 
 
 

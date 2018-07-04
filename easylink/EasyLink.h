@@ -232,6 +232,7 @@ typedef enum
     EasyLink_Phy_2_4_200kbps2gfsk = EasyLink_PHY_2_4_200KBPS2GFSK,   //!< Phy settings for 2.4Ghz 200kbps data rate, IEEE 802.15.4g GFSK.
     EasyLink_Phy_5kbpsSlLr = EasyLink_PHY_5KBPSSLLR,      //!< SimpleLink Long Range (5 kbps)
     EasyLink_Phy_50K_GPSK = 5,
+    EasyLink_Phy_Custom_s1_old = 6,
 } EasyLink_PhyType;
 
 //! \brief Advance configuration options

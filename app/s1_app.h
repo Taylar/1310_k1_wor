@@ -21,6 +21,8 @@ void S1ShortKeyApp(void);
 
 void S1LongKeyApp(void);
 
+void S1DoubleKeyApp(void);
+
 void S1AppRtcProcess(void);
 
 

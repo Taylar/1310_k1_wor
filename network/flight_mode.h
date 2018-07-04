@@ -19,7 +19,6 @@
 typedef struct _flight_mode{
     char isFlightMode; // 1 yes ; 0 no
     uint16_t minFlightTimesSetting; // how many minus setting for flight mode
-    uint8_t Ack_tempBuff[FLIGHT_ACK_BUFFER_SIZE];   // Record <0-1> MSG serial NUM, <2-3>MSG-ID <4> ACK
 }Flight_mode_t;
 
 extern void Flight_mode_cancel(void);
@@ -32,9 +31,6 @@ extern char Flight_mode_isFlightMode(void);
 extern char Nwk_is_Active(void);
 extern void Nwk_send_upload_event(void);
 
-void Flight_mode_ack_data_store(NwkMsgPacket_t *rNwkMsgPacket);
-
-void Flight_mode_ack_data_readback(NwkMsgPacket_t *rNwkMsgPacket);
 
 #endif // SUPPORT_FLIGHT_MODE
 

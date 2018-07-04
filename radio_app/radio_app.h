@@ -15,6 +15,7 @@
 #define         RADIO_EVT_SET_TX_MODE   Event_Id_08
 #define         RADIO_EVT_DISABLE	    Event_Id_09
 #define         RADIO_EVT_UPGRADE_SEND  Event_Id_10
+#define         RADIO_EVT_UPGRADE_RX_TIMEOUT   Event_Id_11
 #define         RADIO_EVT_ALL           0xffff
 
 
@@ -23,6 +24,7 @@
 
 #define RADIO_EASYLINK_MODULATION      EasyLink_Phy_Custom
 #define RADIO_EASYLINK_MODULATION_50K  EasyLink_Phy_50K_GPSK
+#define RADIO_EASYLINK_MODULATION_S1_OLD EasyLink_Phy_Custom_s1_old
 
 enum RadioOperationStatus {
     RADIOSTATUS_IDLE,
@@ -59,6 +61,8 @@ void RadioSend(void);
 
 void RadioUpgradeSendFile(void);
 
+void RadioUpgradeRxFileDataTimout(void);
+
 
 void RadioSendPacket(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs);
 
@@ -91,5 +95,7 @@ void RadioDisable(void);
 void RadioSwitchingUpgradeRate(void);
 
 void RadioSwitchingUserRate(void);
+
+void RadioSwitchingS1OldUserRate(void);
 
 #endif		// __RADIO_APP_H__

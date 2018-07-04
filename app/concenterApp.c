@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-11 16:48:57
+* @Last Modified time: 2018-07-04 10:39:16
 */
 #include "../general.h"
 
@@ -260,7 +260,6 @@ void ConcenterWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
     
-    concenterParameter.radioReceive = true;
 #ifdef BOARD_S6_6
     if(GetUsbState() == USB_UNLINK_STATE)
 #endif
@@ -269,9 +268,11 @@ void ConcenterWakeup(void)
         Nwk_poweron();
 #endif
     }
-    RadioFrontRxEnable();
-    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-    RadioModeSet(RADIOMODE_RECEIVEPORT);
+    if((g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) && (g_rSysConfigInfo.module & MODULE_RADIO))
+    {
+        concenterParameter.radioReceive = true;
+        RadioModeSet(RADIOMODE_RECEIVEPORT);
+    }
 
 
 // for test

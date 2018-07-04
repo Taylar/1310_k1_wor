@@ -25,14 +25,31 @@
 #endif
 
 
+//  define key num
+typedef enum {
+    KEY0_NUM,
+
+#ifdef BOARD_S6_6
+    KEY1_NUM,
+#endif
+
+    KEY_MAX_NUM,
+}KEY_NUM_E;
+
+
+
 // Define key action
+#define KEY_ACTION_TYPE_MAX    3
 typedef enum {
     KEY_0_SHORT_PRESS,
     KEY_0_LONG_PRESS,
+    KEY_0_DOUBLE_PRESS,
+
 
 #ifdef BOARD_S6_6
     KEY_1_SHORT_PRESS,
     KEY_1_LONG_PRESS,
+    KEY_1_DOUBLE_PRESS,
 #endif
 
     KEY_ACTION_MAX
@@ -41,7 +58,7 @@ typedef enum {
 
 // Define key pressed time, unit is 10ms.
 #define TIME_KEY_NEW            3
-#define TIME_KEY_DOUBLE         50
+#define TIME_KEY_DOUBLE         40
 #define TIME_KEY0_LONG          300
 #define TIME_KEY1_LONG          200
 
@@ -70,7 +87,7 @@ void KeyInit(void);
 
 void KeyRegister(void (*Cb)(void), KEY_ACTION action);
 
-uint8_t KeyReadState(KEY_ACTION action);
+uint8_t KeyReadState(KEY_NUM_E key);
 
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */

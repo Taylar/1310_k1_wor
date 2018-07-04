@@ -128,14 +128,16 @@ void RtcInit(void (*Cb)(void))
     Clock_construct(&rtcSecondsClock, RtcSecondsIsrCb, 1, &clkParams);
     rtcSecondsClockHandle = Clock_handle(&rtcSecondsClock);
     
-
-    rtc.Year       = 2018;
+    rtc = g_rSysConfigInfo.rtc;
+    /*
+    rtc.Year       = g_rSysConfigInfo.rtc.Year;
     rtc.Month      = 1;
     rtc.DayOfMonth = 1;
     rtc.DayOfWeek  = 1;
     rtc.Hours      = 0;
     rtc.Minutes    = 0;
     rtc.Seconds    = 0;
+    */
 
 
     RtcSecIsbCB = Cb;

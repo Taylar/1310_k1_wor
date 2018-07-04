@@ -74,7 +74,7 @@ void NodeAppInit(void (*Cb)(void))
 
     NodeStrategyInit(Cb, NodeStrategyTimeoutProcess);
     
-    NodeStrategySetPeriod(g_rSysConfigInfo.uploadPeriod);
+    NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
 
     // NodeWakeup();
 }
@@ -377,11 +377,13 @@ void NodeHighTemperatureSet(uint8_t num, uint16_t alarmTemp)
 //***********************************************************************************
 void NodeBroadcasting(void)
 {
+#ifndef SUPPORT_BOARD_OLD_S1
     if(nodeParameter.broadcasting)
     {
-        NodeStrategySetPeriod(g_rSysConfigInfo.uploadPeriod);
+        NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
         NodeRadioSendSynReq();
     }
+#endif
 }
 
 //***********************************************************************************
@@ -454,6 +456,10 @@ void NodeWakeup(void)
     {
         NodeCollectStart();
     }
+
+#ifdef SUPPORT_BOARD_OLD_S1
+    NodeCollectStart();
+#endif
 }
 
 
@@ -479,6 +485,21 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
+#ifdef SUPPORT_BOARD_OLD_S1
+    if ((deviceMode == DEVICES_OFF_MODE) || (RADIOMODE_UPGRADE == RadioModeGet())) {
+        return;
+    } else if (nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod) {
+        OldS1NodeAPP_scheduledUploadData();
+        nodeParameter.collectTimeCnt = 1;
+    }
+
+    if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
+    {
+        NodeSleep();
+        // SysCtrlSystemReset();
+    }
+    nodeParameter.collectTimeCnt++;
+#else
     uint8_t temp;
     if(nodeParameter.collectStart)
     {
@@ -506,12 +527,12 @@ void NodeRtcProcess(void)
             }
             
             Sensor_measure(1);
-            if(deviceMode == DEVICES_ON_MODE)
+            if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
                 Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
         }
 
         nodeParameter.sysTime++;
-        if(nodeParameter.sysTime >= g_rSysConfigInfo.ntpPeriod)
+        if(nodeParameter.sysTime >= 3600)
         {
             NodeRadioSendSynReq();
             nodeParameter.sysTime       = 0;
@@ -520,11 +541,11 @@ void NodeRtcProcess(void)
         if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
         {
             NodeSleep();
-            SysCtrlSystemReset();
+            // SysCtrlSystemReset();
         }
 
     }
-
+#endif
 }
 
 

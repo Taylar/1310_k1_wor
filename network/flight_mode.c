@@ -27,22 +27,6 @@ static Clock_Struct sysCancelFlightStruct;
 static Clock_Handle sysCancelFlightHandle = NULL;
 static char clockflag = 0;
 
-void Flight_mode_ack_data_store(NwkMsgPacket_t *rNwkMsgPacket)
-{
-    int i;
-    for(i=0; i < FLIGHT_ACK_BUFFER_SIZE; i++){
-        Flight_mode.Ack_tempBuff[i] =  rNwkMsgPacket->buff[i];
-    }
-}
-
-void Flight_mode_ack_data_readback(NwkMsgPacket_t *rNwkMsgPacket)
-{
-    int i;
-    for(i=0; i < FLIGHT_ACK_BUFFER_SIZE; i++){
-         rNwkMsgPacket->buff[i] = Flight_mode.Ack_tempBuff[i];
-    }
-}
-
 void Flight_mode_cancel(void)
 {
     Flight_mode.isFlightMode = 0;

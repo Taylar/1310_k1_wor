@@ -20,7 +20,7 @@ extern uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_
 
 #ifdef SUPPORT_USB_UPGRADE
 typedef void (*Usb_bslFxn) (void);
-static Usb_bslFxn bslFxn =  (Usb_bslFxn)0x04;
+//static Usb_bslFxn bslFxn =  (Usb_bslFxn)0x04;
 #endif
 
 #ifdef SUPPORT_WATCHDOG
