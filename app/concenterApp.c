@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-04 10:39:16
+* @Last Modified time: 2018-07-04 16:02:27
 */
 #include "../general.h"
 
@@ -163,11 +163,24 @@ bool ConcenterSensorDataSaveToQueue(uint8_t *dataP, uint8_t length)
 //***********************************************************************************
 void ConcenterSensorDataSave(void)
 {
-    uint8_t dataP[SENSOR_DATA_LENGTH_MAX];
+    uint8_t dataP[FLASH_SENSOR_DATA_SIZE];
+    Calendar calendar;
+
 
     if(ExtflashRingQueuePoll(&extflashWriteQ, dataP) == true)
     {
-        Flash_store_sensor_data(dataP, SENSOR_DATA_LENGTH_MAX);
+        calendar = Rtc_get_calendar();
+        dataP[dataP[0]+1] = 0xfe;
+        dataP[dataP[0]+2] = 0xfe;
+        dataP[dataP[0]+3] = TransHexToBcd((uint8_t)(calendar.Year - 2000));;
+        dataP[dataP[0]+4] = TransHexToBcd((uint8_t)(calendar.Month));
+        dataP[dataP[0]+5] = TransHexToBcd((uint8_t)(calendar.DayOfMonth));
+        dataP[dataP[0]+6] = TransHexToBcd((uint8_t)(calendar.Hours));
+        dataP[dataP[0]+7] = TransHexToBcd((uint8_t)(calendar.Minutes));
+        dataP[dataP[0]+8] = TransHexToBcd((uint8_t)(calendar.Seconds));
+        dataP[0]         += 8;
+
+        Flash_store_sensor_data(dataP, FLASH_SENSOR_DATA_SIZE);
         Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
     }
 }

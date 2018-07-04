@@ -431,7 +431,6 @@ void NodeSleep(void)
 {
     NodeStopBroadcast();
     NodeCollectStop();
-    NodeUploadStop();
     NodeStrategyStop();
     deviceMode = DEVICES_OFF_MODE;
     nodeParameter.uploadStart         = false;
