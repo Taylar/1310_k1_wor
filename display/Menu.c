@@ -192,6 +192,8 @@ void Menu_power_off(void)
 void Menu_restart(void)
 {    
     // ConcenterSleep();
+    g_rSysConfigInfo.rtc =Rtc_get_calendar();
+    Flash_store_config();
     while(1)
         SysCtrlSystemReset();
    // Menu_exit();

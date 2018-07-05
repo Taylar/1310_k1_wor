@@ -216,8 +216,8 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
     	}	
     }
 
-    if(congfig)        
-        Flash_store_config();                
+    if(congfig)      
+        Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 
     if(congfig || sensorcodec) {
         return true;

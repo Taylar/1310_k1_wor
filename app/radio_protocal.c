@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-04 17:03:04
+* @Last Modified time: 2018-07-05 16:02:36
 */
 #include "../general.h"
 
@@ -235,11 +235,11 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 					default:
 					// error setting parameter
-					Flash_store_config();
+					Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 					goto NodeDispath;
 				}
 			}
-			Flash_store_config();
+			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			break;
 
 			case RADIO_PRO_CMD_SET_PARA_ACK:
@@ -298,7 +298,7 @@ NodeDispath:
 	    {
 		    NodeUploadProcess();
 		    // waiting the gateway to change to receive
-	        Task_sleep(12 * CLOCK_UNIT_MS);
+	        Task_sleep(15 * CLOCK_UNIT_MS);
 		    RadioSend();
 	    }
 	    NodeBroadcasting();

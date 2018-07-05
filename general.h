@@ -67,9 +67,9 @@
 // HW version define.
 //
 //***********************************************************************************
-// #define BOARD_S1_2
+#define BOARD_S1_2
 // #define BOARD_S2_2
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 //#define FACTOR_RADIO_TEST
@@ -105,7 +105,9 @@
 #define SUPPORT_USB_UPGRADE
 
 // system state info upload
+#ifndef BOARD_CONFIG_DECEIVE
 #define SUPPORT_DEVICED_STATE_UPLOAD
+#endif
 #endif
 
 //***********************************************************************************
@@ -150,7 +152,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0017
+#define FW_VERSION              0x0018
 
 
 //***********************************************************************************

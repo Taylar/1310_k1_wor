@@ -78,10 +78,6 @@ void SystemUsbIntEventPostIsr(void)
 void WdtResetCb(uintptr_t handle)
 {
 
-#ifdef SUPPORT_BOARD_OLD_S1
-        g_rSysConfigInfo.rtc =Rtc_get_calendar();
-        Flash_store_config();
-#endif
 	// call this function will reset immediately, otherwise will waite another wdt timeout to reset
 	SysCtrlSystemReset();
 }
@@ -186,8 +182,21 @@ void SystemAppTaskFxn(void)
 	
 
 // the config deceive key is disable
-#ifndef   BOARD_CONFIG_DECEIVE
+#ifdef   BOARD_CONFIG_DECEIVE
+        if(eventId & (SYSTEMAPP_EVT_KEY0_LONG | SYSTEMAPP_EVT_KEY1_LONG))
+        {
+        	Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+	        Task_sleep(750 * CLOCK_UNIT_MS);
+	        while(1)
+	        	SysCtrlSystemReset();
+        }
 
+        if(eventId &(SYSTEMAPP_EVT_KEY0 | SYSTEMAPP_EVT_KEY1))
+        {
+        	Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+        }
+
+#else
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
 
@@ -315,7 +324,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_STORE_SYS_CONFIG)
 		{
-
+			Flash_store_config();
 		}
 
 		if(eventId & SYSTEMAPP_EVT_ALARM)

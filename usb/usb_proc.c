@@ -126,7 +126,7 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
 
             memcpy((char *)&g_rSysConfigInfo, (char *)&pData[3], size);
             g_rSysConfigInfo.size = sizeof(g_rSysConfigInfo);            
-            Flash_store_config();
+            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
@@ -151,7 +151,7 @@ void Usb_data_parse(uint8_t *pData, uint16_t length)
         case EV_Set_APN:           
             pData[length] = '\0';
             strcpy((char *)&g_rSysConfigInfo.apnuserpwd, (char *)&pData[3]);
-            Flash_store_config();
+            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
              
             pData[0] = 0;            
             len = Usb_group_package(AC_Ack, pData, 1);

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-08 16:46:40
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-04 14:23:55
+* @Last Modified time: 2018-07-05 16:03:27
 */
 
 #include "../general.h"
@@ -57,12 +57,12 @@ void RadioFrontInit(void)
 void RadioFrontTxEnable(void)
 {
     if (RADIOMODE_UPGRADE != RadioModeGet()) {
-        Task_sleep(10 * CLOCK_UNIT_MS);
+        Task_sleep(5 * CLOCK_UNIT_MS);
     }
     PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 1);
     PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 1);
     if (RADIOMODE_UPGRADE != RadioModeGet()) {
-        Task_sleep(10 * CLOCK_UNIT_MS);
+        Task_sleep(5 * CLOCK_UNIT_MS);
     }
 
 }
@@ -95,10 +95,10 @@ void RadioFrontRxEnable(void)
 //***********************************************************************************
 void RadioFrontDisable(void)
 {
-    Task_sleep(10 * CLOCK_UNIT_MS);
+    Task_sleep(5 * CLOCK_UNIT_MS);
     PIN_setOutputValue(radioPinHandle, RADIO_CSD_PIN, 0);
     PIN_setOutputValue(radioPinHandle, RADIO_CTX_PIN, 0);
-    Task_sleep(10 * CLOCK_UNIT_MS);
+    Task_sleep(5 * CLOCK_UNIT_MS);
 }
 
 #else

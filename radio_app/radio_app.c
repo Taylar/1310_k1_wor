@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-04 11:54:39
+* @Last Modified time: 2018-07-05 16:07:01
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -416,15 +416,16 @@ void RadioAppTaskFxn(void)
         if(events & RADIO_EVT_SET_RX_MODE)
         {
             radioMode = RADIOMODE_RECEIVEPORT;
-            if(radioStatus == RADIOSTATUS_IDLE)
+            if(radioStatus != RADIOSTATUS_IDLE)
             {
-                RadioFrontRxEnable();
-                radioStatus = RADIOSTATUS_RECEIVING;
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-                if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
-                {
-                    System_printf("open 1310 receive fail");
-                }
+                EasyLink_abort();
+            }
+            RadioFrontRxEnable();
+            radioStatus = RADIOSTATUS_RECEIVING;
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
+            {
+                System_printf("open 1310 receive fail");
             }
         }
 
@@ -467,6 +468,7 @@ void RadioAppTaskFxn(void)
             if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
             {
                 radioStatus = RADIOSTATUS_RECEIVING;
+                EasyLink_abort();
                 RadioFrontRxEnable();
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                 if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)

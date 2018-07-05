@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-04 16:02:27
+* @Last Modified time: 2018-07-05 16:07:32
 */
 #include "../general.h"
 
@@ -412,7 +412,7 @@ void ConcenterConfigDeceiveInit(void)
 //***********************************************************************************
 void ConcenterStoreConfig(void)
 {
-    Flash_store_config();
+    Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 }
 
 //***********************************************************************************
@@ -495,19 +495,15 @@ void ConcenterCollectStop(void)
 void ConcenterRtcProcess(void)
 {
 
-    // if(concenterParameter.radioReceive)
-    // {
-    //     concenterParameter.monitorCnt++;
-    //     if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
-    //     {
-    //         ConcenterRadioMonitorClear();
-    //         EasyLink_abort();
-    //         RadioFrontDisable();
-    //         RadioFrontRxEnable();
-    //         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-    //         RadioModeSet(RADIOMODE_RECEIVEPORT);
-    //     }
-    // }
+    if(concenterParameter.radioReceive && (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
+    {
+        concenterParameter.monitorCnt++;
+        if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
+        {
+            ConcenterRadioMonitorClear();
+            RadioSetRxMode();
+        }
+    }
 
     Nwk_upload_time_isr();
 

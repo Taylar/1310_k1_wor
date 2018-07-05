@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-29 16:43:24
+* @Last Modified time: 2018-07-04 20:28:41
 */
 #include "../general.h"
 
@@ -92,10 +92,8 @@ void S1LongKeyApp(void)
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         Task_sleep(3000 * CLOCK_UNIT_MS);
 
-#ifdef SUPPORT_BOARD_OLD_S1
         g_rSysConfigInfo.rtc =Rtc_get_calendar();
         Flash_store_config();
-#endif
         SysCtrlSystemReset();
         break;
 
