@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-05 16:07:32
+* @Last Modified time: 2018-07-05 16:32:34
 */
 #include "../general.h"
 
@@ -502,6 +502,8 @@ void ConcenterRtcProcess(void)
         {
             ConcenterRadioMonitorClear();
             RadioSetRxMode();
+            SetRadioDstAddr(0xdadadada);
+            ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
         }
     }
 

@@ -508,21 +508,28 @@ void NodeRtcProcess(void)
         if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
         {
             // nodeParameter.collectTimeCnt -= 10;
-            temp = RtcGetSec();
-            if(temp != 30)
+            if((g_rSysConfigInfo.collectPeriod % 60) == 0)
             {
-                if(temp > 30)
+                temp = RtcGetSec();
+                if(temp != 30)
                 {
-                    nodeParameter.collectTimeCnt = temp - 30;
+                    if(temp > 30)
+                    {
+                        nodeParameter.collectTimeCnt = temp - 30;
+                    }
+                    else
+                    {
+                        nodeParameter.collectTimeCnt = temp + 30;
+                    }
                 }
                 else
                 {
-                    nodeParameter.collectTimeCnt = temp + 30;
+                    nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
                 }
             }
             else
             {
-                nodeParameter.collectTimeCnt = 0;
+                nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
             }
             
             Sensor_measure(1);
