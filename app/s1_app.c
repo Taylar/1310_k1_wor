@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-04 20:28:41
+* @Last Modified time: 2018-07-16 17:42:22
 */
 #include "../general.h"
 
@@ -63,7 +63,6 @@ void S1ShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        case DEVICES_CONFIG_MODE:
 #ifdef SUPPORT_BOARD_OLD_S1
         case OLD_S1_DEVICES_RADIO_UPGRADE:
 #endif
@@ -74,6 +73,11 @@ void S1ShortKeyApp(void)
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
         break;
+
+        case DEVICES_CONFIG_MODE:
+        Led_ctrl(LED_G, 1, 500 * CLOCK_UNIT_MS, 1);
+        break;
+
     }
 }
 
@@ -142,7 +146,7 @@ void S1DoubleKeyApp(void)
         NodeRadioSendConfig();
 
 
-        Led_ctrl(LED_G, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_G, 1, 250 * CLOCK_UNIT_MS, 6);
         break;
     }
 }
