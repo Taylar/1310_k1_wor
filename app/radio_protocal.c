@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-12 17:46:17
+* @Last Modified time: 2018-07-16 17:35:30
 */
 #include "../general.h"
 
@@ -107,7 +107,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 					// NodeCollectStop();
-					g_rSysConfigInfo.collectPeriod = 5;
+					g_rSysConfigInfo.collectPeriod = temp;
 					
 					break;
 
@@ -404,7 +404,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						   ((uint32_t)bufTemp->load[baseAddr+3] << 8) +
 						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
-					g_rSysConfigInfo.collectPeriod = 5;
+					g_rSysConfigInfo.collectPeriod = temp;
 					break;
 
 					case PARASETTING_UPLOAD_INTERVAL:

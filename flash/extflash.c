@@ -1574,7 +1574,7 @@ void Sys_config_reset(void)
 #endif
 
 
-    g_rSysConfigInfo.collectPeriod   = 5;   //unit is sec
+    g_rSysConfigInfo.collectPeriod   = COLLECT_PERIOD_DEFAULT;   //unit is sec
     
     g_rSysConfigInfo.uploadPeriod    = UPLOAD_PERIOD_DEFAULT; // unit is sec
     
