@@ -449,6 +449,22 @@ void Flash_init(void)
     Lcd_set_font(LOGO_X_MAX, 8, 1);
     Lcd_clear_area(0, 4);        
 #endif
+
+    uint8_t ret = 0;
+    if(g_rSysConfigInfo.batLowVol > BAT_VOLTAGE_L2) {//修正配置该数据
+        g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_L2;
+        ret =  1;
+
+    }
+
+    if(g_rSysConfigInfo.batLowVol < BAT_VOLTAGE_LOW) {//修正配置该数据
+        g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_LOW;
+        ret = 1;
+    }
+
+    if (ret) {
+        Flash_store_config();
+    }
 }
 
 void Flash_reset_all(void)
@@ -1558,7 +1574,7 @@ void Sys_config_reset(void)
 #endif
 
 
-    g_rSysConfigInfo.collectPeriod   = UPLOAD_PERIOD_DEFAULT;   //unit is sec
+    g_rSysConfigInfo.collectPeriod   = 5;   //unit is sec
     
     g_rSysConfigInfo.uploadPeriod    = UPLOAD_PERIOD_DEFAULT; // unit is sec
     

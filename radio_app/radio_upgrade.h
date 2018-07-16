@@ -27,7 +27,7 @@ typedef struct {
 //extern usb_upgrade_info_t sTxRadio_upgrade_info;
 
 void RadioUpgrade_Init(void);
-void RadioUpgrade_start(uint32_t upgradeFileLen);
+void RadioUpgrade_start(uint32_t upgradeFileLen, uint32_t address);
 void RadioUpgrade_stop(void);
 void RadioUpgrade_FileDataSend(void);
 

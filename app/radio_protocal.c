@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-05 16:02:36
+* @Last Modified time: 2018-07-12 17:46:17
 */
 #include "../general.h"
 
@@ -107,7 +107,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 					// NodeCollectStop();
-					g_rSysConfigInfo.collectPeriod = temp;
+					g_rSysConfigInfo.collectPeriod = 5;
 					
 					break;
 
@@ -157,7 +157,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
     				SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
 				                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
-				                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+				                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8)  |
 				                     g_rSysConfigInfo.DeviceId[3]);
 
 					lenTemp -= 5;
@@ -404,7 +404,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						   ((uint32_t)bufTemp->load[baseAddr+3] << 8) +
 						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
-					g_rSysConfigInfo.collectPeriod = temp;
+					g_rSysConfigInfo.collectPeriod = 5;
 					break;
 
 					case PARASETTING_UPLOAD_INTERVAL:

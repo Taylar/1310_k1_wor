@@ -24,6 +24,8 @@ static Clock_Handle radioUpgradeRxClkHandle;
 static usb_upgrade_info_t sRadio_upgrade_info = {0};  // initialize zero
 static usb_upgrade_info_t sTxRadio_upgrade_info = {0};  // initialize zero
 
+static uint32_t sRadioUpgradeAddress;
+
 static radio_upgrade_TxInfo_t  radio_upgrade_tx_info;
 
 static uint8_t radio_upgrade_shake_handle_Cnt;
@@ -100,7 +102,7 @@ void RadioUpgrade_Init(void)
 }
 
 
-void RadioUpgrade_start(uint32_t upgradeFileLen)
+void RadioUpgrade_start(uint32_t upgradeFileLen, uint32_t address)
 {
     RadioUpgrade_TxInfoInit();
     sTxRadio_upgrade_info.pack_num = 0;
@@ -111,6 +113,8 @@ void RadioUpgrade_start(uint32_t upgradeFileLen)
     radio_upgrade_shake_handle_Cnt = 0;
 
     u32RadioUpgradeFileLen = upgradeFileLen;
+
+    sRadioUpgradeAddress = address;
 
     RadioModeSet(RADIOMODE_UPGRADE);
 
@@ -469,8 +473,6 @@ static ErrorStatus RadioUpgrade_TxInfoMatch(uint32_t offset, uint8_t len)
     return status;
 }
 
-
-extern UPGRADE_RESULT_E Usb_bsl_UpgradeLoad_check(uint32_t fileLen);
 static UPGRADE_RESULT_E RaidoUpgrade_LoadCheck(void)
 {
     return Usb_bsl_UpgradeLoad_check(sRadio_upgrade_info.fileLength);
@@ -626,7 +628,7 @@ static void RadioUpgrade_DataTransmit(uint32_t offset, uint8_t len)
     sTxRadio_upgrade_info.pack_num++;
     sTxRadio_upgrade_info.pack_offset = offset + len;
 
-    SetRadioDstAddr(RADIO_UPGRADE_ADDRESS);
+    SetRadioDstAddr(sRadioUpgradeAddress);
     protocalTxBuf.dstAddr = GetRadioDstAddr();
     protocalTxBuf.srcAddr = GetRadioSrcAddr();
     protocalTxBuf.command = RADIO_PRO_CMD_UPGRADE;
@@ -660,7 +662,7 @@ static void RadioUpgrade_stopFileSendTimer(void)
 static void RadioUpgrade_SendRateReq(void)
 {
     ClearRadioSendBuf();
-    SetRadioDstAddr(RADIO_UPGRADE_ADDRESS);
+    SetRadioDstAddr(sRadioUpgradeAddress);
     protocalTxBuf.dstAddr = GetRadioDstAddr();
     protocalTxBuf.srcAddr = GetRadioSrcAddr();
     protocalTxBuf.command = RADIO_PRO_CMD_RATE_SWITCH;

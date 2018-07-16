@@ -509,7 +509,7 @@ void ConcenterRtcProcess(void)
 
     Nwk_upload_time_isr();
 
-    if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
+    if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
     {
         Disp_poweroff();
         ConcenterSleep();

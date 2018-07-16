@@ -58,7 +58,7 @@ void Battery_voltage_measure(void)
     for(i = 0; i < (BATTERY_DETECT_TIME - 1); i++)
     {
         ADC_convert(batteryHandle, &temp);
-        value    = ADC_convertToMicroVolts(batteryHandle, temp);
+        value    = ADC_convertToMicroVolts(batteryHandle, temp); // uv
         if(value > max)
             max = value;
 

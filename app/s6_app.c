@@ -246,7 +246,7 @@ void S6HwInit(void)
     }
 
 
-    if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+    if(Battery_get_voltage() > g_rSysConfigInfo.batLowVol)
     {
         Disp_poweron();
         Sys_event_post(SYSTEMAPP_EVT_DISP);
@@ -309,7 +309,7 @@ void S6ConcenterLongKeyApp(void)
 
         case DEVICES_OFF_MODE:
         Battery_voltage_measure();
-        if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+        if(Battery_get_voltage() > g_rSysConfigInfo.batLowVol)
         {
             Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
             deviceMode = DEVICES_ON_MODE;
@@ -390,7 +390,7 @@ void S6LongKey1App(void)
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
         Battery_voltage_measure();
-        if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+        if(Battery_get_voltage() > g_rSysConfigInfo.batLowVol)
         {
             deviceMode = DEVICES_ON_MODE;
             ConcenterWakeup();

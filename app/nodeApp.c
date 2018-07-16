@@ -448,6 +448,7 @@ void NodeSleep(void)
 void NodeWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
+    RtcStart();
     NodeStrategyReset();
     NodeStartBroadcast();
     NodeBroadcasting();
@@ -492,7 +493,7 @@ void NodeRtcProcess(void)
         nodeParameter.collectTimeCnt = 1;
     }
 
-    if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
+    if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
     {
         NodeSleep();
         // SysCtrlSystemReset();
@@ -544,7 +545,7 @@ void NodeRtcProcess(void)
             nodeParameter.sysTime       = 0;
         }
 
-        if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
+        if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
         {
             NodeSleep();
             // SysCtrlSystemReset();

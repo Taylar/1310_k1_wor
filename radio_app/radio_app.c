@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-05 16:07:01
+* @Last Modified time: 2018-07-13 17:46:30
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -354,33 +354,33 @@ void RadioAppTaskFxn(void)
 
                 radioStatus = RADIOSTATUS_IDLE;
 
-            if((radioMode == RADIOMODE_RECEIVEPORT) || (radioMode == RADIOMODE_UPGRADE))
-            {
-           
-    #ifdef  BOARD_S1_2
-                    NodeProtocalDispath(&radioRxPacket);
-                    if (radioMode == RADIOMODE_RECEIVEPORT) {
-                        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
-                    }
-    #else
-                    ConcenterProtocalDispath(&radioRxPacket);
+                if((radioMode == RADIOMODE_RECEIVEPORT) || (radioMode == RADIOMODE_UPGRADE))
+                {
+               
+#ifdef  BOARD_S1_2
+                        NodeProtocalDispath(&radioRxPacket);
+                        if (radioMode == RADIOMODE_RECEIVEPORT) {
+                            Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
+                        }
+#else
+                        ConcenterProtocalDispath(&radioRxPacket);
 
     #ifdef  BOARD_CONFIG_DECEIVE
-                    Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 1);
-    #endif
+                        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 1);
+    #endif  //BOARD_CONFIG_DECEIVE
 
-    #endif           
-                    radioStatus = RADIOSTATUS_RECEIVING;
-                    EasyLink_receiveAsync(RxDoneCallback, 0);
-                }
+#endif  //BOARD_S1_2         
+                        radioStatus = RADIOSTATUS_RECEIVING;
+                        EasyLink_receiveAsync(RxDoneCallback, 0);
+                 }
 
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
 #ifdef SUPPORT_BOARD_OLD_S1
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
-                        OldS1NodeApp_protocolProcessing(radioRxPacket.payload, radioRxPacket.len);
+                            OldS1NodeApp_protocolProcessing(radioRxPacket.payload, radioRxPacket.len);
                     } else {
-                        NodeProtocalDispath(&radioRxPacket);
+                            NodeProtocalDispath(&radioRxPacket);
                     }
 #else
                     NodeProtocalDispath(&radioRxPacket);

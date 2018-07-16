@@ -135,7 +135,7 @@ void SystemAppTaskFxn(void)
    	RtcInit(RtcEventSet);
 	Sensor_init();
 
-	RtcStart();
+	// RtcStart();
 
     Task_sleep(10 * CLOCK_UNIT_MS);
 
@@ -268,7 +268,7 @@ void SystemAppTaskFxn(void)
 			{
 				ConcenterRtcProcess();
 			}
-			// S6AppRtcProcess();
+//			 S6AppRtcProcess();
 #endif
 
 #ifdef BOARD_S1_2

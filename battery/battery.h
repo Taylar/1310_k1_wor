@@ -16,7 +16,7 @@
 //Battery voltage (mV)
 #ifdef  BOARD_S1_2
 
-#define BAT_VOLTAGE_LOW             2700
+#define BAT_VOLTAGE_LOW             2150
 #define BAT_VOLTAGE_L1              2800
 #define BAT_VOLTAGE_L2              2900
 #define BAT_VOLTAGE_L3              3050

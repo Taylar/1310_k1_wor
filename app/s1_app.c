@@ -92,13 +92,13 @@ void S1LongKeyApp(void)
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         Task_sleep(3000 * CLOCK_UNIT_MS);
 
-        g_rSysConfigInfo.rtc =Rtc_get_calendar();
+        g_rSysConfigInfo.rtc = Rtc_get_calendar();
         Flash_store_config();
         SysCtrlSystemReset();
         break;
 
         case DEVICES_OFF_MODE:
-        if(Battery_get_voltage() <= BAT_VOLTAGE_LOW)
+        if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
         {
             Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 1);
         }

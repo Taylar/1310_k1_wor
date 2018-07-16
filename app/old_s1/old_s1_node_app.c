@@ -16,6 +16,7 @@ Clock_Handle oldS1StartClockHandle;
 static uint16_t frameSerialNum;
 static uint16_t mode2TxFrameSerialNum;
 static uint16_t mode2TxLastTwoID;
+static uint8_t  txResendCnt;
 
 Semaphore_Struct oldS1UploadeSemStruct;
 Semaphore_Handle oldS1UploadeSemHandle;
@@ -28,6 +29,9 @@ static void PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata);
 static void PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata);
 
 static void SendDataTimingFxn(UArg arg0);
+
+static void txResendCntClear(void);
+static void txResendProcess(void);
 
 void OldS1NodeApp_setDataTxRfFreque(void)
 {
@@ -111,6 +115,8 @@ void OldS1NodeApp_init(void)
     //
     SetRadioDstAddr(0xdadadada);
     ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+
+    txResendCnt = 0;
 }
 
 void OldS1NodeAPP_Mode2NodeUploadProcess(void)
@@ -203,14 +209,19 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
         serialNum = ((pData[3] << 8) | pData[4]);
         if (id == mode2TxLastTwoID && serialNum == mode2TxFrameSerialNum) {
             flag = true;
-            Flash_moveto_next_sensor_data();
+//            Flash_moveto_next_sensor_data();
         }
     } else if (3 == len && pData[0] == 0xba) { // Software version before (version: 15 74)
         serialNum = ((pData[1] << 8) | pData[2]);
         if (serialNum == mode2TxFrameSerialNum) {
             flag = true;
-            Flash_moveto_next_sensor_data();
+//            Flash_moveto_next_sensor_data();
         }
+    }
+
+    if (flag) {
+        txResendCntClear();
+        Flash_moveto_next_sensor_data();
     }
 
     id  = Flash_get_unupload_items();
@@ -386,8 +397,8 @@ static void PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata)
 
 static void SendDataTimingFxn(UArg arg0)
 {
+    txResendProcess();
     RadioSend();
-//    OldS1NodeApp_stopSendSensorData();
 }
 
 void OldS1NodeApp_startSendSensorData(void)
@@ -409,4 +420,19 @@ void OldS1NodeApp_stopSendSensorData(void)
     }
 }
 
+
+static void txResendCntClear(void)
+{
+    txResendCnt = 0;
+}
+
+static void txResendProcess(void)
+{
+    if (txResendCnt > 6) {
+        txResendCnt = 0;
+        OldS1NodeApp_stopSendSensorData();
+    }
+
+    txResendCnt++;
+}
 #endif
