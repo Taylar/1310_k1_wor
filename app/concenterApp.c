@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-05 16:32:34
+* @Last Modified time: 2018-07-18 11:40:37
 */
 #include "../general.h"
 
@@ -272,6 +272,8 @@ void ConcenterSleep(void)
 void ConcenterWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
+    
+    RtcStart();
     
 #ifdef BOARD_S6_6
     if(GetUsbState() == USB_UNLINK_STATE)

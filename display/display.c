@@ -772,6 +772,12 @@ void Disp_sensor_data(void)
                 Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
+            } else if (Sensor.type == SEN_TYPE_HLW8012) {
+                sprintf((char*)buff, "%d.%dW", Sensor.value.ACPower/10, Sensor.value.ACPower%10);
+
+                sprintf((char*)(buff + strlen((const char *)buff)), " %d.%dV", Sensor.value.ACVoltage/10, Sensor.value.ACVoltage%10);
+                Lcd_clear_area(2, 4);
+                Disp_msg(2, 4, buff, FONT_8X16);
             }
         }
     }

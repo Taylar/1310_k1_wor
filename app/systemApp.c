@@ -135,7 +135,9 @@ void SystemAppTaskFxn(void)
    	RtcInit(RtcEventSet);
 	Sensor_init();
 
-	// RtcStart();
+#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1))
+	RtcStart();
+#endif
 
     Task_sleep(10 * CLOCK_UNIT_MS);
 

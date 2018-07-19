@@ -28,6 +28,10 @@ static node_para_t nodeParameter;
 
 /***** Variable declarations *****/
 
+Semaphore_Struct uploadSemStruct;
+Semaphore_Handle uploadSemHandle;
+
+
 /* Clock for node period collect */
 
 
@@ -65,6 +69,13 @@ void NodeAppInit(void (*Cb)(void))
 
 
     nodeParameter.customId       = 0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1];
+
+
+    Semaphore_Params semParams;
+    Semaphore_Params_init(&semParams);
+    Semaphore_construct(&uploadSemStruct, 1, &semParams);
+    uploadSemHandle = Semaphore_handle(&uploadSemStruct);
+
     
     SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
@@ -123,6 +134,7 @@ void NodeUploadProcess(void)
     uint8_t     data[24];
     uint32_t    dataItems;
     // reverse the buf to other command
+    Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
     dataItems  = Flash_get_unupload_items();
     if(dataItems >= offsetUnit)
     {
@@ -145,6 +157,7 @@ void NodeUploadProcess(void)
         dataItems--;
         offsetUnit++;
     }
+    Semaphore_post(uploadSemHandle);
 }
 //***********************************************************************************
 // brief:   when the sensor data upload fail, needn't do everything
@@ -189,8 +202,11 @@ void NodeCollectStart(void)
 
 
     // promise the next collect time is 30s 
-    secTemp += 30;
-    nodeParameter.collectTimeCnt = secTemp;
+    if((g_rSysConfigInfo.collectPeriod % 60) == 0)
+    {
+        secTemp += 30;
+        nodeParameter.collectTimeCnt = secTemp;
+    }
     
 }
 

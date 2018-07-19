@@ -55,6 +55,7 @@ typedef enum {
     AC_Send_Device_Data  = 0x91,//获取指定时间段数据
     AC_Send_Unupload_Data = 0x92,//获取未上传数据
     AC_Send_Record_Data   = 0x93,//获取开始记录的数据
+
     AC_Send_Upgrade_Success = 0x94,
 
     

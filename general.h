@@ -67,9 +67,9 @@
 // HW version define.
 //
 //***********************************************************************************
-#define BOARD_S1_2
+//#define BOARD_S1_2
 // #define BOARD_S2_2
-// #define BOARD_S6_6
+ #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 //#define FACTOR_RADIO_TEST
@@ -106,7 +106,7 @@
 
 // system state info upload
 #ifndef BOARD_CONFIG_DECEIVE
-#define SUPPORT_DEVICED_STATE_UPLOAD
+//#define SUPPORT_DEVICED_STATE_UPLOAD
 #endif
 #endif
 
@@ -152,7 +152,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0018
+#define FW_VERSION              0x0019
 
 
 //***********************************************************************************
@@ -366,6 +366,8 @@ typedef enum {
     SEN_TYPE_PM25,
     SEN_TYPE_CO2,
     SEN_TYPE_GSENSOR,
+    SEN_TYPE_ORG_POLL,
+    SEN_TYPE_HLW8012,
     SEN_TYPE_MAX
 } SENSOR_TYPE;
 

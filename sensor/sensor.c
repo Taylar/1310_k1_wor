@@ -127,6 +127,8 @@ static const Sensor_FxnTable *Sensor_FxnTablePtr[]={
     NULL,//&PM25_FxnTable,
     NULL,//&CO2_FxnTable,
     &LIS2D12_FxnTable,
+    NULL,
+    NULL,
 };
 
 
@@ -637,6 +639,12 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
             LOBYTE(HIWORD(cursensor.value.lux)) = pData[Index++];
             HIBYTE(LOWORD(cursensor.value.lux)) = pData[Index++];
             LOBYTE(LOWORD(cursensor.value.lux)) = pData[Index++];
+        }
+        else if (cursensor.type == SEN_TYPE_HLW8012) {
+            HIBYTE(cursensor.value.ACPower) = pData[Index++];
+            LOBYTE(cursensor.value.ACPower) = pData[Index++];
+            HIBYTE(cursensor.value.ACVoltage) = pData[Index++];
+            LOBYTE(cursensor.value.ACVoltage) = pData[Index++];
         }
 		else {
 			HIBYTE(cursensor.value.temp) = pData[Index++];

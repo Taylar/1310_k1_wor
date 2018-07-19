@@ -69,6 +69,12 @@ typedef union{
     int16_t temp;
     uint16_t humi;
     };
+
+    struct {
+        uint16_t ACPower;
+        uint16_t ACVoltage;
+    };
+
     int32_t tempdeep;
     uint32_t  lux;
 } SensorData_t;

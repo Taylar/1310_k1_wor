@@ -189,6 +189,13 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						goto NodeDispath;
 					g_rSysConfigInfo.batLowVol    = ((uint32_t)bufTemp->load[baseAddr+1] << 8) + 
 													((uint32_t)bufTemp->load[baseAddr+2]);
+				    if(g_rSysConfigInfo.batLowVol > BAT_VOLTAGE_L2) {
+				        g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_L2;
+				    }
+
+				    if(g_rSysConfigInfo.batLowVol < BAT_VOLTAGE_LOW) {
+				        g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_LOW;
+				    }
 					lenTemp -= 3;
 					break;
 
