@@ -152,6 +152,7 @@ void NodeUploadProcess(void)
         // the radio buf is full 
         if(NodeRadioSendSensorData(data, 22) == false)
         {
+            Semaphore_post(uploadSemHandle);
             return;
         }
         dataItems--;

@@ -6,7 +6,7 @@
 */
 #include "../general.h"
 
-#define		WDT_TOUT_MS				10000
+#define		WDT_TOUT_MS				5000
 
 
 /*
