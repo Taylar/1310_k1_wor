@@ -263,14 +263,22 @@ void SystemAppTaskFxn(void)
 
 
 #ifdef BOARD_S6_6
-			if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
+			if(g_rSysConfigInfo.module & MODULE_RADIO)
 			{
-				NodeRtcProcess();
+				if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
+				{
+					NodeRtcProcess();
+				}
+				else
+				{
+					ConcenterRtcProcess();
+				}
 			}
 			else
 			{
 				ConcenterRtcProcess();
 			}
+				
 //			 S6AppRtcProcess();
 #endif
 
