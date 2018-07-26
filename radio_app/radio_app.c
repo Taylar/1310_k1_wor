@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-25 16:49:23
+* @Last Modified time: 2018-07-26 10:03:59
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -26,7 +26,7 @@
 #define RADIO_ADDR_LEN_MAX              8
 
 
-
+#define RADIO_RSSI_FLITER               -80
 
 
 
@@ -271,11 +271,15 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TX)
         {
-            Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
             
             EasyLink_getRssi(&rssi);
-            if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= -110))
+            if(rssi > RADIO_RSSI_FLITER)
             {
+                Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
+            }
+            else if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
+            {
+                Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #ifdef SUPPORT_BOARD_OLD_S1
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
                         OldS1NodeApp_setDataTxRfFreque();
@@ -334,16 +338,13 @@ void RadioAppTaskFxn(void)
                     RadioSwitchingUpgradeRate();
                 }
 #endif
+                Semaphore_post(radioAccessSemHandle);
             }
             else
             {
-                if((rssi > -110) && (currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))
-                {
-                    Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
-                }
+                ClearRadioSendBuf();
             }
 
-            Semaphore_post(radioAccessSemHandle);
         }
 
 

@@ -2,11 +2,11 @@
 * @Author: zxt
 * @Date:   2018-01-27 11:44:25
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-08 14:30:40
+* @Last Modified time: 2018-07-25 18:00:21
 */
 #include "../general.h"
 
-#define		WDT_TOUT_MS				5000
+#define		WDT_TOUT_MS				10000
 
 
 /*

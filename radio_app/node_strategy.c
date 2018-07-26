@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-05 16:02:11
+* @Last Modified time: 2018-07-26 10:49:29
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -68,6 +68,7 @@ static void NodeStrategyStartCb(UArg arg0)
 {
     if((NodeStrategyPeriodCb != NULL) && nodeStrategy.busy)
         NodeStrategyPeriodCb();
+    Sys_event_post(SYS_EVT_STRATEGY);
 }
 
 

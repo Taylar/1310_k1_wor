@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-16 17:35:30
+* @Last Modified time: 2018-07-26 10:24:09
 */
 #include "../general.h"
 
@@ -85,7 +85,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			Rtc_set_calendar(&calendarTemp);
 			NodeStopBroadcast();
 			NodeCollectStart();
-			NodeUploadStart();
 			break;
 
 			case RADIO_PRO_CMD_SYN_TIME_REQ:
@@ -120,7 +119,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 
-					NodeUploadStop();
 					g_rSysConfigInfo.uploadPeriod = temp;
 					NodeStrategySetPeriod(temp);
 

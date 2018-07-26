@@ -5,6 +5,10 @@
 #define         SYSTEM_APP_STACK_SIZE        1024
 
 
+#ifdef SUPPORT_WATCHDOG
+Clock_Struct watchdogClkStruct;
+#define WATCHDAG_FEED_TIME          8 * CLOCK_UNIT_S
+#endif
 
 
 // **************************************************************************
@@ -75,6 +79,20 @@ void SystemUsbIntEventPostIsr(void)
 }
 
 
+#ifdef SUPPORT_WATCHDOG
+//***********************************************************************************
+//
+// System LCD shutdown callback function.
+//
+//***********************************************************************************
+void Sys_watchDogFxn(UArg arg0)
+{
+    Sys_event_post(SYS_FEED_WATCHDOG);
+}
+#endif
+
+
+
 void WdtResetCb(uintptr_t handle)
 {
 
@@ -120,7 +138,7 @@ void SystemAppTaskFxn(void)
 
     deviceMode = DEVICES_OFF_MODE;
 
-//	RtcInit(RtcEventSet);
+	// RtcInit(RtcEventSet);
 
 #ifdef  BOARD_S6_6
 	S6HwInit();
@@ -176,6 +194,13 @@ void SystemAppTaskFxn(void)
 #endif // SUPPORT_DEVICED_STATE_UPLOAD
 
 #ifdef		SUPPORT_WATCHDOG
+	/* Construct a 10s periodic Clock Instance to feed watchdog */
+	Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
+    clkParams.period = WATCHDAG_FEED_TIME;
+    clkParams.startFlag = TRUE;
+    Clock_construct(&watchdogClkStruct, (Clock_FuncPtr)Sys_watchDogFxn, WATCHDAG_FEED_TIME, &clkParams);
+
 	WdtInit(WdtResetCb);
 #endif
 
@@ -183,6 +208,13 @@ void SystemAppTaskFxn(void)
 	{
         eventId = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL, BIOS_WAIT_FOREVER);
 	
+
+#ifdef		SUPPORT_WATCHDOG
+        if(eventId & SYS_FEED_WATCHDOG)
+        {
+			WdtClear();
+        }
+#endif	
 
 // the config deceive key is disable
 #ifdef   BOARD_CONFIG_DECEIVE
@@ -257,9 +289,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
-#ifdef		SUPPORT_WATCHDOG
-			WdtClear();
-#endif	
+
 
 
 #ifdef BOARD_S6_6
@@ -356,6 +386,16 @@ void SystemAppTaskFxn(void)
 		    OldS1NodeAPP_Mode2NodeUploadProcess();
 		}
 #endif
+
+		if(eventId & SYS_EVT_STRATEGY) 
+		{
+			if(GetStrategyRegisterStatus() == false)
+			{
+				NodeStrategyTimeoutProcess();
+				RadioSend();
+			}
+		}
+
 	}
 }
 

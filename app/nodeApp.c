@@ -18,7 +18,6 @@ typedef struct
     uint16_t serialNum;
     uint16_t sysTime;
     bool     collectStart;
-    bool     uploadStart;
     bool     broadcasting;
     bool     configFlag;
     bool     synTimeFlag;
@@ -61,7 +60,6 @@ void NodeAppInit(void (*Cb)(void))
     nodeParameter.uploadTimeCnt  = 0;
     nodeParameter.collectTimeCnt = 0;
     
-    nodeParameter.uploadStart    = false;
     nodeParameter.collectStart   = false;
     nodeParameter.synTimeFlag    = false;
     
@@ -90,26 +88,6 @@ void NodeAppInit(void (*Cb)(void))
     // NodeWakeup();
 }
 
-//***********************************************************************************
-// brief:   start the upload timer
-// 
-// parameter: 
-//***********************************************************************************
-void NodeUploadStart(void)
-{
-    nodeParameter.uploadStart = true;
-}
-
-
-//***********************************************************************************
-// brief:   stop the upload timer
-// 
-// parameter: 
-//***********************************************************************************
-void NodeUploadStop(void)
-{
-    nodeParameter.uploadStart = false;
-}
 
 //***********************************************************************************
 // brief:   set the upload timer period
@@ -450,7 +428,6 @@ void NodeSleep(void)
     NodeCollectStop();
     NodeStrategyStop();
     deviceMode = DEVICES_OFF_MODE;
-    nodeParameter.uploadStart         = false;
     nodeParameter.collectStart        = false;
 
     offsetUnit = 0;
@@ -580,7 +557,6 @@ void NodeRtcProcess(void)
 //***********************************************************************************
 void NodeStrategyTimeoutProcess(void)
 {
-    NodeUploadStop();
     ClearRadioSendBuf();
     NodeUploadFailProcess();
     NodeStartBroadcast();

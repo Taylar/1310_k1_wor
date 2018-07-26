@@ -11,10 +11,6 @@
 
 void NodeAppInit(void (*Cb)(void));
 
-void NodeUploadStart(void);
-
-void NodeUploadStop(void);
-
 void NodeUploadPeriodSet(uint32_t period);
 
 void NodeUploadProcess(void);

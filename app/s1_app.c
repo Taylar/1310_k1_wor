@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-16 17:42:22
+* @Last Modified time: 2018-07-26 10:20:36
 */
 #include "../general.h"
 
@@ -134,7 +134,6 @@ void S1DoubleKeyApp(void)
         NodeStrategyReset();
         deviceMode                      = DEVICES_CONFIG_MODE;
         configModeTimeCnt = 0;
-        NodeUploadStop();
         NodeUploadFailProcess();
         NodeStrategyBusySet(false);
         RadioModeSet(RADIOMODE_RECEIVEPORT);
