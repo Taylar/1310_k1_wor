@@ -235,7 +235,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			        calendarTemp.Minutes    = bufTemp->load[baseAddr + 6];
 			        calendarTemp.Seconds    = bufTemp->load[baseAddr + 7];
 			        Rtc_set_calendar(&calendarTemp);
-			        lenTemp -= 6;
+			        lenTemp -= 7;
 			        break;
 
 					default:
@@ -510,7 +510,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					break;
 
                     case PARASETTING_RTC_SET:
-                    if(lenTemp < 6) {
+                    if(lenTemp < 7) {
                         goto ConcenterConfigRespondEnd;
                     }
                     calendarTemp.Year       = ((bufTemp->load[baseAddr + 1] << 8) | bufTemp->load[baseAddr + 2]);
@@ -520,7 +520,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
                     calendarTemp.Minutes    = bufTemp->load[baseAddr + 6];
                     calendarTemp.Seconds    = bufTemp->load[baseAddr + 7];
                     Rtc_set_calendar(&calendarTemp);
-                    lenTemp -= 6;
+                    lenTemp -= 7;
                     break;
 
 					default:

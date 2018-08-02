@@ -115,11 +115,14 @@
 //***********************************************************************************
 #ifdef BOARD_S2_2
 #define SUPPORT_SENSOR
-#define SUPPORT_DEEPTEMP
+#define SUPPORT_SHT2X
+#define SUPPORT_DEEPTEMP_PT100
 
 #define SUPPORT_RADIO
 
 #define SUPPORT_NETWORK
+#define SUPPORT_REMOTE_UPGRADE
+#define SUPPORT_USB_UPGRADE
 #endif
 
 //***********************************************************************************
@@ -602,6 +605,11 @@ typedef struct {
 
 #ifdef SUPPORT_BOARD_OLD_S1
     #include "app/old_s1/old_s1_node_app.h"
+#endif
+
+#ifdef SUPPORT_DEEPTEMP_PT100
+    #include "sensor/ads1247/ads1247.h"
+    #include "sensor/pt100.h"
 #endif
 
 //***********************************************************************************

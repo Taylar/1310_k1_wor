@@ -38,9 +38,13 @@ void S2HwInit(void)
     KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
     KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
 
+    I2c_init();
+
     Spi_init();
 
     Flash_init();
+
+    UsbIntInit(SystemUsbIntEventPostIsr);
 
     AdcDriverInit();
     Battery_init();
@@ -82,7 +86,7 @@ void S2LongKeyApp(void)
 
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        ConcenterWakeup();
+        SysCtrlSystemReset();
         break;
     }
 }

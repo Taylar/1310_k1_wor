@@ -168,12 +168,14 @@ err_end:
 }
 
 // Jump to boot
+#ifndef BOARD_CONFIG_DECEIVE
 static void USB_BSL_jump_bsl(void)
 {
 #ifdef SUPPORT_USB_UPGRADE
     SysCtrlSystemReset();
 #endif
 }
+#endif
 
 // 非空消息 分析
 // pack_len(2)offset(4)pack_data(pack_len)

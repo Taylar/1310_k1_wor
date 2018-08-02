@@ -39,20 +39,17 @@ const PIN_Config ledPinTable[] = {
 #ifdef BOARD_S2_2
 
 #define LED_R_PIN_GATEWAY                       IOID_14
-#define LED_G_PIN_GATEWAY                       IOID_13
 #define LED_B_PIN_GATEWAY                       IOID_15
 
 static const uint8_t LED_ID_CONST[LED_MAX] =
 {
     LED_R_PIN_GATEWAY,
     LED_B_PIN_GATEWAY,
-    LED_G_PIN_GATEWAY,
 };
 
 const PIN_Config ledPinTable[] = {
     
     LED_R_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    LED_G_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     LED_B_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     PIN_TERMINATE
 };

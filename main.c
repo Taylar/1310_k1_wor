@@ -61,7 +61,7 @@ int main(void)
 
     SysAppTaskCreate();
 
-#ifdef  BOARD_S6_6
+#if (defined  BOARD_S6_6 || defined BOARD_S2_2)
 
 #ifdef SUPPORT_NETWORK
     Nwk_task_create();

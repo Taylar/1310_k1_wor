@@ -246,7 +246,7 @@ void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 void ConcenterSleep(void)
 {
     concenterParameter.radioReceive = false;
-
+    RtcStop();
     RadioDisable();
     ConcenterCollectStop();
     // wait the nwk disable the uart
@@ -275,7 +275,7 @@ void ConcenterWakeup(void)
     
     RtcStart();
     
-#ifdef BOARD_S6_6
+#if (defined BOARD_S6_6 || defined BOARD_S2_2)
     if(GetUsbState() == USB_UNLINK_STATE)
 #endif
     {
@@ -464,7 +464,8 @@ void ConcenterCollectStart(void)
 
     for(i = 0; i < MODULE_SENSOR_MAX; i++)
     {
-        if((g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X) || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_OPT3001))
+        if((g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X) || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_OPT3001)
+                || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_DEEPTEMP))
         {
             concenterParameter.collectStart      = true;
 
@@ -513,7 +514,9 @@ void ConcenterRtcProcess(void)
 
     if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
     {
+#ifdef      SUPPORT_DISP_SCREEN
         Disp_poweroff();
+#endif
         ConcenterSleep();
     }
     

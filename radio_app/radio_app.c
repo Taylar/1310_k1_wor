@@ -194,7 +194,7 @@ void RadioAppTaskFxn(void)
 
     radioStatus = RADIOSTATUS_IDLE;
 
-#ifdef  BOARD_S6_6
+#if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
     RadioFrontInit();
 
 #ifdef  BOARD_CONFIG_DECEIVE
@@ -229,7 +229,7 @@ void RadioAppTaskFxn(void)
         OldS1NodeApp_init();
 #endif
 
-#ifdef  BOARD_S6_6
+#if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
         NodeWakeup();
 #endif // BOARD_S6_6
     }
@@ -279,6 +279,13 @@ void RadioAppTaskFxn(void)
         {
             
             EasyLink_getRssi(&rssi);
+#ifdef BOARD_CONFIG_DECEIVE
+            rssi = RADIO_RSSI_FLITER - 1;
+#endif
+            if (RADIOMODE_UPGRADE == RadioModeGet()) {
+                rssi = RADIO_RSSI_FLITER - 1;
+            }
+
             if(rssi > RADIO_RSSI_FLITER)
             {
                 Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);

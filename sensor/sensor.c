@@ -38,7 +38,7 @@ SensorObject_t rSensorObject;
 
 extern const Sensor_FxnTable  NTC_FxnTable;
 extern const Sensor_FxnTable  SHT2X_FxnTable;
-extern const Sensor_FxnTable  DeepTemp_FxnTable;
+extern const Sensor_FxnTable  DeepTemp_PT100_FxnTable;
 extern const Sensor_FxnTable  OPT3001_FxnTable;
 
 
@@ -77,10 +77,10 @@ const Sensor_FxnTable NTC_FxnTable = {
 };
 #endif
 
-#if defined( SUPPORT_DEEPTEMP) || defined( SUPPORT_PT100)
+#ifdef SUPPORT_DEEPTEMP_PT100
 extern const Sensor_FxnTable  DeepTemp_FxnTable;
 #else
-const Sensor_FxnTable  DeepTemp_FxnTable = {
+const Sensor_FxnTable  DeepTemp_PT100_FxnTable = {
     SENSOR_DEEP_TEMP,
     NULL,
     NULL,
@@ -122,7 +122,7 @@ static const Sensor_FxnTable *Sensor_FxnTablePtr[]={
 #endif
 	&NTC_FxnTable,
     &OPT3001_FxnTable,
-    &DeepTemp_FxnTable,
+    &DeepTemp_PT100_FxnTable,
     NULL,//&HCHO_FxnTable,
     NULL,//&PM25_FxnTable,
     NULL,//&CO2_FxnTable,

@@ -154,7 +154,7 @@ void SystemAppTaskFxn(void)
    	RtcInit(RtcEventSet);
 	Sensor_init();
 
-#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1))
+#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1) || defined(BOARD_S2_2))
 	RtcStart();
 #endif
 
@@ -168,7 +168,7 @@ void SystemAppTaskFxn(void)
 
 
 
-#ifdef 		BOARD_S6_6
+#if (defined BOARD_S6_6 || defined BOARD_S2_2)
 
 #ifdef SUPPORT_ENGMODE
     if (GetEngModeFlag())
@@ -242,6 +242,10 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S6_6
 			S6ShortKeyApp();
 #endif
+
+#ifdef BOARD_S2_2
+            S2ShortKeyApp();
+#endif
 		}
 
 
@@ -256,6 +260,9 @@ void SystemAppTaskFxn(void)
 			// S6ConcenterLongKeyApp();
 #endif
 
+#ifdef BOARD_S2_2
+			S2LongKeyApp();
+#endif
 		}
 
 		if(eventId & SYSTEMAPP_EVT_KEY0_DOUBLE)
@@ -292,7 +299,7 @@ void SystemAppTaskFxn(void)
 
 
 
-#ifdef BOARD_S6_6
+#if (defined BOARD_S6_6 || defined BOARD_S2_2)
 			if(g_rSysConfigInfo.module & MODULE_RADIO)
 			{
 				if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
@@ -350,12 +357,14 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S6_6
 		if(eventId & SYSTEMAPP_EVT_ALARM)
 		{
+#ifndef BOARD_CONFIG_DECEIVE
 			buzzerAlarmCnt = 2;
 			Sys_buzzer_enable();
             Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
             Clock_start(sysAlarmClkHandle);
             Disp_info_close();
             Disp_poweron();
+#endif
 		}
 #endif
 

@@ -40,7 +40,7 @@ uint8_t     offsetUnit; // for sensor data upload offset unit
 
 
 /***** Prototypes *****/
-void NodeStrategyTimeoutProcess(void);
+//void NodeStrategyTimeoutProcess(void);
 
 
 /***** Function definitions *****/
@@ -428,6 +428,10 @@ void NodeSleep(void)
 
     offsetUnit = 0;
     
+#ifndef SUPPORT_BOARD_OLD_S1
+    RtcStop();
+#endif
+
 }
 
 //***********************************************************************************

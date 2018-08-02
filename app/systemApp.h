@@ -24,7 +24,7 @@
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 
 #ifdef SUPPORT_BOARD_OLD_S1
-#define         SYS_EVT_EVT_OLD_S1_UPLOAD_NODE          Event_Id_16
+#define         SYS_EVT_EVT_OLD_S1_UPLOAD_NODE          Event_Id_18
 #endif
 
 #define         SYSTEMAPP_EVT_ALL_KEY                   (Event_Id_00 | Event_Id_01 | Event_Id_02 | Event_Id_03)

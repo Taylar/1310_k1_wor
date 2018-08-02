@@ -15,7 +15,7 @@
 #define SOFT_I2C_SDA_PIN             IOID_18
 #endif
 
-#ifdef  BOARD_S6_6
+#if (defined BOARD_S6_6 ||  defined BOARD_S2_2)
 #define SOFT_I2C_SCL_PIN             IOID_11
 #define SOFT_I2C_SDA_PIN             IOID_12
 #endif
