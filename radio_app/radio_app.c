@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-26 10:03:59
+* @Last Modified time: 2018-08-02 14:10:27
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -255,6 +255,12 @@ void RadioAppTaskFxn(void)
     for(;;)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
+
+
+        if(events & RADIO_EVT_SENSOR_PACK)
+        {
+            NodeUploadProcess();
+        }
 
 
         if (events & RADIO_EVT_TEST)
@@ -515,6 +521,17 @@ bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetrie
     Semaphore_post(radioAccessSemHandle);
     return true;
 }
+
+//***********************************************************************************
+// brief:   set the radio event to send data by radio
+// 
+// parameter:   none 
+//***********************************************************************************
+void RadioSensorDataPack(void)
+{
+    Event_post(radioOperationEventHandle, RADIO_EVT_SENSOR_PACK);
+}
+
 
 
 //***********************************************************************************

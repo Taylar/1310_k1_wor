@@ -16,6 +16,7 @@
 #define         RADIO_EVT_DISABLE	    Event_Id_09
 #define         RADIO_EVT_UPGRADE_SEND  Event_Id_10
 #define         RADIO_EVT_UPGRADE_RX_TIMEOUT   Event_Id_11
+#define         RADIO_EVT_SENSOR_PACK   Event_Id_12
 #define         RADIO_EVT_ALL           0xffff
 
 
@@ -56,6 +57,8 @@ RadioOperationMode RadioModeGet(void);
 void RadioAppTaskFxn(void);
 
 bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs, uint8_t baseAddr);
+
+void RadioSensorDataPack(void);
 
 void RadioSend(void);
 

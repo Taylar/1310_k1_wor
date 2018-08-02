@@ -334,10 +334,7 @@ void SystemAppTaskFxn(void)
 			// System_printf("the Ntc Temp : %dm C\n",NTC_FxnTable.getValueFxn(NTC_CH0, SENSOR_TEMP));
 		}
 
-		if(eventId & SYSTEMAPP_EVT_UPLOAD_NODE)
-		{
-			NodeUploadProcess();
-		}
+
 
 
 		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)

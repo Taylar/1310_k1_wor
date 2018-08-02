@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-26 10:24:09
+* @Last Modified time: 2018-08-02 14:01:38
 */
 #include "../general.h"
 
@@ -267,7 +267,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			// NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
 
 			if(bufTemp->load[0] == PROTOCAL_FAIL)
-				NodeUploadFailProcess();
+				NodeUploadOffectClear();
 			else
 				NodeUploadSucessProcess();
 
@@ -301,6 +301,8 @@ NodeDispath:
     {
 	    if((Flash_get_unupload_items() > 0) && (flag))
 	    {
+	    	// clear the offect, the buf has been clear
+	    	NodeUploadOffectClear();
 		    NodeUploadProcess();
 		    // waiting the gateway to change to receive
 	        Task_sleep(15 * CLOCK_UNIT_MS);

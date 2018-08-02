@@ -37,7 +37,7 @@ void NodeSleep(void);
 
 void NodeWakeup(void);
 
-void NodeUploadFailProcess(void);
+void NodeUploadOffectClear(void);
 
 void NodeUploadSucessProcess(void);
 

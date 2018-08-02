@@ -143,13 +143,9 @@ void NodeUploadProcess(void)
 // 
 // parameter: 
 //***********************************************************************************
-void NodeUploadFailProcess(void)
+void NodeUploadOffectClear(void)
 {
-    // if send fail should clear the buf,
-    if(offsetUnit)
-    {
-        offsetUnit = 0;
-    }
+    offsetUnit = 0;
 }
 
 //***********************************************************************************
@@ -529,7 +525,7 @@ void NodeRtcProcess(void)
             
             Sensor_measure(1);
             if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
-                Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_UPLOAD_NODE);
+                RadioSensorDataPack();
         }
 
         nodeParameter.sysTime++;
@@ -558,7 +554,7 @@ void NodeRtcProcess(void)
 void NodeStrategyTimeoutProcess(void)
 {
     ClearRadioSendBuf();
-    NodeUploadFailProcess();
+    NodeUploadOffectClear();
     NodeStartBroadcast();
     NodeStrategyBusySet(true);
     NodeBroadcasting();
