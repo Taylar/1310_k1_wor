@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-02 14:10:27
+* @Last Modified time: 2018-08-07 18:06:45
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -279,7 +279,7 @@ void RadioAppTaskFxn(void)
         {
             
             EasyLink_getRssi(&rssi);
-#ifdef BOARD_CONFIG_DECEIVE
+#if (defined  BOARD_S6_6 || defined BOARD_CONFIG_DECEIVE)
             rssi = RADIO_RSSI_FLITER - 1;
 #endif
             if (RADIOMODE_UPGRADE == RadioModeGet()) {
