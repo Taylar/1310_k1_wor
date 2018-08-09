@@ -465,6 +465,15 @@ void Flash_init(void)
     if (ret) {
         Flash_store_config();
     }
+
+#ifdef SUPPORT_BOARD_OLD_S1
+    /* 当设为mast时为旧的S1工作模式为模式1，其它模式2*/
+    if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
+        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE1);
+    } else {
+        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE2);
+    }
+#endif
 }
 
 void Flash_reset_all(void)

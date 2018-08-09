@@ -25,8 +25,11 @@
 #define RADIO_ADDR_LEN                  4
 #define RADIO_ADDR_LEN_MAX              8
 
-
+#if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
+#define RADIO_RSSI_FLITER               -40
+#else
 #define RADIO_RSSI_FLITER               -80
+#endif
 
 
 
@@ -279,7 +282,7 @@ void RadioAppTaskFxn(void)
         {
             
             EasyLink_getRssi(&rssi);
-#if (defined  BOARD_S6_6 || defined BOARD_CONFIG_DECEIVE)
+#if (defined  BOARD_S6_6 || defined BOARD_CONFIG_DECEIVE || defined SUPPORT_BOARD_OLD_S1)
             rssi = RADIO_RSSI_FLITER - 1;
 #endif
             if (RADIOMODE_UPGRADE == RadioModeGet()) {

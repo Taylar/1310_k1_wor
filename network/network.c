@@ -1174,7 +1174,7 @@ static void Nwk_taskFxn(void)
                 continue;
             }
             while (1) {
-                Led_ctrl(LED_G, 1, 0, 0);
+                Led_ctrl(LED_B, 1, 0, 0);
                 eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_ALL, BIOS_WAIT_FOREVER);
                 if ((eventId & NWK_EVT_SHUTDOWN) == NWK_EVT_SHUTDOWN) {
                     Nwk_event_post(NWK_EVT_SHUTDOWN);

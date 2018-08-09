@@ -18,12 +18,12 @@
 #define 		PROJECT_NAME				"ZKS_S6_6"
 #endif	// BOARD_CONFIG_DECEIVE
 
-#ifdef          BOARD_S2_2
-#define         PROJECT_NAME                "ZKS_S2_2"
-#endif
-
-
 #endif	// BOARD_S6_6
+
+
+#ifdef          BOARD_S2_2
+#define         PROJECT_NAME                "ZKS_S2_2_B2"
+#endif //BOARD_S2_2
 
 
 #ifdef 			BOARD_S1_2

@@ -211,6 +211,14 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					g_rSysConfigInfo.rfBW    	= bufTemp->load[baseAddr+2];
 					g_rSysConfigInfo.rfSF    	= bufTemp->load[baseAddr+3];
 					g_rSysConfigInfo.rfStatus 	= bufTemp->load[baseAddr+4];
+#ifdef SUPPORT_BOARD_OLD_S1
+                    /* 米㊣谷豕?amast那㊣?a?谷米?S11∟℅¯?㏒那??a?㏒那?1㏒????邦?㏒那?2*/
+                    if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
+                        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE1);
+                    } else {
+                        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE2);
+                    }
+#endif
 					lenTemp -= 5;
 					break;
 
@@ -293,7 +301,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		}
 
 		// point to new message the head
-		bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);;
+		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
 	}
 
 NodeDispath:

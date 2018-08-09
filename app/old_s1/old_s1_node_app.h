@@ -33,7 +33,6 @@ typedef struct {
 
 
 */
-
 extern uint8_t  g_oldS1OperatingMode;
 
 extern void OldS1NodeApp_startSendSensorData(void);
@@ -46,5 +45,7 @@ extern void OldS1NodeAPP_Mode2NodeUploadProcess(void);
 extern void OldS1NodeAPP_scheduledUploadData(void);
 
 extern void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len);
+
+extern void OldS1nodeAPP_setWorkMode(uint8_t mode);
 
 #endif // __OLD_S1_NODE_APP__

@@ -8,6 +8,21 @@
 
 #define		WDT_TOUT_MS				10000
 
+#ifdef SUPPORT_WATCHDOG
+Clock_Struct watchdogClkStruct;
+Clock_Handle watchdogClkHandle;
+#define WATCHDAG_FEED_TIME          8 * CLOCK_UNIT_S
+#endif
+
+//***********************************************************************************
+//
+// System feeding dog
+//
+//***********************************************************************************
+void Sys_watchDogFxn(UArg arg0)
+{
+    Sys_event_post(SYS_FEED_WATCHDOG);
+}
 
 /*
  *  =============================== Watchdog ===============================
@@ -40,12 +55,23 @@ Watchdog_Handle watchdogHandle;
 void WdtInit(Watchdog_Callback cb)
 {
 	Watchdog_Params params;
+	Clock_Params clkParams;
 
-	Watchdog_init();
-	Watchdog_Params_init(&params);
-    params.callbackFxn = cb;
-    params.resetMode = Watchdog_RESET_ON;
-    watchdogHandle = Watchdog_open(Board_WATCHDOG0, &params);
+	if (NULL == watchdogHandle &&  NULL == watchdogClkHandle)
+	{
+        /* Construct a 8s periodic Clock Instance to feed watchdog */
+        Clock_Params_init(&clkParams);
+        clkParams.period = WATCHDAG_FEED_TIME;
+        clkParams.startFlag = TRUE;
+        Clock_construct(&watchdogClkStruct, (Clock_FuncPtr)Sys_watchDogFxn, WATCHDAG_FEED_TIME, &clkParams);
+        watchdogClkHandle = Clock_handle(&watchdogClkStruct);
+
+	    Watchdog_init();
+	    Watchdog_Params_init(&params);
+        params.callbackFxn = cb;
+        params.resetMode = Watchdog_RESET_ON;
+        watchdogHandle = Watchdog_open(Board_WATCHDOG0, &params);
+	}
 }
 
 

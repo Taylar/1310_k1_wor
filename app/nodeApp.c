@@ -439,10 +439,16 @@ void NodeSleep(void)
 // 
 // parameter: 
 //***********************************************************************************
+extern void WdtResetCb(uintptr_t handle);
 void NodeWakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
     RtcStart();
+
+#ifdef  SUPPORT_WATCHDOG
+    WdtInit(WdtResetCb);
+#endif
+
     NodeStrategyReset();
     NodeStartBroadcast();
     NodeBroadcasting();

@@ -201,11 +201,11 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
     uint16_t serialNum, id;
     bool flag = false;
 
-    ClearRadioSendBuf();
+//    ClearRadioSendBuf();
     OldS1NodeApp_stopSendSensorData();
     // Software version after (version: 15 74)
     if (5 == len && pData[0] == 0xba) {
-        id = ((pData[2] >> 8) | pData[3]);
+        id = (uint16_t)((pData[1] << 8) | pData[2]);
         serialNum = ((pData[3] << 8) | pData[4]);
         if (id == mode2TxLastTwoID && serialNum == mode2TxFrameSerialNum) {
             flag = true;
@@ -232,6 +232,15 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
     }
 }
 
+/*
+ *功能：设置S1的工作模式
+ *参数 mode  S1_OPERATING_MODE1-模式1不带反馈
+ *          S1_OPERATING_MODE2-带反馈
+ * */
+void OldS1nodeAPP_setWorkMode(uint8_t mode)
+{
+    g_oldS1OperatingMode = mode;
+}
 
 extern Semaphore_Handle radomFuncSemHandle;
 static uint32_t getRandom(void)

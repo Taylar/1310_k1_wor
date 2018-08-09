@@ -4,13 +4,6 @@
 /***** Defines *****/
 #define         SYSTEM_APP_STACK_SIZE        1024
 
-
-#ifdef SUPPORT_WATCHDOG
-Clock_Struct watchdogClkStruct;
-#define WATCHDAG_FEED_TIME          8 * CLOCK_UNIT_S
-#endif
-
-
 // **************************************************************************
 /***** Variable declarations *****/
 // task
@@ -77,21 +70,6 @@ void SystemUsbIntEventPostIsr(void)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_USBINT);
 }
-
-
-#ifdef SUPPORT_WATCHDOG
-//***********************************************************************************
-//
-// System LCD shutdown callback function.
-//
-//***********************************************************************************
-void Sys_watchDogFxn(UArg arg0)
-{
-    Sys_event_post(SYS_FEED_WATCHDOG);
-}
-#endif
-
-
 
 void WdtResetCb(uintptr_t handle)
 {
@@ -194,14 +172,13 @@ void SystemAppTaskFxn(void)
 #endif // SUPPORT_DEVICED_STATE_UPLOAD
 
 #ifdef		SUPPORT_WATCHDOG
-	/* Construct a 10s periodic Clock Instance to feed watchdog */
-	Clock_Params clkParams;
-    Clock_Params_init(&clkParams);
-    clkParams.period = WATCHDAG_FEED_TIME;
-    clkParams.startFlag = TRUE;
-    Clock_construct(&watchdogClkStruct, (Clock_FuncPtr)Sys_watchDogFxn, WATCHDAG_FEED_TIME, &clkParams);
+    #if (defined(BOARD_S6_6) ||  defined(BOARD_S2_2))
+	    WdtInit(WdtResetCb);
+    #endif
+#endif //SUPPORT_WATCHDOG
 
-	WdtInit(WdtResetCb);
+#ifdef BOARD_S2_2
+	    Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
 #endif
 
 	for(;;)
