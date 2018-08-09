@@ -2,16 +2,16 @@
 * @Author: zxt
 * @Date:   2018-01-27 11:44:25
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-25 18:00:21
+* @Last Modified time: 2018-08-09 16:45:22
 */
 #include "../general.h"
 
-#define		WDT_TOUT_MS				10000
+#define		WDT_TOUT_MS				15000
 
 #ifdef SUPPORT_WATCHDOG
 Clock_Struct watchdogClkStruct;
 Clock_Handle watchdogClkHandle;
-#define WATCHDAG_FEED_TIME          8 * CLOCK_UNIT_S
+#define WATCHDAG_FEED_TIME          10 * CLOCK_UNIT_S
 #endif
 
 //***********************************************************************************

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-02 14:00:41
+* @Last Modified time: 2018-08-09 18:40:09
 */
 #include "../general.h"
 
@@ -93,11 +93,11 @@ void S1LongKeyApp(void)
         case DEVICES_ON_MODE:
         case DEVICES_CONFIG_MODE:
         NodeSleep();
+        g_rSysConfigInfo.sysState.reserve &= (0xFFFF^STATUS_POWERON);
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
-        Task_sleep(3000 * CLOCK_UNIT_MS);
-
         g_rSysConfigInfo.rtc = Rtc_get_calendar();
         Flash_store_config();
+        Task_sleep(3000 * CLOCK_UNIT_MS);
         SysCtrlSystemReset();
         break;
 
@@ -109,7 +109,9 @@ void S1LongKeyApp(void)
         else
         {
             Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+            g_rSysConfigInfo.sysState.reserve |= STATUS_POWERON;
             NodeWakeup();
+            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
         }
         break;
     }

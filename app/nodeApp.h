@@ -2,7 +2,7 @@
 #define			__NODEAPP_H__
 
 
-
+#define 			BROADCASTING_MAX			10
 
 
 
@@ -48,5 +48,12 @@ void NodeSetCustomId(uint32_t customId);
 uint32_t NodeGetCustomId(void);
 
 void NodeStrategyTimeoutProcess(void);
+
+void NodeBroadcastCount(void);
+
+bool NodeBroadcastTimesCheck(void);
+
+void NodeBroadcastCountClear(void);
+
 
 #endif			// __NODEAPP_H__

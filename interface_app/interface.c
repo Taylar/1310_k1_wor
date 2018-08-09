@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-06 10:46:06
+* @Last Modified time: 2018-08-09 19:41:06
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
@@ -174,7 +174,7 @@ void InterfaceTaskCreate(void)
     Task_Params_init(&taskParams);
     taskParams.stackSize = INTERFACE_STACK_SIZE;
     taskParams.stack = &interfaceTaskStack;
-    taskParams.priority = 2;
+    taskParams.priority = 1;
     Task_construct(&interfaceTaskStruct, (Task_FuncPtr)InterfaceTaskFxn, &taskParams, &eb);
 }
 

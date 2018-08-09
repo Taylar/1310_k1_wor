@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-02 17:58:14
+* @Last Modified time: 2018-08-09 17:35:05
 */
 #include "../general.h"
 
@@ -301,7 +301,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		}
 
 		// point to new message the head
-		bufTemp		= (radio_protocal_t *)(protocalRxPacket->payload + bufTemp->len);
+		bufTemp		= (radio_protocal_t *)(bufTemp + bufTemp->len);
 	}
 
 NodeDispath:

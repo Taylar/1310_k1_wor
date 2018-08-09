@@ -181,6 +181,14 @@ void SystemAppTaskFxn(void)
 	    Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
 #endif
 
+#ifdef BOARD_S1_2
+	if(g_rSysConfigInfo.sysState.reserve & STATUS_POWERON)
+	{
+		NodeWakeup();
+	}
+#endif
+
+
 	for(;;)
 	{
         eventId = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL, BIOS_WAIT_FOREVER);

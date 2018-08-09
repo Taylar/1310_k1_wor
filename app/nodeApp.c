@@ -17,6 +17,7 @@ typedef struct
     uint32_t deceive;
     uint16_t serialNum;
     uint16_t sysTime;
+    uint16_t broadcastCnt;
     bool     collectStart;
     bool     broadcasting;
     bool     configFlag;
@@ -501,42 +502,41 @@ void NodeRtcProcess(void)
     nodeParameter.collectTimeCnt++;
 #else
     uint8_t temp;
-    if(nodeParameter.collectStart)
-    {
-        nodeParameter.collectTimeCnt++;
-        
+    nodeParameter.collectTimeCnt++;
         // if(nodeParameter.collectTimeCnt >= 10)
-        if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
+    if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
+    {
+        // nodeParameter.collectTimeCnt -= 10;
+        if((g_rSysConfigInfo.collectPeriod % 60) == 0)
         {
-            // nodeParameter.collectTimeCnt -= 10;
-            if((g_rSysConfigInfo.collectPeriod % 60) == 0)
+            temp = RtcGetSec();
+            if(temp != 30)
             {
-                temp = RtcGetSec();
-                if(temp != 30)
+                if(temp > 30)
                 {
-                    if(temp > 30)
-                    {
-                        nodeParameter.collectTimeCnt = temp - 30;
-                    }
-                    else
-                    {
-                        nodeParameter.collectTimeCnt = temp + 30;
-                    }
+                    nodeParameter.collectTimeCnt = temp - 30;
                 }
                 else
                 {
-                    nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
+                    nodeParameter.collectTimeCnt = temp + 30;
                 }
             }
             else
             {
                 nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
             }
-            
-            Sensor_measure(1);
-            if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
-                RadioSensorDataPack();
         }
+        else
+        {
+            nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
+        }
+        
+        NodeBroadcastCountClear();
+        Sys_event_post(SYS_EVT_STRATEGY);
+        if(nodeParameter.collectStart)
+            Sensor_measure(1);
+        if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
+            RadioSensorDataPack();
 
         nodeParameter.sysTime++;
         if(nodeParameter.sysTime >= 3600)
@@ -594,3 +594,48 @@ uint32_t NodeGetCustomId(void)
 {
     return nodeParameter.customId;
 }
+
+
+//***********************************************************************************
+// brief:the node rtc process
+// 
+// parameter: 
+//***********************************************************************************
+void NodeBroadcastCount(void)
+{
+    if(nodeParameter.broadcasting)
+    {
+        nodeParameter.broadcastCnt++;
+    }
+}
+
+//***********************************************************************************
+// brief:check the broadcast times if less than BROADCASTING_MAX
+// 
+// parameter: 
+//***********************************************************************************
+bool NodeBroadcastTimesCheck(void)
+{
+    if(nodeParameter.broadcasting)
+    {
+        if(nodeParameter.broadcastCnt >= BROADCASTING_MAX)
+            return false;
+    }
+    return true;
+}
+
+
+//***********************************************************************************
+// brief:the node rtc process
+// 
+// parameter: 
+//***********************************************************************************
+void NodeBroadcastCountClear(void)
+{
+    nodeParameter.broadcastCnt = 0;
+}
+
+
+
+
+
