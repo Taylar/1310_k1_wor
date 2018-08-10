@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-18 11:40:37
+* @Last Modified time: 2018-08-10 14:07:01
 */
 #include "../general.h"
 
@@ -13,7 +13,7 @@
 
 #define     NODE_SETTING_CMD_LENGTH    10
 
-#define     CONCENTER_RADIO_MONITOR_CNT_MAX     60
+#define     CONCENTER_RADIO_MONITOR_CNT_MAX     10
 
 
 
@@ -504,7 +504,8 @@ void ConcenterRtcProcess(void)
         if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
         {
             ConcenterRadioMonitorClear();
-            RadioSetRxMode();
+            EasyLink_abort();
+            // RadioSetRxMode();
             SetRadioDstAddr(0xdadadada);
             ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
         }

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-09 19:40:37
+* @Last Modified time: 2018-08-10 10:17:50
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -16,7 +16,7 @@
 
 /***** Defines *****/
 #define PASSRADIO_TASK_STACK_SIZE 900
-#define PASSRADIO_TASK_PRIORITY   1
+#define PASSRADIO_TASK_PRIORITY   2
 
 
 
@@ -310,7 +310,7 @@ void RadioAppTaskFxn(void)
                     RadioFrontTxEnable();
                 }
 
-                if(radioStatus == RADIOSTATUS_RECEIVING)
+                //if(radioStatus == RADIOSTATUS_RECEIVING)
                 {
                     radioStatus = RADIOSTATUS_ABSORT;
                     EasyLink_abort();                    
