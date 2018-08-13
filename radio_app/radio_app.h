@@ -17,11 +17,12 @@
 #define         RADIO_EVT_UPGRADE_SEND  Event_Id_10
 #define         RADIO_EVT_UPGRADE_RX_TIMEOUT   Event_Id_11
 #define         RADIO_EVT_SENSOR_PACK   Event_Id_12
+#define         RADIO_EVT_RADIO_REPAIL  Event_Id_13
 #define         RADIO_EVT_ALL           0xffff
 
 
 
-#define PASSRADIO_ACK_TIMEOUT_TIME_MS (200)
+#define PASSRADIO_ACK_TIMEOUT_TIME_MS (300)
 
 #define RADIO_EASYLINK_MODULATION      EasyLink_Phy_Custom
 #define RADIO_EASYLINK_MODULATION_50K  EasyLink_Phy_50K_GPSK
@@ -57,6 +58,8 @@ RadioOperationMode RadioModeGet(void);
 void RadioAppTaskFxn(void);
 
 bool RadioCopyPacketToBuf(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs, uint8_t baseAddr);
+
+void RadioEventPost(UInt event);
 
 void RadioSensorDataPack(void);
 
@@ -100,5 +103,7 @@ void RadioSwitchingUpgradeRate(void);
 void RadioSwitchingUserRate(void);
 
 void RadioSwitchingS1OldUserRate(void);
+
+uint8_t RadioStatueRead(void);
 
 #endif		// __RADIO_APP_H__

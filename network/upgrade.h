@@ -13,31 +13,31 @@
 
 
 #ifdef 			BOARD_CONFIG_DECEIVE
-#define 		PROJECT_NAME				"ZKS_S6_6_CONFIG"
+#define 		PROJECT_NAME				"ZKS_1310_S6_6_CONFIG"
 #else
-#define 		PROJECT_NAME				"ZKS_S6_6"
+#define 		PROJECT_NAME				"ZKS_1310_S6_6"
 #endif	// BOARD_CONFIG_DECEIVE
 
 #endif	// BOARD_S6_6
 
 
 #ifdef          BOARD_S2_2
-#define         PROJECT_NAME                "ZKS_S2_2_B2"
+#define         PROJECT_NAME                "ZKS_1310_S2_2_B2"
 #endif //BOARD_S2_2
 
 
 #ifdef 			BOARD_S1_2
 
 #ifdef          SUPPORT_BOARD_OLD_S1
-#define         PROJECT_NAME                "ZKS_S1_1"
+#define         PROJECT_NAME                "ZKS_1310_S1_1"
 #else
-#define 		PROJECT_NAME				"ZKS_S3_1"
+#define 		PROJECT_NAME				"ZKS_1310_S3_1"
 #endif
 
 #endif	// BOARD_S1_2
 
 #ifndef		PROJECT_NAME
-#define 	PROJECT_NAME 			"ZKS"
+#define 	PROJECT_NAME 			"ZKS_1310"
 #endif		// PROJECT_NAME
 
 

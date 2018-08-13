@@ -161,7 +161,7 @@ extern "C"
 #define EASYLINK_API_VERSION "EasyLink-v2.30.00"
 
 //! \brief defines the largest Tx/Rx payload that the interface can support
-#define EASYLINK_MAX_DATA_LENGTH            128
+#define EASYLINK_MAX_DATA_LENGTH            144
 
 //! \brief defines the Tx/Rx Max Address Size
 #define EASYLINK_MAX_ADDR_SIZE              4

@@ -18,6 +18,7 @@ typedef struct
     uint16_t serialNum;
     uint16_t sysTime;
     uint16_t broadcastCnt;
+    uint16_t monitorCnt;
     bool     collectStart;
     bool     broadcasting;
     bool     configFlag;
@@ -60,6 +61,7 @@ void NodeAppInit(void (*Cb)(void))
     
     nodeParameter.uploadTimeCnt  = 0;
     nodeParameter.collectTimeCnt = 0;
+    nodeParameter.monitorCnt     = 0;
     
     nodeParameter.collectStart   = false;
     nodeParameter.synTimeFlag    = false;
@@ -374,6 +376,7 @@ void NodeBroadcasting(void)
     {
         NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
         NodeRadioSendSynReq();
+        RadioSensorDataPack();
     }
 #endif
 }
@@ -503,6 +506,25 @@ void NodeRtcProcess(void)
 #else
     uint8_t temp;
     nodeParameter.collectTimeCnt++;
+
+
+
+    // check the radio if blocking in transmit
+    if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
+    {
+        nodeParameter.monitorCnt++;
+        if(nodeParameter.monitorCnt > g_rSysConfigInfo.collectPeriod)
+        {
+            EasyLink_abort();
+            nodeParameter.monitorCnt = 0;
+        }
+    }
+    else
+    {
+        nodeParameter.monitorCnt = 0;
+    }
+
+
         // if(nodeParameter.collectTimeCnt >= 10)
     if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
     {
@@ -532,11 +554,14 @@ void NodeRtcProcess(void)
         }
         
         NodeBroadcastCountClear();
-        Sys_event_post(SYS_EVT_STRATEGY);
+        RadioEventPost(RADIO_EVT_RADIO_REPAIL);
         if(nodeParameter.collectStart)
             Sensor_measure(1);
         if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
-            RadioSensorDataPack();
+        {
+            // if(GetStrategyRegisterStatus() == true)
+                RadioSensorDataPack();
+        }
 
         nodeParameter.sysTime++;
         if(nodeParameter.sysTime >= 3600)

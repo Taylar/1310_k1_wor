@@ -284,7 +284,7 @@ err_retrys:
             }
             else
             {
-                rSensorData[chNum].temp = 0;
+                rSensorData[chNum].humi = 0;
                 if(retrys++ < 3)goto err_retrys;
             }
 
