@@ -18,6 +18,8 @@
 #define         RADIO_EVT_UPGRADE_RX_TIMEOUT   Event_Id_11
 #define         RADIO_EVT_SENSOR_PACK   Event_Id_12
 #define         RADIO_EVT_RADIO_REPAIL  Event_Id_13
+#define         RADIO_EVT_SEND_CONFIG   Event_Id_14
+#define         RADIO_EVT_SEND_SYC   	Event_Id_15
 #define         RADIO_EVT_ALL           0xffff
 
 

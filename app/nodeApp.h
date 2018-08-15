@@ -55,5 +55,10 @@ bool NodeBroadcastTimesCheck(void);
 
 void NodeBroadcastCountClear(void);
 
+void SetNodeContinueFlag(void);
+
+void ClearNodeContinueFlag(void);
+
+uint8_t ReadNodeContinueFlag(void);
 
 #endif			// __NODEAPP_H__

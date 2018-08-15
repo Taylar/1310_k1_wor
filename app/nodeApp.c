@@ -375,7 +375,7 @@ void NodeBroadcasting(void)
     if(nodeParameter.broadcasting)
     {
         NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
-        NodeRadioSendSynReq();
+        RadioEventPost(RADIO_EVT_SEND_SYC);
         RadioSensorDataPack();
     }
 #endif
@@ -661,7 +661,22 @@ void NodeBroadcastCountClear(void)
     nodeParameter.broadcastCnt = 0;
 }
 
+static uint8_t NodeContinueSendFlag;
 
+void SetNodeContinueFlag(void)
+{
+    NodeContinueSendFlag = 1;
+}
+
+void ClearNodeContinueFlag(void)
+{
+    NodeContinueSendFlag = 0;
+}
+
+uint8_t ReadNodeContinueFlag(void)
+{
+    return NodeContinueSendFlag;
+}
 
 
 

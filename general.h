@@ -158,12 +158,12 @@
 //
 //***********************************************************************************
 #ifdef BOARD_S6_6
-#define FW_VERSION              0x0027
+#define FW_VERSION              0x0025
 #endif
 
 #ifdef BOARD_S1_2
     #ifndef SUPPORT_BOARD_OLD_S1
-    #define FW_VERSION              0x0029
+    #define FW_VERSION              0x0027
     #else
     #define FW_VERSION              0x0002
     #endif

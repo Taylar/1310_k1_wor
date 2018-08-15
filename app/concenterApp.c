@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-15 15:10:23
+* @Last Modified time: 2018-08-15 19:41:49
 */
 #include "../general.h"
 
@@ -507,7 +507,7 @@ void ConcenterRtcProcess(void)
             EasyLink_abort();
             // RadioSetRxMode();
             SetRadioDstAddr(0xdadadada);
-            ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+            RadioEventPost(RADIO_EVT_SEND_CONFIG);
         }
     }
 
@@ -534,6 +534,7 @@ void ConcenterRtcProcess(void)
 }
 
 #define CONCENTER_MAX_CHANNEL       100
+
 
 
 //***********************************************************************************

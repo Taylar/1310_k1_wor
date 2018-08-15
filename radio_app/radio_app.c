@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-15 15:41:03
+* @Last Modified time: 2018-08-15 20:33:49
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -28,7 +28,7 @@
 #if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
 #define RADIO_RSSI_FLITER               -40
 #else
-#define RADIO_RSSI_FLITER               -80
+#define RADIO_RSSI_FLITER               -100
 #endif
 
 
@@ -351,13 +351,14 @@ void RadioAppTaskFxn(void)
         if (events & RADIO_EVT_TX)
         {
 #ifdef      BOARD_S1_2
-            if (RADIOMODE_UPGRADE != RadioModeGet() && (deviceMode != DEVICES_CONFIG_MODE)) {
+            if (RADIOMODE_UPGRADE != RadioModeGet() && (deviceMode != DEVICES_CONFIG_MODE) && (ReadNodeContinueFlag() == 0)) {
                 //i = 2;
                 rssi  = -128;
                 rssi2 = -128;
                 EasyLink_abort();
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                 EasyLink_receiveAsync(RxDoneCallback, 0);
+                Task_sleep(2 * CLOCK_UNIT_MS);
                 EasyLink_getRssi(&rssi);
                 Task_sleep(20 * CLOCK_UNIT_MS);
                 EasyLink_getRssi(&rssi2);
@@ -380,15 +381,15 @@ void RadioAppTaskFxn(void)
             rssi  = RADIO_RSSI_FLITER - 1;
             rssi2 = RADIO_RSSI_FLITER - 1;
 #endif
-
+            ClearNodeContinueFlag();
             if((rssi > RADIO_RSSI_FLITER) || (rssi2 > RADIO_RSSI_FLITER))
             {
-                // System_printf("r1:%d,r2:%d,no send\n", rssi, rssi2);
+                System_printf("r1:%d,r2:%d,no send\n", rssi, rssi2);
                 Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
             }
             else if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
             {
-                // System_printf("r1:%d,r2:%d,send\n", rssi, rssi2);
+                System_printf("r1:%d,r2:%d,send\n", rssi, rssi2);
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #ifdef SUPPORT_BOARD_OLD_S1
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
@@ -560,6 +561,26 @@ void RadioAppTaskFxn(void)
                 RadioSend();
             }
         }
+
+        if(events & RADIO_EVT_SEND_CONFIG) 
+        {
+#ifdef   BOARD_S1_2
+            ClearRadioSendBuf();
+            NodeRadioSendConfig();
+#endif
+
+#ifdef   BOARD_S6_6
+            ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+#endif
+            // RadioSend();
+        }
+
+        if(events & RADIO_EVT_SEND_SYC) 
+        {
+            NodeRadioSendSynReq();
+            RadioSend();
+        }
+
 
     }
 }

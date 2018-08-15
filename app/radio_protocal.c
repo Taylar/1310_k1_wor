@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-15 11:37:03
+* @Last Modified time: 2018-08-15 17:15:14
 */
 #include "../general.h"
 
@@ -312,8 +312,9 @@ NodeDispath:
 	    	// clear the offect, the buf has been clear
 	    	NodeUploadOffectClear();
 		    NodeUploadProcess();
+		    SetNodeContinueFlag();
 		    // waiting the gateway to change to receive
-	        Task_sleep(15 * CLOCK_UNIT_MS);
+	        Task_sleep(12 * CLOCK_UNIT_MS);
 		    RadioSend();
 	    }
 	    NodeBroadcasting();
