@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-09 17:35:05
+* @Last Modified time: 2018-08-15 11:37:03
 */
 #include "../general.h"
 
@@ -346,12 +346,15 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	
 	SetRadioDstAddr(bufTemp->srcAddr);
 
-
+	if(bufTemp->srcAddr == 0x20187777)
+	{
+		ClearRadioSendBuf();
+	}
 	while(len)
 	{
 		// the receive data is not integrated
-		if((bufTemp->len > len) || (bufTemp->len == 0))
-			return;
+		if((bufTemp->len > len) || (bufTemp->len == 0) || (len == 0))
+			break;
 		
 		len 	-= bufTemp->len;
 		lenTemp = bufTemp->len;

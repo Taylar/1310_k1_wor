@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-10 14:07:01
+* @Last Modified time: 2018-08-15 15:10:23
 */
 #include "../general.h"
 
@@ -13,7 +13,7 @@
 
 #define     NODE_SETTING_CMD_LENGTH    10
 
-#define     CONCENTER_RADIO_MONITOR_CNT_MAX     10
+#define     CONCENTER_RADIO_MONITOR_CNT_MAX     60
 
 
 
@@ -533,6 +533,17 @@ void ConcenterRtcProcess(void)
     }
 }
 
+#define CONCENTER_MAX_CHANNEL       100
 
+
+//***********************************************************************************
+// brief:concenter set the channel
+// 
+// parameter: 
+//***********************************************************************************
+uint32_t ConcenterSetChannel(uint32_t nodeAddr)
+{
+
+}
 
 

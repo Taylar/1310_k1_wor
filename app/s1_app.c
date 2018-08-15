@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-09 18:40:09
+* @Last Modified time: 2018-08-15 14:46:41
 */
 #include "../general.h"
 
@@ -133,6 +133,7 @@ void S1DoubleKeyApp(void)
             OldS1NodeApp_stopSendSensorData();
 #endif
         // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
+        EasyLink_abort();
         NodeStrategyReset();
         deviceMode                      = DEVICES_CONFIG_MODE;
         configModeTimeCnt = 0;

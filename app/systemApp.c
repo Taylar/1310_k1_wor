@@ -387,6 +387,12 @@ void SystemAppTaskFxn(void)
 			}
 		}
 
+		if(eventId & SYSTEMAPP_EVT_RADIO_ABORT) 
+		{
+		    EasyLink_abort();
+		}
+
+
 	}
 }
 

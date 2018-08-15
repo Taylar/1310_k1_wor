@@ -513,7 +513,8 @@ void NodeRtcProcess(void)
     if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
     {
         nodeParameter.monitorCnt++;
-        if(nodeParameter.monitorCnt > g_rSysConfigInfo.collectPeriod)
+        // the radio maybe blocking in transmiting
+        if(nodeParameter.monitorCnt > 3)
         {
             EasyLink_abort();
             nodeParameter.monitorCnt = 0;
