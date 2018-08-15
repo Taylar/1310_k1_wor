@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-13 16:21:26
+* @Last Modified time: 2018-08-15 15:41:03
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -28,7 +28,7 @@
 #if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
 #define RADIO_RSSI_FLITER               -40
 #else
-#define RADIO_RSSI_FLITER               -115
+#define RADIO_RSSI_FLITER               -80
 #endif
 
 
@@ -68,6 +68,14 @@ static uint8_t  radioTestFlag;
 
 uint8_t radioStatus;
 
+/* Clock for the fast report timeout */
+
+Clock_Struct radioSendTimeoutClock;     /* not static so you can see in ROV */
+
+Clock_Handle radioSendTimeoutClockHandle;
+
+
+
 /***** Prototypes *****/
 
 void RadioAppTaskFxn(void);
@@ -95,6 +103,12 @@ static void RadioDefaultParaInit(void)
 }
 
 
+void RadioSendTimeroutCb(UArg arg0)
+{
+    Sys_event_post(SYSTEMAPP_EVT_RADIO_ABORT);
+}
+
+
 
 //***********************************************************************************
 // brief:   create the radio task
@@ -117,6 +131,15 @@ void RadioAppTaskCreate(void)
     Event_Params_init(&eventParam);
     Event_construct(&radioOperationEvent, &eventParam);
     radioOperationEventHandle = Event_handle(&radioOperationEvent);
+
+    Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
+    clkParams.period = 0;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&radioSendTimeoutClock, RadioSendTimeroutCb, 500 * CLOCK_UNIT_MS, &clkParams);
+    radioSendTimeoutClockHandle = Clock_handle(&radioSendTimeoutClock);
+    Clock_setTimeout(radioSendTimeoutClockHandle, 500 * CLOCK_UNIT_MS);
+    
 
     /* Create the radio protocol task */
     Task_Params_init(&passRadioTaskParams);
@@ -170,6 +193,8 @@ RadioOperationMode RadioModeGet(void)
 void RadioAppTaskFxn(void)
 {
     int8_t rssi, rssi2;
+    uint8_t lenTemp;
+    uint16_t i;
 
     // the sys task process first, should read the g_rSysConfigInfo
     Task_sleep(50 * CLOCK_UNIT_MS);
@@ -195,7 +220,7 @@ void RadioAppTaskFxn(void)
         System_abort("EasyLink_init failed");
     }
 
-    EasyLink_setFrequency(433800000);
+    // EasyLink_setFrequency(433800000);
     radioStatus = RADIOSTATUS_IDLE;
 
 #if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
@@ -326,10 +351,25 @@ void RadioAppTaskFxn(void)
         if (events & RADIO_EVT_TX)
         {
 #ifdef      BOARD_S1_2
-            if (RADIOMODE_UPGRADE != RadioModeGet()) {
+            if (RADIOMODE_UPGRADE != RadioModeGet() && (deviceMode != DEVICES_CONFIG_MODE)) {
+                //i = 2;
+                rssi  = -128;
+                rssi2 = -128;
+                EasyLink_abort();
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+                EasyLink_receiveAsync(RxDoneCallback, 0);
                 EasyLink_getRssi(&rssi);
-                Task_sleep(50 * CLOCK_UNIT_MS);
+                Task_sleep(20 * CLOCK_UNIT_MS);
                 EasyLink_getRssi(&rssi2);
+//                while(i--)
+//                {
+//                    EasyLink_getRssi(&rssi);
+//                    Task_sleep(5 * CLOCK_UNIT_MS);
+//                    if(rssi > rssi2)
+//                        rssi2 = rssi;
+//                }
+                EasyLink_abort();
+                
             }
             else
             {
@@ -343,10 +383,12 @@ void RadioAppTaskFxn(void)
 
             if((rssi > RADIO_RSSI_FLITER) || (rssi2 > RADIO_RSSI_FLITER))
             {
+                // System_printf("r1:%d,r2:%d,no send\n", rssi, rssi2);
                 Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
             }
             else if((currentRadioOperation.easyLinkTxPacket.len) <= 128 && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
             {
+                // System_printf("r1:%d,r2:%d,send\n", rssi, rssi2);
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #ifdef SUPPORT_BOARD_OLD_S1
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
@@ -362,18 +404,20 @@ void RadioAppTaskFxn(void)
                     RadioFrontTxEnable();
                 }
 
-                //if(radioStatus == RADIOSTATUS_RECEIVING)
+                if(radioStatus == RADIOSTATUS_RECEIVING)
                 {
                     radioStatus = RADIOSTATUS_ABSORT;
                     EasyLink_abort();                    
                     radioStatus = RADIOSTATUS_IDLE;
                 }
 
+                Clock_start(radioSendTimeoutClockHandle);
                 radioStatus = RADIOSTATUS_TRANSMITTING;
                 if (EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket) != EasyLink_Status_Success)
                 {
                     System_abort("EasyLink_transmit failed");
                 }
+                Clock_stop(radioSendTimeoutClockHandle);
 
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
