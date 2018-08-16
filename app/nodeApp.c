@@ -555,7 +555,8 @@ void NodeRtcProcess(void)
         }
         
         NodeBroadcastCountClear();
-        RadioEventPost(RADIO_EVT_RADIO_REPAIL);
+        if(deviceMode == DEVICES_ON_MODE)
+            RadioEventPost(RADIO_EVT_RADIO_REPAIL);
         if(nodeParameter.collectStart)
             Sensor_measure(1);
         if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))

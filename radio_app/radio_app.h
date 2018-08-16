@@ -45,6 +45,24 @@ typedef enum {
 }RadioOperationMode ;
 
 
+typedef enum
+{
+  // LORA [0: 433 MHz, 1: 434 MHz, 2: 435 MHz, 3: 436 MHz, 4: 437 MHz,
+        // 5: 438 MHz, 6: 438 MHz, 7: 439 MHz, 8: 440 MHz, 9: 450 MHz, other: Reserved]
+    BW500KHZ = 0x90,      
+    BW250KHZ = 0x80,
+    BW125KHZ = 0x70,
+    BW62_50KHZ = 0x60,
+    BW41_66KHZ = 0x50,
+    BW31_25KHZ = 0x40,
+    BW20_83KHZ = 0x30,
+    BW15_62KHZ = 0x20,
+    BW10_41KHZ = 0x10,
+    BW7_81KHZ = 0x00,
+}t_BandWidth;      //定义带宽枚举
+
+
+
 // radioRxPacket
 extern EasyLink_RxPacket radioRxPacket;
 

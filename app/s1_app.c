@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-15 19:23:33
+* @Last Modified time: 2018-08-16 15:35:55
 */
 #include "../general.h"
 
@@ -137,6 +137,8 @@ void S1DoubleKeyApp(void)
         {
             EasyLink_abort();
         }
+        if(deviceMode == DEVICES_ON_MODE)
+            EasyLink_setFrequency(433000000);
         NodeStrategyReset();
         deviceMode                      = DEVICES_CONFIG_MODE;
         configModeTimeCnt = 0;
@@ -162,6 +164,7 @@ void S1AppRtcProcess(void)
         configModeTimeCnt++;
         if(configModeTimeCnt >= 120)
         {
+            EasyLink_setFrequency(433000000+((g_rSysConfigInfo.rfBW>>4)*1000000));
             ClearRadioSendBuf();
             RadioModeSet(RADIOMODE_SENDPORT);
             NodeStartBroadcast();

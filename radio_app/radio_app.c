@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-15 20:33:49
+* @Last Modified time: 2018-08-16 15:38:17
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -28,7 +28,7 @@
 #if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
 #define RADIO_RSSI_FLITER               -40
 #else
-#define RADIO_RSSI_FLITER               -100
+#define RADIO_RSSI_FLITER               -95
 #endif
 
 
@@ -219,8 +219,10 @@ void RadioAppTaskFxn(void)
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
     }
-
+#ifndef BOARD_CONFIG_DECEIVE
+    EasyLink_setFrequency(433000000+((g_rSysConfigInfo.rfBW>>4)*1000000));
     // EasyLink_setFrequency(433800000);
+#endif  // BOARD_CONFIG_DECEIVE
     radioStatus = RADIOSTATUS_IDLE;
 
 #if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
