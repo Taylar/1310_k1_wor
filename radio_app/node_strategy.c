@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-10 14:54:05
+* @Last Modified time: 2018-08-16 11:44:26
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -203,7 +203,7 @@ static void NodeStrategyStart(void)
     Semaphore_post(radomFuncSemHandle);
 
     // Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
-    Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % (3 * CLOCK_UNIT_S)));
+    Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % (g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S)));
     Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
     Clock_start(nodeStrategyStartClockHandle);
 }
