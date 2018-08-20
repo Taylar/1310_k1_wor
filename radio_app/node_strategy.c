@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-16 11:44:26
+* @Last Modified time: 2018-08-20 11:45:11
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -23,7 +23,7 @@
 #define     NODE_TIME_OFFSET_MAX_MS     (30) 
 
 
-#define     FAIL_CONNECT_MAX_NUM               1
+#define     FAIL_CONNECT_MAX_NUM               10
 
 #define     FAIL_CONNECT_PERIOD_MAX_NUM        3
 
