@@ -489,6 +489,7 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
+static uint8_t count = 0;
 #ifdef SUPPORT_BOARD_OLD_S1
     if ((deviceMode == DEVICES_OFF_MODE) || (RADIOMODE_UPGRADE == RadioModeGet())) {
         return;
@@ -499,7 +500,12 @@ void NodeRtcProcess(void)
 
     if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
     {
-        NodeSleep();
+        count++;
+        if (count > 10)
+        {
+            count = 0;
+            NodeSleep();
+        }
         // SysCtrlSystemReset();
     }
     nodeParameter.collectTimeCnt++;
@@ -574,6 +580,12 @@ void NodeRtcProcess(void)
 
         if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
         {
+            count++;
+            if (count > 10)
+            {
+                count = 0;
+                NodeSleep();
+            }
             NodeSleep();
             // SysCtrlSystemReset();
         }

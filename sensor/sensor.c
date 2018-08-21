@@ -589,6 +589,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 	uint8_t i;
     uint16_t Index;    
 	sensordata_mem cursensor;
+	uint32_t deepTemp = 0;
 #ifdef SUPPORT_NETGATE_BIND_NODE
     bool isbind = false;
 #endif  // SUPPORT_NETGATE_BIND_NODE
@@ -628,10 +629,10 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 			LOBYTE(cursensor.value.humi) = pData[Index++];	
 		}
         else if (Sensor_get_function_by_type(cursensor.type)  == (SENSOR_DEEP_TEMP)) {
-            HIBYTE(HIWORD(cursensor.value.tempdeep)) = pData[Index++];
-            LOBYTE(HIWORD(cursensor.value.tempdeep)) = pData[Index++];
-			HIBYTE(LOWORD(cursensor.value.tempdeep)) = pData[Index++];
-            cursensor.value.tempdeep >>= 8;			
+            deepTemp  = (uint32_t)(pData[Index++] << 24);
+            deepTemp |= (uint32_t)(pData[Index++] << 16);
+            deepTemp |= (uint32_t)(pData[Index++] << 8);
+            cursensor.value.tempdeep = (int32_t)(((int32_t)deepTemp) >> 12);
         }
         else if (Sensor_get_function_by_type(cursensor.type) == (SENSOR_LIGHT)) {
 

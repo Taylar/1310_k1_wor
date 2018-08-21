@@ -337,6 +337,16 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	radio_protocal_t	*bufTemp;
 	Calendar    calendarTemp;
 
+#ifdef BOARD_CONFIG_DECEIVE
+	int8_t i8Rssi;
+	i8Rssi = protocalRxPacket->rssi;
+//    System_printf("Rssi = %d\r\n", i8Rssi);
+//    System_flush();
+    if (RADIOMODE_UPGRADE != RadioModeGet() && i8Rssi < -65) {
+        return;
+    }
+#endif
+
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
 	len                     = protocalRxPacket->len;
 	bufTemp                 = (radio_protocal_t *)protocalRxPacket->payload;

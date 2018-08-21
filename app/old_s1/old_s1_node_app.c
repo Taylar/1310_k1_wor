@@ -198,6 +198,9 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
     上传传感数据的ACK  2        BB->TAG 38.4Kbps    433.8MHz    BA
     */
 
+    static uint16_t lastSerialNum = 0xffff;
+    static uint8_t ackRepeatTimes = 0;
+
     uint16_t serialNum, id;
     bool flag = false;
 
@@ -207,24 +210,29 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
     if (5 == len && pData[0] == 0xba) {
         id = (uint16_t)((pData[1] << 8) | pData[2]);
         serialNum = ((pData[3] << 8) | pData[4]);
-        if (id == mode2TxLastTwoID && serialNum == mode2TxFrameSerialNum) {
+        if ((id == mode2TxLastTwoID) && (serialNum == mode2TxFrameSerialNum)) {
             flag = true;
-//            Flash_moveto_next_sensor_data();
         }
     } else if (3 == len && pData[0] == 0xba) { // Software version before (version: 15 74)
         serialNum = ((pData[1] << 8) | pData[2]);
-        if (serialNum == mode2TxFrameSerialNum) {
+        if ((serialNum == mode2TxFrameSerialNum)) {
             flag = true;
-//            Flash_moveto_next_sensor_data();
         }
     }
 
+    id  = Flash_get_unupload_items();
     if (flag) {
+        ackRepeatTimes++; /// 重复次数，如果ack重复次数超过10条表示有两条数据的序列号重复了
         txResendCntClear();
-        Flash_moveto_next_sensor_data();
+        if ((serialNum != lastSerialNum) || (ackRepeatTimes > 20)) {
+            ackRepeatTimes = 0;
+            lastSerialNum = serialNum;
+            if (id > 0) {
+                Flash_moveto_next_sensor_data();
+            }
+        }
     }
 
-    id  = Flash_get_unupload_items();
     if (id > 0 && flag) {
         OldS1NodeAPP_Mode2NodeUploadProcess();
     } else {

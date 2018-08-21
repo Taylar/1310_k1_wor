@@ -754,8 +754,13 @@ void Disp_sensor_data(void)
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);                
             } else if (Sensor.type == SEN_TYPE_DEEPTEMP){
-                if (Sensor.value.temp != DEEP_TEMP_OVERLOAD){
-                    sprintf((char*)buff, "%d.%dc", (uint16_t)((Sensor.value.tempdeep>>4)/100), (uint16_t)round(((Sensor.value.tempdeep>>4)/10)) % 10);
+                if (Sensor.value.tempdeep != (DEEP_TEMP_OVERLOAD >> 4)){
+                    if (Sensor.value.tempdeep < 0) {
+                        Sensor.value.tempdeep = -Sensor.value.tempdeep;
+                        sprintf((char*)buff, "-%d.%dc", (uint16_t)((Sensor.value.tempdeep)/100), (uint16_t)round(((Sensor.value.tempdeep)/10)) % 10);
+                    } else {
+                        sprintf((char*)buff, "%d.%dc", (uint16_t)((Sensor.value.tempdeep)/100), (uint16_t)round(((Sensor.value.tempdeep)/10)) % 10);
+                    }
                 }
                 else
                     sprintf((char*)buff, "--c");
