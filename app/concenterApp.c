@@ -151,7 +151,7 @@ bool ConcenterSensorDataSaveToQueue(uint8_t *dataP, uint8_t length)
     }
     else
     {
-        Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
+//        Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
         return false;
     }
 }
@@ -172,7 +172,7 @@ void ConcenterSensorDataSave(void)
         calendar = Rtc_get_calendar();
         dataP[dataP[0]+1] = 0xfe;
         dataP[dataP[0]+2] = 0xfe;
-        dataP[dataP[0]+3] = TransHexToBcd((uint8_t)(calendar.Year - 2000));;
+        dataP[dataP[0]+3] = TransHexToBcd((uint8_t)(calendar.Year - 2000));
         dataP[dataP[0]+4] = TransHexToBcd((uint8_t)(calendar.Month));
         dataP[dataP[0]+5] = TransHexToBcd((uint8_t)(calendar.DayOfMonth));
         dataP[dataP[0]+6] = TransHexToBcd((uint8_t)(calendar.Hours));
@@ -498,7 +498,7 @@ void ConcenterCollectStop(void)
 void ConcenterRtcProcess(void)
 {
 
-    if(concenterParameter.radioReceive && (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
+    if(/*concenterParameter.radioReceive &&*/ (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
     {
         concenterParameter.monitorCnt++;
         if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)

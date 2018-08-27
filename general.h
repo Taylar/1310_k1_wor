@@ -94,7 +94,7 @@
 
 #define SUPPORT_NETWORK
 
-#define SUPPORT_LIGHT
+//#define SUPPORT_LIGHT
 
 #define SUPPORT_ENGMODE
 
@@ -147,6 +147,8 @@
 //***********************************************************************************
 #ifdef  BOARD_CONFIG_DECEIVE
 
+#undef SUPPORT_SHT2X
+#undef SUPPORT_MENU
 
 #endif //BOARD_CONFIG_DECEIVE
 
@@ -158,19 +160,19 @@
 //
 //***********************************************************************************
 #ifdef BOARD_S6_6
-#define FW_VERSION              0x0027
+#define FW_VERSION              0x0028
 #endif
 
 #ifdef BOARD_S1_2
     #ifndef SUPPORT_BOARD_OLD_S1
-    #define FW_VERSION              0x0031
+    #define FW_VERSION              0x0028
     #else
-    #define FW_VERSION              0x0002
+    #define FW_VERSION              0x0004
     #endif
 #endif
 
 #ifdef BOARD_S2_2
-#define FW_VERSION              0x0023
+#define FW_VERSION              0x0028
 #endif
 
 

@@ -158,7 +158,7 @@ void NodeStrategyStop(void)
 {
     if(Clock_isActive(nodeStrategyStartClockHandle))
         Clock_stop(nodeStrategyStartClockHandle);
-    ClearRadioSendBuf();
+//    ClearRadioSendBuf();
     
     nodeStrategy.busy           = false;
     nodeStrategy.success        = false;
@@ -203,7 +203,7 @@ static void NodeStrategyStart(void)
     Semaphore_post(radomFuncSemHandle);
 
     // Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
-    Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % (g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S)));
+    Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % 100) * 200 * CLOCK_UNIT_MS/*(g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S))*/);
     Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
     Clock_start(nodeStrategyStartClockHandle);
 }
@@ -278,11 +278,11 @@ void NodeStrategyReceiveSuccess(void)
 //***********************************************************************************
 bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
 {
+    bool flag = true;
     if(len > nodeStrategy.remainderCache)
         return false;
-    
 
-    RadioCopyPacketToBuf(dataP, len, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS, EASYLINK_MAX_DATA_LENGTH - nodeStrategy.remainderCache);
+    flag = RadioCopyPacketToBuf(dataP, len, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS, EASYLINK_MAX_DATA_LENGTH - nodeStrategy.remainderCache);
     nodeStrategy.remainderCache -= len;
     nodeStrategy.busy       = true;
 
@@ -291,7 +291,7 @@ bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
         NodeStrategyStart();
     }
 
-    return true;
+    return flag;
 }
 
 

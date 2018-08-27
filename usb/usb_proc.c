@@ -50,6 +50,7 @@ uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataL
     return length;
 }
 
+
 static int8_t datecmp(uint8_t* date1, uint8_t* date2, uint8_t len)
 {
     uint8_t i;
@@ -68,6 +69,7 @@ static int8_t datecmp(uint8_t* date1, uint8_t* date2, uint8_t len)
 
     return 0;
 }
+
 //***********************************************************************************
 //
 // USB received data parse. For new protocl.

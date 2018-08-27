@@ -1412,6 +1412,7 @@ void Nwk_upload_time_isr(void)
         if (rNwkObject.uploadTime >= g_rSysConfigInfo.uploadPeriod) {
             rNwkObject.uploadTime = 0;
             rNwkObject.hbTime = 0;
+            Battery_voltage_measure();
             Nwk_event_post(NWK_EVT_DATA_UPLOAD);
         }
         else

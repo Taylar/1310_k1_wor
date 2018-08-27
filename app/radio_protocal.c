@@ -30,6 +30,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	uint32_t	temp, temp2;
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
+    uint16_t serialNum;
+    TxFrameRecord_t rxSensorDataAckRecord;
+    rxSensorDataAckRecord.Cnt = 0;
+
 
 
 	len			= protocalRxPacket->len;
@@ -107,6 +111,9 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					lenTemp -= 5;
 					// NodeCollectStop();
 					g_rSysConfigInfo.collectPeriod = temp;
+					if (g_rSysConfigInfo.collectPeriod == 0 || g_rSysConfigInfo.collectPeriod >= 0xffff) {
+					    g_rSysConfigInfo.collectPeriod = COLLECT_PERIOD_DEFAULT;
+					}
 					
 					break;
 
@@ -252,7 +259,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					goto NodeDispath;
 				}
 			}
-			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			break;
 
 			case RADIO_PRO_CMD_SET_PARA_ACK:
@@ -260,24 +266,28 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			case RADIO_PRO_CMD_ACK:
 			// get the concenter tick
-			temp   =  ((uint32_t)bufTemp->load[1]) << 24;
-			temp  |=  ((uint32_t)bufTemp->load[2]) << 16;
-			temp  |=  ((uint32_t)bufTemp->load[3]) << 8;
-			temp  |=  ((uint32_t)bufTemp->load[4]);
+			temp   =  ((uint32_t)bufTemp->load[3]) << 24;
+			temp  |=  ((uint32_t)bufTemp->load[4]) << 16;
+			temp  |=  ((uint32_t)bufTemp->load[5]) << 8;
+			temp  |=  ((uint32_t)bufTemp->load[6]);
 
 			// get the channel
-			temp2  =  ((uint32_t)bufTemp->load[5]) << 24;
-			temp2 |=  ((uint32_t)bufTemp->load[6]) << 16;
-			temp2 |=  ((uint32_t)bufTemp->load[7]) << 8;
-			temp2 |=  ((uint32_t)bufTemp->load[8]);
+			temp2  =  ((uint32_t)bufTemp->load[7]) << 24;
+			temp2 |=  ((uint32_t)bufTemp->load[8]) << 16;
+			temp2 |=  ((uint32_t)bufTemp->load[9]) << 8;
+			temp2 |=  ((uint32_t)bufTemp->load[10]);
 
 			StrategyRegisterSuccess();
 			// NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
 
-			if(bufTemp->load[0] == PROTOCAL_FAIL)
+			if(bufTemp->load[0] == PROTOCAL_FAIL) {
 				NodeUploadOffectClear();
-			else
-				NodeUploadSucessProcess();
+			} else {
+                HIBYTE(serialNum) = bufTemp->load[1];
+                LOBYTE(serialNum) = bufTemp->load[2];
+                rxSensorDataAckRecord.lastFrameSerial[rxSensorDataAckRecord.Cnt] = serialNum;
+                rxSensorDataAckRecord.Cnt++;
+			}
 
 			flag = 1;
 			// resever more 6 package and is the last ack
@@ -301,12 +311,15 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		}
 
 		// point to new message the head
-		bufTemp		= (radio_protocal_t *)(bufTemp + bufTemp->len);
+		bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);
 	}
 
 NodeDispath:
     if (RadioModeGet() != RADIOMODE_UPGRADE)
     {
+        if (1 == flag) {
+            NodeUploadSucessProcess(&rxSensorDataAckRecord);
+        }
 	    if((Flash_get_unupload_items() > 0) && (flag))
 	    {
 	    	// clear the offect, the buf has been clear
@@ -314,7 +327,7 @@ NodeDispath:
 		    NodeUploadProcess();
 		    SetNodeContinueFlag();
 		    // waiting the gateway to change to receive
-	        Task_sleep(12 * CLOCK_UNIT_MS);
+	        Task_sleep(((Clock_getTicks() % 300) + 12) * CLOCK_UNIT_MS);
 		    RadioSend();
 	    }
 	    NodeBroadcasting();
@@ -336,6 +349,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	uint32_t	temp;
 	radio_protocal_t	*bufTemp;
 	Calendar    calendarTemp;
+	uint16_t serialNum;
 
 #ifdef BOARD_CONFIG_DECEIVE
 	int8_t i8Rssi;
@@ -357,10 +371,6 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	
 	SetRadioDstAddr(bufTemp->srcAddr);
 
-	if(bufTemp->srcAddr == 0x20187777)
-	{
-		ClearRadioSendBuf();
-	}
 	while(len)
 	{
 		// the receive data is not integrated
@@ -384,13 +394,16 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 #ifdef  SUPPORT_DISP_SCREEN
 			sensor_unpackage_to_memory(bufTemp->load, bufTemp->load[0]+1);
 #endif
+			HIBYTE(serialNum) = bufTemp->load[6];
+			LOBYTE(serialNum) = bufTemp->load[7];
+
 			if(ConcenterSensorDataSaveToQueue(bufTemp->load, bufTemp->load[0]+1) == true)
 			{
-				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_SUCCESS);
+				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), serialNum, ES_SUCCESS);
 			}
 			else
 			{
-				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), ES_ERROR);
+				ConcenterRadioSendSensorDataAck(GetRadioSrcAddr(), GetRadioDstAddr(), serialNum, ES_ERROR);
 			}
 
 			break;
@@ -552,6 +565,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			}
 ConcenterConfigRespondEnd:
 #ifdef BOARD_CONFIG_DECEIVE
+            g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 			UsbSend(AC_Send_Config);
 #endif
 			break;
@@ -769,31 +783,36 @@ bool NodeRadioSendConfig(void)
 // dstAddr:	the node radio addr
 // status:	success or fail
 //***********************************************************************************
-void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorStatus status)
+void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, uint16_t serialNum, ErrorStatus status)
 {
 	uint32_t temp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_ACK;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
-	protocalTxBuf.len 		= 10 + 9;
+	protocalTxBuf.len 		= 10 + 11;
 
 
 
 	// temp = ConcenterReadChannel(dstAddr);
 
-	protocalTxBuf.load[5]	= (uint8_t)(temp >> 24);
-	protocalTxBuf.load[6]	= (uint8_t)(temp >> 16);
-	protocalTxBuf.load[7]	= (uint8_t)(temp >> 8);
-	protocalTxBuf.load[8]	= (uint8_t)(temp);
+
 
 	temp = Clock_getTicks();
 
 	protocalTxBuf.load[0]	= (uint8_t)(status);
-	protocalTxBuf.load[1]	= (uint8_t)(temp >> 24);
-	protocalTxBuf.load[2]	= (uint8_t)(temp >> 16);
-	protocalTxBuf.load[3]	= (uint8_t)(temp >> 8);
-	protocalTxBuf.load[4]	= (uint8_t)(temp);
+	protocalTxBuf.load[1]   = HIBYTE(serialNum);
+	protocalTxBuf.load[2]   = LOBYTE(serialNum);
+
+	protocalTxBuf.load[3]	= (uint8_t)(temp >> 24);
+	protocalTxBuf.load[4]	= (uint8_t)(temp >> 16);
+	protocalTxBuf.load[5]	= (uint8_t)(temp >> 8);
+	protocalTxBuf.load[6]	= (uint8_t)(temp);
+
+    protocalTxBuf.load[7]   = (uint8_t)(temp >> 24);
+    protocalTxBuf.load[8]   = (uint8_t)(temp >> 16);
+    protocalTxBuf.load[9]   = (uint8_t)(temp >> 8);
+    protocalTxBuf.load[10]   = (uint8_t)(temp);
 
 
 

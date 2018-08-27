@@ -24,11 +24,15 @@
 
 
 
-#define PASSRADIO_ACK_TIMEOUT_TIME_MS (300)
+#define PASSRADIO_ACK_TIMEOUT_TIME_MS (400)
 
 #define RADIO_EASYLINK_MODULATION      EasyLink_Phy_Custom
 #define RADIO_EASYLINK_MODULATION_50K  EasyLink_Phy_50K_GPSK
 #define RADIO_EASYLINK_MODULATION_S1_OLD EasyLink_Phy_Custom_s1_old
+
+#define RADIO_BASE_FREQ                  433000000
+#define RADIO_DIFF_UNIT_FREQ             125000
+#define RADIO_BASE_UNIT_FREQ             250000
 
 enum RadioOperationStatus {
     RADIOSTATUS_IDLE,
@@ -47,8 +51,8 @@ typedef enum {
 
 typedef enum
 {
-  // LORA [0: 433 MHz, 1: 434 MHz, 2: 435 MHz, 3: 436 MHz, 4: 437 MHz,
-        // 5: 438 MHz, 6: 438 MHz, 7: 439 MHz, 8: 440 MHz, 9: 450 MHz, other: Reserved]
+  // LORA [0: 433 MHz, 1: 433.25 MHz, 2: 433.50 MHz, 3: 433.75 MHz, 4: 434 MHz,
+        // 5: 434.25 MHz, 6: 4334.50 MHz, 7: 434.75 MHz, 8: 435 MHz, 9: 435.25 MHz, other: Reserved]
     BW500KHZ = 0x90,      
     BW250KHZ = 0x80,
     BW125KHZ = 0x70,
@@ -118,12 +122,19 @@ void RadioSetTxMode(void);
 
 void RadioDisable(void);
 
-void RadioSwitchingUpgradeRate(void);
+uint8_t RadioStatueRead(void);
 
+void Radio_setConfigModeRfFrequency(void);
+void Radio_setRxModeRfFrequency(void);
+void Radio_setTxModeRfFrequency(void);
+
+void RadioSwitchingUpgradeRate(void);
 void RadioSwitchingUserRate(void);
 
 void RadioSwitchingS1OldUserRate(void);
 
-uint8_t RadioStatueRead(void);
+
+
+
 
 #endif		// __RADIO_APP_H__

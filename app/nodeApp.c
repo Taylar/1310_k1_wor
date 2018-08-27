@@ -25,6 +25,9 @@ typedef struct
     bool     synTimeFlag;
 }node_para_t;
 
+
+static TxFrameRecord_t lastTxSensorDataRecord;
+
 static node_para_t nodeParameter;
 
 /***** Variable declarations *****/
@@ -114,21 +117,27 @@ void NodeUploadProcess(void)
 {
     uint8_t     data[24];
     uint32_t    dataItems;
+    uint16_t serialNumber;
+
+    ClearRadioSendBuf();
+    NodeStrategyBusySet(false);
     // reverse the buf to other command
     Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
+
+    offsetUnit = 0;
+    lastTxSensorDataRecord.Cnt = 0;
     dataItems  = Flash_get_unupload_items();
+
     if(dataItems >= offsetUnit)
     {
         dataItems = dataItems - offsetUnit;
-    }
-    else
-    {
-        offsetUnit = 0;
     }
 
     while(dataItems)
     {
         Flash_load_sensor_data_by_offset(data, 22, offsetUnit);
+
+        serialNumber = ((data[6] << 8) | data[7]);
 
         // the radio buf is full 
         if(NodeRadioSendSensorData(data, 22) == false)
@@ -136,6 +145,8 @@ void NodeUploadProcess(void)
             Semaphore_post(uploadSemHandle);
             return;
         }
+        lastTxSensorDataRecord.lastFrameSerial[lastTxSensorDataRecord.Cnt] = serialNumber;
+        lastTxSensorDataRecord.Cnt++;
         dataItems--;
         offsetUnit++;
     }
@@ -156,13 +167,37 @@ void NodeUploadOffectClear(void)
 // 
 // parameter: 
 //***********************************************************************************
-void NodeUploadSucessProcess(void)
+void NodeUploadSucessProcess(TxFrameRecord_t *temp)
 {
-    if(offsetUnit)
-    {
-        offsetUnit--;
-        Flash_moveto_next_sensor_data();
+    bool flag = true;
+    uint8_t i = 0;
+
+//    if(offsetUnit)
+//    {
+//        offsetUnit--;
+//        Flash_moveto_next_sensor_data();
+//    }
+    Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
+    if ((temp->Cnt != 0) && (lastTxSensorDataRecord.Cnt != 0) \
+            &&  (temp->Cnt == lastTxSensorDataRecord.Cnt)) {
+        for (i = 0; i < temp->Cnt; i++) {
+            if (temp->lastFrameSerial[i] != lastTxSensorDataRecord.lastFrameSerial[i]) {
+                flag = false;
+                break;
+            }
+        }
+    } else {
+        flag = false;
     }
+
+    if (flag) {
+        for (i= 0; i < temp->Cnt; i++) {
+            Flash_moveto_next_sensor_data();
+        }
+        memset(&lastTxSensorDataRecord, 0, sizeof(lastTxSensorDataRecord));
+    }
+
+    Semaphore_post(uploadSemHandle);
 }
 
 //***********************************************************************************

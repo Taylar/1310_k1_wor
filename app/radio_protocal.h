@@ -87,7 +87,7 @@ bool NodeRadioSendParaSetAck(ErrorStatus status);
 
 bool NodeRadioSendConfig(void);
 
-void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, ErrorStatus status);
+void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, uint16_t serialNum, ErrorStatus status);
 
 void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr);
 

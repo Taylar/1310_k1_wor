@@ -184,6 +184,7 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S1_2
 	if(g_rSysConfigInfo.sysState.reserve & STATUS_POWERON)
 	{
+	    Task_sleep(100 * CLOCK_UNIT_MS);
 		NodeWakeup();
 	}
 #endif

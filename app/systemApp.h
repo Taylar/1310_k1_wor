@@ -21,6 +21,8 @@
 #define         SYS_EVT_SENSOR                      	Event_Id_14
 #define         SYS_FEED_WATCHDOG                      	Event_Id_15
 #define         SYS_EVT_STRATEGY                      	Event_Id_16
+//#define         SYSTEMAPP_EVT_RADIO_TX_TIMEOUT          Event_Id_17
+
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 
 #ifdef SUPPORT_BOARD_OLD_S1

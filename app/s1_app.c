@@ -138,7 +138,7 @@ void S1DoubleKeyApp(void)
             EasyLink_abort();
         }
         if(deviceMode == DEVICES_ON_MODE)
-            EasyLink_setFrequency(433000000);
+            Radio_setConfigModeRfFrequency();
         NodeStrategyReset();
         deviceMode                      = DEVICES_CONFIG_MODE;
         configModeTimeCnt = 0;
@@ -164,7 +164,6 @@ void S1AppRtcProcess(void)
         configModeTimeCnt++;
         if(configModeTimeCnt >= 120)
         {
-            EasyLink_setFrequency(433000000+((g_rSysConfigInfo.rfBW>>4)*1000000));
             ClearRadioSendBuf();
             RadioModeSet(RADIOMODE_SENDPORT);
             NodeStartBroadcast();

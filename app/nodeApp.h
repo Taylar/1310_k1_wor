@@ -5,6 +5,10 @@
 #define 			BROADCASTING_MAX			10
 
 
+typedef struct {
+    uint16_t lastFrameSerial[6];
+    uint8_t Cnt;
+}TxFrameRecord_t;
 
 
 
@@ -39,7 +43,7 @@ void NodeWakeup(void);
 
 void NodeUploadOffectClear(void);
 
-void NodeUploadSucessProcess(void);
+void NodeUploadSucessProcess(TxFrameRecord_t *temp);
 
 void NodeRtcProcess(void);
 
