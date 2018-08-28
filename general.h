@@ -160,19 +160,19 @@
 //
 //***********************************************************************************
 #ifdef BOARD_S6_6
-#define FW_VERSION              0x0028
+#define FW_VERSION              0x0030
 #endif
 
 #ifdef BOARD_S1_2
     #ifndef SUPPORT_BOARD_OLD_S1
-    #define FW_VERSION              0x0028
+    #define FW_VERSION              0x0030
     #else
     #define FW_VERSION              0x0004
     #endif
 #endif
 
 #ifdef BOARD_S2_2
-#define FW_VERSION              0x0028
+#define FW_VERSION              0x0030
 #endif
 
 

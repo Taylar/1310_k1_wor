@@ -19,7 +19,7 @@ Clock_Handle watchdogClkHandle;
 // System feeding dog
 //
 //***********************************************************************************
-void Sys_watchDogFxn(UArg arg0)
+static void Sys_watchDogFxn(UArg arg0)
 {
     Sys_event_post(SYS_FEED_WATCHDOG);
 }

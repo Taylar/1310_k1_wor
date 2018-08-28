@@ -32,7 +32,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     Calendar    calendarTemp;
     uint16_t serialNum;
     TxFrameRecord_t rxSensorDataAckRecord;
-    rxSensorDataAckRecord.Cnt = 0;
+    memset(&rxSensorDataAckRecord, 0, sizeof(TxFrameRecord_t));
 
 
 
@@ -259,6 +259,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					goto NodeDispath;
 				}
 			}
+			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			break;
 
 			case RADIO_PRO_CMD_SET_PARA_ACK:
@@ -318,7 +319,7 @@ NodeDispath:
     if (RadioModeGet() != RADIOMODE_UPGRADE)
     {
         if (1 == flag) {
-            NodeUploadSucessProcess(&rxSensorDataAckRecord);
+            flag = NodeUploadSucessProcess(&rxSensorDataAckRecord);
         }
 	    if((Flash_get_unupload_items() > 0) && (flag))
 	    {

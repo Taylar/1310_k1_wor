@@ -43,7 +43,7 @@ void NodeWakeup(void);
 
 void NodeUploadOffectClear(void);
 
-void NodeUploadSucessProcess(TxFrameRecord_t *temp);
+uint8_t NodeUploadSucessProcess(TxFrameRecord_t *temp);
 
 void NodeRtcProcess(void);
 

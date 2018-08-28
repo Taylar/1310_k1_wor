@@ -1272,7 +1272,7 @@ static void Nwk_taskFxn(void)
                      package_count = 0;
                      memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
                      pbuff = rNwkMsgPacket.buff;
-                     while((Flash_get_unupload_items()> 0)&&(package_count < PACKAGE_ITEM_COUNT_MAX)){
+                     while((Flash_get_unupload_items() > 0)&&(package_count < PACKAGE_ITEM_COUNT_MAX)){
                         if ((pbuff + FLASH_SENSOR_DATA_SIZE) > (rNwkMsgPacket.buff + NWK_MSG_SIZE)){
                             break;
                         }

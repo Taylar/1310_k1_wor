@@ -119,13 +119,13 @@ void NodeUploadProcess(void)
     uint32_t    dataItems;
     uint16_t serialNumber;
 
-    ClearRadioSendBuf();
-    NodeStrategyBusySet(false);
     // reverse the buf to other command
     Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
 
+    ClearRadioSendBuf();
+    NodeStrategyBusySet(true);
     offsetUnit = 0;
-    lastTxSensorDataRecord.Cnt = 0;
+    memset(&lastTxSensorDataRecord, 0, sizeof(lastTxSensorDataRecord));
     dataItems  = Flash_get_unupload_items();
 
     if(dataItems >= offsetUnit)
@@ -167,9 +167,9 @@ void NodeUploadOffectClear(void)
 // 
 // parameter: 
 //***********************************************************************************
-void NodeUploadSucessProcess(TxFrameRecord_t *temp)
+uint8_t NodeUploadSucessProcess(TxFrameRecord_t *temp)
 {
-    bool flag = true;
+    uint8_t flag = 1;
     uint8_t i = 0;
 
 //    if(offsetUnit)
@@ -182,12 +182,12 @@ void NodeUploadSucessProcess(TxFrameRecord_t *temp)
             &&  (temp->Cnt == lastTxSensorDataRecord.Cnt)) {
         for (i = 0; i < temp->Cnt; i++) {
             if (temp->lastFrameSerial[i] != lastTxSensorDataRecord.lastFrameSerial[i]) {
-                flag = false;
+                flag = 0;
                 break;
             }
         }
     } else {
-        flag = false;
+        flag = 0;
     }
 
     if (flag) {
@@ -198,6 +198,7 @@ void NodeUploadSucessProcess(TxFrameRecord_t *temp)
     }
 
     Semaphore_post(uploadSemHandle);
+    return flag;
 }
 
 //***********************************************************************************
@@ -411,7 +412,7 @@ void NodeBroadcasting(void)
     {
         NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
         RadioEventPost(RADIO_EVT_SEND_SYC);
-        RadioSensorDataPack();
+//        RadioSensorDataPack();
     }
 #endif
 }

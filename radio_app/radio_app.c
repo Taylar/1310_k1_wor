@@ -193,8 +193,8 @@ RadioOperationMode RadioModeGet(void)
 void RadioAppTaskFxn(void)
 {
     int8_t rssi, rssi2;
-    uint8_t lenTemp;
-    uint16_t i;
+//    uint8_t lenTemp;
+//    uint16_t i;
 
     // the sys task process first, should read the g_rSysConfigInfo
     Task_sleep(50 * CLOCK_UNIT_MS);
@@ -291,20 +291,23 @@ void RadioAppTaskFxn(void)
 
         if(events & RADIO_EVT_SENSOR_PACK)
         {
-            NodeUploadProcess();
-            NodeBroadcasting();
+            if (deviceMode != DEVICES_CONFIG_MODE)
+            {
+                NodeUploadProcess();
+                NodeBroadcasting();
+            }
         }
 
 
         if (events & RADIO_EVT_TEST)
         {
-//            while(radioTestFlag)
-//            {
-//                RadioFrontTxEnable();
-//                EasyLink_abort();
-//                EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
-//            }
-//            continue;
+            while(radioTestFlag)
+            {
+                RadioFrontTxEnable();
+                EasyLink_abort();
+                EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+            }
+            continue;
         }
 
 
@@ -356,7 +359,7 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TX)
         {
-#ifdef BOARD_S1_2
+#if 0
             if (RADIOMODE_UPGRADE != RadioModeGet() && (deviceMode != DEVICES_CONFIG_MODE) && (ReadNodeContinueFlag() == 0)) {
                 //i = 2;
                 rssi  = -128;
@@ -492,7 +495,7 @@ void RadioAppTaskFxn(void)
             /* If we haven't resent it the maximum number of times yet, then resend packet */
             if (currentRadioOperation.retriesDone < currentRadioOperation.maxNumberOfRetries)
             {
-                RadioResendPacket();
+//                RadioResendPacket();
             }
             else
             {
@@ -592,8 +595,11 @@ void RadioAppTaskFxn(void)
 
         if(events & RADIO_EVT_SEND_SYC) 
         {
-            NodeRadioSendSynReq();
-            RadioSend();
+            if (deviceMode != DEVICES_CONFIG_MODE)
+            {
+                NodeRadioSendSynReq();
+                RadioSend();
+            }
         }
 
 
@@ -929,10 +935,26 @@ uint8_t RadioStatueRead(void)
 //***********************************************************************************
 void Radio_setConfigModeRfFrequency(void)
 {
-    if (EasyLink_Status_Success != EasyLink_setFrequency(RADIO_BASE_FREQ))
+    uint32_t freq, dstFreq, diffFreq;
+
+    freq = EasyLink_getFrequency();
+    dstFreq = RADIO_BASE_FREQ;
+
+    if (freq < dstFreq) {
+        diffFreq = dstFreq - freq;
+    } else {
+        diffFreq = freq - dstFreq;
+    }
+
+    if (diffFreq < 20000) { ///< 20Khz
+        return;
+    }
+
+    if (EasyLink_Status_Success != EasyLink_setFrequency(dstFreq ))
     {
+        Task_sleep(5 * CLOCK_UNIT_MS);
         EasyLink_abort();
-        EasyLink_setFrequency(RADIO_BASE_FREQ);
+        EasyLink_setFrequency(dstFreq);
     }
 }
 
@@ -942,29 +964,55 @@ void Radio_setConfigModeRfFrequency(void)
 //***********************************************************************************
 void Radio_setRxModeRfFrequency(void)
 {
+    uint32_t freq, dstFreq, diffFreq;
+
+    freq = EasyLink_getFrequency();
+
 #ifndef BOARD_CONFIG_DECEIVE
     if (radioMode != RADIOMODE_UPGRADE) {
 #ifdef BOARD_S1_2
         if (deviceMode == DEVICES_ON_MODE) {
-            if (EasyLink_Status_Success != EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)+RADIO_DIFF_UNIT_FREQ))
+            dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+
+            if (freq < dstFreq) {
+                diffFreq = dstFreq - freq;
+            } else {
+                diffFreq = freq - dstFreq;
+            }
+
+            if (diffFreq < 20000) { ///< 20Khz
+                return;
+            }
+
+            if (EasyLink_Status_Success != EasyLink_setFrequency(dstFreq ))
             {
+                Task_sleep(5 * CLOCK_UNIT_MS);
                 EasyLink_abort();
-                EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)+RADIO_DIFF_UNIT_FREQ);
+                EasyLink_setFrequency(dstFreq);
             }
         }
 #elif defined(BOARD_S6_6) ||  defined(BOARD_S2_2)
         if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)) { // Collector
-            if (EasyLink_Status_Success != EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)+RADIO_DIFF_UNIT_FREQ))
-            {
-                EasyLink_abort();
-                EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)+RADIO_DIFF_UNIT_FREQ);
-            }
+            dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         } else { // Gateway
-            if (EasyLink_Status_Success != EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)))
-            {
-                EasyLink_abort();
-                EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ));
-            }
+            dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        }
+
+        if (freq < dstFreq) {
+            diffFreq = dstFreq - freq;
+        } else {
+            diffFreq = freq - dstFreq;
+        }
+
+        if (diffFreq < 20000) { ///< 20Khz
+            return;
+        }
+
+        if (EasyLink_Status_Success != EasyLink_setFrequency(dstFreq ))
+        {
+            Task_sleep(5 * CLOCK_UNIT_MS);
+            EasyLink_abort();
+            EasyLink_setFrequency(dstFreq);
         }
 #endif //BOARD_S1_2
     }
@@ -977,37 +1025,59 @@ void Radio_setRxModeRfFrequency(void)
 //***********************************************************************************
 void Radio_setTxModeRfFrequency(void)
 {
+    uint32_t freq, dstFreq, diffFreq;
+
+    freq = EasyLink_getFrequency();
+
 #ifndef BOARD_CONFIG_DECEIVE
     if (radioMode != RADIOMODE_UPGRADE) {
 #ifdef BOARD_S1_2
-        if (deviceMode == DEVICES_ON_MODE)  {
-            if (EasyLink_Status_Success != EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)))
+        if (deviceMode == DEVICES_ON_MODE) {
+            dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+
+            if (freq < dstFreq) {
+                diffFreq = dstFreq - freq;
+            } else {
+                diffFreq = freq - dstFreq;
+            }
+
+            if (diffFreq < 20000) { ///< 20Khz
+                return;
+            }
+
+            if (EasyLink_Status_Success != EasyLink_setFrequency(dstFreq))
             {
+                Task_sleep(5 * CLOCK_UNIT_MS);
                 EasyLink_abort();
-                EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ));
+                EasyLink_setFrequency(dstFreq);
             }
         }
-#elif defined(BOARD_S6_6) || defined(BOARD_S2_2)
+#elif defined(BOARD_S6_6) ||  defined(BOARD_S2_2)
         if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)) { // Collector
-            if (EasyLink_Status_Success != EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)))
-            {
-//                System_printf("Collector setDataRxRfFreque Fail\r\n");
-//                System_flush();
-                EasyLink_abort();
-                EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ));
-            }
+            dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         } else { // Gateway
-            if (EasyLink_Status_Success != EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)+RADIO_DIFF_UNIT_FREQ))
-            {
-//                System_printf("Gateway setDataRxRfFreque Fail\r\n");
-//                System_flush();
-                EasyLink_abort();
-                EasyLink_setFrequency(RADIO_BASE_FREQ +((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ)+RADIO_DIFF_UNIT_FREQ);
-            }
+            dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ +  ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        }
+
+        if (freq < dstFreq) {
+            diffFreq = dstFreq - freq;
+        } else {
+            diffFreq = freq - dstFreq;
+        }
+
+        if (diffFreq < 20000) { ///< 20Khz
+            return;
+        }
+
+        if (EasyLink_Status_Success != EasyLink_setFrequency(dstFreq ))
+        {
+            Task_sleep(5 * CLOCK_UNIT_MS);
+            EasyLink_abort();
+            EasyLink_setFrequency(dstFreq);
         }
 #endif //BOARD_S1_2
     }
-#endif //BOARD_CONFIG_DECEIVE
+#endif  // BOARD_CONFIG_DECEIVE
 }
 
 extern EasyLink_PhyType GetEasyLinkParamsModType(void);
