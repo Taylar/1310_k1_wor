@@ -30,15 +30,15 @@ const PIN_Config extFlashPinTable[] = {
 // board gateway
 #ifdef BOARD_S2_2
 
-#define FLASH_SPI_CS_PIN        IOID_24
-//#define FLASH_WP_PIN            IOID_19
+#define FLASH_SPI_CS_PIN        IOID_9
+#define FLASH_WP_PIN            IOID_11
 //#define FLASH_HOLD_PIN          IOID_18
 
 
 
 const PIN_Config extFlashPinTable[] = {
     FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    //FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
+    FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
     //FLASH_HOLD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
     PIN_TERMINATE
 };
@@ -53,11 +53,13 @@ const PIN_Config extFlashPinTable[] = {
 #ifdef BOARD_S6_6
 
 
-#define FLASH_SPI_CS_PIN        IOID_24
+#define FLASH_SPI_CS_PIN        IOID_9
+#define FLASH_WP_PIN            IOID_11
 
 
 const PIN_Config extFlashPinTable[] = {
     FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+    FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
     PIN_TERMINATE
 };
 

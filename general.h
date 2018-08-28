@@ -67,9 +67,9 @@
 // HW version define.
 //
 //***********************************************************************************
-#define BOARD_S1_2
+// #define BOARD_S1_2
 //#define BOARD_S2_2
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 //#define FACTOR_RADIO_TEST
@@ -98,7 +98,7 @@
 
 #define SUPPORT_ENGMODE
 
-#define SKY_66115
+// #define SKY_66115
 
 #define SUPPORT_REMOTE_UPGRADE
 
@@ -607,7 +607,6 @@ typedef struct {
 #include "sensor/sensor.h"
 #include "battery/battery.h"
 #include "easylink/EasyLink.h"
-#include "easylink/radio_front.h"
 #include "radio_app/radio_app.h"
 #include "radio_app/node_strategy.h"
 #include "network/network.h"

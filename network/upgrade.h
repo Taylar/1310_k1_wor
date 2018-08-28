@@ -15,7 +15,7 @@
 #ifdef 			BOARD_CONFIG_DECEIVE
 #define 		PROJECT_NAME				"ZKS_1310_S6_6_CONFIG"
 #else
-#define 		PROJECT_NAME				"ZKS_1310_S6_6"
+#define 		PROJECT_NAME				"ZKS_1310_S6_6_V5"
 #endif	// BOARD_CONFIG_DECEIVE
 
 #endif	// BOARD_S6_6

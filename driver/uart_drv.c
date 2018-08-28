@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-27 10:01:12
+* @Last Modified time: 2018-08-28 19:12:15
 */
 #include "../general.h"
 
@@ -10,26 +10,26 @@
 #ifdef BOARD_S2_2
 
 #define UART_RX_INTERFACE               IOID_13        /* RXD */
-#define UART_TX_INTERFACE               IOID_10        /* TXD */
+#define UART_TX_INTERFACE               IOID_12        /* TXD */
 
 #endif
 
 #ifdef BOARD_S6_6
 
 #define UART_RX_INTERFACE               IOID_13          /* RXD */
-#define UART_TX_INTERFACE               IOID_10          /* TXD */
+#define UART_TX_INTERFACE               IOID_12          /* TXD */
 
 #endif
 
 #if (!defined BOARD_S6_6) && (!defined BOARD_S2_2)
 
 #define UART_RX_INTERFACE               IOID_13          /* RXD */
-#define UART_TX_INTERFACE               IOID_10          /* TXD */
+#define UART_TX_INTERFACE               IOID_12          /* TXD */
 
 #endif
 
 #define UART_RX_GSM                     IOID_5          /* RXD */
-#define UART_TX_GSM                     IOID_4          /* TXD */
+#define UART_TX_GSM                     IOID_26          /* TXD */
 
 
 /*

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-03 10:09:52
+* @Last Modified time: 2018-08-28 19:13:29
 */
 
 #include "../general.h"
@@ -37,8 +37,8 @@ const PIN_Config keyPinTable[] = {
 
 // S6_6 board
 #ifdef BOARD_S6_6
-#define Board_BUTTON1                    IOID_1
-#define Board_BUTTON0                    IOID_18
+#define Board_BUTTON1                    IOID_4
+#define Board_BUTTON0                    IOID_14
 
 const PIN_Config keyPinTable[] = {
     Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */

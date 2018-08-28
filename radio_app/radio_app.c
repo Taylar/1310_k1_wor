@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-18 15:29:02
+* @Last Modified time: 2018-08-28 19:44:13
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -227,7 +227,6 @@ void RadioAppTaskFxn(void)
     radioStatus = RADIOSTATUS_IDLE;
 
 #if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
-    RadioFrontInit();
 
 #ifdef  BOARD_CONFIG_DECEIVE
     g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
@@ -235,7 +234,6 @@ void RadioAppTaskFxn(void)
 
     if(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)
     {
-        RadioFrontRxEnable();
         radioMode = RADIOMODE_RECEIVEPORT;
     }
     else
@@ -276,7 +274,6 @@ void RadioAppTaskFxn(void)
     while(1)
     {
         EasyLink_setRfPower(14);
-        RadioFrontTxEnable();
         EasyLink_abort();
         EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
     }
@@ -303,7 +300,6 @@ void RadioAppTaskFxn(void)
         {
             while(radioTestFlag)
             {
-                RadioFrontTxEnable();
                 EasyLink_abort();
                 EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
             }
@@ -418,7 +414,6 @@ void RadioAppTaskFxn(void)
 #ifndef  BOARD_S1_2
                     Led_toggle(LED_B);
 #endif
-                    RadioFrontTxEnable();
                 }
 
                 if(radioStatus == RADIOSTATUS_RECEIVING)
@@ -454,7 +449,6 @@ void RadioAppTaskFxn(void)
                 if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
                 {
                     radioStatus = RADIOSTATUS_RECEIVING;
-                    RadioFrontRxEnable();
                     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                     if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
                     {
@@ -512,7 +506,6 @@ void RadioAppTaskFxn(void)
             {
                 EasyLink_abort();
             }
-            RadioFrontRxEnable();
             radioStatus = RADIOSTATUS_RECEIVING;
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
             if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
@@ -529,7 +522,6 @@ void RadioAppTaskFxn(void)
             {
                 radioStatus = RADIOSTATUS_ABSORT;
                 EasyLink_abort();
-                RadioFrontDisable();
                 radioStatus = RADIOSTATUS_IDLE;
             }
         }
@@ -539,7 +531,6 @@ void RadioAppTaskFxn(void)
             if(radioStatus == RADIOSTATUS_RECEIVING)
             {
                 EasyLink_abort();
-                RadioFrontDisable();
                 radioStatus = RADIOSTATUS_IDLE;   
             }
         }
@@ -561,7 +552,6 @@ void RadioAppTaskFxn(void)
             {
                 radioStatus = RADIOSTATUS_RECEIVING;
                 EasyLink_abort();
-                RadioFrontRxEnable();
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                 if(EasyLink_receiveAsync(RxDoneCallback, 0) != EasyLink_Status_Success)
                 {

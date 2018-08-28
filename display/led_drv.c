@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-21 16:02:13
+* @Last Modified time: 2018-08-28 19:07:19
 */
 #include "../general.h"
 
@@ -10,7 +10,6 @@
 #include "led_drv.h"
 
 // board node
-#ifdef BOARD_S1_2
 
 #define LED_R_PIN_NODE                       IOID_25
 #define LED_G_PIN_NODE                       IOID_23
@@ -33,51 +32,7 @@ const PIN_Config ledPinTable[] = {
     PIN_TERMINATE
 };
 
-#endif
 
-// board gateway
-#ifdef BOARD_S2_2
-
-#define LED_R_PIN_GATEWAY                       IOID_14
-#define LED_B_PIN_GATEWAY                       IOID_15
-
-static const uint8_t LED_ID_CONST[LED_MAX] =
-{
-    LED_R_PIN_GATEWAY,
-    LED_B_PIN_GATEWAY,
-};
-
-const PIN_Config ledPinTable[] = {
-    
-    LED_R_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    LED_B_PIN_GATEWAY | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    PIN_TERMINATE
-};
-
-#endif
-
-
-// board S6_6 with screen
-#ifdef  BOARD_S6_6
-
-#define LED_R_PIN                       IOID_14
-#define LED_B_PIN                       IOID_15
-
-static const uint8_t LED_ID_CONST[LED_MAX] =
-{
-    LED_R_PIN,
-    LED_B_PIN,
-};
-
-const PIN_Config ledPinTable[] = {
-    
-    LED_R_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    LED_B_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    PIN_TERMINATE
-};
-
-
-#endif
 
 static Semaphore_Struct ledSemStruct;
 static Semaphore_Handle ledSemHandle;
@@ -116,10 +71,6 @@ void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
 {
     uint8_t i;
     /* Get access to resource */
-#ifdef BOARD_S6_6
-    if(ledId >= LED_G)
-        return;
-#endif
 
     period /= CLOCK_UNIT_MS; 
 

@@ -13,7 +13,7 @@
 #include "lcd_drv.h"
 
 #define LCD_POWER_PIN               IOID_20
-#define LCD_DATA_PIN                IOID_9
+#define LCD_DATA_PIN                IOID_27
 #define LCD_CLK_PIN                 IOID_8
 #define LCD_CS_PIN                  IOID_21
 #define LCD_DATA_C_PIN              IOID_29

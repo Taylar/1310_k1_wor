@@ -25,7 +25,6 @@
 
 SPICC26XXDMA_Object spiCC26XXDMAObjects[CC1310_LAUNCHXL_SPICOUNT];
 
-#ifdef BOARD_S1_2
 
 /* SPI Board */
 #define CC1310_LAUNCHXL_SPI0_MISO_NODE             IOID_10
@@ -67,54 +66,9 @@ const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
         .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_NODE
     }
 };
-#endif
 
 
 
-#if (defined BOARD_S2_2) || (defined BOARD_S6_6)
-
-
-#define CC1310_LAUNCHXL_SPI0_MISO_GATEWAY             IOID_25
-#define CC1310_LAUNCHXL_SPI0_MOSI_GATEWAY             IOID_27
-#define CC1310_LAUNCHXL_SPI0_CLK_GATEWAY              IOID_26
-#define CC1310_LAUNCHXL_SPI0_CSN_GATEWAY              PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_MISO_GATEWAY             PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_MOSI_GATEWAY             PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_CLK_GATEWAY              PIN_UNASSIGNED
-#define CC1310_LAUNCHXL_SPI1_CSN_GATEWAY              PIN_UNASSIGNED
-
-
-const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
-    {
-        .baseAddr           = SSI0_BASE,
-        .intNum             = INT_SSI0_COMB,
-        .intPriority        = ~0,
-        .swiPriority        = 0,
-        .powerMngrId        = PowerCC26XX_PERIPH_SSI0,
-        .defaultTxBufValue  = 0,
-        .rxChannelBitMask   = 1<<UDMA_CHAN_SSI0_RX,
-        .txChannelBitMask   = 1<<UDMA_CHAN_SSI0_TX,
-        .mosiPin            = CC1310_LAUNCHXL_SPI0_MOSI_GATEWAY,
-        .misoPin            = CC1310_LAUNCHXL_SPI0_MISO_GATEWAY,
-        .clkPin             = CC1310_LAUNCHXL_SPI0_CLK_GATEWAY,
-        .csnPin             = CC1310_LAUNCHXL_SPI0_CSN_GATEWAY
-    },
-    {
-        .baseAddr           = SSI1_BASE,
-        .intNum             = INT_SSI1_COMB,
-        .intPriority        = ~0,
-        .swiPriority        = 0,
-        .powerMngrId        = PowerCC26XX_PERIPH_SSI1,
-        .defaultTxBufValue  = 0,
-        .rxChannelBitMask   = 1<<UDMA_CHAN_SSI1_RX,
-        .txChannelBitMask   = 1<<UDMA_CHAN_SSI1_TX,
-        .mosiPin            = CC1310_LAUNCHXL_SPI1_MOSI_GATEWAY,
-        .misoPin            = CC1310_LAUNCHXL_SPI1_MISO_GATEWAY,
-        .clkPin             = CC1310_LAUNCHXL_SPI1_CLK_GATEWAY,
-        .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_GATEWAY
-    }
-};
-#endif
 
 
 const SPI_Config SPI_config[CC1310_LAUNCHXL_SPICOUNT] = {
