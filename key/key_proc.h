@@ -20,8 +20,8 @@
 #endif
 
 #ifdef BOARD_S6_6
-#define Board_BUTTON1                    IOID_1
-#define Board_BUTTON0                    IOID_18
+#define Board_BUTTON1                    IOID_4
+#define Board_BUTTON0                    IOID_14
 #endif
 
 
