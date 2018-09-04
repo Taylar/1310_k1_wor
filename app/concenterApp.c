@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-15 19:41:49
+* @Last Modified time: 2018-09-04 10:26:20
 */
 #include "../general.h"
 
@@ -245,6 +245,7 @@ void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 //***********************************************************************************
 void ConcenterSleep(void)
 {
+    concenterParameter.synTimeFlag  = false;
     concenterParameter.radioReceive = false;
     RtcStop();
     RadioDisable();
