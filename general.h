@@ -62,65 +62,402 @@
 #define EXTERN_ATTR extern
 #endif
 
+#define PLATFORM_NAME   "_1310"
 //***********************************************************************************
 //
 // HW version define.
 //
 //***********************************************************************************
-// #define BOARD_S1_2
-//#define BOARD_S2_2
+// #define BOARD_S6_1
+//#define BOARD_S6_2
+//#define BOARD_S6_3
+//#define BOARD_S6_4
+
+// #define BOARD_S3_2
+//#define BOARD_B2_2
 #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
-//#define FACTOR_RADIO_TEST
 
+//#define FACTOR_RADIO_TEST
 // #define RADIO_1310_50K_GPSK
 
 //***********************************************************************************
-// S6_6 board define
+//
+// FW version define.
+//
 //***********************************************************************************
-#ifdef BOARD_S6_6
+#define FW_VERSION              0x0082
+
+//***********************************************************************************
+//
+//Device type define.
+//
+//***********************************************************************************
+//#define S_A//一体机
+#define S_G//网关
+//#define S_C//采集器
+
+//***********************************************************************************
+//
+//UI Language define.
+//
+//***********************************************************************************
+//#define USE_ENGLISH_MENU
+
+
+//***********************************************************************************
+//
+//project name define.
+//
+//pls define one project following，otherwise use zks  default.
+/****************************************************************************/
+#define  ZKS_PROJECT              //ZKS 项目
+
+
+#ifdef ZKS_PROJECT
+#define         COMPANY_NAME                "ZKS"
+#else
+error project name
+#endif
+#ifdef BOARD_S6_1
+#define         BOARD_NAME              "_S6_1"
+#elif defined( BOARD_S6_2)
+#define         BOARD_NAME              "_S6_2"
+#elif defined( BOARD_S6_6)
+#define         BOARD_NAME              "_S6_6"
+#elif defined( BOARD_B2_2)
+#define         BOARD_NAME              "_B2_2"
+#elif defined( BOARD_S3_2)
+#define         BOARD_NAME              "_S3_2"
+#elif defined( BOARD_S1_1)
+#define         BOARD_NAME              "_S1_1"
+#else
+error borad name
+#endif
+
+#ifdef S_A
+#define 		TYPE_NAME				"_A"
+#elif defined(S_G)
+#define 		TYPE_NAME				"_G"
+#elif defined(S_C)
+#define 		TYPE_NAME				"_C"
+#else
+error type define
+#endif
+
+#ifdef USE_ENGLISH_MENU
+#define 		MENU_NAME				"_EN"
+#else
+#define 		MENU_NAME				""
+
+#endif
+
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+
+
+//***********************************************************************************
+//
+// MCLK define.
+//
+//***********************************************************************************
+#define MCU_MCLK                48000000
+#define XT1_CLK                 32768
+#define XT2_CLK                 24000000
+
+#define delay_ns(x)     __delay_cycles((long)MCU_MCLK*(double)x/1000000000.0)
+#define delay_us(x)     __delay_cycles((long)MCU_MCLK*(double)x/1000000.0)
+#define delay_ms(x)     __delay_cycles((long)MCU_MCLK*(double)x/1000.0)
+
+//***********************************************************************************
+//
+// Clock define.
+//
+//***********************************************************************************
+#define CLOCK_UNIT_S            (1000000 / Clock_tickPeriod)
+#define CLOCK_UNIT_MS           (1000 / Clock_tickPeriod)
+
+//***********************************************************************************
+//
+// Function define.
+//
+//***********************************************************************************
+// Mcu little-ending or big-ending define
+#define LITTLE_ENDIAN
+
+//WatchDog define
+#define SUPPORT_WATCHDOG
+
+//ADC define.
+#define MSP430F55XX_ADC12
+#define ADC_INTERNAL_REFERENCE
+
+//Flash define
+#define FLASH_INTERNAL
+#define FLASH_EXTERNAL
+#ifdef FLASH_EXTERNAL
+//#define FLASH_W25Q256FV  //大于128Mb=16MB,采用4字节地址模式。
+//#define FLASH_SIZE_128M
+//#define FLASH_SENSOR_DATA_32BYTE
+//#define MX66L1G45G  //1G flash
+#endif
+
+//#define USE_NEW_SYS_CONFIG
+#ifdef USE_NEW_SYS_CONFIG
+#undef FLASH_INTERNAL
+#endif
+
+//Sensor define
 #define SUPPORT_SENSOR
+#ifdef SUPPORT_SENSOR
+
 #define SUPPORT_SHT2X
+//#define SUPPORT_SHT3X
 
-#define SUPPORT_RADIO
+#define SUPPORT_NTC
+
+#ifdef BOARD_S6_2
+#define SUPPORT_LIGHT
+#define SUPPORT_GSENSOR
+
+#if 0
+#define SUPPORT_DEEPTEMP
+#else
+#define SUPPORT_PT100
+#endif
+
+#endif
+
+#ifdef BOARD_S6_3
+#define SUPPORT_DEEPTEMP
+//#define SUPPORT_GPS
+#endif
+
+#ifdef BOARD_S6_4
+#define SUPPORT_LIGHT
+#define SUPPORT_GSENSOR
+#endif
 
 
+#ifdef SUPPORT_LIGHT
+#define SUPPORT_OPT3001
+#endif
+
+#ifdef SUPPORT_GSENSOR
+#define SUPPORT_LIS2DS12
+#endif
+
+//#define SUPPORT_GPS
+#ifdef SUPPORT_NTC
+//#define NTC_ELIWELL_10K
+//#define NTC_KEMIT_10K
+//#define NTC_KEMIT_100K
+//#define NTC_KEMIT_PT1000
+//#define NTC_KEMIT_PT1000_2ADC
+#define NTC_XINXIANG_10K
+//#define NTC_TIANYOU_10K
+#endif
+
+#endif
+
+//CRC function define.
+#define SUPPORT_CRC16
+#ifdef SUPPORT_CRC16
+//#define CRC16_HW_MODULE
+#ifndef CRC16_HW_MODULE
+//#define CRC16_MSB
+#define CRC16_LSB
+#endif
+#endif
+
+//Radio define
+// #define SUPPORT_LORA
+// #define SUPPORT_LORA_APC  //LORA Auto Power Control
+// #define SUPPORT_LORA_CHN_FLASH  //将设备通道号保存在flash
+//#define LORA_FREQ  433800000 //中心频点433.8/433MHz
+//#define LORA_OOK_TEST
+// #ifdef LORA_OOK_TEST
+//#define  OOK_TEST_AUTHENTICATION //天线认证
+// #define  OOK_TEST_ANTENNA  //天线匹配调试
+// #endif
+//#define SUPROT_GATE_SET
+
+
+//I2C define
+#define SOFT_I2C_BUS
+
+
+//LCD define
 #define SUPPORT_DISP_SCREEN
+#ifdef SUPPORT_DISP_SCREEN
 
-#define SUPPORT_NETGATE_DISP_NODE
+#define SUPPORT_START_LOGO
 
+//#define EPD_GDE0213B1
+#define LCD_ST7567A
 #define SUPPORT_MENU
 
-#define SUPPORT_NETWORK
+#define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
+#define SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+#define NETGATE_BIND_NODE_MAX       2 //5529上只能支持2个，USB内存不够
 
-//#define SUPPORT_LIGHT
+#endif
+
+//Led define
+#define SUPPORT_LED
+
+//Battery function define.
+#define SUPPORT_BATTERY
+#ifdef SUPPORT_BATTERY
+//#define SUPPORT_ADP5062
+#endif
+
+//Network define
+#define SUPPORT_NETWORK
+#ifdef SUPPORT_NETWORK
+#define SUPPORT_GSM
+#define SUPPORT_GSM_SHORT_CONNECT
+#define SUPPORT_LBS
+#ifdef SUPPORT_LBS
+//#define USE_QUECTEL_API_FOR_LBS
+#define USE_ENGINEERING_MODE_FOR_LBS
+//#define SUPPOERT_LBS_NEARBY_CELL
+#endif
+//#define SUPPORT_IMEI
+
+#define PACKAGE_ITEM_COUNT_MAX 4
+#define SUPPORT_ZKS_PROTOCOL
+
+//#define SUPPORT_FLIGHT_MODE // flight mode
+#define SUPPORT_REMOTE_UPGRADE
+
+#endif
+
+//Bluetooth define
+// #define SUPPORT_BLUETOOTH_PRINT
+
+//Key define
+//#define SUPPORT_DOUBLE_CLICK
+
+//USB upgrade firmware define
+#define SUPPORT_USB_UPGRADE
+#define SUPPORT_USB_UPGRADE_APP
+// #define SUPPORT_USB_UPGRADE_BSL
 
 #define SUPPORT_ENGMODE
 
-// #define SKY_66115
+#define SUPPORT_ALARM_RECORD_QURERY
+#define ALARM_RECORD_QURERY_MAX_ITEM 10
 
-#define SUPPORT_REMOTE_UPGRADE
+#define SUPPORT_DEVICED_STATE_UPLOAD
 
-#define SUPPORT_USB_UPGRADE
+#define SUPPORT_ALARM_SWITCH_PERIOD
 
-#define SUPPORT_STRATEGY_SORT
+#ifdef S_A//一体机
 
-// system state info upload
-#ifndef BOARD_CONFIG_DECEIVE
-//#define SUPPORT_DEVICED_STATE_UPLOAD
+
+#undef  SUPPORT_LORA
+#undef  SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
+#undef  SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+//#undef  SUPPORT_ENGMODE //for  more flash space
+#define SUPPORT_UPLOADTIME_LIMIT
+
+#elif defined(S_G)//gateway
+
+#undef SUPPORT_ALARM_SWITCH_PERIOD
+//#undef SUPPORT_DEVICED_STATE_UPLOAD
+#undef SUPPORT_FLIGHT_MODE // flight mode
+
+#undef SUPPORT_SENSOR
+
+#undef SUPPORT_GSENSOR
+#undef SUPPORT_LIS2DS12
+
+#undef SUPPORT_LIGHT
+#undef SUPPORT_OPT3001
+
+#undef SUPPORT_DEEPTEMP
+#undef SUPPORT_PT100
+
+#undef SUPPORT_SHT2X
+#undef SUPPORT_NTC
+
+#elif defined(S_C)//collection
+
+#undef SUPPORT_ALARM_SWITCH_PERIOD
+#undef SUPPORT_NETWORK
+#undef SUPPORT_GSM
+#undef SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
+#undef SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+#undef SUPPORT_FLIGHT_MODE // flight mode
+#undef SUPPORT_DEVICED_STATE_UPLOAD
+
+#else
+error
 #endif
+
+
+/****************************************************************************/
+/*
+ * ZKML ZKMeiLing
+ *  M-COOL Cloud Platform Management System, API v1.0
+ * */
+
+#ifdef      ZKML_PROJECT
+
+#undef      FW_VERSION
+#define     FW_VERSION          0x0066
+
+#define SUPPORT_MCOOL_PROTOCOL
+#define SUPPOERT_LBS_NEARBY_CELL
+#define SUPPORT_IMEI
 #endif
+
+/****************************************************************************/
+#ifdef  G7_PROJECT
+
+#undef  FW_VERSION
+#define FW_VERSION          0x0080
+
+#undef  SUPPORT_ZKS_PROTOCOL
+#define SUPPORT_G7_PROTOCOL
+#define SUPPOERT_LBS_NEARBY_CELL
+#define SUPPORT_IMEI
+#define CRC16_LSB
+#undef  CRC16_HW_MODULE
+
+#undef SUPPORT_FLIGHT_MODE  // no flight mode
+#endif
+/****************************************************************************/
+#ifdef SFKJ_PROJECT
+
+#define SUPPORT_SFKJ_UI                 //顺丰UI
+
+#define FLASH_SENSOR_DATA_32BYTE        //数据记录32BYTE
+
+#define SUPPORT_CHARGE_CHECK
+
+#undef  SUPPORT_ALARM_RECORD_QURERY
+
+#endif
+/****************************************************************************/
+#ifdef ZKS_PROJECT
+
+#define SUPPORT_SENSOR_TRANSMIT_TIME
+
+#endif
+/****************************************************************************/
+
+
 
 //***********************************************************************************
 // S2_2 board define
 //***********************************************************************************
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 #define SUPPORT_SENSOR
 #define SUPPORT_SHT2X
 #define SUPPORT_DEEPTEMP_PT100
 
-#define SUPPORT_RADIO
 
 #define SUPPORT_NETWORK
 #define SUPPORT_REMOTE_UPGRADE
@@ -130,11 +467,10 @@
 //***********************************************************************************
 // S1_2/3 board define
 //***********************************************************************************
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 #define SUPPORT_SENSOR
 #define SUPPORT_SHT2X
 
-#define SUPPORT_RADIO
 
 #define SUPPORT_RADIO_UPGRADE
 
@@ -160,10 +496,18 @@
 //
 //***********************************************************************************
 #ifdef BOARD_S6_6
-#define FW_VERSION              0x0035
+    #ifdef S_A
+    #undef  FW_VERSION
+    #define FW_VERSION              0x0036
+    #elif defined(S_G)
+    #define FW_VERSION              0x0036
+    #elif defined(S_C)
+    #define FW_VERSION              0x0036
+    #endif
 #endif
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
+    #undef  FW_VERSION
     #ifndef SUPPORT_BOARD_OLD_S1
     #define FW_VERSION              0x0030
     #else
@@ -171,7 +515,8 @@
     #endif
 #endif
 
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
+#undef  FW_VERSION
 #define FW_VERSION              0x0030
 #endif
 
@@ -201,158 +546,6 @@
 
 #define DEFAULT_DST_ADDR                0xFFFFFFFD
 
-
-//***********************************************************************************
-//
-// MCLK define.
-//
-//***********************************************************************************
-#define MCU_MCLK                48000000
-#define XT1_CLK                 32768
-#define XT2_CLK                 24000000
-
-//***********************************************************************************
-//
-// Clock define.
-//
-//***********************************************************************************
-#define CLOCK_UNIT_S            (1000000 / Clock_tickPeriod)
-#define CLOCK_UNIT_MS           (1000 / Clock_tickPeriod)
-
-//***********************************************************************************
-//
-// Function define.
-//
-//***********************************************************************************
-// Mcu little-ending or big-ending define
-#define LITTLE_ENDIAN
-
-//Device type define.
-//#define END_DEVICE
-//#define ACCESS_POINT
-//#define RANGE_EXTENDER
-
-//WatchDog define
-#define SUPPORT_WATCHDOG
-
-
-//ADC define.
-
-//Flash define
-#define FLASH_INTERNAL
-#define FLASH_EXTERNAL
-#ifdef FLASH_EXTERNAL
-//#define FLASH_W25Q256FV  //大于128Mb=16MB,采用4字节地址模式。
-//#define FLASH_SIZE_128M
-//#define FLASH_SENSOR_DATA_32BYTE
-//#define SUPPORT_FLASH_LOG
-//#define MX66L1G45G  //1G flash
-#endif
-
-
-
-#ifdef SUPPORT_NTC
-//#define NTC_ELIWELL_10K
-//#define NTC_KEMIT_10K
-//#define NTC_KEMIT_100K
-//#define NTC_KEMIT_PT1000
-//#define NTC_KEMIT_PT1000_2ADC
-#define NTC_XINXIANG_10K
-//#define NTC_TIANYOU_10K
-#endif
-
-//CRC function define.
-#define SUPPORT_CRC16
-#ifdef SUPPORT_CRC16
-//#define CRC16_HW_MODULE
-#ifndef CRC16_HW_MODULE
-//#define CRC16_MSB
-#define CRC16_LSB
-#endif
-#endif
-
-//Radio define
-#ifdef SUPPORT_RADIO
-#define SUPPORT_CC1310
-#endif
-
-
-//Led define
-#define SUPPORT_LED
-
-//Battery function define.
-#define SUPPORT_BATTERY
-
-
-//LCD define
-#ifdef SUPPORT_DISP_SCREEN
-
-//#define EPD_GDE0213B1
-#define LCD_ST7567A
-#define SUPPORT_MENU
-
-
-//#define SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
-#define NETGATE_BIND_NODE_MAX       30
-
-#endif
-
-//Led define
-#define SUPPORT_LED
-
-//Battery function define.
-#define SUPPORT_BATTERY
-#ifdef SUPPORT_BATTERY
-//#define SUPPORT_ADP5062
-#endif
-
-//Network define
-#ifdef SUPPORT_NETWORK
-#define SUPPORT_GSM
-#define SUPPORT_GSM_SHORT_CONNECT
-#define SUPPORT_LBS
-#ifdef SUPPORT_LBS
-//#define USE_QUECTEL_API_FOR_LBS
-#define USE_ENGINEERING_MODE_FOR_LBS
-#define SUPPOERT_LBS_NEARBY_CELL
-#endif
-#define SUPPORT_IMEI
-
-#define PACKAGE_ITEM_COUNT_MAX 10
-#define SUPPORT_ZKS_PROTOCOL
-
-#endif
-
-#ifdef SUPPORT_NTC
-//#define NTC_ELIWELL_10K
-//#define NTC_KEMIT_10K
-//#define NTC_KEMIT_100K
-//#define NTC_KEMIT_PT1000
-#define NTC_XINXIANG_10K
-//#define NTC_TIANYOU_10K
-
-#endif
-
-
-#ifdef SUPPORT_LIGHT
-#define SUPPORT_OPT3001
-#endif
-
-//Radio define
-
-//CRC function define.
-
-
-
-//Queue function define
-#define QUEUE_ALLOW_COVER
-
-//SPI define
-#define USCI_B0_SPI
-
-//I2C define
-#define I2C_BUS
-#define SOFT_I2C_BUS
 
 
 
@@ -387,35 +580,61 @@ typedef enum {
     SEN_TYPE_PM25,
     SEN_TYPE_CO2,
     SEN_TYPE_GSENSOR,
-    SEN_TYPE_ORG_POLL,
-    SEN_TYPE_HLW8012,
     SEN_TYPE_MAX
 } SENSOR_TYPE;
-
 #define ALARM_TEMP_HIGH         0x7fff
 #define ALARM_TEMP_LOW          (-0x7fff)
-
 
 //***********************************************************************************
 //
 //Status define.
 //
 //***********************************************************************************
-#define STATUS_LCD_ALWAYS_ON    0x0001//lcd常开
-#define STATUS_GSM_TEST         0x0002//gsm测试模式
-#define STATUS_KEY_LED_ON       0x0004//按键灯亮灯
-#define STATUS_ALARM_OFF        0x0008//本地报警开关
-#define STATUS_SENSOR_NAME_ON   0x0010//网关显示采集器名字开关
-#define STATUS_DISP_NOBINDNODE  0x0020//网关显示非绑定设备的信息开关
+#define STATUS_LCD_ALWAYS_ON        0x0001//lcd常开
+#define STATUS_GSM_TEST             0x0002//gsm测试模式
+#define STATUS_KEY_LED_ON           0x0004//按键灯亮灯
+#define STATUS_ALARM_OFF            0x0008//本地报警开关
+#define STATUS_SENSOR_NAME_ON       0x0010//网关显示采集器名字开关
+#define STATUS_DISP_BIND_ONLY       0x0020//网关只显示绑定设备的信息开关
+#define STATUS_HIDE_PWOF_MENU       0x0040//hide power off menu 
+#define STATUS_HIDE_SHT_SENSOR      0x0080//dont display sht20 sensor
+#define STATUS_ALARM_SWITCH_ON      0x0100//alarm upload period switch on
 
-
-
+#define STATUS_LORA_MASTER      0x0001//lora做master或slaver
 #define STATUS_LORA_TEST      	0x0002//LORA 测试模式
 #define STATUS_LORA_APC      	0x0004//采集器自动增益控制
 #define STATUS_LORA_ALARM      	0x0008//采集器发送报警信息到网关
 #define STATUS_LORA_CHANGE_FREQ 0x0010//LORA的中心频根据客户码变化
 #define STATUS_1310_MASTER      0x0020//1310做master或slaver
 
+
+
+//***********************************************************************************
+//
+//system event define.
+//
+//***********************************************************************************
+// #define SYS_EVT_NONE                Event_Id_NONE
+// #define SYS_EVT_KEY                 Event_Id_00
+// #define SYS_EVT_DISP                Event_Id_01
+// #define SYS_EVT_SENSOR              Event_Id_02
+// #define SYS_EVT_ALARM               Event_Id_03
+// #define SYS_EVT_LORA_SENSOR         Event_Id_04
+// #define SYS_EVT_G_SENSOR            Event_Id_05
+// #define SYS_EVT_OPT3001             Event_Id_06
+// #define SYS_EVT_GPS_STOR            Event_Id_07
+// #define SYS_EVT_GSENSOR_STOR        Event_Id_08
+// #define SYS_EVT_FEED_WATCHDOG       Event_Id_09
+// #define SYS_EVT_SEARCH_BLE_RECORD   Event_Id_10
+// #define SYS_EVT_CONFIG_SAVE         Event_Id_11
+// #define SYS_EVT_G7_ALARM_SAVE       Event_Id_12
+// #define SYS_EVT_ALARM_SAVE          Event_Id_13
+// #define SYS_EVT_SYS_RUN_SAVE        Event_Id_14
+// #define SYS_EVT_SHUTDODN            Event_Id_15
+
+
+
+// #define SYS_EVT_ALL                 0xffff
 
 //***********************************************************************************
 //
@@ -459,7 +678,6 @@ typedef enum {
 //
 //***********************************************************************************
 
-
 typedef enum {
     SYS_STATE_STANDBY = 0,
     SYS_STATE_POWERON,
@@ -487,7 +705,7 @@ typedef struct {
 
 typedef struct {
     uint32_t    Deviceid;
-    int8_t      ChNo;
+    uint8_t     ChNo;
     AlarmTemp_t AlarmInfo;
 } BindNode_t;
 
@@ -496,8 +714,9 @@ typedef struct {
     uint32_t   i2c_errors;
     uint32_t   lora_send_errors;        
     uint32_t   lora_list_fulls; 
-    uint32_t   reserve;    
+    uint32_t   wtd_restarts;    
 }SystemState_t;
+
 
 typedef struct {
 	uint16_t size;
@@ -537,8 +756,8 @@ typedef struct {
     //RF status setting.
 	uint8_t rfStatus;
 
-    //GNSS collect period
-	uint32_t gnssPeriod;
+    //uplaod period when alarm
+    uint32_t alarmuploadPeriod;
     
     //battery voltage of shutdown
     uint16_t batLowVol;
@@ -559,12 +778,11 @@ typedef struct {
    //offset 256
     SystemState_t  sysState;  //size =20
     
-#ifdef SUPPORT_NETGATE_BIND_NODE   //
     //offset 256 +20    
     BindNode_t  bindnode[NETGATE_BIND_NODE_MAX];
 
-#endif
-    
+	//total size 276+9*2 = 294
+
 } ConfigInfo_t;
 #pragma pack ()
 
@@ -629,9 +847,14 @@ typedef struct {
     #include "app/old_s1/old_s1_node_app.h"
 #endif
 
-#ifdef SUPPORT_DEEPTEMP_PT100
-    #include "sensor/ads1247/ads1247.h"
-    #include "sensor/pt100.h"
+#ifdef SUPPORT_PT100
+// #include "ads1247/ads1247.h"
+#include "sensor/pt100.h"
+#include "sensor/ads1247/ads1247.h"
+#endif
+
+#ifdef SUPPORT_FLIGHT_MODE
+#include "network/flight_mode.h"
 #endif
 
 //***********************************************************************************
@@ -644,6 +867,11 @@ EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
 EXTERN_ATTR uint16_t     g_bAlarmSensorFlag; //
 EXTERN_ATTR  Alarmdata_t    g_AlarmSensor;
 
+#ifdef SUPPORT_ALARM_SWITCH_PERIOD
+EXTERN_ATTR bool g_alarmFlag;
+#endif //SUPPORT_ALARM_SWITCH_PERIOD
+
 extern uint8_t deviceMode;
 
 #endif	/* __ZKSIOT_GENERAL_H__ */
+

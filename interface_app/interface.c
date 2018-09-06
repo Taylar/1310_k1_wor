@@ -2,14 +2,14 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-09 19:41:06
+* @Last Modified time: 2018-09-05 17:28:26
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
 //#include "interface.h"
 //#include "../app/usb_prot.h"
 
-// #if (defined BOARD_S2_2) || (defined BOARD_S6_6)
+// #if (defined BOARD_B2_2) || (defined BOARD_S6_6)
 
 /***** Defines *****/
 #define         INTERFACE_STACK_SIZE        840
@@ -17,7 +17,7 @@
 #define         INTERFACE_REC_TIMEOUT_MS    3
 
 
-#if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
+#if (defined(BOARD_S6_6) || defined(BOARD_B2_2))
 //#define INTERFACE_REQ_PIN                            IOID_22
 //
 //const PIN_Config Int_Req_PinTable[] = {

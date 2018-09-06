@@ -120,6 +120,7 @@ typedef enum {
     ICON_13X8_SIGNAL_1,
     ICON_13X8_SIGNAL_2,
     ICON_13X8_SIGNAL_3,
+    ICOM_13X8_CHAGER_STATE,
     ICON_8X8_PER_0,
     ICON_23X24_TMP_STAT_0,
     ICON_23X24_TMP_STAT_1,
@@ -168,7 +169,7 @@ extern void Disp_proc(void);
 extern void Disp_init(void);
 extern bool Disp_poweron(void);
 extern void Disp_poweroff(void);
-extern void Disp_sensor_index_search(void);
+extern void TempToDisplayBuff(int32_t value,uint8_t *buff,uint8_t ch);
 #endif  /* SUPPORT_DISP_SCREEN */
 
 #endif	/* __ZKSIOT_DISPLAY_H__ */

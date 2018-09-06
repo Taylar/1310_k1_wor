@@ -6,7 +6,7 @@
 
 
 // board node
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 
 #define FLASH_POWER_PIN         IOID_8
 #define FLASH_SPI_CS_PIN        IOID_9
@@ -28,7 +28,7 @@ const PIN_Config extFlashPinTable[] = {
 #endif
 
 // board gateway
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 
 #define FLASH_SPI_CS_PIN        IOID_9
 #define FLASH_WP_PIN            IOID_11
@@ -1542,7 +1542,7 @@ void Sys_config_reset(void)
         g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
     }
 
-#ifdef      BOARD_S2_2
+#ifdef      BOARD_B2_2
 
     g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO;
     g_rSysConfigInfo.serverIpAddr[0] = 114;
@@ -1575,7 +1575,7 @@ void Sys_config_reset(void)
 #endif
 
 
-#ifdef      BOARD_S1_2
+#ifdef      BOARD_S3_2
 
     g_rSysConfigInfo.module          = MODULE_RADIO;
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
@@ -1591,7 +1591,7 @@ void Sys_config_reset(void)
     
     g_rSysConfigInfo.ntpPeriod       = NTC_DEFAULT;    // 
     
-    g_rSysConfigInfo.gnssPeriod      = 10;  // 10sec
+
     
     g_rSysConfigInfo.rtc.Seconds = 1;
     g_rSysConfigInfo.rtc.Minutes = 1;

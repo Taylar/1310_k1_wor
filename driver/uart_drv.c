@@ -2,12 +2,12 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-28 19:12:15
+* @Last Modified time: 2018-09-05 17:28:27
 */
 #include "../general.h"
 
 /* UART Board */
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 
 #define UART_RX_INTERFACE               IOID_13        /* RXD */
 #define UART_TX_INTERFACE               IOID_12        /* TXD */
@@ -21,7 +21,7 @@
 
 #endif
 
-#if (!defined BOARD_S6_6) && (!defined BOARD_S2_2)
+#if (!defined BOARD_S6_6) && (!defined BOARD_B2_2)
 
 #define UART_RX_INTERFACE               IOID_13          /* RXD */
 #define UART_TX_INTERFACE               IOID_12          /* TXD */

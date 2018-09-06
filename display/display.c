@@ -435,7 +435,11 @@ static void Disp_calendar(void)
 static void Disp_temperature(uint8_t col, uint8_t row, int32_t value, bool deep)
 {
     uint8_t thousand,hundreds,integer, decimal;
-
+    Lcd_set_font(128, 8, 0);
+    Lcd_clear_area(0,2);
+    Lcd_clear_area(0,3);
+    Lcd_clear_area(0,4);
+    Lcd_clear_area(0,5);
 	Lcd_set_font(TPICON_W, TPICON_H, 0);
     
     if ((deep == false && value == TEMPERATURE_OVERLOAD) ||
@@ -636,6 +640,9 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
     Disp_msg(1, 2, buff, FONT_12X24);*/
 
 }
+
+#endif  /* SUPPORT_SENSOR */
+
 //***********************************************************************************
 //
 // Display sensor data.
@@ -643,10 +650,11 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 //***********************************************************************************
 void Disp_sensor_data(void)
 {
+#ifdef SUPPORT_SENSOR
     int32_t valueT;
     uint32_t valueL;
-
     uint16_t valueH;
+#endif
 
     if (rDispObject.init == 0)
         return;
@@ -654,7 +662,8 @@ void Disp_sensor_data(void)
     if (g_bAlarmSensorFlag) {//显示需要报警的senso
         rDispObject.sensorIndex = Alarm_ffs(g_bAlarmSensorFlag);
     }
-
+    
+#ifdef SUPPORT_SENSOR
     if (rDispObject.sensorIndex < MODULE_SENSOR_MAX) {    //display  local sensor
         if (Sensor_get_function(rDispObject.sensorIndex) == (SENSOR_TEMP | SENSOR_HUMI)) {
             valueT = Sensor_get_temperatureC(rDispObject.sensorIndex);
@@ -674,7 +683,7 @@ void Disp_sensor_data(void)
         }
         return;
     }
-
+#endif
 
     
 #ifdef SUPPORT_NETGATE_DISP_NODE
@@ -700,8 +709,10 @@ void Disp_sensor_data(void)
             }
 
             //all  data  saved to tempdeep
-            if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {   
-                sprintf((char*)buff, "%2d.%dc", (uint16_t)g_AlarmSensor.value.tempdeep/100, (uint16_t)round((g_AlarmSensor.value.tempdeep/10)) % 10);
+            if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {
+
+                TempToDisplayBuff(g_AlarmSensor.value.tempdeep,buff,g_AlarmSensor.index);
+
                 Lcd_set_font(132, 16, 0);
 				Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);    
@@ -732,9 +743,11 @@ void Disp_sensor_data(void)
                 Disp_msg(2, 2, buff, FONT_8X16);
             }
             
-            if (Sensor.type == SEN_TYPE_SHT2X) {
-                if (Sensor.value.temp != TEMPERATURE_OVERLOAD)//temp valid 
-                    sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);                  
+            if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)(SENSOR_TEMP | SENSOR_HUMI)) {
+                if (Sensor.value.temp != TEMPERATURE_OVERLOAD){//temp valid
+
+                    TempToDisplayBuff((int32_t)Sensor.value.temp,buff,Sensor.index);
+                }
                 else 
                     sprintf((char*)buff, "--c");
                 
@@ -742,32 +755,31 @@ void Disp_sensor_data(void)
                     sprintf((char*)(buff + strlen((const char *)buff)), " %02d%%", Sensor.value.humi/100);
                 else 
                     sprintf((char*)(buff + strlen((const char *)buff)), " --%%");
+                Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);                
-            } else if (Sensor.type == SEN_TYPE_NTC) {   
+            } else if (Sensor_get_function_by_type(Sensor.type) == SENSOR_TEMP) {   
             
-                if (Sensor.value.temp != TEMPERATURE_OVERLOAD)//temp valid 
-                    sprintf((char*)buff, "%d.%dc", Sensor.value.temp/100, (uint16_t)round((Sensor.value.temp/10.0)) % 10);   
+                if (Sensor.value.temp != TEMPERATURE_OVERLOAD){//temp valid
+
+                    TempToDisplayBuff((int32_t)Sensor.value.temp,buff,Sensor.index);
+                }
                 else 
                     sprintf((char*)buff, "--c");
                 Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);                
-            } else if (Sensor.type == SEN_TYPE_DEEPTEMP){
-                if (Sensor.value.tempdeep != (DEEP_TEMP_OVERLOAD >> 4)){
-                    if (Sensor.value.tempdeep < 0) {
-                        Sensor.value.tempdeep = -Sensor.value.tempdeep;
-                        sprintf((char*)buff, "-%d.%dc", (uint16_t)((Sensor.value.tempdeep)/100), (uint16_t)round(((Sensor.value.tempdeep)/10)) % 10);
-                    } else {
-                        sprintf((char*)buff, "%d.%dc", (uint16_t)((Sensor.value.tempdeep)/100), (uint16_t)round(((Sensor.value.tempdeep)/10)) % 10);
-                    }
+            } else if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_DEEP_TEMP){
+                if (Sensor.value.tempdeep != DEEP_TEMP_OVERLOAD){
+
+                    TempToDisplayBuff(Sensor.value.tempdeep,buff,Sensor.index);
                 }
                 else
                     sprintf((char*)buff, "--c");
                 Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
-            } else if(Sensor.type == SEN_TYPE_OPT3001){
+            } else if(Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_LIGHT){
 
                 if (Sensor.value.lux != DEEP_TEMP_OVERLOAD){
                     sprintf((char *)buff,  "%ld.%dLx", (uint32_t)((Sensor.value.lux&0x00ffffff)/100),(uint16_t)(LOWORD(Sensor.value.lux)%100/10.0));
@@ -775,12 +787,6 @@ void Disp_sensor_data(void)
                 else
                     sprintf((char*)buff, "--c");
                 Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);
-            } else if (Sensor.type == SEN_TYPE_HLW8012) {
-                sprintf((char*)buff, "%d.%dW", Sensor.value.ACPower/10, Sensor.value.ACPower%10);
-
-                sprintf((char*)(buff + strlen((const char *)buff)), " %d.%dV", Sensor.value.ACVoltage/10, Sensor.value.ACVoltage%10);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
             }
@@ -825,6 +831,11 @@ void Disp_sensor_switch(void)
     for (i = 0; i < MODULE_SENSOR_MAX; i++) {
         num = (rDispObject.sensorIndex + i + 1) % MODULE_SENSOR_MAX;
         if ((g_rSysConfigInfo.sensorModule[num] != SEN_TYPE_NONE)&&(g_rSysConfigInfo.sensorModule[num] != SEN_TYPE_GSENSOR)) {
+
+            if((g_rSysConfigInfo.status & STATUS_HIDE_SHT_SENSOR) && (g_rSysConfigInfo.sensorModule[num] == SEN_TYPE_SHT2X)){
+                continue;//hide sht20 sensor
+            }
+            
             rDispObject.sensorIndex = num;
             break;
         }
@@ -837,7 +848,6 @@ void Disp_sensor_switch(void)
 
 }
 
-#endif  /* SUPPORT_SENSOR */
 
 //***********************************************************************************
 //
@@ -851,7 +861,7 @@ static void Disp_status_bar(void)
 
 	Lcd_set_font(SBICON_W, SBICON_H, 0);
 
-#ifdef SUPPORT_SENSOR
+#if 1//def SUPPORT_SENSOR
 //Display external sensor flag
     if ( (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
         (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_NONE) ||
@@ -961,7 +971,9 @@ void Disp_info_close(void)
 static void Disp_info(void)
 {
     uint8_t temp, buff[21],i,j;
-//    uint8_t *gateid;
+#ifdef SUPPORT_LORA
+    uint8_t *gateid;
+#endif
 
     switch (rDispObject.infoIndex) {
         case 1:
@@ -986,6 +998,20 @@ static void Disp_info(void)
                 buff[10] = temp;
                 Disp_msg(6, 6, &buff[10], FONT_8X16);
 			}
+
+			
+#ifdef S_C
+			
+			if (*(uint32_t*)g_rSysConfigInfo.BindGateway  != 0 ){
+
+				sprintf((char *)buff, "BGID: %02x%02x%02x%02x", g_rSysConfigInfo.BindGateway[0], g_rSysConfigInfo.BindGateway[1],
+																g_rSysConfigInfo.BindGateway[2], g_rSysConfigInfo.BindGateway[3]);
+				Disp_msg(0, 4, buff, FONT_8X16);
+			}else{
+				Disp_msg(0, 4, "BGID: ", FONT_8X16);
+				memset(buff, 0 ,21);
+			}
+#endif
             break;
 
         case 2:
@@ -1089,6 +1115,19 @@ static void Disp_info(void)
 
 }
 
+void TempToDisplayBuff(int32_t value,uint8_t *buff,uint8_t ch)
+{
+
+    value = (int32_t)round( value / 10.0);
+    if(value < 0){
+
+       sprintf((char*)buff, "%d -%2d.%dc", ch, (uint16_t)(-value/10), (uint16_t)(-value %10));
+    }
+    else{
+       sprintf((char*)buff, "%d %2d.%dc",ch, (uint16_t)(value/10), (uint16_t)(value %10));
+
+    }
+}
 //***********************************************************************************
 //
 // Display picture.
@@ -1131,7 +1170,7 @@ void Disp_proc(void)
         Disp_info();
     } else {
         Disp_calendar();
-#ifdef SUPPORT_SENSOR
+#if 1//def SUPPORT_SENSOR
         Disp_sensor_data();
 #endif
         Disp_status_bar();
@@ -1140,8 +1179,12 @@ void Disp_proc(void)
 #ifdef SUPPORT_LORA
     //增加采集器/网关显示注册信息
    if( g_rSysConfigInfo.module & MODULE_RADIO ) {
-       if(Lora_get_ntp()== 0)
-           Disp_msg(0, 6, "Registering...", FONT_8X16);//display
+      if(Lora_get_ntp()== 0){
+          if(*(uint32_t*)g_rSysConfigInfo.DeviceId != 0)
+            Disp_msg(0, 6, "Registering...", FONT_8X16);//display
+          else
+            Disp_msg(0, 6, "NO DEID", FONT_8X16);//display
+      }
    }
 #endif
 
@@ -1174,22 +1217,26 @@ bool Disp_poweron(void)
         rDispObject.init = 1;
         rDispObject.infoIndex = 0;
         ret = true;
+        
 #ifdef SUPPORT_SENSOR
         uint8_t i;
         for (i = 0; i < MODULE_SENSOR_MAX; i++) {
             if (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
+                if((g_rSysConfigInfo.status & STATUS_HIDE_SHT_SENSOR) && (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X)){
+                    continue;//hide sht20 sensor
+                }
                 break;
             }
         }
         rDispObject.sensorIndex = i;
-        
+#endif
+
 #ifdef SUPPORT_NETGATE_DISP_NODE    
         if(g_rSysConfigInfo.module & MODULE_NWK && g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor，don't display local sensor data
             rDispObject.sensorIndex = MODULE_SENSOR_MAX;
         }
 #endif
 
-#endif
     }
 
     Sys_lcd_start_timing();
@@ -1213,23 +1260,6 @@ void Disp_poweroff(void)
     rDispObject.init = 0;
     rDispObject.infoIndex = 0;
     Sys_lcd_stop_timing();
-}
-
-//***********************************************************************************
-//
-// search the sendor index.
-//
-//***********************************************************************************
-void Disp_sensor_index_search(void)
-{
-    uint8_t i;
-    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
-        if (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
-            break;
-        }
-    }
-    rDispObject.sensorIndex = i;
- 
 }
 
 #endif  /* SUPPORT_DISP_SCREEN */

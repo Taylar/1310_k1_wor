@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-04-08 16:25:04
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-06-14 14:46:28
+* @Last Modified time: 2018-05-25 11:00:51
 */
 #include "../general.h"
 
@@ -34,13 +34,12 @@ typedef struct
     uint32_t	crc;
     uint32_t	monitorTimer;
     uint32_t	packTimeout;
+    uint8_t 	infoFlag;
 }upgrade_info_t;
 
 
 
 upgrade_info_t upgradeInfo;
-
-
 const UpgradeBL_t UpgradeBootLoader =  (UpgradeBL_t)BOOT_LOADER_ADDR;
 
 //***********************************************************************************
@@ -59,6 +58,7 @@ void UpgradeInit(void)
 	upgradeInfo.fileLength   = 0;
 	upgradeInfo.monitorTimer = 0;
 	upgradeInfo.packTimeout  = 0;
+	upgradeInfo.infoFlag	 = UPGRADE_RESULT_UNREC_VER;
 
 }
 
@@ -76,28 +76,7 @@ void UpgradeCancel(void)
 	upgradeInfo.fileLength   = 0;
 	upgradeInfo.monitorTimer = 0;
 	upgradeInfo.packTimeout  = 0;
-
-}
-
-
-//***********************************************************************************
-//
-// upgrade set the upgrade version and project name, and request the next pack
-//
-//***********************************************************************************
-uint16_t UpgradeSetInfo(uint16_t version, uint32_t fileLength)
-{
-	if(version == FW_VERSION)
-		return UPGRADE_RESULT_NEEDNOT_UPDATA;
-	if((upgradeInfo.upgradeVer != version) || (fileLength != upgradeInfo.fileLength))
-	{
-		upgradeInfo.upgradeStep = UPGRADE_LOADING;
-		upgradeInfo.upgradeVer  = version;
-		upgradeInfo.fileLength  = fileLength;
-		upgradeInfo.packNum     = 0;
-	}
-
-	return UPGRADE_RESULT_NEED_UPDATA;
+	upgradeInfo.infoFlag	 = UPGRADE_RESULT_UNREC_VER;
 }
 
 
@@ -253,6 +232,51 @@ void UpgradeMonitorReset(void)
 uint32_t UpgradeMonitorGet(void)
 {
 	return upgradeInfo.monitorTimer;
+}
+
+
+//***********************************************************************************
+//
+// when receive the version info, set the infoFlag
+//
+//***********************************************************************************
+void SetUpgradeInfo(uint16_t version, uint32_t fileLength)
+{
+	if(version == FW_VERSION)
+	{
+		upgradeInfo.infoFlag = UPGRADE_RESULT_NEEDNOT_UPDATA;
+	}
+	if((upgradeInfo.upgradeVer != version) || (fileLength != upgradeInfo.fileLength))
+	{
+		upgradeInfo.upgradeStep = UPGRADE_LOADING;
+		upgradeInfo.upgradeVer  = version;
+		upgradeInfo.fileLength  = fileLength;
+		upgradeInfo.packNum     = 0;
+		upgradeInfo.infoFlag    = UPGRADE_RESULT_NEED_UPDATA;
+	}
+
+}
+
+
+//***********************************************************************************
+//
+// when request the version info, clear the infoFlag
+//
+//***********************************************************************************
+void ClearUpgradeInfo(void)
+{
+	upgradeInfo.infoFlag	 = UPGRADE_RESULT_UNREC_VER;
+}
+
+
+//***********************************************************************************
+//
+// read the infoFlag
+//
+//***********************************************************************************
+uint8_t ReadUpgradeInfoFlag(void)
+{
+	return upgradeInfo.infoFlag;
 }
 #else
 void UpgradeCancel(void){}

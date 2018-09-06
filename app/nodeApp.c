@@ -212,14 +212,17 @@ void NodeCollectStart(void)
 
     secTemp                    = RtcGetSec();
     nodeParameter.synTimeFlag  = true;
-    nodeParameter.collectStart = true;
 
 
     // promise the next collect time is 30s 
-    if((g_rSysConfigInfo.collectPeriod % 60) == 0)
+    if(nodeParameter.collectStart == false)
     {
-        secTemp += 30;
-        nodeParameter.collectTimeCnt = secTemp;
+        if((g_rSysConfigInfo.collectPeriod % 60) == 0)
+        {
+            secTemp += 30;
+            nodeParameter.collectTimeCnt = secTemp;
+        }
+        nodeParameter.collectStart = true;
     }
     
 }
@@ -262,7 +265,7 @@ void NodeCollectProcess(void)
     uint8_t     data[24];
     uint32_t    temp;
     Calendar    calendarTemp;
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
     // save the deep temperature data
     DeepTemp_FxnTable.measureFxn(MAX31855_SPI_CH0);
         // sensor type
@@ -306,7 +309,7 @@ void NodeCollectProcess(void)
 
 
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
     // save the sht2x data
     SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
 
@@ -549,69 +552,21 @@ static uint8_t count = 0;
     uint8_t temp;
     nodeParameter.collectTimeCnt++;
 
-
-
-    // check the radio if blocking in transmit
-    if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
+    nodeParameter.sysTime++;
+    if(nodeParameter.sysTime >= 3600)
     {
-        nodeParameter.monitorCnt++;
-        // the radio maybe blocking in transmiting
-        if(nodeParameter.monitorCnt > 3)
-        {
-            EasyLink_abort();
-            nodeParameter.monitorCnt = 0;
-        }
-    }
-    else
-    {
-        nodeParameter.monitorCnt = 0;
+        NodeRadioSendSynReq();
+        nodeParameter.sysTime       = 0;
     }
 
-
-        // if(nodeParameter.collectTimeCnt >= 10)
     if(nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
     {
-        // nodeParameter.collectTimeCnt -= 10;
-        if((g_rSysConfigInfo.collectPeriod % 60) == 0)
-        {
-            temp = RtcGetSec();
-            if(temp != 30)
-            {
-                if(temp > 30)
-                {
-                    nodeParameter.collectTimeCnt = temp - 30;
-                }
-                else
-                {
-                    nodeParameter.collectTimeCnt = temp + 30;
-                }
-            }
-            else
-            {
-                nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
-            }
-        }
-        else
-        {
-            nodeParameter.collectTimeCnt -= g_rSysConfigInfo.collectPeriod;
-        }
-        
         NodeBroadcastCountClear();
         if(deviceMode == DEVICES_ON_MODE)
             RadioEventPost(RADIO_EVT_RADIO_REPAIL);
-        if(nodeParameter.collectStart)
-            Sensor_measure(1);
         if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
         {
-            // if(GetStrategyRegisterStatus() == true)
-                RadioSensorDataPack();
-        }
-
-        nodeParameter.sysTime++;
-        if(nodeParameter.sysTime >= 3600)
-        {
-            NodeRadioSendSynReq();
-            nodeParameter.sysTime       = 0;
+            RadioSensorDataPack();
         }
 
         if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
@@ -623,9 +578,7 @@ static uint8_t count = 0;
                 NodeSleep();
             }
             NodeSleep();
-            // SysCtrlSystemReset();
         }
-
     }
 #endif
 }

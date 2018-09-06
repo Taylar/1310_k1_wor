@@ -53,7 +53,10 @@ static uint16_t SHT2x_calc_humidty(uint16_t humidty)
     //-- calculate relative humidity [%RH] --
     humidity = (uint16_t)round(-6.0 + 125.0/65536 * (float)humidty * 100); // RH = -6 + 125 * SRH/2^16
 
-    if(humidity >= 10000)//?humidity???99.99
+	if(humidity >= 750)//correct the data
+		humidity -= 750;
+
+    if(humidity >= 10000)//????¡±?umidity¨¦¡ª??????¡ª¨¦?|???9.99
         humidity = 9999;
     
     return humidity;

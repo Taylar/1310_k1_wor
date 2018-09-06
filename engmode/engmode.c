@@ -172,8 +172,7 @@ void EngMode()
     Disp_clear_all();
     Disp_msg(0, 0, "Sensor test:", FONT_8X16);
 	Sensor_measure(0);
-
-	Disp_sensor_index_search();    
+    
 	for (i = 0; i < MODULE_SENSOR_MAX; i++) {        
         if (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {  
             Disp_clear_all();

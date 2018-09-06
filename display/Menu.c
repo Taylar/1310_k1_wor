@@ -36,7 +36,11 @@ const uint8_t menu128x64[]= {
     #include "font\menu128x64.txt"
 #endif
 };
-
+#ifndef SUPPORT_FLIGHT_MODE
+const uint8_t menu128x16[]= {
+    #include "font\menu128x16.txt" // 128*16dot bitmap picture
+};
+#endif
 
 void Menu_start_record(void);
 void Menu_stop_record(void);
@@ -51,7 +55,34 @@ void Menu_alrm_query_proc(void);
 void Menu_alarm_recode_proc(void);
 extern SysTask_t rSysTask;
 
-//#define USE_ENGLISH_MENU
+
+
+
+#ifdef SUPPORT_BLE_PRINT_LIST_MODE
+
+#define LIST_PRINT_MODE_SINGLE  0 // One Select trigger once print
+#define LIST_PRINT_MODE_MULTIPLE 1 //
+
+static void PrintList_ItemSelect(void);
+static void PrintList_Cancel(void);
+static void PrintList_Print(void);
+static void PrintList_Select_sign_show(uint8_t index);
+static void PrintList_Cancel_sign_show(uint8_t index);
+
+void Menu_printList_proc(void);
+#define PRINT_LIST_PAGE_MAX 4 // Each page ECHO max line data
+MenuItem_t rPrintMenu[] = {
+    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
+    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
+    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
+    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
+};
+
+static void PrintList_init_Page(void);
+static void PrintList_getNext_Page(void);
+#define R_PRINT_MENU_CHILDRED rPrintMenu
+#endif
+
 #ifndef R_PRINT_MENU_CHILDRED
 #define R_PRINT_MENU_CHILDRED NULL
 #endif
@@ -98,7 +129,7 @@ const MenuItem_t rMainMenu[4] = {
 const MenuItem_t rMainMenu[5] = {
     {5, "Start Monitoring",     Menu_start_record,  NULL,   NULL},
     {5, "End Monitoring",       Menu_stop_record,   NULL,   NULL},
-    {5, "Bluetooth Print",      Menu_print_proc,    NULL,   NULL},
+    {5, "Bluetooth Print",      Menu_print_proc,    R_PRINT_MENU_CHILDRED,   NULL},
     {5, "Alarm Query",          Menu_alrm_query_proc,    rRecordArlmMenu,   NULL},
     {5, "Exit",                 Menu_exit,          NULL,   NULL},
 };
@@ -106,7 +137,7 @@ const MenuItem_t rMainMenu[5] = {
 const MenuItem_t rMainMenu[4] = {
       {4, "Start Monitoring",     Menu_start_record,  NULL,   NULL},
       {4, "End Monitoring",       Menu_stop_record,   NULL,   NULL},
-      {4, "Bluetooth Print",      Menu_print_proc,    NULL,   NULL},
+      {4, "Bluetooth Print",      Menu_print_proc,    R_PRINT_MENU_CHILDRED,   NULL},
       {4, "Exit",                 Menu_exit,          NULL,   NULL},
 };
 #endif
@@ -124,25 +155,34 @@ typedef enum{
 #define POWEROFF_OFFSET 16*16 // 128bit*16line pic
 #define PrintList_PrintImageStr     &menu128x64[5*POWEROFF_OFFSET]
 #define PrintList_CancelImageStr    &menu128x64[2*POWEROFF_OFFSET]
+#else
+typedef enum{
+    PRINTLIST_CANCEL = 0,
+    PRINTLIST_PRINT = 1,
+}POWER_MENU_T;
+
+#define POWEROFF_OFFSET 16*16 // 128bit*16line pic
+#define PrintList_PrintImageStr     &menu128x16[PRINTLIST_PRINT*POWEROFF_OFFSET]
+#define PrintList_CancelImageStr    &menu128x16[PRINTLIST_CANCEL*POWEROFF_OFFSET]
 #endif
 
 #ifndef  USE_ENGLISH_MENU
 const MenuItem_t PoweroffMenu[] = {
 #ifdef SUPPORT_FLIGHT_MODE
 
-    {5, &menu128x64[POWEROFFMENU_POWEROFF*POWEROFF_OFFSET],     Menu_power_off,      NULL,   NULL},
-    {5, &menu128x64[POWEROFFMENU_RESTART*POWEROFF_OFFSET] ,     Menu_restart,        NULL,   NULL},
-    {5, &menu128x64[3*POWEROFF_OFFSET] ,     Menu_flight_mode_entry,        NULL,   NULL},
-    {5, &menu128x64[4*POWEROFF_OFFSET],     Menu_flight_mode_exit,        NULL,   NULL},
-    {5, &menu128x64[2*POWEROFF_OFFSET],     Menu_exit,           NULL,   NULL},
+    {5, &menu128x64[POWEROFFMENU_POWEROFF*POWEROFF_OFFSET],     Menu_power_off,             NULL,   NULL},
+    {5, &menu128x64[POWEROFFMENU_RESTART*POWEROFF_OFFSET] ,     Menu_restart,               NULL,   NULL},
+    {5, &menu128x64[3*POWEROFF_OFFSET] ,                        Menu_flight_mode_entry,     NULL,   NULL},
+    {5, &menu128x64[4*POWEROFF_OFFSET],                         Menu_flight_mode_exit,      NULL,   NULL},
+    {5, &menu128x64[2*POWEROFF_OFFSET],                         Menu_exit,                  NULL,   NULL},
 #else
 #ifdef SUPPORT_G7_PROTOCOL
     {2, menu128x64 + 16*24,     Menu_restart,        NULL,   NULL},
     {2, menu128x64 + 16*24,     Menu_exit,           NULL,   NULL},
 #else
-    {3, menu128x64,     Menu_power_off,      NULL,   NULL},
-    {3, menu128x64,     Menu_restart,        NULL,   NULL},
-    {3, menu128x64,     Menu_exit,           NULL,   NULL},
+    {3, menu128x64,             Menu_power_off,      NULL,   NULL},
+    {3, menu128x64,             Menu_restart,        NULL,   NULL},
+    {3, menu128x64,             Menu_exit,           NULL,   NULL},
 #endif
 #endif
 };
@@ -152,17 +192,17 @@ const MenuItem_t PoweroffMenu[] = {
 #else
 #ifndef SUPPORT_FLIGHT_MODE
 const MenuItem_t PoweroffMenu[] = {
-    {3, "Power Off",    Menu_power_off,      NULL,   NULL},
+    {3, "Power Off",   Menu_power_off,      NULL,   NULL},
     {3, "Restart",     Menu_restart,        NULL,   NULL},
     {3, "Cancel",      Menu_exit,           NULL,   NULL},
 };
 #else
 const MenuItem_t PoweroffMenu[] = {
-    {5, "Power Off",    Menu_power_off,      NULL,   NULL},
-    {5, "Restart",     Menu_restart,        NULL,   NULL},
-    {5, "Entry Flight ",     Menu_flight_mode_entry,        NULL,   NULL},
-    {5, "Exit Flight ",     Menu_flight_mode_exit,        NULL,   NULL},
-    {5, "Cancel",      Menu_exit,           NULL,   NULL},
+    {5, "Power Off",    Menu_power_off,         NULL,   NULL},
+    {5, "Restart",      Menu_restart,           NULL,   NULL},
+    {5, "Entry Flight ",Menu_flight_mode_entry, NULL,   NULL},
+    {5, "Exit Flight ", Menu_flight_mode_exit,  NULL,   NULL},
+    {5, "Cancel",       Menu_exit,              NULL,   NULL},
 };
 #endif
 #endif
@@ -241,10 +281,10 @@ void Menu_action_proc(MENU_ACTION action)
 #ifdef SUPPORT_ALARM_RECORD_QURERY
                 if (rMenuObject.menu == rRecordArlmMenu){
                     alrmRecord.alrmCount = Flash_get_alarm_record_items();
-                    alrmRecord.alrmindex = 0;
+                    alrmRecord.alrmindex = 1;
                 }
 #endif
-#if SUPPORT_BLE_PRINT_LIST_MODE
+#ifdef SUPPORT_BLE_PRINT_LIST_MODE
                 if (rMenuObject.menu == rPrintMenu){
                     PrintList_init_Page();
                 }
@@ -255,7 +295,7 @@ void Menu_action_proc(MENU_ACTION action)
             }
 
             if (rMenuObject.menu[rMenuObject.index].func != NULL) {
-#if SUPPORT_BLE_PRINT_LIST_MODE
+#ifdef SUPPORT_BLE_PRINT_LIST_MODE
                 if (rMenuObject.menu == rPrintMenu){
                     rMenuObject.menu[rMenuObject.index].func();
                     break;
@@ -274,8 +314,19 @@ void Menu_action_proc(MENU_ACTION action)
                     break;
                 }
 #endif
-
-
+#if 1
+                // When Power On set index to 3, first operation , it will not work
+                if (rMenuObject.menu == rMainMenu){
+                    if(rMenuObject.index == MENU_128X32_STOP_RECORD){
+                        if(rMenuObject.startRecord==0){
+                            rMenuObject.menu[MENU_128X32_START_RECORD].func();
+                        }else{
+                            rMenuObject.menu[MENU_128X32_STOP_RECORD].func();
+                        }
+                        break;
+                    }
+                }
+#endif
                 {
                 rMenuObject.menu[rMenuObject.index].func();
                 }
@@ -286,13 +337,9 @@ void Menu_action_proc(MENU_ACTION action)
         case MENU_AC_UP:
             if (rMenuObject.index > 0){
                 rMenuObject.index--;
-                if(rMenuObject.menu->count == 5){//normal menu , not poweroff menu
+                if (rMenuObject.menu == rMainMenu){//normal menu , not poweroff menu
                     if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2 )//没有蓝牙模块不显示打印
-#ifdef  SUPPORT_ALARM_RECORD_QURERY
-                        rMenuObject.index = 3;
-#else
                         rMenuObject.index = 1;
-#endif
                 }
             }
             else
@@ -301,14 +348,9 @@ void Menu_action_proc(MENU_ACTION action)
 
         case MENU_AC_DOWN:
             rMenuObject.index++;
-            if (rMenuObject.menu == rMainMenu) //
-            if(rMenuObject.menu->count == 5){//normal menu , not poweroff menu
+            if (rMenuObject.menu == rMainMenu){//normal menu , not poweroff menu
                 if (!(g_rSysConfigInfo.module & MODULE_BTP) &&  rMenuObject.index == 2)//没有蓝牙模块不显示打印
-#ifdef  SUPPORT_ALARM_RECORD_QURERY
-                        rMenuObject.index = 3;
-#else
-                        rMenuObject.index = 4;
-#endif
+                    rMenuObject.index = 3;
             }
             
             #ifdef SUPPORT_FLIGHT_MODE
@@ -319,9 +361,23 @@ void Menu_action_proc(MENU_ACTION action)
                 }
             }
             #endif
-#if SUPPORT_BLE_PRINT_LIST_MODE
-            if ((rMenuObject.index >= rMenuObject.menu[0].count) && (rMenuObject.menu == rPrintMenu))
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+            if(rMenuObject.index && (rMenuObject.menu == rRecordArlmMenu) ){
+                alrmRecord.alrmindex = alrmRecord.alrmindex + 1;
+                if(alrmRecord.alrmindex > ALARM_RECORD_QURERY_MAX_ITEM  || alrmRecord.alrmindex > alrmRecord.alrmCount )
+                   alrmRecord.alrmindex = 1;
+            }
+#endif
+
+#ifdef SUPPORT_BLE_PRINT_LIST_MODE
+            if(rMenuObject.index && (rMenuObject.menu == rPrintMenu) ){
+                if(rMenuObject.menu[rMenuObject.index -1].func == PrintList_Cancel){
+                    rMenuObject.index = rMenuObject.menu[0].count;
+                }
+            }
+            if ((rMenuObject.index >= rMenuObject.menu[0].count) && (rMenuObject.menu == rPrintMenu)){
                 PrintList_getNext_Page();
+            }
 #endif
 
             if (rMenuObject.index >= rMenuObject.menu[0].count)
@@ -350,9 +406,21 @@ void Menu_action_proc(MENU_ACTION action)
 void Flight_Mode_Menu_show(void)
 {
     Disp_clear_all();
+#if 1
     //if(rMenuObject.index == 0)
+    {
+    // PowerOff
+        if(g_rSysConfigInfo.status & STATUS_HIDE_PWOF_MENU){
+            if(rMenuObject.index == 0)
+                rMenuObject.index = 1;
+        }else
+            Disp_picture(0, 0, 128, 16, rMenuObject.menu[0].string);
+    }
+#else
     // PowerOff
     Disp_picture(0, 0, 128, 16, rMenuObject.menu[0].string);
+#endif
+
     //if(rMenuObject.index == 1)
     // Restart
     Disp_picture(0, 2, 128, 16, rMenuObject.menu[1].string);
@@ -489,7 +557,7 @@ void Menu_flight_mode_exit(void)
 
 #endif
 
-#if SUPPORT_BLE_PRINT_LIST_MODE
+#ifdef SUPPORT_BLE_PRINT_LIST_MODE
 
 #if (LIST_PRINT_MODE_SINGLE)&&(LIST_PRINT_MODE_MULTIPLE)
 #error "Please Single Choice LIST_PRINT_MODE_SINGLE or LIST_PRINT_MODE_MULTIPLE"
@@ -709,56 +777,53 @@ void PrintList_Menu_show(void)
     // display four list
     for(i = 0 ; i < PRINT_LIST_PAGE_MAX ; i++){
 
-#if 0 // LIST_PRINT_MODE_SINGLE
-        if(0 == PrintListPage[i]){
-            //Disp_msg(1, 2*i, " ", FONT_8X16);
-            Disp_msg(2, 2*i, "End/Exit", FONT_8X16);
 
-            // LOOP begin
-            //if(rMenuObject.index >= i)
-                //rMenuObject.index = PRINT_LIST_PAGE_MAX;
-            break;
-        }
-#else
         if(rMenuObject.menu[i].func == PrintList_Print){
-    #ifdef SUPPORT_FLIGHT_MODE
+            //USE_ENGLISH_MENU
+    #ifndef USE_ENGLISH_MENU
             Disp_picture(0, 2*i, 128, 16, PrintList_PrintImageStr);
     #else
             Disp_msg(2, 2*i, "Print", FONT_8X16);
     #endif
         }else if(rMenuObject.menu[i].func == PrintList_Cancel){
-    #ifdef SUPPORT_FLIGHT_MODE
+    #ifndef USE_ENGLISH_MENU
             Disp_picture(0, 2*i, 128, 16, PrintList_CancelImageStr);
     #else
             Disp_msg(2, 2*i, "End/Exit", FONT_8X16);
     #endif
         }
-#endif
+
         else
         {
-        memset(strBuffer, 0, sizeof(strBuffer));
-        //MAC ID
-        uint32_t CurrPrintDID = PrintListPage[i];
+            memset(strBuffer, 0, sizeof(strBuffer));
+            //MAC ID
+            uint32_t CurrPrintDID = PrintListPage[i];
 
-        if(0 == CurrPrintDID){
-            break;
-        }
-        //sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", LOBYTE(LOWORD(CurrPrintDID)), HIBYTE(LOWORD(CurrPrintDID)),
-          //                                                      LOBYTE(HIWORD(CurrPrintDID)), HIBYTE(HIWORD(CurrPrintDID)));
-        sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", HIBYTE(HIWORD(CurrPrintDID)),
-                LOBYTE(HIWORD(CurrPrintDID)), HIBYTE(LOWORD(CurrPrintDID)),LOBYTE(LOWORD(CurrPrintDID)));
+            if(0 == CurrPrintDID){
+
+#if 0
+                if(rMenuObject.index)
+                    if(rMenuObject.menu[rMenuObject.index -1].func == PrintList_Cancel){
+                        PrintList_getNext_Page();
+                        rMenuObject.index = PRINT_LIST_PAGE_MAX+1;
+                    }
+#endif
+                break;
+            }
+            //sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", LOBYTE(LOWORD(CurrPrintDID)), HIBYTE(LOWORD(CurrPrintDID)),
+              //                                                      LOBYTE(HIWORD(CurrPrintDID)), HIBYTE(HIWORD(CurrPrintDID)));
+            sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", HIBYTE(HIWORD(CurrPrintDID)),
+                    LOBYTE(HIWORD(CurrPrintDID)), HIBYTE(LOWORD(CurrPrintDID)),LOBYTE(LOWORD(CurrPrintDID)));
 
 
-        Disp_msg(1, 2*i, " ", FONT_8X16);
-        Disp_msg(2, 2*i, (const uint8_t*)strBuffer, FONT_8X16);
+            Disp_msg(1, 2*i, " ", FONT_8X16);
+            Disp_msg(2, 2*i, (const uint8_t*)strBuffer, FONT_8X16);
 
-        #if 0 //LIST_PRINT_MODE_SINGLE
-        #else
-        if(PrintList_isSelected(CurrPrintDID))
-            PrintList_Select_sign_show(i);
-        else
-            PrintList_Cancel_sign_show(i);
-        #endif
+            if(PrintList_isSelected(CurrPrintDID))
+                PrintList_Select_sign_show(i);
+            else
+                PrintList_Cancel_sign_show(i);
+
         }
     }
 
@@ -794,7 +859,6 @@ void Alarm_record_Menu_show(void)
                   Disp_msg(3, 4, (uint8_t*)strBuffer, FONT_8X16);
                   return;
     }
-    if(alrmRecord.alrmindex == 0)alrmRecord.alrmindex = 1;
 
     if( Flash_load_alarm_record_by_offset(buff,FLASH_ALARM_RECODRD_SIZE,alrmRecord.alrmindex ) == ES_SUCCESS ){
 
@@ -811,13 +875,13 @@ void Alarm_record_Menu_show(void)
        switch(buff[5]){
 
        case SENSOR_DATA_TEMP:
-           sprintf((char *)strBuffer, "%d %d.%dc",buff[4],(uint16_t)(value / 100),  (int16_t)round((float)value / 10.0) % 10);
+           TempToDisplayBuff(value,strBuffer,buff[4]);
            Disp_msg(3, 4, (uint8_t*)strBuffer, FONT_8X16);
            break;
        case SENSOR_DATA_HUMI:
-           sprintf((char*)strBuffer, "%02d%%", (uint16_t)value/100);           
+           sprintf((char*)strBuffer, "%d %02d%%",buff[4], (uint16_t)value/100);
            Disp_msg(3, 4, (uint8_t*)strBuffer, FONT_8X16);
-            break;
+           break;
        }
 
 
@@ -825,10 +889,6 @@ void Alarm_record_Menu_show(void)
 
        sprintf((char *)strBuffer, "%d/%d",alrmRecord.alrmindex,alrmRecord.alrmCount);
        Disp_msg(10, 6, (uint8_t*)strBuffer, FONT_8X16);
-
-       alrmRecord.alrmindex = alrmRecord.alrmindex + 1;
-       if(alrmRecord.alrmindex > ALARM_RECORD_QURERY_MAX_ITEM  || alrmRecord.alrmindex >alrmRecord.alrmCount )
-           alrmRecord.alrmindex = 1;
     }
 }
 #endif
@@ -843,10 +903,39 @@ void Menu_show(void)
     if (rMenuObject.menu == rMainMenu){
 
 #ifndef  USE_ENGLISH_MENU
+    #if 0
         Disp_picture(0, 2, 128, 32, rMenuObject.menu[rMenuObject.index].string);
+    #else
+        if((rMenuObject.index == 0) || (rMenuObject.index == 1)){
+            if(rMenuObject.startRecord==0 )
+                Disp_picture(0, 2, 128, 32, rMenuObject.menu[MENU_128X32_START_RECORD].string);
+            else
+                Disp_picture(0, 2, 128, 32, rMenuObject.menu[MENU_128X32_STOP_RECORD].string);
+            if(rMenuObject.index == 0)
+                rMenuObject.index = MENU_128X32_STOP_RECORD;
+        }else{
+            Disp_picture(0, 2, 128, 32, rMenuObject.menu[rMenuObject.index].string);
+        }
+    #endif
 #else
         Disp_clear_all();
+    #if 0
         Disp_msg(0, 3, rMenuObject.menu[rMenuObject.index].string, FONT_8X16);
+    #else
+        if((rMenuObject.index == 0) || (rMenuObject.index == 1)){
+            if(rMenuObject.startRecord==0 )
+                //Disp_picture(0, 2, 128, 32, rMenuObject.menu[MENU_128X32_START_RECORD].string);
+                Disp_msg(0, 3, rMenuObject.menu[MENU_128X32_START_RECORD].string, FONT_8X16);
+            else
+                //Disp_picture(0, 2, 128, 32, rMenuObject.menu[MENU_128X32_STOP_RECORD].string);
+                Disp_msg(0, 3, rMenuObject.menu[MENU_128X32_STOP_RECORD].string, FONT_8X16);
+            if(rMenuObject.index == 0)
+                rMenuObject.index = MENU_128X32_STOP_RECORD;
+        }else{
+            //Disp_picture(0, 2, 128, 32, rMenuObject.menu[rMenuObject.index].string);
+            Disp_msg(0, 3, rMenuObject.menu[rMenuObject.index].string, FONT_8X16);
+        }
+    #endif
 #endif
     }
     else if(rMenuObject.menu == PoweroffMenu){
@@ -882,7 +971,7 @@ void Menu_show(void)
             Alarm_record_Menu_show();
        }
 #endif
-#if SUPPORT_BLE_PRINT_LIST_MODE
+#ifdef SUPPORT_BLE_PRINT_LIST_MODE
     else if(rMenuObject.menu == rPrintMenu){
         PrintList_Menu_show();
     }
@@ -920,13 +1009,17 @@ void Menu_start_record(void)
 //***********************************************************************************
 void Menu_stop_record(void)
 {
+
     if(rMenuObject.startRecord)
     {
         rMenuObject.startRecord = 0;
-
+#ifdef SUPPORT_G7_PROTOCOL
+        BlePrintRecordStopNotify();
+#endif  // SUPPORT_G7_PROTOCOL
 
 #ifdef FLASH_EXTERNAL
         Flash_store_record_addr(0);
+
 #endif
 
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
@@ -986,9 +1079,130 @@ void Menu_print_proc(void)
     Btp_poweroff();
     Menu_exit();
     Sys_lcd_start_timing();
-
 #endif
 }
+
+#ifdef SUPPORT_BLE_PRINT_LIST_MODE
+
+static void PrintList_ItemSelect(void)
+{
+    uint8_t currIndex = rMenuObject.index;
+    // DECIMAL
+    uint32_t DeID;
+    //MAC ID
+    DeID = PrintListPage[currIndex];
+
+    PrintList_Select_insert_toggle( DeID);
+
+#if LIST_PRINT_MODE_SINGLE
+    PrintList_Print();
+#endif
+
+}
+static void PrintList_Cancel(void)
+{
+    PrintList_Select_ClearAll();
+
+    // Clear display
+    Disp_clear_all();
+    Menu_exit();
+}
+
+static void PrintList_Print(void)
+{
+    Menu_printList_proc();
+
+    PrintList_Select_ClearAll();
+}
+
+static Menu_bluetooth_printList_proc(void)
+{
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    Btp_poweron();
+#ifdef SUPPORT_G7_PROTOCOL
+    if(Btp_scan_device_name() == ES_SUCCESS)
+    {
+        if (Btp_is_connect()) {
+            //Bluetooth connect success
+            Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_PRINTING * MENU_128X32_OFS]);
+            Task_sleep(3 * CLOCK_UNIT_S);
+            Btp_printList_record_bind_node();
+        } else {
+            //Bluetooth connect fail
+            Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
+        }
+    }
+    else
+    {
+        //Bluetooth connect fail
+        Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
+    }
+#else
+
+    if (Btp_is_connect()) {
+        //Bluetooth connect success
+        Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_PRINTING * MENU_128X32_OFS]);
+        Task_sleep(3 * CLOCK_UNIT_S);
+        Btp_printList_record_bind_node();
+    } else {
+        //Bluetooth connect fail
+        Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
+    }
+#endif
+
+    Task_sleep(3 * CLOCK_UNIT_S);
+    Btp_poweroff();
+#endif
+}
+
+//***********************************************************************************
+//
+// Menu print List process function.
+//
+//***********************************************************************************
+void Menu_printList_proc(void)
+{
+#ifdef SUPPORT_BLUETOOTH_PRINT
+
+#ifdef SUPPORT_G7_PROTOCOL
+    BlePrintingRecordNotify();
+#endif  // SUPPORT_G7_PROTOCOL
+
+    Sys_lcd_stop_timing();
+    // Clear display
+    Disp_clear_all();
+
+
+#if 0
+    CurrPrintDID = PrintListPage[rMenuObject.index];
+    if(0 == PrintListPage[rMenuObject.index]){
+        Disp_msg(4, 4, "Exit", FONT_8X16);
+        // END/EXIT
+        goto ExitPrint;
+    }
+    Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECTING * MENU_128X32_OFS]);
+#else
+    Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECTING * MENU_128X32_OFS]);
+    // No Select special // Print all
+    if(0 == PrintList_getSelectedNum()){
+        //Disp_msg(1, 6, "All Print", FONT_8X16);
+        Disp_msg(1, 6, "No Select", FONT_8X16);
+        goto ExitPrint;
+    }
+    else
+        Disp_msg(1, 6, "Select Print", FONT_8X16);
+
+#endif
+
+    // print
+    Menu_bluetooth_printList_proc();
+
+ExitPrint:
+    Menu_exit();
+    Sys_lcd_start_timing();
+#endif
+}
+#endif //SUPPORT_BLE_PRINT_LIST_MODE
 
 //***********************************************************************************
 //

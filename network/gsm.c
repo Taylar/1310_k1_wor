@@ -1106,6 +1106,7 @@ static GSM_RESULT Gsm_test(void)
 
     rGsmObject.error = GSM_NO_ERR;
 
+	while(1){
     //uart sync
     for (i = 30; i > 0; i--) {
         AT_uart_sync();
@@ -1117,7 +1118,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_UART_SYNC;
-        return RESULT_RESET;
+        continue;//return RESULT_RESET;        
     }
 
     //sim card query
@@ -1131,7 +1132,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_SIM_QUERY;
-        return RESULT_RESET;
+        continue;//return RESULT_RESET;        
     }
 
     //csq query
@@ -1145,7 +1146,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_CSQ_QUERY;
-        return RESULT_RESET;
+        continue;//return RESULT_RESET;        
     }
 
     //creg query
@@ -1159,7 +1160,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_CREG_QUERY;
-        return RESULT_RESET;
+        continue;//return RESULT_RESET;        
     }
 
     //auto answer
@@ -1173,8 +1174,9 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_AUTO_ANSWER;
-        return RESULT_RESET;
+        continue;//return RESULT_RESET;        
     }
+	}
 
     return RESULT_OK;
 }

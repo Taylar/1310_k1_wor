@@ -32,8 +32,7 @@ typedef enum {
     EV_Get_Unupload_Data = 0x12,//获取未上传数据
     EV_Get_Record_Data   = 0x13,//获取开始记录的数据
     EV_Verify_Code       = 0x14,//验证设备密码
-
-
+	EV_Get_SIM_CCID		 = 0x15,//get sim ccid
 
     EV_Upgrade_BSL = 0x20,  // Upgrade BSL
 	
@@ -43,8 +42,12 @@ typedef enum {
 typedef enum {
 // TX Messages.
 	AC_Ack              = 0x80,
-	AC_Send_Config      = 0x82,
+	AC_Send_Project_Mess = 0x81,
+	AC_Send_Config      = 0x82, // structure mode
+    AC_Send_Config_ID   = 0x83, // ID mode
+
 	AC_Send_APN         = 0x84,
+	EV_Send_SIM_CCID	= 0x85,//send sim ccid
 	AC_Send_Calendar    = 0x86,
 	AC_Send_Bluetooth_Name = 0x88,
 	
@@ -61,7 +64,14 @@ typedef enum {
     
     EV_Send_ReadFlash = 0xF1,
 } USB_TX_MSG_ID;
+typedef enum {
+   UNKONW_PLATFORM       = 0x00,
+   TI_430_F5529_PLATFORM = 0x01,
+   TI_430_5635_PLATFORM  = 0x02,
+   TI_432_401R_PLATFORM  = 0x03,
+   TI_1310_PLATFORM      = 0x04,
 
+}PLATFORM_TYPE;
 typedef struct {
     // Usb interrup flag.
     uint8_t interruptFlag;
@@ -69,7 +79,7 @@ typedef struct {
     uint8_t cdcDataReceivedFlag;
 } UsbEvent_t;
 
-#define USB_BUFF_LENGTH           (256+44)
+#define USB_BUFF_LENGTH           (256+64)
 // Old protocol defined by DouQian. 
 #define USB_PACKAGE_HEAD          0xcb
 #define USB_PACKAGE_TAIL          0xbc
@@ -89,7 +99,7 @@ typedef struct {
 #define USB_DECEIVE_CODE		"G7180504"
 #endif
 
-void Usb_data_parse(uint8_t *pData, uint16_t length);
+int Usb_data_parse(uint8_t *pData, uint16_t length);
 
 void UsbSend(USB_TX_MSG_ID msgId);
 

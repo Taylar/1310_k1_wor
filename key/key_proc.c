@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-28 19:13:29
+* @Last Modified time: 2018-09-05 17:28:26
 */
 
 #include "../general.h"
@@ -14,7 +14,7 @@ static KeyTask_t rKeyTask;
 
 
 // node board
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 #define Board_BUTTON0                            IOID_4
 
 const PIN_Config keyPinTable[] = {
@@ -25,7 +25,7 @@ const PIN_Config keyPinTable[] = {
 #endif
 
 // gateway board
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 #define Board_BUTTON0                    IOID_1
 
 const PIN_Config keyPinTable[] = {

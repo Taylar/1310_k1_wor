@@ -82,6 +82,12 @@ void WdtResetCb(uintptr_t handle)
 void RtcEventSet(void)
 {
 
+#ifdef SUPPORT_SENSOR
+    Sensor_collect_time_isr();
+#endif
+
+	Nwk_upload_time_isr();
+
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RTC);
 }
 
@@ -122,17 +128,17 @@ void SystemAppTaskFxn(void)
 	S6HwInit();
 #endif
 
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
     S2HwInit();
 #endif
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
    	S1HwInit();
 #endif
    	RtcInit(RtcEventSet);
 	Sensor_init();
 
-#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1) || defined(BOARD_S2_2))
+#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1) || defined(BOARD_B2_2))
 	RtcStart();
 #endif
 
@@ -146,7 +152,7 @@ void SystemAppTaskFxn(void)
 
 
 
-#if (defined BOARD_S6_6 || defined BOARD_S2_2)
+#if (defined BOARD_S6_6 || defined BOARD_B2_2)
 
 #ifdef SUPPORT_ENGMODE
     if (GetEngModeFlag())
@@ -172,16 +178,16 @@ void SystemAppTaskFxn(void)
 #endif // SUPPORT_DEVICED_STATE_UPLOAD
 
 #ifdef		SUPPORT_WATCHDOG
-    #if (defined(BOARD_S6_6) ||  defined(BOARD_S2_2))
+    #if (defined(BOARD_S6_6) ||  defined(BOARD_B2_2))
 	    WdtInit(WdtResetCb);
     #endif
 #endif //SUPPORT_WATCHDOG
 
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 	    Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
 #endif
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 	if(g_rSysConfigInfo.sysState.reserve & STATUS_POWERON)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
@@ -221,7 +227,7 @@ void SystemAppTaskFxn(void)
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 			S1ShortKeyApp();
 #endif
 
@@ -229,7 +235,7 @@ void SystemAppTaskFxn(void)
 			S6ShortKeyApp();
 #endif
 
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
             S2ShortKeyApp();
 #endif
 		}
@@ -238,7 +244,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
 		{
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 			S1LongKeyApp();
 #endif
 
@@ -246,7 +252,7 @@ void SystemAppTaskFxn(void)
 			// S6ConcenterLongKeyApp();
 #endif
 
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 			S2LongKeyApp();
 #endif
 		}
@@ -254,7 +260,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_KEY0_DOUBLE)
 		{
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 			S1DoubleKeyApp();
 #endif
 			
@@ -276,16 +282,10 @@ void SystemAppTaskFxn(void)
 
 #endif
 
-
-		
-
-
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
+#if (defined BOARD_S6_6 || defined BOARD_B2_2)
 
-
-
-#if (defined BOARD_S6_6 || defined BOARD_S2_2)
 			if(g_rSysConfigInfo.module & MODULE_RADIO)
 			{
 				if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
@@ -305,30 +305,11 @@ void SystemAppTaskFxn(void)
 //			 S6AppRtcProcess();
 #endif
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 			S1AppRtcProcess();
 			NodeRtcProcess();
 #endif
-			// Led_toggle(LED_R);
-			// Led_toggle(LED_B);
-			// Led_toggle(LED_G);
-			// voltageTemp = AONBatMonBatteryVoltageGet();
-			// voltageTemp = ((voltageTemp&0xff00)>>8)*1000 +1000*(voltageTemp&0xff)/256;
-			// System_printf("voltage: %d mV\n", voltageTemp);
-			// SHT2X_FxnTable.measureFxn(SHT2X_I2C_CH0);
-
-			// DeepTemp_FxnTable.measureFxn(MAX31855_SPI_CH0);
-			// System_printf("the temperature : %d\n", DeepTemp_FxnTable.getValueFxn(MAX31855_SPI_CH0, SENSOR_DEEP_TEMP)/256);
-
-			// Battery_voltage_measure();
-			// System_printf("the voltage : %dmV\n",Battery_get_voltage());
-
-			// NTC_FxnTable.measureFxn(NTC_CH0);
-			// System_printf("the Ntc Temp : %dm C\n",NTC_FxnTable.getValueFxn(NTC_CH0, SENSOR_TEMP));
 		}
-
-
-
 
 		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)
 		{
@@ -354,24 +335,11 @@ void SystemAppTaskFxn(void)
 		}
 #endif
 
-
 		if(eventId & SYSTEMAPP_EVT_STORE_SYS_CONFIG)
 		{
 			Flash_store_config();
 		}
 
-		if(eventId & SYSTEMAPP_EVT_ALARM)
-		{
-
-		}
-
-
-#ifdef SUPPORT_DISP_SCREEN
-		if(eventId & SYSTEMAPP_EVT_DISP)
-		{
-        	Disp_proc();
-		}
-#endif
 
 #ifdef SUPPORT_BOARD_OLD_S1
 		if(eventId &   SYS_EVT_EVT_OLD_S1_UPLOAD_NODE) {
@@ -393,6 +361,24 @@ void SystemAppTaskFxn(void)
 		    EasyLink_abort();
 		}
 
+#ifdef SUPPORT_SENSOR
+        if (eventId & SYS_EVT_SENSOR) {
+            Sensor_measure(1);
+
+#ifdef      SUPPORT_UPLOADTIME_LIMIT
+            if((g_rSysConfigInfo.uploadPeriod/60) < Flash_get_unupload_items()){
+                Nwk_upload_set();
+            }
+#endif      // SUPPORT_UPLOADTIME_LIMIT
+        }
+#endif // SUPPORT_SENSOR
+
+#ifdef SUPPORT_DISP_SCREEN
+		if(eventId & SYSTEMAPP_EVT_DISP)
+		{
+        	Disp_proc();
+		}
+#endif
 
 	}
 }

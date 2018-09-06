@@ -93,7 +93,7 @@ void S1LongKeyApp(void)
         case DEVICES_ON_MODE:
         case DEVICES_CONFIG_MODE:
         NodeSleep();
-        g_rSysConfigInfo.sysState.reserve &= (0xFFFF^STATUS_POWERON);
+        g_rSysConfigInfo.sysState.wtd_restarts &= (0xFFFF^STATUS_POWERON);
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         g_rSysConfigInfo.rtc = Rtc_get_calendar();
         Flash_store_config();
@@ -109,7 +109,7 @@ void S1LongKeyApp(void)
         else
         {
             Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-            g_rSysConfigInfo.sysState.reserve |= STATUS_POWERON;
+            g_rSysConfigInfo.sysState.wtd_restarts |= STATUS_POWERON;
             NodeWakeup();
             Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
         }

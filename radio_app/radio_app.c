@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-28 19:44:13
+* @Last Modified time: 2018-09-05 17:28:25
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -25,7 +25,7 @@
 #define RADIO_ADDR_LEN                  4
 #define RADIO_ADDR_LEN_MAX              8
 
-#if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
+#if (defined(BOARD_S6_6) || defined(BOARD_B2_2))
 #define RADIO_RSSI_FLITER               -40
 #else
 #define RADIO_RSSI_FLITER               -95
@@ -220,13 +220,13 @@ void RadioAppTaskFxn(void)
         System_abort("EasyLink_init failed");
     }
 #ifndef BOARD_CONFIG_DECEIVE
-#ifndef BOARD_S1_2
+#ifndef BOARD_S3_2
     Radio_setRxModeRfFrequency();
 #endif //BOARD_BOARD_S1_2
 #endif //BOARD_CONFIG_DECEIVE
     radioStatus = RADIOSTATUS_IDLE;
 
-#if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
+#if (defined(BOARD_S6_6) || defined(BOARD_B2_2))
 
 #ifdef  BOARD_CONFIG_DECEIVE
     g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
@@ -243,11 +243,11 @@ void RadioAppTaskFxn(void)
     
 #endif  // BOARD_S6_6
 
-#ifdef  BOARD_S1_2
+#ifdef  BOARD_S3_2
 
     radioMode = RADIOMODE_SENDPORT;
 
-#endif // BOARD_S1_2
+#endif // BOARD_S3_2
 
     // set the default para
     RadioDefaultParaInit();
@@ -259,7 +259,7 @@ void RadioAppTaskFxn(void)
         OldS1NodeApp_init();
 #endif
 
-#if (defined(BOARD_S6_6) || defined(BOARD_S2_2))
+#if (defined(BOARD_S6_6) || defined(BOARD_B2_2))
         NodeWakeup();
 #endif // BOARD_S6_6
     }
@@ -317,7 +317,7 @@ void RadioAppTaskFxn(void)
                 if((radioMode == RADIOMODE_RECEIVEPORT) || (radioMode == RADIOMODE_UPGRADE))
                 {
                
-#ifdef  BOARD_S1_2
+#ifdef  BOARD_S3_2
                         NodeProtocalDispath(&radioRxPacket);
                         if (radioMode == RADIOMODE_RECEIVEPORT) {
                             Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
@@ -329,7 +329,7 @@ void RadioAppTaskFxn(void)
                         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 1);
     #endif  //BOARD_CONFIG_DECEIVE
 
-#endif  //BOARD_S1_2
+#endif  //BOARD_S3_2
                         if (currentRadioOperation.easyLinkTxPacket.len == 0) {
                             radioStatus = RADIOSTATUS_RECEIVING;
                             EasyLink_receiveAsync(RxDoneCallback, 0);
@@ -411,7 +411,7 @@ void RadioAppTaskFxn(void)
                 // stop receive radio, otherwise couldn't send successful
                 if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
                 {
-#ifndef  BOARD_S1_2
+#ifndef  BOARD_S3_2
                     Led_toggle(LED_B);
 #endif
                 }
@@ -454,7 +454,7 @@ void RadioAppTaskFxn(void)
                     {
                         System_printf("open 1310 receive fail");
                     }
-#ifndef  BOARD_S1_2
+#ifndef  BOARD_S3_2
                     Led_toggle(LED_B);
 #endif
                 }
@@ -572,7 +572,7 @@ void RadioAppTaskFxn(void)
 
         if(events & RADIO_EVT_SEND_CONFIG) 
         {
-#ifdef   BOARD_S1_2
+#ifdef   BOARD_S3_2
             ClearRadioSendBuf();
             NodeRadioSendConfig();
 #endif
@@ -960,7 +960,7 @@ void Radio_setRxModeRfFrequency(void)
 
 #ifndef BOARD_CONFIG_DECEIVE
     if (radioMode != RADIOMODE_UPGRADE) {
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
         if (deviceMode == DEVICES_ON_MODE) {
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 
@@ -981,7 +981,7 @@ void Radio_setRxModeRfFrequency(void)
                 EasyLink_setFrequency(dstFreq);
             }
         }
-#elif defined(BOARD_S6_6) ||  defined(BOARD_S2_2)
+#elif defined(BOARD_S6_6) ||  defined(BOARD_B2_2)
         if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)) { // Collector
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         } else { // Gateway
@@ -1004,7 +1004,7 @@ void Radio_setRxModeRfFrequency(void)
             EasyLink_abort();
             EasyLink_setFrequency(dstFreq);
         }
-#endif //BOARD_S1_2
+#endif //BOARD_S3_2
     }
 #endif  // BOARD_CONFIG_DECEIVE
 }
@@ -1021,7 +1021,7 @@ void Radio_setTxModeRfFrequency(void)
 
 #ifndef BOARD_CONFIG_DECEIVE
     if (radioMode != RADIOMODE_UPGRADE) {
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
         if (deviceMode == DEVICES_ON_MODE) {
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 
@@ -1042,7 +1042,7 @@ void Radio_setTxModeRfFrequency(void)
                 EasyLink_setFrequency(dstFreq);
             }
         }
-#elif defined(BOARD_S6_6) ||  defined(BOARD_S2_2)
+#elif defined(BOARD_S6_6) ||  defined(BOARD_B2_2)
         if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)) { // Collector
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         } else { // Gateway
@@ -1065,7 +1065,7 @@ void Radio_setTxModeRfFrequency(void)
             EasyLink_abort();
             EasyLink_setFrequency(dstFreq);
         }
-#endif //BOARD_S1_2
+#endif //BOARD_S3_2
     }
 #endif  // BOARD_CONFIG_DECEIVE
 }

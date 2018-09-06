@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-04 10:26:20
+* @Last Modified time: 2018-09-05 17:28:28
 */
 #include "../general.h"
 
@@ -257,7 +257,7 @@ void ConcenterSleep(void)
         Task_sleep(100 * CLOCK_UNIT_MS);
 #endif
 
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 
     InterfaceEnable();
 
@@ -276,7 +276,7 @@ void ConcenterWakeup(void)
     
     RtcStart();
     
-#if (defined BOARD_S6_6 || defined BOARD_S2_2)
+#if (defined BOARD_S6_6 || defined BOARD_B2_2)
     if(GetUsbState() == USB_UNLINK_STATE)
 #endif
     {
@@ -512,7 +512,7 @@ void ConcenterRtcProcess(void)
         }
     }
 
-    Nwk_upload_time_isr();
+    
 
     if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
     {
@@ -528,7 +528,6 @@ void ConcenterRtcProcess(void)
         if(concenterParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
         {
             concenterParameter.collectTimeCnt = (concenterParameter.collectTimeCnt - g_rSysConfigInfo.collectPeriod) % g_rSysConfigInfo.collectPeriod;
-            Sensor_measure(1);
             Battery_voltage_measure();
         }
     }

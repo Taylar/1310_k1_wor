@@ -8,10 +8,8 @@
 #define 		UPGRADE_FLAG				"valid info"
 
 
-
+/*
 #ifdef 			BOARD_S6_6
-
-
 #ifdef 			BOARD_CONFIG_DECEIVE
 #define 		PROJECT_NAME				"ZKS_1310_S6_6_CONFIG"
 #else
@@ -21,12 +19,12 @@
 #endif	// BOARD_S6_6
 
 
-#ifdef          BOARD_S2_2
+#ifdef          BOARD_B2_2
 #define         PROJECT_NAME                "ZKS_1310_S2_2_B2"
-#endif //BOARD_S2_2
+#endif //BOARD_B2_2
 
 
-#ifdef 			BOARD_S1_2
+#ifdef 			BOARD_S3_2
 
 #ifdef          SUPPORT_BOARD_OLD_S1
 #define         PROJECT_NAME                "ZKS_1310_S1_1"
@@ -34,12 +32,12 @@
 #define 		PROJECT_NAME				"ZKS_1310_S3_1"
 #endif
 
-#endif	// BOARD_S1_2
+#endif	// BOARD_S3_2
 
 #ifndef		PROJECT_NAME
 #define 	PROJECT_NAME 			"ZKS_1310"
 #endif		// PROJECT_NAME
-
+*/
 
 #if             NWK_MSG_SIZE >= 300
 #define 		NWK_UPGRADE_PACKAGE_LENGTH			(256)
@@ -66,6 +64,7 @@ typedef enum {
 	UPGRADE_RESULT_ERR,
 	UPGRADE_RESULT_NEED_UPDATA,
 	UPGRADE_RESULT_NEEDNOT_UPDATA,
+	UPGRADE_RESULT_UNREC_VER,
 } UPGRADE_RESULT_E;
 
 
@@ -85,8 +84,6 @@ void UpgradeInit(void);
 
 void UpgradeCancel(void);
 
-uint16_t UpgradeSetInfo(uint16_t version, uint32_t fileLength);
-
 uint16_t UpgradeGetVersion(void);
 
 uint16_t UpgradeGetNextPackNum(void);
@@ -101,8 +98,12 @@ void UpgradeMonitorReset(void);
 
 uint32_t UpgradeMonitorGet(void);
 
+void SetUpgradeInfo(uint16_t version, uint32_t fileLength);
+
+void ClearUpgradeInfo(void);
+
+uint8_t ReadUpgradeInfoFlag(void);
+
 extern const uint8_t PROJECT_INFO_NAME[64];
 extern const uint32_t PROJECT_INFO_VERSION;
-
-
 #endif 			// UPGRADE_H

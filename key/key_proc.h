@@ -11,11 +11,11 @@
 #ifndef __ZKSIOT_KEY_PROC_H__
 #define __ZKSIOT_KEY_PROC_H__
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 #define Board_BUTTON0                            IOID_4
 #endif
 
-#ifdef BOARD_S2_2
+#ifdef BOARD_B2_2
 #define Board_BUTTON0                    IOID_1
 #endif
 
