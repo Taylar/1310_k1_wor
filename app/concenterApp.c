@@ -399,7 +399,6 @@ void ConcenterConfigDeceiveInit(void)
 
     deviceMode = DEVICES_CONFIG_MODE;
     concenterParameter.radioReceive = true;
-    RadioFrontRxEnable();
     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
     RadioModeSet(RADIOMODE_RECEIVEPORT);
     InterfaceEnable();

@@ -9,12 +9,12 @@
 // Description: usb bootloader routine.
 //***********************************************************************************
 #include "../general.h"
-
+#define CODE_DATA_LENGTH            64 // copy from upgrade.c
+#ifdef SUPPORT_USB
 // extern function
 extern uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataLen);
 
 #define USB_TXRX_TIMEROUT           (100L * 1000 / Clock_tickPeriod)
-#define CODE_DATA_LENGTH            64 // copy from upgrade.c
 
 // global  variable
 static usb_upgrade_info_t usb_upgrade_info = {0};  // initialize zero
@@ -25,8 +25,10 @@ static usb_upgrade_info_t usb_upgrade_info = {0};  // initialize zero
 static void USB_BSL_jump_bsl(void);
 static int BSL_data_parse(uint8_t *pData, uint16_t length);
 static int BSL_Nodata_parse(uint8_t *pData, uint16_t length);
-static uint32_t Is_direct_upgrade(uint16_t crc);
 
+#ifdef BOARD_CONFIG_DECEIVE
+static uint32_t Is_direct_upgrade(uint16_t crc);
+#endif
 
 void bsl_ack_upgrade_success(uint8_t *pData)
 {
@@ -35,13 +37,7 @@ void bsl_ack_upgrade_success(uint8_t *pData)
     InterfaceSend(pData, length);
 }
 
-void bsl_ack_error(uint8_t *pData, uint16_t length)
-{
-    pData[0] = BSL_ACK_ERROR; // 2
-    length = Usb_group_package(AC_Ack, pData, 1);
-    InterfaceSend(pData, length);
-    return;
-}
+
 
 void bsl_ack_return(uint8_t *pData, uint16_t length, USB_BSL_ACK_T bsl_ack)
 {
@@ -50,68 +46,6 @@ void bsl_ack_return(uint8_t *pData, uint16_t length, USB_BSL_ACK_T bsl_ack)
     InterfaceSend(pData, length);
     return ;
 }
-
-UPGRADE_RESULT_E Usb_bsl_UpgradeLoad_check(uint32_t fileLen)
-{
-    uint16_t calCrc, fileCrc;
-    uint8_t buff[64];
-    uint32_t addr, readLen;
-    upgrade_flag_t upgradeFlag;
-
-    // check the crc
-    addr    = 0; // offset external flash
-    readLen = fileLen;//usb_upgrade_info.fileLength;  // 124K + 128
-    Flash_load_upgrade_data(addr, buff, 64);
-    /*usb_upgrade_info.crc*/ fileCrc = ((uint16_t)buff[1] << 8) + buff[0];
-    readLen = readLen - 128;
-    addr = 128;
-
-    SetContinueCRC16();
-    while(readLen)
-    {
-        if(readLen >= CODE_DATA_LENGTH)
-        {
-            WdtClear();
-            Flash_load_upgrade_data(addr, buff, CODE_DATA_LENGTH);
-            addr += CODE_DATA_LENGTH;
-            calCrc = ContinueCRC16(buff, CODE_DATA_LENGTH);
-            readLen = readLen - CODE_DATA_LENGTH;
-        }
-        else
-        {
-            Flash_load_upgrade_data(addr, buff, readLen);
-            calCrc = ContinueCRC16(buff, readLen);
-            readLen = 0;
-        }
-    }
-
-    if(fileCrc != calCrc)
-    {
-        //upgradeInfo.upgradeStep = UPGRADE_START;
-        return UPGRADE_RESULT_CRC_ERR;
-    }
-
-    memset(&upgradeFlag, 0xff, sizeof(upgrade_flag_t));
-    strcpy((char*)upgradeFlag.validFlag, UPGRADE_FLAG);
-
-#ifdef BOARD_CONFIG_DECEIVE
-    upgradeFlag.waiteUpgrade = 0x00;
-    upgradeFlag.complete     = 0x00;
-#else
-    upgradeFlag.waiteUpgrade = 0x01;
-    upgradeFlag.complete     = 0xff;
-#endif
-    upgradeFlag.crc          = calCrc;//usb_upgrade_info.crc;
-    upgradeFlag.fileLength   = fileLen;
-
-    Flash_store_upgrade_info((uint8_t*)&upgradeFlag,sizeof(upgrade_flag_t));
-
-    memset(&upgradeFlag, 0, sizeof(upgrade_flag_t));
-    Flash_load_upgrade_info((uint8_t*)&upgradeFlag,sizeof(upgrade_flag_t));
-
-    return UPGRADE_RESULT_LOADING_COMPLETE;
-}
-
 
 //***********************************************************************************
 //
@@ -301,4 +235,78 @@ static uint32_t Is_direct_upgrade(uint16_t crc)
     return 0xffffffff;
 }
 #endif
+
+#endif //SUPPORT_USB
+
+void bsl_ack_error(uint8_t *pData, uint16_t length)
+{
+    pData[0] = BSL_ACK_ERROR; // 2
+    length = Usb_group_package(AC_Ack, pData, 1);
+    InterfaceSend(pData, length);
+    return;
+}
+
+
+
+UPGRADE_RESULT_E Usb_bsl_UpgradeLoad_check(uint32_t fileLen)
+{
+    uint16_t calCrc, fileCrc;
+    uint8_t buff[64];
+    uint32_t addr, readLen;
+    upgrade_flag_t upgradeFlag;
+
+    // check the crc
+    addr    = 0; // offset external flash
+    readLen = fileLen;//usb_upgrade_info.fileLength;  // 124K + 128
+    Flash_load_upgrade_data(addr, buff, 64);
+    /*usb_upgrade_info.crc*/ fileCrc = ((uint16_t)buff[1] << 8) + buff[0];
+    readLen = readLen - 128;
+    addr = 128;
+
+    SetContinueCRC16();
+    while(readLen)
+    {
+        if(readLen >= CODE_DATA_LENGTH)
+        {
+            WdtClear();
+            Flash_load_upgrade_data(addr, buff, CODE_DATA_LENGTH);
+            addr += CODE_DATA_LENGTH;
+            calCrc = ContinueCRC16(buff, CODE_DATA_LENGTH);
+            readLen = readLen - CODE_DATA_LENGTH;
+        }
+        else
+        {
+            Flash_load_upgrade_data(addr, buff, readLen);
+            calCrc = ContinueCRC16(buff, readLen);
+            readLen = 0;
+        }
+    }
+
+    if(fileCrc != calCrc)
+    {
+        //upgradeInfo.upgradeStep = UPGRADE_START;
+        return UPGRADE_RESULT_CRC_ERR;
+    }
+
+    memset(&upgradeFlag, 0xff, sizeof(upgrade_flag_t));
+    strcpy((char*)upgradeFlag.validFlag, UPGRADE_FLAG);
+
+#ifdef BOARD_CONFIG_DECEIVE
+    upgradeFlag.waiteUpgrade = 0x00;
+    upgradeFlag.complete     = 0x00;
+#else
+    upgradeFlag.waiteUpgrade = 0x01;
+    upgradeFlag.complete     = 0xff;
+#endif
+    upgradeFlag.crc          = calCrc;//usb_upgrade_info.crc;
+    upgradeFlag.fileLength   = fileLen;
+
+    Flash_store_upgrade_info((uint8_t*)&upgradeFlag,sizeof(upgrade_flag_t));
+
+    memset(&upgradeFlag, 0, sizeof(upgrade_flag_t));
+    Flash_load_upgrade_info((uint8_t*)&upgradeFlag,sizeof(upgrade_flag_t));
+
+    return UPGRADE_RESULT_LOADING_COMPLETE;
+}
+
 

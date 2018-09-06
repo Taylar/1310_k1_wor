@@ -122,7 +122,7 @@ static void KeyScanStop(void)
 //***********************************************************************************
 static void KeyScanFxn(UArg arg0)
 {
-    if(KeyReadState(rKeyTask.keyNum) == KEY_PRESSED)
+    if(KeyReadState((KEY_NUM_E)rKeyTask.keyNum) == KEY_PRESSED)
     {
         if(rKeyTask.doublePress)
         {

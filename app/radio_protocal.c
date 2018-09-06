@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-15 17:15:14
+* @Last Modified time: 2018-09-06 19:35:52
 */
 #include "../general.h"
 
@@ -392,9 +392,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			// updata the rssi
 			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
 
-#ifdef  SUPPORT_DISP_SCREEN
+#ifdef  S_G
 			sensor_unpackage_to_memory(bufTemp->load, bufTemp->load[0]+1);
-#endif
+#endif // S_G
 			HIBYTE(serialNum) = bufTemp->load[6];
 			LOBYTE(serialNum) = bufTemp->load[7];
 

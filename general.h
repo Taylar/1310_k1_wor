@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3_2
+#define BOARD_S3_2
 //#define BOARD_B2_2
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -94,9 +94,9 @@
 //Device type define.
 //
 //***********************************************************************************
-//#define S_A//一体机
-#define S_G//网关
-//#define S_C//采集器
+// #define S_A//一体机
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -462,6 +462,11 @@ error
 #define SUPPORT_NETWORK
 #define SUPPORT_REMOTE_UPGRADE
 #define SUPPORT_USB_UPGRADE
+
+#define  SUPPORT_USB
+
+#undef  FW_VERSION
+#define FW_VERSION              0x0030
 #endif
 
 //***********************************************************************************
@@ -474,8 +479,32 @@ error
 
 #define SUPPORT_RADIO_UPGRADE
 
+//LCD undefine
+#ifdef SUPPORT_DISP_SCREEN
+
+#undef SUPPORT_DISP_SCREEN
+#undef SUPPORT_START_LOGO
+
+#undef LCD_ST7567A
+#undef SUPPORT_MENU
+
+#undef SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
+#undef SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+//#undef NETGATE_BIND_NODE_MAX
+#endif // SUPPORT_DISP_SCREEN
+
+#undef SUPPORT_NTC
+#undef SUPPORT_ALARM_RECORD_QURERY
+#undef SUPPORT_ENGMODE
 /* old S1*/
 //#define SUPPORT_BOARD_OLD_S1
+
+#undef  FW_VERSION
+#ifndef SUPPORT_BOARD_OLD_S1
+#define FW_VERSION              0x0030
+#else
+#define FW_VERSION              0x0004
+#endif
 #endif
 
 //***********************************************************************************
@@ -496,29 +525,19 @@ error
 //
 //***********************************************************************************
 #ifdef BOARD_S6_6
-    #ifdef S_A
+
+    #define  SUPPORT_USB
+
     #undef  FW_VERSION
+    #ifdef S_A
     #define FW_VERSION              0x0036
     #elif defined(S_G)
     #define FW_VERSION              0x0036
     #elif defined(S_C)
     #define FW_VERSION              0x0036
     #endif
-#endif
 
-#ifdef BOARD_S3_2
-    #undef  FW_VERSION
-    #ifndef SUPPORT_BOARD_OLD_S1
-    #define FW_VERSION              0x0030
-    #else
-    #define FW_VERSION              0x0004
-    #endif
-#endif
-
-#ifdef BOARD_B2_2
-#undef  FW_VERSION
-#define FW_VERSION              0x0030
-#endif
+#endif // BOARD_S6_6
 
 
 //***********************************************************************************

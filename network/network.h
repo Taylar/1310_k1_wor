@@ -102,6 +102,6 @@ extern char Nwk_is_Active(void);
 extern bool SetDevicePara(uint8_t *rxData, uint16_t length);
 extern uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData);
 uint8_t Nwk_get_state(void);
-
+void Nwk_upload_set(void);
 #endif	/* __ZKSIOT_NETWORK_H__ */
 

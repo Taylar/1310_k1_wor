@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-07-03 17:05:21
+* @Last Modified time: 2018-09-06 14:07:28
 */
 #include "../general.h"
 
@@ -99,7 +99,7 @@ void Sys_alarmFxn(UArg arg0)
 
     if(buzzerAlarmCnt == 1) {      
         Clock_stop(sysAlarmClkHandle);
-        Sys_event_post(SYSTEMAPP_EVT_ALARM);
+        Sys_event_post(SYS_EVT_ALARM_SAVE);
         return;        
     }
 

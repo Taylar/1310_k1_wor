@@ -361,8 +361,10 @@ static void Sensor_store_package(void)
             }
 
             if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function & (SENSOR_TEMP | SENSOR_DEEP_TEMP)) {
-
-                if (Menu_is_record() ||  !(g_rSysConfigInfo.module & MODULE_BTP)) {
+#ifdef BOARD_S6_6
+                if (Menu_is_record() ||  !(g_rSysConfigInfo.module & MODULE_BTP))
+#endif
+                {
 
                     if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP)) {
                         temp = (int16_t)(rSensorData[i].tempdeep >> 4);
@@ -704,6 +706,14 @@ void Sensor_store_null_package(uint8_t *buff)
 }
 
 #ifdef SUPPORT_NETGATE_DISP_NODE
+#if 1
+#define MEMSENSOR_BUFF_LENGTH USB_BUFF_LENGTH
+sensordata_mem *pMemSensor = (sensordata_mem*)bUsbBuff;// use usb buffer save sensor data in memory  on MSP430F5529
+#else
+#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//支持100台节点数据存储
+sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
+#endif
+#define MEMSENSOR_NUM  (MEMSENSOR_BUFF_LENGTH/sizeof(sensordata_mem))
 
 
 

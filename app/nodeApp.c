@@ -549,7 +549,7 @@ static uint8_t count = 0;
     }
     nodeParameter.collectTimeCnt++;
 #else
-    uint8_t temp;
+
     nodeParameter.collectTimeCnt++;
 
     nodeParameter.sysTime++;

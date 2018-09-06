@@ -13,7 +13,6 @@
 
 uint8_t bUsbBuff[USB_BUFF_LENGTH];
 
-
 //***********************************************************************************
 //
 // Usb protocol group package.
@@ -50,6 +49,7 @@ uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataL
     return length;
 }
 
+#ifdef SUPPORT_USB
 static int8_t datecmp(uint8_t* date1, uint8_t* date2, uint8_t len)
 {
     uint8_t i;
@@ -197,7 +197,7 @@ static int8_t RecordFindFirstValidAddrByDID_Date( uint32_t readAddr,  uint32_t w
            uint32_t nextAddr;
            for(inextRecord = halfRecordNum-1; inextRecord > 0 ; inextRecord--)
            {
-               if (!(USB_getConnectionInformation() & USB_ENUMERATED)){
+               if ((GetUsbState() == USB_UNLINK_STATE)){
                    *startAddr = writeAddr;
                    return -1;//usb閺傤厼绱戦敍灞戒粻濮濄垺澧界悰灞烩偓?
                }
@@ -560,7 +560,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             /* ALG: CMP YMDHM, NOT CMP DID , FIND FIRST  Date record,盲陆驴莽鈥澛� 莽潞驴忙鈧�?忙聬艙莽麓垄  */
             while(1) {
 
-                if (!(USB_getConnectionInformation() & USB_ENUMERATED))
+                if ((GetUsbState() == USB_UNLINK_STATE))
                     return;//usb忙鈥撀ヂ尖偓茂录艗氓聛艙忙颅垄忙鈥奥∨捗ｂ偓?
 
 
@@ -609,7 +609,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
            {
                 while(1) {
 
-                    if (!(USB_getConnectionInformation() & USB_ENUMERATED))
+                    if ((GetUsbState() == USB_UNLINK_STATE))
                         return;//usb忙鈥撀ヂ尖偓茂录艗氓聛艙忙颅垄忙鈥奥∨捗ｂ偓?
 
                     Flash_get_record(readAddr, pData, FLASH_SENSOR_HEAD_DATA_SIZE);
@@ -891,3 +891,4 @@ void UsbSend(USB_TX_MSG_ID msgId)
 
     }
 }
+#endif //SUPPORT_USB

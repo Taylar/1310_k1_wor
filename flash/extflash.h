@@ -235,7 +235,7 @@
 
 #endif  //(defined BOARD_S6_6) || (defined BOARD_S2_2)
 
-#ifdef BOARD_S1_2
+#ifdef BOARD_S3_2
 // ************upgrade data ***********************
 /*---    MISC   ----------512KB ---*/
 //External flash system info store position

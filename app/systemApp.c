@@ -84,7 +84,7 @@ void RtcEventSet(void)
 
 #ifdef SUPPORT_SENSOR
     Sensor_collect_time_isr();
-#endif
+#endif // SUPPORT_SENSOR
 
 	Nwk_upload_time_isr();
 
@@ -136,7 +136,10 @@ void SystemAppTaskFxn(void)
    	S1HwInit();
 #endif
    	RtcInit(RtcEventSet);
+
+#ifdef SUPPORT_SENSOR
 	Sensor_init();
+#endif // SUPPORT_SENSOR
 
 #if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1) || defined(BOARD_B2_2))
 	RtcStart();
@@ -148,8 +151,9 @@ void SystemAppTaskFxn(void)
 	ConcenterConfigDeceiveInit();
 #endif
 
+#ifdef SUPPORT_SENSOR
 	Sensor_measure(0);
-
+#endif
 
 
 #if (defined BOARD_S6_6 || defined BOARD_B2_2)
@@ -188,7 +192,7 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef BOARD_S3_2
-	if(g_rSysConfigInfo.sysState.reserve & STATUS_POWERON)
+	if(g_rSysConfigInfo.sysState.wtd_restarts & STATUS_POWERON)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
 		NodeWakeup();
@@ -322,7 +326,7 @@ void SystemAppTaskFxn(void)
 		}
 
 #ifdef BOARD_S6_6
-		if(eventId & SYSTEMAPP_EVT_ALARM)
+		if(eventId & SYS_EVT_ALARM_SAVE)
 		{
 #ifndef BOARD_CONFIG_DECEIVE
 			buzzerAlarmCnt = 2;
