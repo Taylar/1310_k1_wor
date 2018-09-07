@@ -374,6 +374,14 @@ void SystemAppTaskFxn(void)
                 Nwk_upload_set();
             }
 #endif      // SUPPORT_UPLOADTIME_LIMIT
+
+#ifdef  S_C
+            if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
+	        {
+	            RadioSensorDataPack();
+	        }
+#endif // S_C
+	        
         }
 #endif // SUPPORT_SENSOR
 

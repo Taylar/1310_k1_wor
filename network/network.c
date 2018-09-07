@@ -303,7 +303,7 @@ uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
                 rxData[index++] = LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
                 rxData[index++] = HIBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;
                 rxData[index++] = LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;      
-				rxData[index++] = 0xff;		//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�                    
+				rxData[index++] = 0xff;		//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�
 				rxData[index++] = 0xff;
 				rxData[index++] = 0xff;
 				rxData[index++] = 0xff;
@@ -1443,8 +1443,8 @@ void Nwk_task_create(void)
     /* Obtain event instance handle */
     nwkEvtHandle = Event_handle(&nwkEvtStruct);
 
-    if (!(g_rSysConfigInfo.module & MODULE_NWK))
-        return;
+    //if (!(g_rSysConfigInfo.module & MODULE_NWK))
+    //    return;
 
     /* Construct main system process Task threads */
     Task_Params taskParams;

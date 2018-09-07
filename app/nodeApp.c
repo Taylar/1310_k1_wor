@@ -564,10 +564,7 @@ static uint8_t count = 0;
         NodeBroadcastCountClear();
         if(deviceMode == DEVICES_ON_MODE)
             RadioEventPost(RADIO_EVT_RADIO_REPAIL);
-        if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
-        {
-            RadioSensorDataPack();
-        }
+
 
         if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
         {

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-16 15:35:55
+* @Last Modified time: 2018-09-07 11:44:21
 */
 #include "../general.h"
 
@@ -48,6 +48,7 @@ void S1HwInit(void)
     Flash_init();
 
     configModeTimeCnt = 0;
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 }
 
 

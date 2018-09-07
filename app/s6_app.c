@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-06 14:07:28
+* @Last Modified time: 2018-09-07 10:46:06
 */
 #include "../general.h"
 
@@ -339,6 +339,7 @@ void S6ConcenterLongKeyApp(void)
 //***********************************************************************************
 void S6ShortKey1App(void)
 {
+#ifdef BOARD_S6_6
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -349,9 +350,7 @@ void S6ShortKey1App(void)
         } else
 #endif
         {
-#ifdef SUPPORT_SENSOR
             Disp_sensor_switch();
-#endif
         }
         Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
@@ -368,6 +367,7 @@ void S6ShortKey1App(void)
         break;
 
     }
+#endif
 }
 
 
