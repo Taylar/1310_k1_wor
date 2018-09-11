@@ -6,7 +6,7 @@
 
 
 // board node
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
 
 #define FLASH_POWER_PIN         IOID_8
 #define FLASH_SPI_CS_PIN        IOID_9
@@ -28,7 +28,7 @@ const PIN_Config extFlashPinTable[] = {
 #endif
 
 // board gateway
-#ifdef BOARD_B2_2
+#ifdef BOARD_B2S
 
 #define FLASH_SPI_CS_PIN        IOID_9
 #define FLASH_WP_PIN            IOID_11
@@ -358,7 +358,7 @@ static void Flash_reset_data(void)
 #endif
 
     sysInfo.swVersion = FW_VERSION;
-    sysInfo.printRecordAddr.start = 0xffffffff;//没有开始记�?
+    sysInfo.printRecordAddr.start = 0xffffffff;//娌℃湁寮�濮嬭锟�?
     sysInfo.printRecordAddr.end =   0xffffffff;
     Flash_external_write(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
 
@@ -453,13 +453,13 @@ void Flash_init(void)
 #endif
 
     uint8_t ret = 0;
-    if(g_rSysConfigInfo.batLowVol > BAT_VOLTAGE_L2) {//修正配置该数据
+    if(g_rSysConfigInfo.batLowVol > BAT_VOLTAGE_L2) {//淇閰嶇疆璇ユ暟鎹�
         g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_L2;
         ret =  1;
 
     }
 
-    if(g_rSysConfigInfo.batLowVol < BAT_VOLTAGE_LOW) {//修正配置该数据
+    if(g_rSysConfigInfo.batLowVol < BAT_VOLTAGE_LOW) {//淇閰嶇疆璇ユ暟鎹�
         g_rSysConfigInfo.batLowVol = BAT_VOLTAGE_LOW;
         ret = 1;
     }
@@ -469,7 +469,7 @@ void Flash_init(void)
     }
 
 #ifdef SUPPORT_BOARD_OLD_S1
-    /* 当设为mast时为旧的S1工作模式为模式1，其它模式2*/
+    /* 褰撹涓簃ast鏃朵负鏃х殑S1宸ヤ綔妯″紡涓烘ā寮�1锛屽叾瀹冩ā寮�2*/
     if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
         OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE1);
     } else {
@@ -947,7 +947,7 @@ void Flash_store_deviced_state_data(uint8_t *pData, uint16_t length)
 //
 //***********************************************************************************
 void Flash_store_devices_state(uint8_t StateType){
-    //²É¼¯Ê±¼ä
+    //虏脡录炉脢卤录盲
     Calendar calendar;
     uint8_t buff[FLASH_DEVICED_STATE_DATA_SIZE];
     buff[0]  = StateType;
@@ -1130,7 +1130,7 @@ uint16_t Flash_load_sensor_codec( uint32_t deviceid)
 //***********************************************************************************
 void Flash_store_sensor_codec(uint16_t no, uint32_t deviceid)
 {
-#if 0//Î´ÊµÏÖ
+#if 0//脦麓脢碌脧脰
     uint8_t tmp[FLASH_SECTOR_SIZE];
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 
@@ -1542,7 +1542,7 @@ void Sys_config_reset(void)
         g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
     }
 
-#ifdef      BOARD_B2_2
+#ifdef      BOARD_B2S
 
     g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO;
     g_rSysConfigInfo.serverIpAddr[0] = 114;
@@ -1558,24 +1558,29 @@ void Sys_config_reset(void)
 #endif
 
 #ifdef      BOARD_S6_6
-
+    #ifdef S_G //缃戝叧
     g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO | MODULE_LCD;
     g_rSysConfigInfo.serverIpAddr[0] = 114;
     g_rSysConfigInfo.serverIpAddr[1] = 215;
     g_rSysConfigInfo.serverIpAddr[2] = 122;
     g_rSysConfigInfo.serverIpAddr[3] = 32;
     g_rSysConfigInfo.serverIpPort    = 12200;
+    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    #endif //S_G
 
+    #ifdef S_A//涓�浣撴満
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+    #endif //S_A
+    
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
-    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
     // g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
     // g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_OPT3001;
 #endif
 
 
-#ifdef      BOARD_S3_2
+#ifdef      BOARD_S3
 
     g_rSysConfigInfo.module          = MODULE_RADIO;
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;

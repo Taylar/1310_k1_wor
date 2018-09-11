@@ -55,14 +55,13 @@
  */
 int main(void)
 {
-    HWREG(0x40091000 + 0x00000040) = 0;
     __delay_cycles(10000);
     /* Call driver init functions. */
     Board_initGeneral();
 
     SysAppTaskCreate();
 
-#if (defined  BOARD_S6_6 || defined BOARD_B2_2)
+#if (defined  BOARD_S6_6 || defined BOARD_B2S)
 
 #ifdef SUPPORT_NETWORK
     Nwk_task_create();

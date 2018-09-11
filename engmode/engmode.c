@@ -76,7 +76,6 @@ void SetEngModeConfig()
 //***********************************************************************************
 void EngMode()
 {
-    uint8_t i;
     uint8_t buff[32];
     uint32_t event;
     
@@ -169,6 +168,7 @@ void EngMode()
 
 #ifdef SUPPORT_SENSOR
 	//sensor		
+    uint8_t i;
     Disp_clear_all();
     Disp_msg(0, 0, "Sensor test:", FONT_8X16);
 	Sensor_measure(0);

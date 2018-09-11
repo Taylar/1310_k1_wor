@@ -128,11 +128,11 @@ void SystemAppTaskFxn(void)
 	S6HwInit();
 #endif
 
-#ifdef BOARD_B2_2
+#ifdef BOARD_B2S
     S2HwInit();
 #endif
 
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
    	S1HwInit();
 #endif
    	RtcInit(RtcEventSet);
@@ -141,7 +141,7 @@ void SystemAppTaskFxn(void)
 	Sensor_init();
 #endif // SUPPORT_SENSOR
 
-#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1) || defined(BOARD_B2_2))
+#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1) || defined(BOARD_B2S))
 	RtcStart();
 #endif
 
@@ -156,7 +156,7 @@ void SystemAppTaskFxn(void)
 #endif
 
 
-#if (defined BOARD_S6_6 || defined BOARD_B2_2)
+#if (defined BOARD_S6_6 || defined BOARD_B2S)
 
 #ifdef SUPPORT_ENGMODE
     if (GetEngModeFlag())
@@ -175,38 +175,38 @@ void SystemAppTaskFxn(void)
 		S6Sleep();
 #endif // BOARD_S6_6
 
-#ifdef BOARD_B2_2		
+#ifdef BOARD_B2S		
 	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
 		S2Wakeup();
 	else
 		S2Sleep();
-#endif // BOARD_B2_2
+#endif // BOARD_B2S
 
 #endif // BOARD_CONFIG_DECEIVE
 
-#endif // defined BOARD_S6_6 || defined BOARD_B2_2
+#endif // defined BOARD_S6_6 || defined BOARD_B2S
 
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
 			Flash_store_devices_state(TYPE_POWER_ON);
 #endif // SUPPORT_DEVICED_STATE_UPLOAD
 
 #ifdef		SUPPORT_WATCHDOG
-    #if (defined(BOARD_S6_6) ||  defined(BOARD_B2_2))
+    #if (defined(BOARD_S6_6) ||  defined(BOARD_B2S))
 	    WdtInit(WdtResetCb);
     #endif
 #endif //SUPPORT_WATCHDOG
 
-#ifdef BOARD_B2_2
+#ifdef BOARD_B2S
 	    Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
 #endif
 
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
 	if(g_rSysConfigInfo.sysState.wtd_restarts & STATUS_POWERON)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
 		S1Wakeup();
 	}
-#endif // (defined BOARD_S6_6 || defined BOARD_B2_2)
+#endif // (defined BOARD_S6_6 || defined BOARD_B2S)
 
 
 	for(;;)
@@ -240,7 +240,7 @@ void SystemAppTaskFxn(void)
 		if(eventId &SYSTEMAPP_EVT_KEY0)
 		{
 
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
 			S1ShortKeyApp();
 #endif
 
@@ -248,7 +248,7 @@ void SystemAppTaskFxn(void)
 			S6ShortKeyApp();
 #endif
 
-#ifdef BOARD_B2_2
+#ifdef BOARD_B2S
             S2ShortKeyApp();
 #endif
 		}
@@ -257,7 +257,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
 		{
 
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
 			S1LongKeyApp();
 #endif
 
@@ -265,7 +265,7 @@ void SystemAppTaskFxn(void)
 			// S6ConcenterLongKeyApp();
 #endif
 
-#ifdef BOARD_B2_2
+#ifdef BOARD_B2S
 			S2LongKeyApp();
 #endif
 		}
@@ -273,7 +273,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_KEY0_DOUBLE)
 		{
 
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
 			S1DoubleKeyApp();
 #endif
 			
@@ -297,7 +297,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
 			S1AppRtcProcess();
 #endif
 

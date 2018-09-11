@@ -12,7 +12,7 @@
 #ifndef  SOFT_I2C_BUS
 
 
-// #ifdef  BOARD_S3_2
+// #ifdef  BOARD_S3
 #define CC1310_LAUNCHXL_I2C0_SCL0             IOID_19
 #define CC1310_LAUNCHXL_I2C0_SDA0             IOID_18
 // #endif

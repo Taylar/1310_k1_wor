@@ -14,7 +14,7 @@
 #ifdef SUPPORT_BATTERY
 
 //Battery voltage (mV)
-#ifdef  BOARD_S3_2
+#ifdef  BOARD_S3
 
 #define BAT_VOLTAGE_LOW             2150
 #define BAT_VOLTAGE_L1              2500

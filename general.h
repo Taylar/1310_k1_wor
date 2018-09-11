@@ -73,8 +73,8 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3_2
-//#define BOARD_B2_2
+// #define BOARD_S3
+//#define BOARD_B2S
 #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
@@ -126,12 +126,12 @@ error project name
 #define         BOARD_NAME              "_S6_2"
 #elif defined( BOARD_S6_6)
 #define         BOARD_NAME              "_S6_6"
-#elif defined( BOARD_B2_2)
-#define         BOARD_NAME              "_B2_2"
-#elif defined( BOARD_S3_2)
-#define         BOARD_NAME              "_S3_2"
-#elif defined( BOARD_S1_1)
-#define         BOARD_NAME              "_S1_1"
+#elif defined( BOARD_B2S)
+#define         BOARD_NAME              "_B2S"
+#elif defined( BOARD_S3)
+#define         BOARD_NAME              "_S3"
+#elif defined( BOARD_S3_1)
+#define         BOARD_NAME              "_S3_1"
 #else
 error borad name
 #endif
@@ -453,7 +453,7 @@ error
 //***********************************************************************************
 // S2_2 board define
 //***********************************************************************************
-#ifdef BOARD_B2_2
+#ifdef BOARD_B2S
 #define SUPPORT_SENSOR
 #define SUPPORT_SHT2X
 #define SUPPORT_DEEPTEMP_PT100
@@ -472,7 +472,7 @@ error
 //***********************************************************************************
 // S1_2/3 board define
 //***********************************************************************************
-#ifdef BOARD_S3_2
+#ifdef BOARD_S3
 #define SUPPORT_SENSOR
 #define SUPPORT_SHT2X
 

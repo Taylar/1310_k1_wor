@@ -325,8 +325,8 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
-static uint8_t count = 0;
 #ifdef SUPPORT_BOARD_OLD_S1
+    static uint8_t count = 0;
     if ((deviceMode == DEVICES_OFF_MODE) || (RADIOMODE_UPGRADE == RadioModeGet())) {
         return;
     } else if (nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod) {

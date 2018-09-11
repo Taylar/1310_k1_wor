@@ -610,7 +610,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                 while(1) {
 
                     if ((GetUsbState() == USB_UNLINK_STATE))
-                        return;//usb忙鈥撀ヂ尖偓茂录艗氓聛艙忙颅垄忙鈥奥∨捗ｂ偓?
+                        return 0;//usb忙鈥撀ヂ尖偓茂录艗氓聛艙忙颅垄忙鈥奥∨捗ｂ偓?
 
                     Flash_get_record(readAddr, pData, FLASH_SENSOR_HEAD_DATA_SIZE);
                     if((tmpData[4] == 0x20) && (datecmp(&tmpData[5], &pData[8],5) < 0)){//find   date < startdate

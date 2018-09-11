@@ -28,7 +28,7 @@ ADC_Handle   batteryHandle;
 //***********************************************************************************
 void Battery_init(void)
 {
-#ifndef BOARD_S3_2
+#ifndef BOARD_S3
     ADC_Params   params;
 
     ADC_Params_init(&params);
@@ -43,7 +43,7 @@ void Battery_init(void)
 //***********************************************************************************
 void Battery_voltage_measure(void)
 {
-#ifndef BOARD_S3_2
+#ifndef BOARD_S3
     uint16_t temp;
     uint32_t value, max, min;
     uint32_t  batSum;
@@ -83,7 +83,7 @@ void Battery_voltage_measure(void)
 //***********************************************************************************
 uint16_t Battery_get_voltage(void)
 {
-#ifdef  BOARD_S3_2
+#ifdef  BOARD_S3
     uint32_t voltageTemp[10];
     uint32_t count = 0;
     uint32_t max, min;

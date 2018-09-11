@@ -19,12 +19,12 @@
 #endif	// BOARD_S6_6
 
 
-#ifdef          BOARD_B2_2
+#ifdef          BOARD_B2S
 #define         PROJECT_NAME                "ZKS_1310_S2_2_B2"
-#endif //BOARD_B2_2
+#endif //BOARD_B2S
 
 
-#ifdef 			BOARD_S3_2
+#ifdef 			BOARD_S3
 
 #ifdef          SUPPORT_BOARD_OLD_S1
 #define         PROJECT_NAME                "ZKS_1310_S1_1"
@@ -32,7 +32,7 @@
 #define 		PROJECT_NAME				"ZKS_1310_S3_1"
 #endif
 
-#endif	// BOARD_S3_2
+#endif	// BOARD_S3
 
 #ifndef		PROJECT_NAME
 #define 	PROJECT_NAME 			"ZKS_1310"
