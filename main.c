@@ -55,6 +55,7 @@
  */
 int main(void)
 {
+    HWREG(0x40091000 + 0x00000040) = 0;
     __delay_cycles(10000);
     /* Call driver init functions. */
     Board_initGeneral();
@@ -70,8 +71,9 @@ int main(void)
     InterfaceTaskCreate();
 #endif  // BOARD_S6_6
 
+#ifndef S_A//涓�浣撴満
     RadioAppTaskCreate();
-
+#endif //S_A
     // test for 32K s
     // IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);
     // AONIOC32kHzOutputEnable();

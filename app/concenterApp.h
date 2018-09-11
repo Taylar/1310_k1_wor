@@ -44,8 +44,6 @@ void ConcenterSleep(void);
 
 void ConcenterWakeup(void);
 
-void UsbIntProcess(void);
-
 void ConcenterConfigDeceiveInit(void);
 
 void ConcenterStoreConfig(void);
@@ -62,5 +60,12 @@ void ConcenterCollectStart(void);
 
 void ConcenterCollectStop(void);
 
+#ifdef SUPPORT_STRATEGY_SORT
+
+uint8_t ConcenterSetNodeChannel(uint32_t nodeAddr);
+
+uint8_t ConcenterReadNodeChannel(uint32_t nodeAddr);
+
+#endif // SUPPORT_STRATEGY_SORT
 
 #endif			// _CONCENTERAPP_H__

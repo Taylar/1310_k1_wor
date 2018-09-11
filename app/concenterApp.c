@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-05 17:28:28
+* @Last Modified time: 2018-09-10 15:24:14
 */
 #include "../general.h"
 
@@ -21,17 +21,8 @@
 typedef struct 
 {
     uint32_t channelDispath;
-    uint32_t synchronTimeCnt;
-    uint32_t uploadTimeCnt;          // the unit is sec
-    uint32_t collectTimeCnt;         // the unit is sec
-    uint32_t serialNum;         // the unit is sec
-    
     uint8_t  monitorCnt;
-    
-    bool  synTimeFlag;    // 0: unsyntime; 1: synchron time
-    bool  collectStart;    // 0: stop collect data; 1: start collect data
-    bool  radioReceive;    // 0: stop receive radio; 1: continue receive radio
-
+    bool     synTimeFlag;    // 0: unsyntime; 1: synchron time
 }concenter_para_t;
 
 
@@ -65,13 +56,8 @@ void ConcenterAppInit(void)
 
     concenterParameter.channelDispath  = 0;
     concenterParameter.monitorCnt      = 0;
-    concenterParameter.synchronTimeCnt = 0;
-    concenterParameter.collectTimeCnt  = 0;
-    concenterParameter.serialNum       = 0;
 
     concenterParameter.synTimeFlag     = false;
-    concenterParameter.collectStart     = false;
-    concenterParameter.radioReceive    = false;
 
     ExtflashRingQueueInit(&extflashWriteQ);
 
@@ -246,23 +232,7 @@ void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 void ConcenterSleep(void)
 {
     concenterParameter.synTimeFlag  = false;
-    concenterParameter.radioReceive = false;
-    RtcStop();
     RadioDisable();
-    ConcenterCollectStop();
-    // wait the nwk disable the uart
-#ifdef  SUPPORT_NETWORK
-    Nwk_poweroff();
-    while(Nwk_is_Active())
-        Task_sleep(100 * CLOCK_UNIT_MS);
-#endif
-
-#ifdef BOARD_B2_2
-
-    InterfaceEnable();
-
-#endif
-    deviceMode = DEVICES_OFF_MODE;
 }
 
 //***********************************************************************************
@@ -272,115 +242,7 @@ void ConcenterSleep(void)
 //***********************************************************************************
 void ConcenterWakeup(void)
 {
-    deviceMode = DEVICES_ON_MODE;
-    
-    RtcStart();
-    
-#if (defined BOARD_S6_6 || defined BOARD_B2_2)
-    if(GetUsbState() == USB_UNLINK_STATE)
-#endif
-    {
-#ifdef  SUPPORT_NETWORK
-        Nwk_poweron();
-#endif
-    }
-    if((g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) && (g_rSysConfigInfo.module & MODULE_RADIO))
-    {
-        concenterParameter.radioReceive = true;
-        RadioModeSet(RADIOMODE_RECEIVEPORT);
-    }
-
-
-// for test
-    // Calendar currentTime = {0,0,10,3,14,3,2018};
-    // ConcenterTimeSychronization(&currentTime);
-}
-
-
-//***********************************************************************************
-// brief:   
-// 
-// parameter: 
-//***********************************************************************************
-void UsbIntProcess(void)
-{
-    static uint8_t deviceModeTemp = DEVICES_SLEEP_MODE;
-
-    if(GetUsbState() == USB_LINK_STATE)
-    {
-        switch(deviceMode)
-        {
-            case DEVICES_ON_MODE:
-            case DEVICES_SLEEP_MODE:
-
-#ifdef      SUPPORT_DISP_SCREEN
-            Disp_poweroff();
-#endif
-            Task_sleep(100 * CLOCK_UNIT_MS);
-            // wait for the gsm uart close
-#ifdef  SUPPORT_NETWORK
-            Nwk_poweroff();
-            while(Nwk_is_Active())
-                Task_sleep(100 * CLOCK_UNIT_MS);
-#endif
-
-            InterfaceEnable();
-
-            RadioTestDisable();
-            ConcenterSleep();
-
-            deviceModeTemp = DEVICES_SLEEP_MODE;
-            deviceMode = DEVICES_CONFIG_MODE;
-            break;
-
-            case DEVICES_OFF_MODE:
-            InterfaceEnable();
-            deviceModeTemp = DEVICES_OFF_MODE;
-            deviceMode = DEVICES_CONFIG_MODE;
-            break;
-
-            case DEVICES_CONFIG_MODE:
-            case DEVICES_TEST_MODE:
-            break;
-
-        }
-
-    }
-    else
-    {
-        // the usb has unlink
-        if(deviceMode != DEVICES_CONFIG_MODE)
-            return;
-
-        deviceMode = deviceModeTemp;
-        InterfaceDisable();
-        SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
-                         (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
-                         (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
-                         g_rSysConfigInfo.DeviceId[3]);
-        SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-        switch(deviceMode)
-        {
-            case DEVICES_ON_MODE:
-            case DEVICES_SLEEP_MODE:
-#ifdef  SUPPORT_NETWORK
-            Nwk_poweron();
-#endif
-            ConcenterWakeup();
-            if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
-            {
-                RadioTestEnable();
-            }
-
-            case DEVICES_OFF_MODE:
-            break;
-
-            case DEVICES_CONFIG_MODE:
-            case DEVICES_TEST_MODE:
-            break;
-
-        }
-    }
+    RadioModeSet(RADIOMODE_RECEIVEPORT);
 }
 
 
@@ -398,7 +260,6 @@ void ConcenterConfigDeceiveInit(void)
 #endif
 
     deviceMode = DEVICES_CONFIG_MODE;
-    concenterParameter.radioReceive = true;
     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
     RadioModeSet(RADIOMODE_RECEIVEPORT);
     InterfaceEnable();
@@ -450,45 +311,6 @@ void ConcenterRadioMonitorClear(void)
     concenterParameter.monitorCnt = 0;
 }
 
-//***********************************************************************************
-// brief:   start the collect sensor timer
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterCollectStart(void)
-{
-    uint8_t i;
-    uint8_t secTemp;
-
-    secTemp                    = RtcGetSec();
-
-    for(i = 0; i < MODULE_SENSOR_MAX; i++)
-    {
-        if((g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X) || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_OPT3001)
-                || (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_DEEPTEMP))
-        {
-            concenterParameter.collectStart      = true;
-
-            // promise the next collect time is 30s 
-            secTemp += 30;
-            concenterParameter.collectTimeCnt = secTemp;
-            break;
-        }
-    }
-}
-
-
-//***********************************************************************************
-// brief:   stop the collect sensor timer
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterCollectStop(void)
-{
-    concenterParameter.collectStart      = false;
-}
-
-
 
 //***********************************************************************************
 // brief:the concenter rtc process
@@ -498,20 +320,15 @@ void ConcenterCollectStop(void)
 void ConcenterRtcProcess(void)
 {
 
-    if(/*concenterParameter.radioReceive &&*/ (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
+    concenterParameter.monitorCnt++;
+    if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
     {
-        concenterParameter.monitorCnt++;
-        if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
-        {
-            ConcenterRadioMonitorClear();
-            EasyLink_abort();
-            // RadioSetRxMode();
-            SetRadioDstAddr(0xdadadada);
-            RadioEventPost(RADIO_EVT_SEND_CONFIG);
-        }
+        ConcenterRadioMonitorClear();
+        EasyLink_abort();
+        // RadioSetRxMode();
+        SetRadioDstAddr(0xdadadada);
+        RadioEventPost(RADIO_EVT_SEND_CONFIG);
     }
-
-    
 
     if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
     {
@@ -520,30 +337,51 @@ void ConcenterRtcProcess(void)
 #endif
         ConcenterSleep();
     }
-    
-    if(concenterParameter.collectStart)
-    {
-        concenterParameter.collectTimeCnt++;
-        if(concenterParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod)
-        {
-            concenterParameter.collectTimeCnt = (concenterParameter.collectTimeCnt - g_rSysConfigInfo.collectPeriod) % g_rSysConfigInfo.collectPeriod;
-            Battery_voltage_measure();
-        }
-    }
 }
 
-#define CONCENTER_MAX_CHANNEL       100
 
 
+#ifdef SUPPORT_STRATEGY_SORT
+uint32_t nodeAddrTable[CONCENTER_MAX_CHANNEL];
+uint8_t  nodeNumDispath;
 
 //***********************************************************************************
 // brief:concenter set the channel
 // 
 // parameter: 
 //***********************************************************************************
-uint32_t ConcenterSetChannel(uint32_t nodeAddr)
+uint8_t ConcenterSetNodeChannel(uint32_t nodeAddr)
 {
-
+    uint8_t i;
+    for(i = 0; i < CONCENTER_MAX_CHANNEL; i++)
+    {
+        if(nodeAddrTable[i] == nodeAddr)
+        {
+            return i;
+        }
+    }
+    // could not find the nodeaddr in the nodeAddrTable
+    if(nodeNumDispath >= CONCENTER_MAX_CHANNEL)
+    {
+        memset((uint8_t*)nodeAddrTable, 0, sizeof(nodeAddrTable));
+        nodeNumDispath = 0;
+    }
+    nodeAddrTable[nodeNumDispath] = nodeAddr;
+    nodeNumDispath++;
+    return (nodeNumDispath - 1);
 }
 
+uint8_t ConcenterReadNodeChannel(uint32_t nodeAddr)
+{
+    uint8_t i; 
+    for(i = 0; i < CONCENTER_MAX_CHANNEL; i++)
+    {
+        if(nodeAddrTable[i] == nodeAddr)
+        {
+            return i;
+        }
+    }
+    return 0xff;
+}
 
+#endif // SUPPORT_STRATEGY_SORT

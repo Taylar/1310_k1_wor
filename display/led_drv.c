@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-28 19:07:19
+* @Last Modified time: 2018-09-07 17:01:22
 */
 #include "../general.h"
 
@@ -69,10 +69,26 @@ void LedIoInit(void)
 //***********************************************************************************
 void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
 {
+    Led_ctrl2(ledId, state, period, period, times);
+}
+
+//***********************************************************************************
+//
+// Led control.
+//      id:     allow multi led
+//      state:  led first state, 0 or 1
+//      period: led blink time,  0 means just set led state and no blink
+//      period2: led off time,  0 means just set led state and no blink
+//      times:  led blink times, 0 means just set led state and no blink
+//
+//***********************************************************************************
+void Led_ctrl2(uint8_t ledId, uint8_t state, uint32_t period, uint32_t period2, uint8_t times)
+{
     uint8_t i;
     /* Get access to resource */
 
-    period /= CLOCK_UNIT_MS; 
+    period  /= CLOCK_UNIT_MS; 
+    period2 /= CLOCK_UNIT_MS;
 
     if(Clock_isActive(ledProcessClkHandle))
         Clock_stop(ledProcessClkHandle);
@@ -102,7 +118,7 @@ void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
     singlePort[ledId].times       = times;
     singlePort[ledId].state       = state;
     singlePort[ledId].periodT1Set = (period >= LED_PERIOD_CLOCK_TIME_MS)?period/LED_PERIOD_CLOCK_TIME_MS:1;
-    singlePort[ledId].periodT2Set = (period >= LED_PERIOD_CLOCK_TIME_MS)?period/LED_PERIOD_CLOCK_TIME_MS:1;
+    singlePort[ledId].periodT2Set = (period2 >= LED_PERIOD_CLOCK_TIME_MS)?period2/LED_PERIOD_CLOCK_TIME_MS:1;
     singlePort[ledId].periodT1    = singlePort[ledId].periodT1Set;
     singlePort[ledId].periodT2    = singlePort[ledId].periodT2Set;
 
@@ -233,6 +249,10 @@ void LedInit(void)
 #else
 
 void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
+{
+}
+
+extern void Led_ctrl2(uint8_t ledId, uint8_t state, uint32_t period, uint32_t period2, uint8_t times);
 {
 }
 

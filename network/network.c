@@ -1028,7 +1028,6 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                     calendar.Seconds    = TransBcdToHex(rxData[index++]);
     	            ConcenterTimeSychronization(&calendar);
     	            rNwkObject.ntp = 1;
-                    ConcenterCollectStart();
     			}
                 break;
 

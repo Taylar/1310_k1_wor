@@ -22,4 +22,8 @@ void S2ShortKeyApp(void);
 
 void S2LongKeyApp(void);
 
+void S2Wakeup(void);
+
+void S2Sleep(void);
+
 #endif		//	__S2_APP_H__

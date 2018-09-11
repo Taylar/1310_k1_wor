@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-07 11:44:21
+* @Last Modified time: 2018-09-10 16:10:36
 */
 #include "../general.h"
 
@@ -68,15 +68,15 @@ void S1ShortKeyApp(void)
         case OLD_S1_DEVICES_RADIO_UPGRADE:
 #endif
 
-        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_R, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_CONFIG_MODE:
-        Led_ctrl(LED_G, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_G, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
 
     }
@@ -95,7 +95,7 @@ void S1LongKeyApp(void)
         case DEVICES_CONFIG_MODE:
         NodeSleep();
         g_rSysConfigInfo.sysState.wtd_restarts &= (0xFFFF^STATUS_POWERON);
-        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl2(LED_R, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         g_rSysConfigInfo.rtc = Rtc_get_calendar();
         Flash_store_config();
         Task_sleep(3000 * CLOCK_UNIT_MS);
@@ -105,11 +105,11 @@ void S1LongKeyApp(void)
         case DEVICES_OFF_MODE:
         if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
         {
-            Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 1);
+            Led_ctrl(LED_R, 1, 200 * CLOCK_UNIT_MS, 1);
         }
         else
         {
-            Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+            Led_ctrl2(LED_B, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
             g_rSysConfigInfo.sysState.wtd_restarts |= STATUS_POWERON;
             NodeWakeup();
             Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
@@ -144,34 +144,84 @@ void S1DoubleKeyApp(void)
         deviceMode                      = DEVICES_CONFIG_MODE;
         configModeTimeCnt = 0;
         NodeUploadOffectClear();
-        NodeStrategyBusySet(false);
         RadioModeSet(RADIOMODE_RECEIVEPORT);
         SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
 #ifdef SUPPORT_BOARD_OLD_S1
         RadioSwitchingUserRate();
 #endif
+        NodeStrategyStop();
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
-        Led_ctrl(LED_G, 1, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl2(LED_G, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         break;
     }
 }
 
-
+static uint32_t batMeasureCnt;
 
 void S1AppRtcProcess(void)
 {
+    static uint8_t count;
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
     {
         configModeTimeCnt++;
         if(configModeTimeCnt >= 120)
         {
-            ClearRadioSendBuf();
+            NodeStrategyBuffClear();
             RadioModeSet(RADIOMODE_SENDPORT);
             NodeStartBroadcast();
-            NodeStrategyBusySet(true);
-
             NodeBroadcasting();
+            NodeStrategyStart();
             deviceMode = DEVICES_ON_MODE;
         }
     }
+
+    batMeasureCnt++;
+    if(batMeasureCnt >= g_rSysConfigInfo.collectPeriod)
+    {
+        if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
+        {
+            count++;
+            if (count > 10)
+            {
+                count = 0;
+                NodeSleep();
+            }
+        }
+    }
+}
+
+extern void WdtResetCb(uintptr_t handle);
+
+
+
+//***********************************************************************************
+// brief:   S1 wakeup enable the rtc / wdt and the node function
+// 
+// parameter: 
+//***********************************************************************************
+void S1Wakeup(void)
+{
+    deviceMode = DEVICES_ON_MODE;
+    RtcStart();
+
+#ifdef  SUPPORT_WATCHDOG
+    WdtInit(WdtResetCb);
+#endif
+    NodeWakeup();
+}
+
+
+//***********************************************************************************
+// brief:   S1 sleep enable the rtc / wdt and the node function
+// 
+// parameter: 
+//***********************************************************************************
+void S1Sleep(void)
+{
+    deviceMode = DEVICES_OFF_MODE;
+
+#ifndef SUPPORT_BOARD_OLD_S1
+    RtcStop();
+#endif
+    NodeSleep();
 }

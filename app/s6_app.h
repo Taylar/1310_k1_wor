@@ -41,5 +41,10 @@ void S6AppRtcProcess(void);
 
 void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
 
+void UsbIntProcess(void);
+
+void S6Wakeup(void);
+
+void S6Sleep(void);
 
 #endif		//	__S6_APP_H__

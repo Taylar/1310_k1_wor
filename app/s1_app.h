@@ -25,6 +25,9 @@ void S1DoubleKeyApp(void);
 
 void S1AppRtcProcess(void);
 
+void S1Wakeup(void);
+
+void S1Sleep(void);
 
 #endif		//	__S1_APP_H__
 

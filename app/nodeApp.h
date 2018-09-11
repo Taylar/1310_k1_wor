@@ -13,15 +13,11 @@ typedef struct {
 
 
 
-void NodeAppInit(void (*Cb)(void));
+void NodeAppInit(void);
 
 void NodeUploadPeriodSet(uint32_t period);
 
 void NodeUploadProcess(void);
-
-void NodeCollectStart(void);
-
-void NodeCollectStop(void);
 
 void NodeCollectPeriodSet(uint32_t period);
 
@@ -53,16 +49,5 @@ uint32_t NodeGetCustomId(void);
 
 void NodeStrategyTimeoutProcess(void);
 
-void NodeBroadcastCount(void);
-
-bool NodeBroadcastTimesCheck(void);
-
-void NodeBroadcastCountClear(void);
-
-void SetNodeContinueFlag(void);
-
-void ClearNodeContinueFlag(void);
-
-uint8_t ReadNodeContinueFlag(void);
 
 #endif			// __NODEAPP_H__

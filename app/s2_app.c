@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:14:22
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-04-20 14:27:33
+* @Last Modified time: 2018-09-10 14:54:14
 */
 #include "../general.h"
 
@@ -90,3 +90,53 @@ void S2LongKeyApp(void)
         break;
     }
 }
+
+//***********************************************************************************
+// brief:   S2 wakeup enable the rtc and the radio function
+// 
+// parameter: 
+//***********************************************************************************
+void S2Wakeup(void)
+{
+    deviceMode = DEVICES_ON_MODE;
+    RtcStart();
+    
+#ifdef  SUPPORT_NETWORK
+    Nwk_poweron();
+#endif
+
+#ifdef S_G//网关
+    ConcenterWakeup();
+#endif // S_G//网关
+
+#ifdef S_C //节点
+    NodeWakeup();
+#endif // S_C //节点
+}
+
+
+
+//***********************************************************************************
+// brief:   S6 wakeup enable the rtc and the radio function
+// 
+// parameter: 
+//***********************************************************************************
+void S2Sleep(void)
+{
+    RtcStop();
+    // wait the nwk disable the uart
+#ifdef  SUPPORT_NETWORK
+    Nwk_poweroff();
+    while(Nwk_is_Active())
+        Task_sleep(100 * CLOCK_UNIT_MS);
+#endif
+
+    InterfaceEnable();
+
+#ifndef S_A
+    ConcenterSleep();
+#endif // S_A
+
+    deviceMode = DEVICES_OFF_MODE;
+}
+

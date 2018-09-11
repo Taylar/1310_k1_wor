@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3_2
+// #define BOARD_S3_2
 //#define BOARD_B2_2
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -479,6 +479,8 @@ error
 
 #define SUPPORT_RADIO_UPGRADE
 
+#define SUPPORT_DOUBLE_PRESS
+
 //LCD undefine
 #ifdef SUPPORT_DISP_SCREEN
 
@@ -526,7 +528,10 @@ error
 //***********************************************************************************
 #ifdef BOARD_S6_6
 
+#undef SUPPORT_DOUBLE_PRESS
+
     #define  SUPPORT_USB
+
 
     #undef  FW_VERSION
     #ifdef S_A
@@ -661,6 +666,9 @@ typedef enum {
 //
 //***********************************************************************************
 #define STATUS_POWERON          0x0001
+
+// #define SUPPORT_STRATEGY_SORT
+#define CONCENTER_MAX_CHANNEL       20
 
 //***********************************************************************************
 //

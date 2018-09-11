@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-07 10:46:06
+* @Last Modified time: 2018-09-10 14:54:24
 */
 #include "../general.h"
 
@@ -419,9 +419,8 @@ void S6AppRtcProcess(void)
 {
 #ifndef BOARD_CONFIG_DECEIVE
     static uint32_t timingSendDataCnt = 0;
-    if (deviceMode == DEVICES_OFF_MODE || (!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))) {
-        return;
-    }
+    
+#ifdef S_G
     /* Send data regularly to ensure that the gateway can receive*/
     if (timingSendDataCnt > (5 * 60)) {
         RadioModeSet(RADIOMODE_RECEIVEPORT);
@@ -430,7 +429,155 @@ void S6AppRtcProcess(void)
         ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
     }
     timingSendDataCnt++;
-#endif
+#endif  // S_G
+
+#endif  // BOARD_CONFIG_DECEIVE
 }
+
+
+
+//***********************************************************************************
+// brief:   
+// 
+// parameter: 
+//***********************************************************************************
+void UsbIntProcess(void)
+{
+    static uint8_t deviceModeTemp = DEVICES_SLEEP_MODE;
+
+    if(GetUsbState() == USB_LINK_STATE)
+    {
+        switch(deviceMode)
+        {
+            case DEVICES_ON_MODE:
+            case DEVICES_SLEEP_MODE:
+
+#ifdef      SUPPORT_DISP_SCREEN
+            Disp_poweroff();
+#endif
+            Task_sleep(100 * CLOCK_UNIT_MS);
+            // wait for the gsm uart close
+#ifdef  SUPPORT_NETWORK
+            Nwk_poweroff();
+            while(Nwk_is_Active())
+                Task_sleep(100 * CLOCK_UNIT_MS);
+#endif
+
+            InterfaceEnable();
+
+            RadioTestDisable();
+            ConcenterSleep();
+
+            deviceModeTemp = DEVICES_SLEEP_MODE;
+            deviceMode = DEVICES_CONFIG_MODE;
+            break;
+
+            case DEVICES_OFF_MODE:
+            InterfaceEnable();
+            deviceModeTemp = DEVICES_OFF_MODE;
+            deviceMode = DEVICES_CONFIG_MODE;
+            break;
+
+            case DEVICES_CONFIG_MODE:
+            case DEVICES_TEST_MODE:
+            break;
+
+        }
+
+    }
+    else
+    {
+        // the usb has unlink
+        if(deviceMode != DEVICES_CONFIG_MODE)
+            return;
+
+        deviceMode = deviceModeTemp;
+        InterfaceDisable();
+        SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+                         (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+                         (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+                         g_rSysConfigInfo.DeviceId[3]);
+        SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+        switch(deviceMode)
+        {
+            case DEVICES_ON_MODE:
+            case DEVICES_SLEEP_MODE:
+#ifdef  SUPPORT_NETWORK
+            Nwk_poweron();
+#endif
+#ifdef  S_G
+            ConcenterWakeup();
+#endif  // S_G
+
+#ifdef  S_C
+            NodeWakeup();
+#endif  // S_C
+
+            if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
+            {
+                RadioTestEnable();
+            }
+
+            case DEVICES_OFF_MODE:
+            break;
+
+            case DEVICES_CONFIG_MODE:
+            case DEVICES_TEST_MODE:
+            break;
+
+        }
+    }
+}
+
+//***********************************************************************************
+// brief:   S6 wakeup enable the rtc and the radio function
+// 
+// parameter: 
+//***********************************************************************************
+void S6Wakeup(void)
+{
+    deviceMode = DEVICES_ON_MODE;
+    RtcStart();
+    
+    if(GetUsbState() == USB_UNLINK_STATE)
+    {
+#ifdef  SUPPORT_NETWORK
+        Nwk_poweron();
+#endif
+    }
+
+#ifdef S_G//网关
+    ConcenterWakeup();
+#endif // S_G//网关
+
+#ifdef S_C //节点
+    NodeWakeup();
+#endif // S_C //节点
+}
+
+
+
+//***********************************************************************************
+// brief:   S6 wakeup enable the rtc and the radio function
+// 
+// parameter: 
+//***********************************************************************************
+void S6Sleep(void)
+{
+    RtcStop();
+    // wait the nwk disable the uart
+#ifdef  SUPPORT_NETWORK
+    Nwk_poweroff();
+    while(Nwk_is_Active())
+        Task_sleep(100 * CLOCK_UNIT_MS);
+#endif
+
+#ifndef S_A
+    ConcenterSleep();
+#endif // S_A
+
+    deviceMode = DEVICES_OFF_MODE;
+}
+
 
 #endif

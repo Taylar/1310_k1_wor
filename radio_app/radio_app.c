@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-05 17:28:25
+* @Last Modified time: 2018-09-07 16:35:27
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -254,7 +254,7 @@ void RadioAppTaskFxn(void)
 
     if(radioMode == RADIOMODE_SENDPORT)
     {
-        NodeAppInit(RadioSend);
+        NodeAppInit();
 #ifdef SUPPORT_BOARD_OLD_S1
         OldS1NodeApp_init();
 #endif
@@ -391,15 +391,22 @@ void RadioAppTaskFxn(void)
             rssi  = RADIO_RSSI_FLITER - 1;
             rssi2 = RADIO_RSSI_FLITER - 1;
 #endif
-            ClearNodeContinueFlag();
+
+#ifdef      S_C
+            if((GetStrategyRegisterStatus() == false) && (deviceMode != DEVICES_CONFIG_MODE))
+            {
+                NodeStrategyBuffClear();
+                NodeRadioSendSynReq();
+            }
+#endif //S_C
+            
             if((rssi > RADIO_RSSI_FLITER) || (rssi2 > RADIO_RSSI_FLITER))
             {
-//                 System_printf("r1:%d,r2:%d,no send\n", rssi, rssi2);
                 Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
             }
             else if((currentRadioOperation.easyLinkTxPacket.len) <= EASYLINK_MAX_DATA_LENGTH && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
             {
-                // System_printf("r1:%d,r2:%d,send\n", rssi, rssi2);
+                Led_toggle(LED_R);
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #ifdef SUPPORT_BOARD_OLD_S1
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
@@ -443,7 +450,6 @@ void RadioAppTaskFxn(void)
                     radioStatus = RADIOSTATUS_RECEIVING;
                     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
                     EasyLink_receiveAsync(RxDoneCallback, 0);
-                    NodeBroadcastCount();
                 }
 
                 if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
@@ -468,7 +474,7 @@ void RadioAppTaskFxn(void)
             }
             else
             {
-                ClearRadioSendBuf();
+                NodeStrategyBuffClear();
             }
 
         }
@@ -489,12 +495,6 @@ void RadioAppTaskFxn(void)
             /* If we haven't resent it the maximum number of times yet, then resend packet */
             if (currentRadioOperation.retriesDone < currentRadioOperation.maxNumberOfRetries)
             {
-//                RadioResendPacket();
-            }
-            else
-            {
-                /* Else return send fail */
-                // Event_post(radioOperationEventHandle, RADIO_EVT_FAIL);
             }
 #endif
         }
@@ -573,7 +573,7 @@ void RadioAppTaskFxn(void)
         if(events & RADIO_EVT_SEND_CONFIG) 
         {
 #ifdef   BOARD_S3_2
-            ClearRadioSendBuf();
+            NodeStrategyBuffClear();
             NodeRadioSendConfig();
 #endif
 
@@ -588,11 +588,8 @@ void RadioAppTaskFxn(void)
             if (deviceMode != DEVICES_CONFIG_MODE)
             {
                 NodeRadioSendSynReq();
-                RadioSend();
             }
         }
-
-
     }
 }
 

@@ -168,14 +168,23 @@ void SystemAppTaskFxn(void)
 
 #ifndef  BOARD_CONFIG_DECEIVE
 
+#ifdef BOARD_S6_6		
 	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
-		ConcenterWakeup();
+		S6Wakeup();
 	else
-		ConcenterSleep();
+		S6Sleep();
+#endif // BOARD_S6_6
+
+#ifdef BOARD_B2_2		
+	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+		S2Wakeup();
+	else
+		S2Sleep();
+#endif // BOARD_B2_2
 
 #endif // BOARD_CONFIG_DECEIVE
 
-#endif // BOARD_S6_6
+#endif // defined BOARD_S6_6 || defined BOARD_B2_2
 
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
 			Flash_store_devices_state(TYPE_POWER_ON);
@@ -195,9 +204,9 @@ void SystemAppTaskFxn(void)
 	if(g_rSysConfigInfo.sysState.wtd_restarts & STATUS_POWERON)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
-		NodeWakeup();
+		S1Wakeup();
 	}
-#endif
+#endif // (defined BOARD_S6_6 || defined BOARD_B2_2)
 
 
 	for(;;)
@@ -288,42 +297,30 @@ void SystemAppTaskFxn(void)
 
 		if(eventId &SYSTEMAPP_EVT_RTC)
 		{
-#if (defined BOARD_S6_6 || defined BOARD_B2_2)
-
-			if(g_rSysConfigInfo.module & MODULE_RADIO)
-			{
-				if(!(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER))
-				{
-					NodeRtcProcess();
-				}
-				else
-				{
-					ConcenterRtcProcess();
-				}
-			}
-			else
-			{
-				ConcenterRtcProcess();
-			}
-				
-//			 S6AppRtcProcess();
-#endif
-
 #ifdef BOARD_S3_2
 			S1AppRtcProcess();
-			NodeRtcProcess();
 #endif
+
+#ifdef S_A//一体机
+			NodeRtcProcess();
+#endif // S_A//一体机
+
+#ifdef S_G//网关
+			ConcenterRtcProcess();
+#endif // S_G//网关
+
 		}
 
 		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)
 		{
 			ConcenterSensorDataSave();
 		}
-
+#ifdef SUPPORT_USB
 		if(eventId & SYSTEMAPP_EVT_USBINT)
 		{
 			UsbIntProcess();
 		}
+#endif // SUPPORT_USB
 
 #ifdef BOARD_S6_6
 		if(eventId & SYS_EVT_ALARM_SAVE)
@@ -381,7 +378,7 @@ void SystemAppTaskFxn(void)
 	            RadioSensorDataPack();
 	        }
 #endif // S_C
-	        
+
         }
 #endif // SUPPORT_SENSOR
 

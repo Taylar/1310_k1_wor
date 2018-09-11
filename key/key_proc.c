@@ -151,6 +151,7 @@ static void KeyScanFxn(UArg arg0)
     {
         if(rKeyTask.doublePress)
         {
+#ifdef  SUPPORT_DOUBLE_PRESS
             rKeyTask.doublePressTime++;
 
             if(rKeyTask.doublePressTime > TIME_KEY_DOUBLE)
@@ -159,6 +160,11 @@ static void KeyScanFxn(UArg arg0)
                 if(AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
                     AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
             }
+#else
+            KeyScanStop();    
+            if(AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
+                AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
+#endif  // SUPPORT_DOUBLE_PRESS
         }
         else
         {
