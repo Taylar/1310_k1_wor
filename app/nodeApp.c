@@ -341,7 +341,7 @@ void NodeRtcProcess(void)
         if (count > 10)
         {
             count = 0;
-            NodeSleep();
+            S1Sleep();
         }
         // SysCtrlSystemReset();
     }

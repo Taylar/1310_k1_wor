@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-07 16:32:05
+* @Last Modified time: 2018-09-12 19:36:49
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -31,6 +31,7 @@ typedef struct {
     bool        success;                    // register state
     uint8_t     remainderCache;             // 
     uint8_t     sendCnt;                    // send times in one period
+    uint8_t     radioBusyCnt;               // send times in one period
     uint8_t     periodFailNum;              // fail period times 
     uint32_t    period;                     // the upload period, the unit is sec
     uint32_t    channel;                    // the concentor dispath the channel to the node
@@ -107,6 +108,7 @@ void NodeStrategyReset(void)
     nodeStrategy.channel       = INVALID_CHANNEL;
     nodeStrategy.channelNum    = CONCENTER_MAX_CHANNEL;
     nodeStrategy.sendCnt       = 0;
+    nodeStrategy.radioBusyCnt  = 0;
     nodeStrategy.periodFailNum = 0;
     nodeStrategy.offsetTicks   = 0;
 
@@ -223,6 +225,7 @@ void NodeStrategyReceiveTimeoutProcess(void)
             nodeStrategy.periodFailNum = 0;
             nodeStrategy.success       = false;
             nodeStrategy.sendCnt       = 0;
+            nodeStrategy.radioBusyCnt  = 0;
             NodeStrategyFailCb();
         }
     }
@@ -260,7 +263,8 @@ void NodeStrategyBuffClear(void)
 //***********************************************************************************
 void NodeStrategyPeriodReset(void)
 {
-    nodeStrategy.sendCnt = 0;
+    nodeStrategy.sendCnt      = 0;
+    nodeStrategy.radioBusyCnt = 0;
 }
 
 
@@ -315,7 +319,29 @@ void StrategyRegisterSuccess(void)
     nodeStrategy.success       = true;
     nodeStrategy.periodFailNum = 0;
     nodeStrategy.sendCnt       = 0;
+    nodeStrategy.radioBusyCnt = 0;
+}
 
+
+//***********************************************************************************
+// brief: check the radio in air is busy, and the recheck the rssi later
+// 
+// parameter: 
+//***********************************************************************************
+void StrategyCheckRssiBusyProcess(void)
+{
+    nodeStrategy.radioBusyCnt++;
+    if(nodeStrategy.radioBusyCnt < FAIL_CHECK_RSSI_BUSY_MAX_NUM)
+    {
+        NodeStrategyReceiveTimeoutProcess();
+        if(nodeStrategy.sendCnt)
+            nodeStrategy.sendCnt --;
+    }
+    else
+    {
+        nodeStrategy.radioBusyCnt = 0;
+        nodeStrategy.sendCnt      = 0;
+    }
 }
 
 

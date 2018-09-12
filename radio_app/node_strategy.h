@@ -6,7 +6,7 @@
 
 #define     FAIL_CONNECT_PERIOD_MAX_NUM        3
 
-
+#define     FAIL_CHECK_RSSI_BUSY_MAX_NUM	   20
 
 
 
@@ -35,5 +35,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint
 bool GetStrategyRegisterStatus(void);
 
 void StrategyRegisterSuccess(void);
+
+void StrategyCheckRssiBusyProcess(void);
 
 #endif			// __NODE_STRATEGY_H__

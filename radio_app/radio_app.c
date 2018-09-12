@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-12 16:01:07
+* @Last Modified time: 2018-09-12 19:38:21
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -475,12 +475,15 @@ void RadioAppTaskFxn(void)
                 NodeRadioSendSynReq();
             }
 #endif //S_C
-            
+
+#ifdef SUPPORT_RSSI_CHECK            
             if((rssi > RADIO_RSSI_FLITER) || (rssi2 > RADIO_RSSI_FLITER))
             {
-                Event_post(radioOperationEventHandle, RADIO_EVT_TOUT);
+                StrategyCheckRssiBusyProcess();
             }
-            else if((currentRadioOperation.easyLinkTxPacket.len) <= EASYLINK_MAX_DATA_LENGTH && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
+            else 
+#endif // SUPPORT_RSSI_CHECK
+            if((currentRadioOperation.easyLinkTxPacket.len) <= EASYLINK_MAX_DATA_LENGTH && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
             {
                 Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
