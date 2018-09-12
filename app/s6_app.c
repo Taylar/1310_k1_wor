@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-10 14:54:24
+* @Last Modified time: 2018-09-12 10:39:58
 */
 #include "../general.h"
 
@@ -302,7 +302,7 @@ void S6ConcenterLongKeyApp(void)
     {
         case DEVICES_ON_MODE:
         Disp_poweroff();
-        ConcenterSleep();
+        S6Sleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         Sys_event_post(SYSTEMAPP_EVT_DISP);
         break;
@@ -313,7 +313,7 @@ void S6ConcenterLongKeyApp(void)
         {
             Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
             deviceMode = DEVICES_ON_MODE;
-            ConcenterWakeup();
+            S6Wakeup();
             Disp_poweron();
             Disp_info_close();
             Sys_event_post(SYSTEMAPP_EVT_DISP);
@@ -393,7 +393,7 @@ void S6LongKey1App(void)
         if(Battery_get_voltage() > g_rSysConfigInfo.batLowVol)
         {
             deviceMode = DEVICES_ON_MODE;
-            ConcenterWakeup();
+            S6Wakeup();
             Disp_poweron();
             Disp_info_close();
             Sys_event_post(SYSTEMAPP_EVT_DISP);
@@ -418,18 +418,14 @@ void S6LongKey1App(void)
 void S6AppRtcProcess(void)
 {
 #ifndef BOARD_CONFIG_DECEIVE
-    static uint32_t timingSendDataCnt = 0;
-    
-#ifdef S_G
-    /* Send data regularly to ensure that the gateway can receive*/
-    if (timingSendDataCnt > (5 * 60)) {
-        RadioModeSet(RADIOMODE_RECEIVEPORT);
-        timingSendDataCnt = 0;
-        SetRadioDstAddr(0xdadadada);
-        ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+
+    if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
+    {
+#ifdef      SUPPORT_DISP_SCREEN
+        Disp_poweroff();
+#endif
+        S6Sleep();
     }
-    timingSendDataCnt++;
-#endif  // S_G
 
 #endif  // BOARD_CONFIG_DECEIVE
 }
@@ -466,7 +462,7 @@ void UsbIntProcess(void)
             InterfaceEnable();
 
             RadioTestDisable();
-            ConcenterSleep();
+            S6Sleep();
 
             deviceModeTemp = DEVICES_SLEEP_MODE;
             deviceMode = DEVICES_CONFIG_MODE;
@@ -502,22 +498,11 @@ void UsbIntProcess(void)
         {
             case DEVICES_ON_MODE:
             case DEVICES_SLEEP_MODE:
-#ifdef  SUPPORT_NETWORK
-            Nwk_poweron();
-#endif
-#ifdef  S_G
-            ConcenterWakeup();
-#endif  // S_G
-
-#ifdef  S_C
-            NodeWakeup();
-#endif  // S_C
-
+            S6Wakeup();
             if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
             {
                 RadioTestEnable();
             }
-
             case DEVICES_OFF_MODE:
             break;
 

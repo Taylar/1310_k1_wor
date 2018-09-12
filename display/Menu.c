@@ -223,7 +223,7 @@ void PoweroffMenu_init(void)
 
 void Menu_power_off(void)
 {   
-    ConcenterSleep();
+    S6Sleep();
     Menu_exit();
     Disp_poweroff();
     deviceMode = DEVICES_OFF_MODE;
@@ -810,10 +810,10 @@ void PrintList_Menu_show(void)
 #endif
                 break;
             }
-            //sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", LOBYTE(LOWORD(CurrPrintDID)), HIBYTE(LOWORD(CurrPrintDID)),
-              //                                                      LOBYTE(HIWORD(CurrPrintDID)), HIBYTE(HIWORD(CurrPrintDID)));
-            sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", HIBYTE(HIWORD(CurrPrintDID)),
-                    LOBYTE(HIWORD(CurrPrintDID)), HIBYTE(LOWORD(CurrPrintDID)),LOBYTE(LOWORD(CurrPrintDID)));
+            //sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", LOBYTE_ZKS(LOWORD_ZKS(CurrPrintDID)), HIBYTE_ZKS(LOWORD_ZKS(CurrPrintDID)),
+              //                                                      LOBYTE_ZKS(HIWORD_ZKS(CurrPrintDID)), HIBYTE_ZKS(HIWORD_ZKS(CurrPrintDID)));
+            sprintf((char *)strBuffer, "DEID:%02x%02x%02x%02x", HIBYTE_ZKS(HIWORD_ZKS(CurrPrintDID)),
+                    LOBYTE_ZKS(HIWORD_ZKS(CurrPrintDID)), HIBYTE_ZKS(LOWORD_ZKS(CurrPrintDID)),LOBYTE_ZKS(LOWORD_ZKS(CurrPrintDID)));
 
 
             Disp_msg(1, 2*i, " ", FONT_8X16);
@@ -867,10 +867,10 @@ void Alarm_record_Menu_show(void)
        sprintf((char *)strBuffer, "%02x%02x%02x%02x ",buff[3],buff[2],buff[1],buff[0]);
        Disp_msg(2, 2, (uint8_t*)strBuffer, FONT_8X16);
 
-       HIBYTE(HIWORD(value)) = buff[9];
-       LOBYTE(HIWORD(value)) = buff[8];
-       HIBYTE(LOWORD(value)) = buff[7];
-       LOBYTE(LOWORD(value)) = buff[6];
+       HIBYTE_ZKS(HIWORD_ZKS(value)) = buff[9];
+       LOBYTE_ZKS(HIWORD_ZKS(value)) = buff[8];
+       HIBYTE_ZKS(LOWORD_ZKS(value)) = buff[7];
+       LOBYTE_ZKS(LOWORD_ZKS(value)) = buff[6];
 
        switch(buff[5]){
 

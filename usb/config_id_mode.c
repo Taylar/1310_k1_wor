@@ -31,7 +31,7 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
             case 0x01:  // software version
                 pData[pPos++] = 2; // length
                 pData[pPos++] = HIBYTE(g_rSysConfigInfo.swVersion);
-                pData[pPos++] = LOBYTE(g_rSysConfigInfo.swVersion);
+                pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.swVersion);
                 break;
             case 0x02:  // device id
                 pData[pPos++] = 4; // length
@@ -46,12 +46,12 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
             case 0x04:  // function config info
                 pData[pPos++] = 2; // length
                 pData[pPos++] = HIBYTE(g_rSysConfigInfo.status);
-                pData[pPos++] = LOBYTE(g_rSysConfigInfo.status);
+                pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.status);
                 break;
             case 0x05:  // mode config
                 pData[pPos++] = 2; // length
                 pData[pPos++] = HIBYTE(g_rSysConfigInfo.module);
-                pData[pPos++] = LOBYTE(g_rSysConfigInfo.module);
+                pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.module);
                 break;
             case 0x06:  // sensor channel configure
                 //MODULE_SENSOR_MAX
@@ -66,14 +66,14 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
                     pData[pPos++] = 9; // length
                     pData[pPos++] = j; // x channel
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.alarmTemp[j].high);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.alarmTemp[j].high);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[j].high);
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.alarmTemp[j].low);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.alarmTemp[j].low);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[j].low);
 
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.alarmTemp[j].high_1);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.alarmTemp[j].high_1);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[j].high_1);
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.alarmTemp[j].low_1);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.alarmTemp[j].low_1);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[j].low_1);
                 }
 				
                 //pPos += MODULE_SENSOR_MAX ;//8;
@@ -82,10 +82,10 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
             case 0x08:  // collectPeriod
 
                 pData[pPos++] = 4; // length
-                pData[pPos++] = HIBYTE(HIWORD(g_rSysConfigInfo.collectPeriod));
-                pData[pPos++] = LOBYTE(HIWORD(g_rSysConfigInfo.collectPeriod));
-                pData[pPos++] = HIBYTE(LOWORD(g_rSysConfigInfo.collectPeriod));
-                pData[pPos++] = LOBYTE(LOWORD(g_rSysConfigInfo.collectPeriod));
+                pData[pPos++] = HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod));
+                pData[pPos++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod));
+                pData[pPos++] = HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod));
+                pData[pPos++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod));
                 break;
             case 0x09: // server ip
                 pData[pPos++] = 4; // length
@@ -97,27 +97,27 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
             case 0x0A: // server port
                 pData[pPos++] = 2; // length
                 pData[pPos++] = HIBYTE(g_rSysConfigInfo.serverIpPort);
-                pData[pPos++] = LOBYTE(g_rSysConfigInfo.serverIpPort);
+                pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.serverIpPort);
                 break;
             case 0x0B:  // heatbeat period
                 pData[pPos++] = 2; // length
                 pData[pPos++] = HIBYTE(g_rSysConfigInfo.hbPeriod);
-                pData[pPos++] = LOBYTE(g_rSysConfigInfo.hbPeriod);
+                pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.hbPeriod);
                 break;
             case 0x0C:  // upload period
                 pData[pPos++] = 4; // length
-                pData[pPos++] = HIBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod));
-                pData[pPos++] = LOBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod));
-                pData[pPos++] = HIBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod));
-                pData[pPos++] = LOBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod));
+                pData[pPos++] = HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
+                pData[pPos++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
+                pData[pPos++] = HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
+                pData[pPos++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
                 break;
             case 0x0D:  // NTP
 
                 pData[pPos++] = 4; // length
-                pData[pPos++] = HIBYTE(HIWORD(g_rSysConfigInfo.ntpPeriod));
-                pData[pPos++] = LOBYTE(HIWORD(g_rSysConfigInfo.ntpPeriod));
-                pData[pPos++] = HIBYTE(LOWORD(g_rSysConfigInfo.ntpPeriod));
-                pData[pPos++] = LOBYTE(LOWORD(g_rSysConfigInfo.ntpPeriod));
+                pData[pPos++] = HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.ntpPeriod));
+                pData[pPos++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.ntpPeriod));
+                pData[pPos++] = HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.ntpPeriod));
+                pData[pPos++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.ntpPeriod));
                 break;
 
 #ifdef SUPPORT_LORA
@@ -146,7 +146,7 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
             case 0x12:
                 pData[pPos++] = 2; // length
                 pData[pPos++] = HIBYTE(g_rSysConfigInfo.batLowVol);
-                pData[pPos++] = LOBYTE(g_rSysConfigInfo.batLowVol);
+                pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.batLowVol);
                 break;
             case 0x13:  // Warning temp configure // max 8 channel
 
@@ -158,14 +158,14 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
                     pData[pPos++] = 9; // length
                     pData[pPos++] = j; // x channel
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.WarningTemp[j].high);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.WarningTemp[j].high);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[j].high);
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.WarningTemp[j].low);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.WarningTemp[j].low);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[j].low);
 
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.WarningTemp[j].high_1);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.WarningTemp[j].high_1);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[j].high_1);
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.WarningTemp[j].low_1);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.WarningTemp[j].low_1);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[j].low_1);
                    // System_printf("get ch:%d hig:%d low:%d \n",j,g_rSysConfigInfo.WarningTemp[j].high,g_rSysConfigInfo.WarningTemp[j].low );
                    // System_flush();
                 }
@@ -196,22 +196,22 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
 
                         pData[pPos++] = j;    // 0 index
                         // DID
-                        pData[pPos++] = HIBYTE(HIWORD(g_rSysConfigInfo.bindnode[j].Deviceid));
-                        pData[pPos++] = LOBYTE(HIWORD(g_rSysConfigInfo.bindnode[j].Deviceid));
-                        pData[pPos++] = HIBYTE(LOWORD(g_rSysConfigInfo.bindnode[j].Deviceid));
-                        pData[pPos++] = LOBYTE(LOWORD(g_rSysConfigInfo.bindnode[j].Deviceid));
+                        pData[pPos++] = HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.bindnode[j].Deviceid));
+                        pData[pPos++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.bindnode[j].Deviceid));
+                        pData[pPos++] = HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.bindnode[j].Deviceid));
+                        pData[pPos++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.bindnode[j].Deviceid));
 
                         pData[pPos++] = g_rSysConfigInfo.bindnode[j].ChNo; // channel
 
                         pData[pPos++] = HIBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.high);
-                        pData[pPos++] = LOBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.high);
+                        pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[j].AlarmInfo.high);
                         pData[pPos++] = HIBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.low);
-                        pData[pPos++] = LOBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.low);
+                        pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[j].AlarmInfo.low);
 
                         pData[pPos++] = HIBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.high_1);
-                        pData[pPos++] = LOBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.high_1);
+                        pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[j].AlarmInfo.high_1);
                         pData[pPos++] = HIBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.low_1);
-                        pData[pPos++] = LOBYTE(g_rSysConfigInfo.bindnode[j].AlarmInfo.low_1);
+                        pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[j].AlarmInfo.low_1);
                     }
 
                 }
@@ -253,10 +253,10 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
             case ID_ALARM_UPLOAD_PERIOD: //0x1A:  // alarmuploadPeriod
                 pData[pPos++] = 4; // length
 
-                pData[pPos++] =   HIBYTE(HIWORD(g_rSysConfigInfo.alarmuploadPeriod));
-                pData[pPos++] = LOBYTE(HIWORD(g_rSysConfigInfo.alarmuploadPeriod));
-                pData[pPos++] = HIBYTE(LOWORD(g_rSysConfigInfo.alarmuploadPeriod));
-                pData[pPos++] = LOBYTE(LOWORD(g_rSysConfigInfo.alarmuploadPeriod));
+                pData[pPos++] =   HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod));
+                pData[pPos++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod));
+                pData[pPos++] = HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod));
+                pData[pPos++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod));
                 break;
             case ID_SERVER_ACCESS_CODE:
 #ifdef ZKML_PROJECT
@@ -295,9 +295,9 @@ uint16_t sys_Get_Config_Id(uint8_t* pData, uint16_t buf_len, uint8_t id_start, u
                     pData[pPos++] = 5; // length
                     pData[pPos++] = j; // x channel
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.ChannelAdjust[j].AdjustTempValue);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.ChannelAdjust[j].AdjustTempValue);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.ChannelAdjust[j].AdjustTempValue);
                     pData[pPos++] = HIBYTE(g_rSysConfigInfo.ChannelAdjust[j].AdjustHumiValue);
-                    pData[pPos++] = LOBYTE(g_rSysConfigInfo.ChannelAdjust[j].AdjustHumiValue);
+                    pData[pPos++] = LOBYTE_ZKS(g_rSysConfigInfo.ChannelAdjust[j].AdjustHumiValue);
                 }
 #endif
                 break;
@@ -365,7 +365,7 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 }
                 id_data_len = pData[pPos++]; // = 2; // length
                 HIBYTE(g_rSysConfigInfo.swVersion) = pData[pPos];
-                LOBYTE(g_rSysConfigInfo.swVersion) = pData[pPos+1];
+                LOBYTE_ZKS(g_rSysConfigInfo.swVersion) = pData[pPos+1];
                 pPos += 2;
                 break;
             case 0x02:  // device id
@@ -398,7 +398,7 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 id_data_len = pData[pPos++]; // = 2; // length
 
                 HIBYTE(g_rSysConfigInfo.status) = pData[pPos];
-                LOBYTE(g_rSysConfigInfo.status) = pData[pPos+1];
+                LOBYTE_ZKS(g_rSysConfigInfo.status) = pData[pPos+1];
                 pPos += 2;
                 break;
             case 0x05:  // mode config
@@ -408,7 +408,7 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 id_data_len = pData[pPos++]; // = 2; // length
 
                 HIBYTE(g_rSysConfigInfo.module) = pData[pPos];
-                LOBYTE(g_rSysConfigInfo.module) = pData[pPos+1];
+                LOBYTE_ZKS(g_rSysConfigInfo.module) = pData[pPos+1];
                 pPos += 2;
                 break;
             case 0x06:  // sensor channel configure
@@ -433,14 +433,14 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
 
                 if(index_ch < MODULE_SENSOR_MAX){
                 HIBYTE(g_rSysConfigInfo.alarmTemp[index_ch].high) = pData[pPos+1];
-                LOBYTE(g_rSysConfigInfo.alarmTemp[index_ch].high) = pData[pPos+2];
+                LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[index_ch].high) = pData[pPos+2];
                 HIBYTE(g_rSysConfigInfo.alarmTemp[index_ch].low) = pData[pPos+3];
-                LOBYTE(g_rSysConfigInfo.alarmTemp[index_ch].low) = pData[pPos+4];
+                LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[index_ch].low) = pData[pPos+4];
 
                 HIBYTE(g_rSysConfigInfo.alarmTemp[index_ch].high_1) = pData[pPos+5];
-                LOBYTE(g_rSysConfigInfo.alarmTemp[index_ch].high_1) = pData[pPos+6];
+                LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[index_ch].high_1) = pData[pPos+6];
                 HIBYTE(g_rSysConfigInfo.alarmTemp[index_ch].low_1) = pData[pPos+7];
-                LOBYTE(g_rSysConfigInfo.alarmTemp[index_ch].low_1) = pData[pPos+8];
+                LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[index_ch].low_1) = pData[pPos+8];
                 }
 
                 pPos += 9;
@@ -452,10 +452,10 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
 
                 id_data_len = pData[pPos++];// = 4; // length
 
-                HIBYTE(HIWORD(g_rSysConfigInfo.collectPeriod)) = pData[pPos];
-                LOBYTE(HIWORD(g_rSysConfigInfo.collectPeriod)) = pData[pPos+1];
-                HIBYTE(LOWORD(g_rSysConfigInfo.collectPeriod)) = pData[pPos+2];
-                LOBYTE(LOWORD(g_rSysConfigInfo.collectPeriod)) = pData[pPos+3];
+                HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = pData[pPos];
+                LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = pData[pPos+1];
+                HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = pData[pPos+2];
+                LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = pData[pPos+3];
                 pPos += 4;
                 break;
             case 0x09: // server ip
@@ -479,7 +479,7 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 id_data_len = pData[pPos++];// = 2; // length
 
                 HIBYTE(g_rSysConfigInfo.serverIpPort) = pData[pPos];
-                LOBYTE(g_rSysConfigInfo.serverIpPort) = pData[pPos+1];
+                LOBYTE_ZKS(g_rSysConfigInfo.serverIpPort) = pData[pPos+1];
                 pPos += 2;
                 break;
             case 0x0B:  // heatbeat period
@@ -490,7 +490,7 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 id_data_len = pData[pPos++];// = 2; // length
 
                 HIBYTE(g_rSysConfigInfo.hbPeriod) = pData[pPos];
-                LOBYTE(g_rSysConfigInfo.hbPeriod) = pData[pPos+1];
+                LOBYTE_ZKS(g_rSysConfigInfo.hbPeriod) = pData[pPos+1];
                 pPos += 2;
                 break;
             case 0x0C:  // upload period
@@ -499,10 +499,10 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 }
                 id_data_len = pData[pPos++]; //  = 4; // length
 
-                HIBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod)) = pData[pPos];
-                LOBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod)) = pData[pPos+1];
-                HIBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod)) = pData[pPos+2];
-                LOBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod)) = pData[pPos+3];
+                HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = pData[pPos];
+                LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = pData[pPos+1];
+                HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = pData[pPos+2];
+                LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = pData[pPos+3];
                 pPos += 4;
                 break;
             case 0x0D:  // NTP
@@ -511,10 +511,10 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 }
                 id_data_len = pData[pPos++]; //  = 4; // length
 
-                HIBYTE(HIWORD(g_rSysConfigInfo.ntpPeriod)) = pData[pPos];
-                LOBYTE(HIWORD(g_rSysConfigInfo.ntpPeriod)) = pData[pPos+1];
-                HIBYTE(LOWORD(g_rSysConfigInfo.ntpPeriod)) = pData[pPos+2];
-                LOBYTE(LOWORD(g_rSysConfigInfo.ntpPeriod)) = pData[pPos+3];
+                HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.ntpPeriod)) = pData[pPos];
+                LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.ntpPeriod)) = pData[pPos+1];
+                HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.ntpPeriod)) = pData[pPos+2];
+                LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.ntpPeriod)) = pData[pPos+3];
                 pPos += 4;
                 break;
 #ifdef SUPPORT_LORA
@@ -567,7 +567,7 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 id_data_len = pData[pPos++];// = 2; // length
 
                 HIBYTE(g_rSysConfigInfo.batLowVol) = pData[pPos];
-                LOBYTE(g_rSysConfigInfo.batLowVol) = pData[pPos+1];
+                LOBYTE_ZKS(g_rSysConfigInfo.batLowVol) = pData[pPos+1];
                 pPos += 2;
                 break;
             case 0x13:  // Warning temp configure // max 8 channel
@@ -580,14 +580,14 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
 
                 if(index_ch < MODULE_SENSOR_MAX){
                 HIBYTE(g_rSysConfigInfo.WarningTemp[index_ch].high) = pData[pPos+1];
-                LOBYTE(g_rSysConfigInfo.WarningTemp[index_ch].high) = pData[pPos+2];
+                LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[index_ch].high) = pData[pPos+2];
                 HIBYTE(g_rSysConfigInfo.WarningTemp[index_ch].low) = pData[pPos+3];
-                LOBYTE(g_rSysConfigInfo.WarningTemp[index_ch].low) = pData[pPos+4];
+                LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[index_ch].low) = pData[pPos+4];
 
                 HIBYTE(g_rSysConfigInfo.WarningTemp[index_ch].high_1) = pData[pPos+5];
-                LOBYTE(g_rSysConfigInfo.WarningTemp[index_ch].high_1) = pData[pPos+6];
+                LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[index_ch].high_1) = pData[pPos+6];
                 HIBYTE(g_rSysConfigInfo.WarningTemp[index_ch].low_1) = pData[pPos+7];
-                LOBYTE(g_rSysConfigInfo.WarningTemp[index_ch].low_1) = pData[pPos+8];
+                LOBYTE_ZKS(g_rSysConfigInfo.WarningTemp[index_ch].low_1) = pData[pPos+8];
                 //System_printf("set ch:%d hig:%d low:%d \n",index_ch,g_rSysConfigInfo.WarningTemp[j].high,g_rSysConfigInfo.WarningTemp[j].low );
                 //System_flush();
                 }
@@ -620,22 +620,22 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
                 index = pData[pPos]; // = 0; // 0 index
                 if(index < NETGATE_BIND_NODE_MAX){
                 // DID
-                HIBYTE(HIWORD(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+1];
-                LOBYTE(HIWORD(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+2];
-                HIBYTE(LOWORD(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+3];
-                LOBYTE(LOWORD(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+4];
+                HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+1];
+                LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+2];
+                HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+3];
+                LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.bindnode[index].Deviceid)) = pData[pPos+4];
 
                 g_rSysConfigInfo.bindnode[index].ChNo = pData[pPos+5]; // channel
 
                 HIBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.high) = pData[pPos+6];
-                LOBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.high) = pData[pPos+7];
+                LOBYTE_ZKS(g_rSysConfigInfo.bindnode[index].AlarmInfo.high) = pData[pPos+7];
                 HIBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.low) = pData[pPos+8];
-                LOBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.low) = pData[pPos+9];
+                LOBYTE_ZKS(g_rSysConfigInfo.bindnode[index].AlarmInfo.low) = pData[pPos+9];
 
                 HIBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.high_1) = pData[pPos+10];
-                LOBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.high_1) = pData[pPos+11];
+                LOBYTE_ZKS(g_rSysConfigInfo.bindnode[index].AlarmInfo.high_1) = pData[pPos+11];
                 HIBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.low_1) = pData[pPos+12];
-                LOBYTE(g_rSysConfigInfo.bindnode[index].AlarmInfo.low_1) = pData[pPos+13];
+                LOBYTE_ZKS(g_rSysConfigInfo.bindnode[index].AlarmInfo.low_1) = pData[pPos+13];
                 }
                 pPos += 14;
 
@@ -696,10 +696,10 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
 
                 id_data_len = pData[pPos++]; // = 4; // length
 
-                HIBYTE(HIWORD(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos];
-                LOBYTE(HIWORD(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos+1];
-                HIBYTE(LOWORD(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos+2];
-                LOBYTE(LOWORD(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos+3];
+                HIBYTE(HIWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos];
+                LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos+1];
+                HIBYTE(LOWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos+2];
+                LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.alarmuploadPeriod)) = pData[pPos+3];
                 pPos += 4;
                 break;
             case ID_SERVER_ACCESS_CODE:
@@ -768,9 +768,9 @@ uint16_t sys_Set_Config_Id(uint8_t* pData, uint16_t all_data_len)
 
                 if(index_ch < MODULE_SENSOR_MAX){
                 HIBYTE(g_rSysConfigInfo.ChannelAdjust[index_ch].AdjustTempValue) = pData[pPos+1];
-                LOBYTE(g_rSysConfigInfo.ChannelAdjust[index_ch].AdjustTempValue) = pData[pPos+2];
+                LOBYTE_ZKS(g_rSysConfigInfo.ChannelAdjust[index_ch].AdjustTempValue) = pData[pPos+2];
                 HIBYTE(g_rSysConfigInfo.ChannelAdjust[index_ch].AdjustHumiValue) = pData[pPos+3];
-                LOBYTE(g_rSysConfigInfo.ChannelAdjust[index_ch].AdjustHumiValue) = pData[pPos+4];
+                LOBYTE_ZKS(g_rSysConfigInfo.ChannelAdjust[index_ch].AdjustHumiValue) = pData[pPos+4];
                 }
                 pPos += 5;
 #else

@@ -39,10 +39,10 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
     	switch (paratype) {			
     	case PTI_COLLECT_PERIOD:
             if((index + 4)<= length) {
-    			HIBYTE(HIWORD(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
-    			LOBYTE(HIWORD(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
-                HIBYTE(LOWORD(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
-                LOBYTE(LOWORD(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+    			HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+    			LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+                HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+                LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
                 if(g_rSysConfigInfo.collectPeriod < 10)
                     g_rSysConfigInfo.collectPeriod = 10;
                 
@@ -56,10 +56,10 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
     			
     	case PTI_UPLOAD_PERIOD:
             if((index + 4)<= length) {
-    			HIBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
-    			LOBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
-                HIBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
-                LOBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+    			HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+    			LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+                HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+                LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
                 if(g_rSysConfigInfo.uploadPeriod < 10)
                     g_rSysConfigInfo.uploadPeriod = 10;
                 
@@ -145,17 +145,17 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
             memset(&g_rSysConfigInfo.bindnode, 0, sizeof(g_rSysConfigInfo.bindnode));
             if (num <= NETGATE_BIND_NODE_MAX  && (index + num*13 <= length )){
                 for(i=0; i < num; ++i) {
-                    HIBYTE(HIWORD(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
-                    LOBYTE(HIWORD(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
-                    HIBYTE(LOWORD(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
-                    LOBYTE(LOWORD(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
+                    HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
+                    LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
+                    HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
+                    LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid)) = rxData[index++];
                     
                     g_rSysConfigInfo.bindnode[i].ChNo = rxData[index++];
                     
-                    HIBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.high) = rxData[index++];
-                    LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.high) = rxData[index++];
-                    HIBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
-                    LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
+                    HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.high) = rxData[index++];
+                    LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.high) = rxData[index++];
+                    HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
+                    LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
 
 					index +=4;//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�
                 }
@@ -173,10 +173,10 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
 #ifdef SUPPORT_NETGATE_DISP_NODE
         case PTI_SENSOR_CODEC:
             if((index + 6)<= length) {   
-                HIBYTE(HIWORD(deviceid)) = rxData[index + 0];
-                LOBYTE(HIWORD(deviceid)) = rxData[index + 1];
-                HIBYTE(LOWORD(deviceid)) = rxData[index + 2];
-                LOBYTE(LOWORD(deviceid)) = rxData[index + 3];
+                HIBYTE_ZKS(HIWORD_ZKS(deviceid)) = rxData[index + 0];
+                LOBYTE_ZKS(HIWORD_ZKS(deviceid)) = rxData[index + 1];
+                HIBYTE_ZKS(LOWORD_ZKS(deviceid)) = rxData[index + 2];
+                LOBYTE_ZKS(LOWORD_ZKS(deviceid)) = rxData[index + 3];
                 index += (5 + rxData[4]);
 
                 if(rxData[4] == 1) {// is sensor  codec
@@ -244,32 +244,32 @@ uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
 
 	switch (paratype) {			
 	case PTI_COLLECT_PERIOD:
-		rxData[index++] = HIBYTE(HIWORD(g_rSysConfigInfo.collectPeriod));
-		rxData[index++] = LOBYTE(HIWORD(g_rSysConfigInfo.collectPeriod));
-        rxData[index++] = HIBYTE(LOWORD(g_rSysConfigInfo.collectPeriod));
-        rxData[index++] = LOBYTE(LOWORD(g_rSysConfigInfo.collectPeriod));                 
+		rxData[index++] = HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod));
+		rxData[index++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod));
+        rxData[index++] = HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod));
+        rxData[index++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod));                 
 		break;
 			
 	case PTI_UPLOAD_PERIOD:
-		rxData[index++] = HIBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod));
-		rxData[index++] = LOBYTE(HIWORD(g_rSysConfigInfo.uploadPeriod));
-        rxData[index++] = HIBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod));
-        rxData[index++] = LOBYTE(LOWORD(g_rSysConfigInfo.uploadPeriod));
+		rxData[index++] = HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
+		rxData[index++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
+        rxData[index++] = HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
+        rxData[index++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod));
 		break;
 		
 	case PTI_HIGHTEMP_ALARM:
         for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
             rxData[index++] = i;
-            rxData[index++] = HIBYTE(g_rSysConfigInfo.alarmTemp[i].high);
-            rxData[index++] = LOBYTE(g_rSysConfigInfo.alarmTemp[i].high);
+            rxData[index++] = HIBYTE_ZKS(g_rSysConfigInfo.alarmTemp[i].high);
+            rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[i].high);
         }
 		break;
 		
 	case PTI_LOWTEMP_ALARM:		
         for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
             rxData[index++] = i;
-            rxData[index++] = HIBYTE(g_rSysConfigInfo.alarmTemp[i].low);
-            rxData[index++] = LOBYTE(g_rSysConfigInfo.alarmTemp[i].low);
+            rxData[index++] = HIBYTE_ZKS(g_rSysConfigInfo.alarmTemp[i].low);
+            rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.alarmTemp[i].low);
         }        
 		break;
         
@@ -294,15 +294,15 @@ uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
             if(g_rSysConfigInfo.bindnode[i].Deviceid != 0){
                 
                 num++;     
-                rxData[index++] = HIBYTE(HIWORD(g_rSysConfigInfo.bindnode[i].Deviceid));
-                rxData[index++] = LOBYTE(HIWORD(g_rSysConfigInfo.bindnode[i].Deviceid));
-                rxData[index++] = HIBYTE(LOWORD(g_rSysConfigInfo.bindnode[i].Deviceid));
-                rxData[index++] = LOBYTE(LOWORD(g_rSysConfigInfo.bindnode[i].Deviceid));                
+                rxData[index++] = HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid));
+                rxData[index++] = LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid));
+                rxData[index++] = HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid));
+                rxData[index++] = LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.bindnode[i].Deviceid));                
                 rxData[index++] = g_rSysConfigInfo.bindnode[i].ChNo;                
-                rxData[index++] = HIBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
-                rxData[index++] = LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
-                rxData[index++] = HIBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;
-                rxData[index++] = LOBYTE(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;      
+                rxData[index++] = HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
+                rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
+                rxData[index++] = HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;
+                rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;      
 				rxData[index++] = 0xff;		//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�
 				rxData[index++] = 0xff;
 				rxData[index++] = 0xff;
@@ -318,10 +318,10 @@ uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
         
 #ifdef SUPPORT_NETGATE_DISP_NODE
     case PTI_SENSOR_CODEC:
-        rxData[index++] = HIBYTE(HIWORD(deviceid));
-        rxData[index++] = LOBYTE(HIWORD(deviceid));
-        rxData[index++] = HIBYTE(LOWORD(deviceid));
-        rxData[index++] = LOBYTE(LOWORD(deviceid));
+        rxData[index++] = HIBYTE_ZKS(HIWORD_ZKS(deviceid));
+        rxData[index++] = LOBYTE_ZKS(HIWORD_ZKS(deviceid));
+        rxData[index++] = HIBYTE_ZKS(LOWORD_ZKS(deviceid));
+        rxData[index++] = LOBYTE_ZKS(LOWORD_ZKS(deviceid));
         rxData[index++] = 1;
         rxData[index++] = Flash_load_sensor_codec(deviceid);                            
         break;
@@ -655,8 +655,8 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
     packet.length = 0;
     //娑堟伅澶�
     //娑堟伅ID
-    packet.buff[packet.length++] = HIBYTE(msgId);
-    packet.buff[packet.length++] = LOBYTE(msgId);
+    packet.buff[packet.length++] = HIBYTE_ZKS(msgId);
+    packet.buff[packet.length++] = LOBYTE_ZKS(msgId);
     //娑堟伅浣撳睘鎬�
     packet.buff[packet.length++] = 0;
     packet.buff[packet.length++] = 0;
@@ -671,8 +671,8 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
 
     if (msgId == NMI_TX_SENSOR) {
         //娑堟伅娴佹按鍙�
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
 
         //娑堟伅浣�
@@ -687,8 +687,8 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
 #ifdef SUPPORT_BATTERY
         value = Battery_get_voltage();
 #endif
-        packet.buff[packet.length++] = HIBYTE(value);
-        packet.buff[packet.length++] = LOBYTE(value);
+        packet.buff[packet.length++] = HIBYTE_ZKS(value);
+        packet.buff[packet.length++] = LOBYTE_ZKS(value);
         //缃戝叧缃戠粶淇″彿
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &packet.buff[packet.length++]);
 
@@ -729,22 +729,22 @@ ONEDATA:
 #ifdef USE_QUECTEL_API_FOR_LBS
     else if (msgId == NMI_TX_LBS) {
         temp = rNwkObject.location.longitude * 100000;
-        packet.buff[packet.length++] = HIBYTE(HIWORD(temp));
-        packet.buff[packet.length++] = LOBYTE(HIWORD(temp));
-        packet.buff[packet.length++] = HIBYTE(LOWORD(temp));
-        packet.buff[packet.length++] = LOBYTE(LOWORD(temp));
+        packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(temp));
+        packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(temp));
+        packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(temp));
+        packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(temp));
         temp = rNwkObject.location.latitude * 100000;
-        packet.buff[packet.length++] = HIBYTE(HIWORD(temp));
-        packet.buff[packet.length++] = LOBYTE(HIWORD(temp));
-        packet.buff[packet.length++] = HIBYTE(LOWORD(temp));
-        packet.buff[packet.length++] = LOBYTE(LOWORD(temp));
+        packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(temp));
+        packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(temp));
+        packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(temp));
+        packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(temp));
     }
 #endif
     else if(msgId == NMI_TX_G_SENSOR) {
 
         //娑堟伅娴佹按鍙�
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumGSensor);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumGSensor);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumGSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumGSensor);
         rNwkObject.serialNumGSensor++;
 
         for (i = 0; i < pPacket->buff[0]; i++) {
@@ -752,8 +752,8 @@ ONEDATA:
         }
     } else if (msgId == NMI_TX_COM_ACK) {
         //娑堟伅娴佹按鍙�
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
 
         memcpy(&packet.buff[packet.length],ComAckBuff, COM_ACK_BUF_LEN);
@@ -762,21 +762,21 @@ ONEDATA:
 #ifdef USE_ENGINEERING_MODE_FOR_LBS
     else if(msgId == NMI_TX_CELL_INFO) {
         //娑堟伅娴佹按鍙�
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumLbs);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumLbs);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumLbs);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumLbs);
         rNwkObject.serialNumLbs++;
 
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.location.mcc);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.location.mcc);
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.location.mnc);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.location.mnc);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.mcc);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.mcc);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.mnc);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.mnc);
         packet.buff[packet.length++] = 0;   //灏忓尯搴忓彿锛�0浠ｈ〃褰撳墠鏈嶅姟灏忓尯
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.location.local.lac);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.location.local.lac);
-        packet.buff[packet.length++] = HIBYTE(HIWORD(rNwkObject.location.local.cellid));
-        packet.buff[packet.length++] = LOBYTE(HIWORD(rNwkObject.location.local.cellid));
-        packet.buff[packet.length++] = HIBYTE(LOWORD(rNwkObject.location.local.cellid));
-        packet.buff[packet.length++] = LOBYTE(LOWORD(rNwkObject.location.local.cellid));
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.local.lac);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.local.lac);
+        packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.local.cellid));
+        packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.local.cellid));
+        packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(rNwkObject.location.local.cellid));
+        packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(rNwkObject.location.local.cellid));
         packet.buff[packet.length++] = rNwkObject.location.local.dbm;
 #ifdef SUPPOERT_LBS_NEARBY_CELL
         for (i = 0; i < LBS_NEARBY_CELL_MAX; i++) {
@@ -784,12 +784,12 @@ ONEDATA:
             if (rNwkObject.location.nearby[i].cellid == 0)
                 break;
             packet.buff[packet.length++] = i + 1;   //灏忓尯搴忓彿
-            packet.buff[packet.length++] = HIBYTE(rNwkObject.location.nearby[i].lac);
-            packet.buff[packet.length++] = LOBYTE(rNwkObject.location.nearby[i].lac);
-            packet.buff[packet.length++] = HIBYTE(HIWORD(rNwkObject.location.nearby[i].cellid));
-            packet.buff[packet.length++] = LOBYTE(HIWORD(rNwkObject.location.nearby[i].cellid));
-            packet.buff[packet.length++] = HIBYTE(LOWORD(rNwkObject.location.nearby[i].cellid));
-            packet.buff[packet.length++] = LOBYTE(LOWORD(rNwkObject.location.nearby[i].cellid));
+            packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.nearby[i].lac);
+            packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.nearby[i].lac);
+            packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.nearby[i].cellid));
+            packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.nearby[i].cellid));
+            packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(rNwkObject.location.nearby[i].cellid));
+            packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(rNwkObject.location.nearby[i].cellid));
             packet.buff[packet.length++] = rNwkObject.location.nearby[i].dbm;
         }
 #endif
@@ -798,8 +798,8 @@ ONEDATA:
 
 #ifdef      SUPPORT_REMOTE_UPGRADE
     else if(msgId == NMI_TX_UPGRADE_INFO_REQ) {
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
         // current version
         packet.buff[packet.length++] = (uint8_t)(FW_VERSION>>8);
@@ -813,8 +813,8 @@ ONEDATA:
     }
     else if(msgId == NMI_TX_UPGRADE_DATA_REQ)
     {
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
         // updata software version
         packet.buff[packet.length++] = (uint8_t)(UpgradeGetVersion() >> 8);
@@ -833,8 +833,8 @@ ONEDATA:
     }
     else if(msgId == NMI_TX_UPGRADE_ACK)
     {
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
         // current version
         if(pPacket->buff[0] == 0x00)
@@ -855,8 +855,8 @@ ONEDATA:
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
     else if(msgId == NMI_TX_SYS_STATE){
         //娑堟伅娴佹按鍙�
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSysState);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSysState);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSysState);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSysState);
         rNwkObject.serialNumSysState++;
         memcpy(packet.buff + packet.length,pPacket->buff+1,pPacket->buff[0] - 1);
         packet.length = packet.length + pPacket->buff[0] - 1;
@@ -880,14 +880,14 @@ ONEDATA:
 #endif
     else {//鍏朵粬鎵撳寘搴忓垪鍙蜂篃闇�澧炲姞 濡傛巿鏃�
         //娑堟伅娴佹按鍙�
-        packet.buff[packet.length++] = HIBYTE(rNwkObject.serialNumSensor);
-        packet.buff[packet.length++] = LOBYTE(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
     }
     //娑堟伅浣撳睘鎬�
     value = packet.length - 12;
-    packet.buff[2] = HIBYTE(value);
-    packet.buff[3] = LOBYTE(value);
+    packet.buff[2] = HIBYTE_ZKS(value);
+    packet.buff[3] = LOBYTE_ZKS(value);
 
     //鏍￠獙鐮�
     packet.buff[packet.length++] = CheckCode8(&packet.buff[0], packet.length);
@@ -980,20 +980,20 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
             case NMI_RX_ALARM:
                 index = NWK_MSG_BODY_START;
                 if((index + 10) <= package_length) {//鍙兘鍖呭惈澶氭潯鎶ヨ鏁版嵁锛岀洰鍓嶅彧澶勭悊1鏉�
-                    HIBYTE(HIWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
-                    LOBYTE(HIWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
-                    HIBYTE(LOWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
-                    LOBYTE(LOWORD(g_AlarmSensor.DeviceId)) = rxData[index++];
+                    HIBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
+                    LOBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
+                    HIBYTE_ZKS(LOWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
+                    LOBYTE_ZKS(LOWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
                     g_AlarmSensor.index      = rxData[index++];
                     g_AlarmSensor.type       = rxData[index++];
                     if (!(g_AlarmSensor.type > SENSOR_DATA_NONE && g_AlarmSensor.type < SENSOR_DATA_MAX))
                         break;//invalid sensor type
 
                     //all  data  saved to tempdeep
-                    HIBYTE(HIWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
-                    LOBYTE(HIWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
-                    HIBYTE(LOWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
-                    LOBYTE(LOWORD(g_AlarmSensor.value.tempdeep)) = rxData[index++];
+                    HIBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.value.tempdeep)) = rxData[index++];
+                    LOBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.value.tempdeep)) = rxData[index++];
+                    HIBYTE_ZKS(LOWORD_ZKS(g_AlarmSensor.value.tempdeep)) = rxData[index++];
+                    LOBYTE_ZKS(LOWORD_ZKS(g_AlarmSensor.value.tempdeep)) = rxData[index++];
 
                     if((index + 6) <= package_length){
 
@@ -1039,8 +1039,8 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                 // Get MINUTES TO FLIGHT MODE
                 uint16_t minutes_flight = 0;
 
-                HIBYTE(minutes_flight) = rxData[index++];
-                LOBYTE(minutes_flight) = rxData[index++];
+                HIBYTE_ZKS(minutes_flight) = rxData[index++];
+                LOBYTE_ZKS(minutes_flight) = rxData[index++];
 
                 Flight_mode_setting( minutes_flight);
 

@@ -782,7 +782,7 @@ void Disp_sensor_data(void)
             } else if(Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_LIGHT){
 
                 if (Sensor.value.lux != DEEP_TEMP_OVERLOAD){
-                    sprintf((char *)buff,  "%ld.%dLx", (uint32_t)((Sensor.value.lux&0x00ffffff)/100),(uint16_t)(LOWORD(Sensor.value.lux)%100/10.0));
+                    sprintf((char *)buff,  "%ld.%dLx", (uint32_t)((Sensor.value.lux&0x00ffffff)/100),(uint16_t)(LOWORD_ZKS(Sensor.value.lux)%100/10.0));
                 }
                 else
                     sprintf((char*)buff, "--c");

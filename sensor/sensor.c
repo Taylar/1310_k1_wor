@@ -292,8 +292,8 @@ static void Sensor_store_package(void)
     for (i = 0; i < 4; i++)
         buff[length++] = g_rSysConfigInfo.DeviceId[i];
     //娑堟伅娴佹按鍙�
-    buff[length++] = HIBYTE(rSensorObject.serialNum);
-    buff[length++] = LOBYTE(rSensorObject.serialNum);
+    buff[length++] = HIBYTE_ZKS(rSensorObject.serialNum);
+    buff[length++] = LOBYTE_ZKS(rSensorObject.serialNum);
     rSensorObject.serialNum++;
     //閲囬泦鏃堕棿
 
@@ -318,8 +318,8 @@ static void Sensor_store_package(void)
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
 #endif
-    buff[length++] = HIBYTE(value);
-    buff[length++] = LOBYTE(value);
+    buff[length++] = HIBYTE_ZKS(value);
+    buff[length++] = LOBYTE_ZKS(value);
     //鍙傛暟椤瑰垪琛ㄦ暟鎹�
 
     for (i = 0; i < MODULE_SENSOR_MAX; i++) {
@@ -334,10 +334,10 @@ static void Sensor_store_package(void)
             buff[length++] = i;
             buff[length++] = g_rSysConfigInfo.sensorModule[i];
             if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_TEMP | SENSOR_HUMI)) {
-                buff[length++] = HIBYTE(rSensorData[i].temp);
-                buff[length++] = LOBYTE(rSensorData[i].temp);
-                buff[length++] = HIBYTE(rSensorData[i].humi);
-                buff[length++] = LOBYTE(rSensorData[i].humi);
+                buff[length++] = HIBYTE_ZKS(rSensorData[i].temp);
+                buff[length++] = LOBYTE_ZKS(rSensorData[i].temp);
+                buff[length++] = HIBYTE_ZKS(rSensorData[i].humi);
+                buff[length++] = LOBYTE_ZKS(rSensorData[i].humi);
 
 #ifdef SUPPORT_G7_PROTOCOL
                 SurroundingMonitor(rSensorData[i].temp);
@@ -345,19 +345,19 @@ static void Sensor_store_package(void)
 
             } else if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP)) {
                 value_32 = rSensorData[i].tempdeep;
-                buff[length++] = LOBYTE(HIWORD(value_32));
-                buff[length++] = HIBYTE(LOWORD(value_32));
-                buff[length++] = LOBYTE(LOWORD(value_32));
+                buff[length++] = LOBYTE_ZKS(HIWORD_ZKS(value_32));
+                buff[length++] = HIBYTE_ZKS(LOWORD_ZKS(value_32));
+                buff[length++] = LOBYTE_ZKS(LOWORD_ZKS(value_32));
             }else if(Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_LIGHT))
             {
-                buff[length++] = HIBYTE(HIWORD(rSensorData[i].lux));//HIBYTE(HIWORD(rSensorData[i].lux));
+                buff[length++] = HIBYTE_ZKS(HIWORD_ZKS(rSensorData[i].lux));//HIBYTE_ZKS(HIWORD_ZKS(rSensorData[i].lux));
                 value_32 = (rSensorData[i].lux&0x00ffffff);
-                buff[length++] = LOBYTE(HIWORD(value_32));
-                buff[length++] = HIBYTE(LOWORD(value_32));
-                buff[length++] = LOBYTE(LOWORD(value_32));
+                buff[length++] = LOBYTE_ZKS(HIWORD_ZKS(value_32));
+                buff[length++] = HIBYTE_ZKS(LOWORD_ZKS(value_32));
+                buff[length++] = LOBYTE_ZKS(LOWORD_ZKS(value_32));
             } else {
-                buff[length++] = HIBYTE(rSensorData[i].temp);
-                buff[length++] = LOBYTE(rSensorData[i].temp);
+                buff[length++] = HIBYTE_ZKS(rSensorData[i].temp);
+                buff[length++] = LOBYTE_ZKS(rSensorData[i].temp);
             }
 
             if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function & (SENSOR_TEMP | SENSOR_DEEP_TEMP)) {
@@ -374,10 +374,10 @@ static void Sensor_store_package(void)
                     if((g_rSysConfigInfo.alarmTemp[i].high != ALARM_TEMP_HIGH && temp >= g_rSysConfigInfo.alarmTemp[i].high) ||
                        (g_rSysConfigInfo.alarmTemp[i].low != ALARM_TEMP_LOW && temp <= g_rSysConfigInfo.alarmTemp[i].low)) {
                         //璁惧ID
-                        HIBYTE((HIWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[0];
-                        LOBYTE((HIWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[1];
-                        HIBYTE((LOWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[2];
-                        LOBYTE((LOWORD(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[3];
+                        HIBYTE_ZKS((HIWORD_ZKS(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[0];
+                        LOBYTE_ZKS((HIWORD_ZKS(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[1];
+                        HIBYTE_ZKS((LOWORD_ZKS(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[2];
+                        LOBYTE_ZKS((LOWORD_ZKS(g_AlarmSensor.DeviceId))) = g_rSysConfigInfo.DeviceId[3];
 
                         //閲囬泦鏃堕棿
                         #if 0
@@ -684,8 +684,8 @@ void Sensor_store_null_package(uint8_t *buff)
     for (i = 0; i < 4; i++)
         buff[length++] = g_rSysConfigInfo.DeviceId[i];
     //娑堟伅娴佹按鍙�
-    buff[length++] = 0;//HIBYTE(rSensorObject.serialNum);
-    buff[length++] = 0;//LOBYTE(rSensorObject.serialNum);
+    buff[length++] = 0;//HIBYTE_ZKS(rSensorObject.serialNum);
+    buff[length++] = 0;//LOBYTE_ZKS(rSensorObject.serialNum);
     //rSensorObject.serialNum++;
     //閲囬泦鏃堕棿
     calendar = Rtc_get_calendar();
@@ -699,8 +699,8 @@ void Sensor_store_null_package(uint8_t *buff)
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
 #endif
-    buff[length++] = HIBYTE(value);
-    buff[length++] = LOBYTE(value);
+    buff[length++] = HIBYTE_ZKS(value);
+    buff[length++] = LOBYTE_ZKS(value);
     //鍙傛暟椤瑰垪琛ㄦ暟鎹�
     buff[0] = length - 1;
 }
@@ -748,10 +748,10 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
     
 	Index = 2;//DeviceId  start
 
-    HIBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
-    LOBYTE(HIWORD(cursensor.DeviceId)) = pData[Index++];
-    HIBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];
-    LOBYTE(LOWORD(cursensor.DeviceId)) = pData[Index++];  
+    HIBYTE_ZKS(HIWORD_ZKS(cursensor.DeviceId)) = pData[Index++];
+    LOBYTE_ZKS(HIWORD_ZKS(cursensor.DeviceId)) = pData[Index++];
+    HIBYTE_ZKS(LOWORD_ZKS(cursensor.DeviceId)) = pData[Index++];
+    LOBYTE_ZKS(LOWORD_ZKS(cursensor.DeviceId)) = pData[Index++];  
 
 #ifdef SUPPORT_NETGATE_BIND_NODE
     isbind = IsBindNode(cursensor.DeviceId);
@@ -775,28 +775,28 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 
 		
 		if (Sensor_get_function_by_type(cursensor.type) == (SENSOR_TEMP | SENSOR_HUMI)) {
-			HIBYTE(cursensor.value.temp) = pData[Index++];
-			LOBYTE(cursensor.value.temp) = pData[Index++];
-			HIBYTE(cursensor.value.humi) = pData[Index++];
-			LOBYTE(cursensor.value.humi) = pData[Index++];	
+			HIBYTE_ZKS(cursensor.value.temp) = pData[Index++];
+			LOBYTE_ZKS(cursensor.value.temp) = pData[Index++];
+			HIBYTE_ZKS(cursensor.value.humi) = pData[Index++];
+			LOBYTE_ZKS(cursensor.value.humi) = pData[Index++];	
 		}
         else if (Sensor_get_function_by_type(cursensor.type)  == (SENSOR_DEEP_TEMP)) {
-            HIBYTE(HIWORD(cursensor.value.tempdeep)) = pData[Index++];
-            LOBYTE(HIWORD(cursensor.value.tempdeep)) = pData[Index++];
-			HIBYTE(LOWORD(cursensor.value.tempdeep)) = pData[Index++];
-			LOBYTE(LOWORD(cursensor.value.tempdeep)) = 0;			
+            HIBYTE_ZKS(HIWORD_ZKS(cursensor.value.tempdeep)) = pData[Index++];
+            LOBYTE_ZKS(HIWORD_ZKS(cursensor.value.tempdeep)) = pData[Index++];
+			HIBYTE_ZKS(LOWORD_ZKS(cursensor.value.tempdeep)) = pData[Index++];
+			LOBYTE_ZKS(LOWORD_ZKS(cursensor.value.tempdeep)) = 0;			
             cursensor.value.tempdeep >>= 12;			
         }
         else if (Sensor_get_function_by_type(cursensor.type) == (SENSOR_LIGHT)) {
 
-            HIBYTE(HIWORD(cursensor.value.lux)) = pData[Index++];
-            LOBYTE(HIWORD(cursensor.value.lux)) = pData[Index++];
-            HIBYTE(LOWORD(cursensor.value.lux)) = pData[Index++];
-            LOBYTE(LOWORD(cursensor.value.lux)) = pData[Index++];
+            HIBYTE_ZKS(HIWORD_ZKS(cursensor.value.lux)) = pData[Index++];
+            LOBYTE_ZKS(HIWORD_ZKS(cursensor.value.lux)) = pData[Index++];
+            HIBYTE_ZKS(LOWORD_ZKS(cursensor.value.lux)) = pData[Index++];
+            LOBYTE_ZKS(LOWORD_ZKS(cursensor.value.lux)) = pData[Index++];
         }
 		else {
-			HIBYTE(cursensor.value.temp) = pData[Index++];
-		 	LOBYTE(cursensor.value.temp) = pData[Index++];
+			HIBYTE_ZKS(cursensor.value.temp) = pData[Index++];
+		 	LOBYTE_ZKS(cursensor.value.temp) = pData[Index++];
 		}  
 
 #ifdef SUPPORT_NETGATE_BIND_NODE

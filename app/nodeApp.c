@@ -17,6 +17,7 @@ typedef struct
     uint32_t sysTime;
     uint16_t monitorCnt;
     bool     broadcasting;
+    bool     continueFlag;
     bool     configFlag;
 }node_para_t;
 
@@ -391,4 +392,34 @@ uint32_t NodeGetCustomId(void)
     return nodeParameter.customId;
 }
 
+//***********************************************************************************
+// brief:clear the node continue flag
+// 
+// parameter: 
+//***********************************************************************************
+void NodeContinueFlagClear(void)
+{
+    nodeParameter.configFlag = 0;
+}
 
+
+//***********************************************************************************
+// brief:set the node continue flag
+// 
+// parameter: 
+//***********************************************************************************
+void NodeContinueFlagSet(void)
+{
+    nodeParameter.configFlag = 1;
+}
+
+
+//***********************************************************************************
+// brief:read the node continue flag
+// 
+// parameter: 
+//***********************************************************************************
+bool NodeContinueFlagRead(void)
+{
+    return nodeParameter.configFlag;
+}

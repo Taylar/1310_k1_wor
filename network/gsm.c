@@ -1491,10 +1491,10 @@ static void Gsm_rxSwiFxn(void)
                             rGsmObject.location.latitude = atof(ptr + 1);
                         else {
                             rGsmObject.location.longitude = 0;
-                            HIBYTE(HIWORD(rGsmObject.location.latitude)) = *(ptr + 1);
-                            LOBYTE(HIWORD(rGsmObject.location.latitude)) = *(ptr + 2);
-                            HIBYTE(LOWORD(rGsmObject.location.latitude)) = *(ptr + 3);        
-                            LOBYTE(LOWORD(rGsmObject.location.latitude)) = *(ptr + 4);
+                            HIBYTE_ZKS(HIWORD_ZKS(rGsmObject.location.latitude)) = *(ptr + 1);
+                            LOBYTE_ZKS(HIWORD_ZKS(rGsmObject.location.latitude)) = *(ptr + 2);
+                            HIBYTE_ZKS(LOWORD_ZKS(rGsmObject.location.latitude)) = *(ptr + 3);        
+                            LOBYTE_ZKS(LOWORD_ZKS(rGsmObject.location.latitude)) = *(ptr + 4);
                         }
                         Gsm_event_post(GSM_EVT_CMD_OK);
                     }

@@ -13,16 +13,16 @@
 
 #ifdef LITTLE_ENDIAN
 // little endian
-#define	HIBYTE(w)		(((uint8_t *)&w)[1])
-#define	LOBYTE(w)		(((uint8_t *)&w)[0])
-#define	HIWORD(w)		(((uint16_t *)&w)[1])
-#define	LOWORD(w)		(((uint16_t *)&w)[0])
+#define	HIBYTE_ZKS(w)		(((uint8_t *)&w)[1])
+#define	LOBYTE_ZKS(w)		(((uint8_t *)&w)[0])
+#define	HIWORD_ZKS(w)		(((uint16_t *)&w)[1])
+#define	LOWORD_ZKS(w)		(((uint16_t *)&w)[0])
 #else
 // 	big endian
-#define	HIBYTE(w)		(((uint8_t*)&w)[0])
-#define	LOBYTE(w)		(((uint8_t*)&w)[1])
-#define	HIWORD(w)		(((uint16_t*)&w)[0])
-#define	LOWORD(w)		(((uint16_t*)&w)[1])
+#define	HIBYTE_ZKS(w)		(((uint8_t*)&w)[0])
+#define	LOBYTE_ZKS(w)		(((uint8_t*)&w)[1])
+#define	HIWORD_ZKS(w)		(((uint16_t*)&w)[0])
+#define	LOWORD_ZKS(w)		(((uint16_t*)&w)[1])
 #endif
 
 #define sizeofarray(x)  (sizeof(x)/sizeof(x[0]))

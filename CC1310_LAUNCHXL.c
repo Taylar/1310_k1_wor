@@ -211,10 +211,11 @@ const GPTimerCC26XX_Config GPTimerCC26XX_config[CC1310_LAUNCHXL_GPTIMERPARTSCOUN
 #include <ti/drivers/nvs/NVSSPI25X.h>
 #include <ti/drivers/nvs/NVSCC26XX.h>
 
-#define SECTORSIZE 0x1000
-#define NVS_REGIONS_BASE 0x1B000
+#define NVS_REGIONS_BASE 0x1A000
+#define SECTORSIZE       0x1000
+#define REGIONSIZE       (SECTORSIZE * 4)
 
-static uint8_t verifyBuf[64];
+#ifndef Board_EXCLUDE_NVS_INTERNAL_FLASH
 
 /*
  * Reserve flash sectors for NVS driver use by placing an uninitialized byte
@@ -227,14 +228,14 @@ static uint8_t verifyBuf[64];
  */
 #pragma LOCATION(flashBuf, NVS_REGIONS_BASE);
 #pragma NOINIT(flashBuf);
-static char flashBuf[SECTORSIZE * 4];
+static char flashBuf[REGIONSIZE];
 
 #elif defined(__IAR_SYSTEMS_ICC__)
 
 /*
  * Place uninitialized array at NVS_REGIONS_BASE
  */
-__no_init static char flashBuf[SECTORSIZE * 4] @ NVS_REGIONS_BASE;
+static __no_init char flashBuf[REGIONSIZE] @ NVS_REGIONS_BASE;
 
 #elif defined(__GNUC__)
 
@@ -244,7 +245,7 @@ __no_init static char flashBuf[SECTORSIZE * 4] @ NVS_REGIONS_BASE;
  * the gcc linker cmd file.
  */
 __attribute__ ((section (".nvs")))
-static char flashBuf[SECTORSIZE * 4];
+static char flashBuf[REGIONSIZE];
 
 #endif
 
@@ -256,18 +257,31 @@ NVSSPI25X_Object nvsSPI25XObjects[1];
 const NVSCC26XX_HWAttrs nvsCC26xxHWAttrs[1] = {
     {
         .regionBase = (void *)flashBuf,
-        .regionSize = SECTORSIZE * 4,
+        .regionSize = REGIONSIZE,
     },
 };
 
-/* Hardware attributes for NVS SPI */
+#endif /* Board_EXCLUDE_NVS_INTERNAL_FLASH */
+
+#ifndef Board_EXCLUDE_NVS_EXTERNAL_FLASH
+
+#define SPISECTORSIZE    0x1000
+#define SPIREGIONSIZE    (SPISECTORSIZE * 32)
+#define VERIFYBUFSIZE    64
+
+static uint8_t verifyBuf[VERIFYBUFSIZE];
+
+/* Allocate objects for NVS External Regions */
+NVSSPI25X_Object nvsSPI25XObjects[1];
+
+/* Hardware attributes for NVS External Regions */
 const NVSSPI25X_HWAttrs nvsSPI25XHWAttrs[1] = {
     {
         .regionBaseOffset = 0,
-        .regionSize = SECTORSIZE * 4,
-        .sectorSize = SECTORSIZE,
+        .regionSize = SPIREGIONSIZE,
+        .sectorSize = SPISECTORSIZE,
         .verifyBuf = verifyBuf,
-        .verifyBufSize = 64,
+        .verifyBufSize = VERIFYBUFSIZE,
         .spiHandle = NULL,
         .spiIndex = 0,
         .spiBitRate = 4000000,
@@ -275,18 +289,23 @@ const NVSSPI25X_HWAttrs nvsSPI25XHWAttrs[1] = {
     },
 };
 
+#endif /* Board_EXCLUDE_NVS_EXTERNAL_FLASH */
 /* NVS Region index 0 and 1 refer to NVS and NVS SPI respectively */
 const NVS_Config NVS_config[CC1310_LAUNCHXL_NVSCOUNT] = {
+#ifndef Board_EXCLUDE_NVS_INTERNAL_FLASH
     {
         .fxnTablePtr = &NVSCC26XX_fxnTable,
         .object = &nvsCC26xxObjects[0],
         .hwAttrs = &nvsCC26xxHWAttrs[0],
     },
+#endif
+#ifndef Board_EXCLUDE_NVS_EXTERNAL_FLASH
     {
         .fxnTablePtr = &NVSSPI25X_fxnTable,
         .object = &nvsSPI25XObjects[0],
         .hwAttrs = &nvsSPI25XHWAttrs[0],
     },
+#endif
 };
 
 const uint_least8_t NVS_count = CC1310_LAUNCHXL_NVSCOUNT;
@@ -333,11 +352,12 @@ const PowerCC26XX_Config PowerCC26XX_config = {
  */
 #include <ti/drivers/rf/RF.h>
 
-const RFCC26XX_HWAttrs RFCC26XX_hwAttrs = {
-    .hwiCpe0Priority = ~0,
-    .hwiHwPriority   = ~0,
-    .swiCpe0Priority =  0,
-    .swiHwPriority   =  0,
+const RFCC26XX_HWAttrsV2 RFCC26XX_hwAttrs = {
+    .hwiPriority        = ~0,       /* Lowest HWI priority */
+    .swiPriority        = 0,        /* Lowest SWI priority */
+    .xoscHfAlwaysNeeded = true,     /* Keep XOSC dependency while in stanby */
+    .globalCallback     = NULL,     /* No board specific callback */
+    .globalEventMask    = 0         /* No events subscribed to */
 };
 
 

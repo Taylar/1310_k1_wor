@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-10 16:10:36
+* @Last Modified time: 2018-09-12 16:53:11
 */
 #include "../general.h"
 
@@ -93,7 +93,7 @@ void S1LongKeyApp(void)
     {
         case DEVICES_ON_MODE:
         case DEVICES_CONFIG_MODE:
-        NodeSleep();
+        S1Sleep();
         g_rSysConfigInfo.sysState.wtd_restarts &= (0xFFFF^STATUS_POWERON);
         Led_ctrl2(LED_R, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         g_rSysConfigInfo.rtc = Rtc_get_calendar();
@@ -111,7 +111,7 @@ void S1LongKeyApp(void)
         {
             Led_ctrl2(LED_B, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
             g_rSysConfigInfo.sysState.wtd_restarts |= STATUS_POWERON;
-            NodeWakeup();
+            S1Wakeup();
             Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
         }
         break;
@@ -184,7 +184,7 @@ void S1AppRtcProcess(void)
             if (count > 10)
             {
                 count = 0;
-                NodeSleep();
+                S1Sleep();
             }
         }
     }

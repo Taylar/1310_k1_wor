@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-07 16:14:44
+* @Last Modified time: 2018-09-12 16:24:41
 */
 #include "../general.h"
 
@@ -26,11 +26,16 @@ static uint8_t     concenterRemainderCache;
 //***********************************************************************************
 void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
-	uint8_t len, lenTemp, baseAddr, flag, setChannel = 0;
-	uint32_t	temp, temp2;
+	uint8_t len, lenTemp, baseAddr, flag;
+	uint32_t	temp;
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
     uint16_t serialNum;
+#ifdef  SUPPORT_STRATEGY_SORT
+    uint8_t setChannel = 0;
+    uint32_t    temp2;
+#endif // SUPPORT_STRATEGY_SORT
+
     TxFrameRecord_t rxSensorDataAckRecord;
     memset(&rxSensorDataAckRecord, 0, sizeof(TxFrameRecord_t));
 
@@ -291,8 +296,8 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			if(bufTemp->load[0] == PROTOCAL_FAIL) {
 				NodeUploadOffectClear();
 			} else {
-                HIBYTE(serialNum) = bufTemp->load[1];
-                LOBYTE(serialNum) = bufTemp->load[2];
+                HIBYTE_ZKS(serialNum) = bufTemp->load[1];
+                LOBYTE_ZKS(serialNum) = bufTemp->load[2];
                 rxSensorDataAckRecord.lastFrameSerial[rxSensorDataAckRecord.Cnt] = serialNum;
                 rxSensorDataAckRecord.Cnt++;
 			}
@@ -323,13 +328,16 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	}
 
 NodeDispath:
-    if (RadioModeGet() != RADIOMODE_UPGRADE)
+    if ((RadioModeGet() != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE))
     {
         if (1 == flag) {
             flag = NodeUploadSucessProcess(&rxSensorDataAckRecord);
         }
-	    if((Flash_get_unupload_items() > 0) && (flag))
+	    if(Flash_get_unupload_items() > 0)
 	    {
+#ifdef SUPPORT_RSSI_CHECK
+	    	NodeContinueFlagSet();
+#endif // SUPPORT_RSSI_CHECK
 	    	// clear the offect, the buf has been clear
 		    NodeUploadProcess();
 		    // waiting the gateway to change to receive
@@ -403,8 +411,8 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 #ifdef  S_G
 			sensor_unpackage_to_memory(bufTemp->load, bufTemp->load[0]+1);
 #endif // S_G
-			HIBYTE(serialNum) = bufTemp->load[6];
-			LOBYTE(serialNum) = bufTemp->load[7];
+			HIBYTE_ZKS(serialNum) = bufTemp->load[6];
+			LOBYTE_ZKS(serialNum) = bufTemp->load[7];
 
 			if(ConcenterSensorDataSaveToQueue(bufTemp->load, bufTemp->load[0]+1) == true)
 			{
@@ -604,6 +612,7 @@ ConcenterConfigRespondEnd:
 	// receive several cmd in one radio packet, must return in one radio packet;
 	if (RadioModeGet() != RADIOMODE_UPGRADE)
 	{
+		Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
 	    RadioSend();
 	}
 }
@@ -803,8 +812,8 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, uint16_
 
 
 	protocalTxBuf.load[0]	= (uint8_t)(status);
-	protocalTxBuf.load[1]   = HIBYTE(serialNum);
-	protocalTxBuf.load[2]   = LOBYTE(serialNum);
+	protocalTxBuf.load[1]   = HIBYTE_ZKS(serialNum);
+	protocalTxBuf.load[2]   = LOBYTE_ZKS(serialNum);
 
 #ifdef  SUPPORT_STRATEGY_SORT
     uint32_t temp;

@@ -141,7 +141,7 @@ void SystemAppTaskFxn(void)
 	Sensor_init();
 #endif // SUPPORT_SENSOR
 
-#if (defined(BOARD_S6_6) || defined(SUPPORT_BOARD_OLD_S1) || defined(BOARD_B2S))
+#if (defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1))
 	RtcStart();
 #endif
 

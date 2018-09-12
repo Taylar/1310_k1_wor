@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:14:22
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-10 14:54:14
+* @Last Modified time: 2018-09-12 10:36:47
 */
 #include "../general.h"
 
@@ -80,7 +80,7 @@ void S2LongKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        ConcenterSleep();
+        S2Sleep();
         Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
         break;
 

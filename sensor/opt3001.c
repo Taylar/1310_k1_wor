@@ -72,8 +72,8 @@ static void OPT3001_measure(uint8_t chNum)
         return;
     }
 
-    HIBYTE(LOWORD(lux_hex)) = buff_read[0];
-    LOBYTE(LOWORD(lux_hex)) = buff_read[1];
+    HIBYTE_ZKS(LOWORD_ZKS(lux_hex)) = buff_read[0];
+    LOBYTE_ZKS(LOWORD_ZKS(lux_hex)) = buff_read[1];
     pow_n   = (uint32_t)(buff_read[0] >> 4);
     lux_hex = (uint32_t)((buff_read[0]&0x0f) << 8);
     lux_hex = (uint32_t)(lux_hex+buff_read[1]);

@@ -264,8 +264,8 @@ err_retrys:
             {
                 buff[1] &= ~0x03;
 
-                HIBYTE(rSensorData[chNum].temp) = buff[0];
-                LOBYTE(rSensorData[chNum].temp) = buff[1];
+                HIBYTE_ZKS(rSensorData[chNum].temp) = buff[0];
+                LOBYTE_ZKS(rSensorData[chNum].temp) = buff[1];
             }
             else
             {
@@ -282,8 +282,8 @@ err_retrys:
             {
                 buff[1] &= ~0x03;
 
-                HIBYTE(rSensorData[chNum].humi) = buff[0];
-                LOBYTE(rSensorData[chNum].humi) = buff[1];
+                HIBYTE_ZKS(rSensorData[chNum].humi) = buff[0];
+                LOBYTE_ZKS(rSensorData[chNum].humi) = buff[1];
             }
             else
             {

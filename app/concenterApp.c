@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-10 15:24:14
+* @Last Modified time: 2018-09-12 10:32:40
 */
 #include "../general.h"
 
@@ -330,13 +330,18 @@ void ConcenterRtcProcess(void)
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
     }
 
-    if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
-    {
-#ifdef      SUPPORT_DISP_SCREEN
-        Disp_poweroff();
-#endif
-        ConcenterSleep();
+#ifdef S_G
+    static uint32_t timingSendDataCnt = 0;
+    /* Send data regularly to ensure that the gateway can receive*/
+    if (timingSendDataCnt > (5 * 60)) {
+        RadioModeSet(RADIOMODE_RECEIVEPORT);
+        timingSendDataCnt = 0;
+        SetRadioDstAddr(0xdadadada);
+        ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
     }
+    timingSendDataCnt++;
+#endif  // S_G
+
 }
 
 

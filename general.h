@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
-//#define BOARD_B2S
-#define BOARD_S6_6
+#define BOARD_S3
+// #define BOARD_B2S
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -392,6 +392,8 @@ error type define
 #undef SUPPORT_FLIGHT_MODE // flight mode
 #undef SUPPORT_DEVICED_STATE_UPLOAD
 
+#define SUPPORT_RSSI_CHECK
+
 #else
 error
 #endif
@@ -498,12 +500,13 @@ error
 #undef SUPPORT_NTC
 #undef SUPPORT_ALARM_RECORD_QURERY
 #undef SUPPORT_ENGMODE
+#undef SUPPORT_FLASH_LOG
 /* old S1*/
 //#define SUPPORT_BOARD_OLD_S1
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0030
+#define FW_VERSION              0x0031
 #else
 #define FW_VERSION              0x0004
 #endif

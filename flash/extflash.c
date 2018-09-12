@@ -163,16 +163,16 @@ static void Flash_external_page_program(uint32_t flashAddr, uint8_t *pData, uint
     buff[0] = FLASHCMD_WRITE;
     
 #ifdef FLASH_W25Q256FV
-    buff[1] = HIBYTE(HIWORD(flashAddr));
-    buff[2] = LOBYTE(HIWORD(flashAddr));
-    buff[3] = HIBYTE(LOWORD(flashAddr));
-    buff[4] = LOBYTE(LOWORD(flashAddr));
+    buff[1] = HIBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[3] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[4] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
     // page limit
     pageRemainBytes = PAGE_BYTES - buff[4];
 #else
-    buff[1] = LOBYTE(HIWORD(flashAddr));
-    buff[2] = HIBYTE(LOWORD(flashAddr));
-    buff[3] = LOBYTE(LOWORD(flashAddr));
+    buff[1] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[3] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
     // page limit
     pageRemainBytes = PAGE_BYTES - buff[3];
 #endif
@@ -226,14 +226,14 @@ static void Flash_external_erase(uint32_t flashAddr, uint8_t eraseMode)
     }
     
 #ifdef FLASH_W25Q256FV
-    buff[1] = HIBYTE(HIWORD(flashAddr));
-    buff[2] = LOBYTE(HIWORD(flashAddr));
-    buff[3] = HIBYTE(LOWORD(flashAddr));
-    buff[4] = LOBYTE(LOWORD(flashAddr));
+    buff[1] = HIBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[3] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[4] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
 #else
-    buff[1] = LOBYTE(HIWORD(flashAddr));
-    buff[2] = HIBYTE(LOWORD(flashAddr));
-    buff[3] = LOBYTE(LOWORD(flashAddr));
+    buff[1] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[3] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
 #endif
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
@@ -271,7 +271,7 @@ static void Flash_external_write(uint32_t flashAddr, uint8_t *pData, uint16_t le
     uint16_t pageRemainBytes;
 
     // page limit
-    pageRemainBytes = PAGE_BYTES - LOBYTE(LOWORD(flashAddr));
+    pageRemainBytes = PAGE_BYTES - LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
     if (pageRemainBytes >= length) {
         Flash_external_page_program(flashAddr, pData, length);
     } else {
@@ -304,14 +304,14 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
     buff[0] = FLASHCMD_READ;
     
 #ifdef FLASH_W25Q256FV
-    buff[1] = HIBYTE(HIWORD(flashAddr));
-    buff[2] = LOBYTE(HIWORD(flashAddr));
-    buff[3] = HIBYTE(LOWORD(flashAddr));
-    buff[4] = LOBYTE(LOWORD(flashAddr));
+    buff[1] = HIBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[3] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[4] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
 #else
-    buff[1] = LOBYTE(HIWORD(flashAddr));
-    buff[2] = HIBYTE(LOWORD(flashAddr));
-    buff[3] = LOBYTE(LOWORD(flashAddr));
+    buff[1] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[3] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
 #endif
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)

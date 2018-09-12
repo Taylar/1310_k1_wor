@@ -49,5 +49,10 @@ uint32_t NodeGetCustomId(void);
 
 void NodeStrategyTimeoutProcess(void);
 
+void NodeContinueFlagClear(void);
+
+void NodeContinueFlagSet(void);
+
+bool NodeContinueFlagRead(void);
 
 #endif			// __NODEAPP_H__

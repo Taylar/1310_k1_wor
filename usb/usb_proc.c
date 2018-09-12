@@ -511,16 +511,16 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             
 		case EV_Get_History_Data://len(2B) cmd(1B)  no(2B or 4B)
             if (length == 5) { //old  support 16bit
-                HIBYTE(HIWORD(addr)) = 0;
-                LOBYTE(HIWORD(addr)) = 0;
-                HIBYTE(LOWORD(addr)) = pData[3];
-                LOBYTE(LOWORD(addr)) = pData[4];
+                HIBYTE_ZKS(HIWORD_ZKS(addr)) = 0;
+                LOBYTE_ZKS(HIWORD_ZKS(addr)) = 0;
+                HIBYTE_ZKS(LOWORD_ZKS(addr)) = pData[3];
+                LOBYTE_ZKS(LOWORD_ZKS(addr)) = pData[4];
             }
             else {    //new support 32 bit
-                HIBYTE(HIWORD(addr)) = pData[3];
-                LOBYTE(HIWORD(addr)) = pData[4];
-                HIBYTE(LOWORD(addr)) = pData[5];
-                LOBYTE(LOWORD(addr)) = pData[6];            
+                HIBYTE_ZKS(HIWORD_ZKS(addr)) = pData[3];
+                LOBYTE_ZKS(HIWORD_ZKS(addr)) = pData[4];
+                HIBYTE_ZKS(LOWORD_ZKS(addr)) = pData[5];
+                LOBYTE_ZKS(LOWORD_ZKS(addr)) = pData[6];            
             }
     	    Flash_load_sensor_data_history(pData, USB_BUFF_LENGTH, addr);
             
@@ -779,14 +779,14 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 
         case EV_Get_ReadFlash://len(2B) cmd(1B) addr(4B)  size(4B)  mode(1B) chk
-            HIBYTE(HIWORD(addr)) = pData[3];
-            LOBYTE(HIWORD(addr)) = pData[4];
-            HIBYTE(LOWORD(addr)) = pData[5];
-            LOBYTE(LOWORD(addr)) = pData[6];    
-            HIBYTE(HIWORD(datasize)) = pData[7];
-            LOBYTE(HIWORD(datasize)) = pData[8];
-            HIBYTE(LOWORD(datasize)) = pData[9];
-            LOBYTE(LOWORD(datasize)) = pData[10];                
+            HIBYTE_ZKS(HIWORD_ZKS(addr)) = pData[3];
+            LOBYTE_ZKS(HIWORD_ZKS(addr)) = pData[4];
+            HIBYTE_ZKS(LOWORD_ZKS(addr)) = pData[5];
+            LOBYTE_ZKS(LOWORD_ZKS(addr)) = pData[6];    
+            HIBYTE_ZKS(HIWORD_ZKS(datasize)) = pData[7];
+            LOBYTE_ZKS(HIWORD_ZKS(datasize)) = pData[8];
+            HIBYTE_ZKS(LOWORD_ZKS(datasize)) = pData[9];
+            LOBYTE_ZKS(LOWORD_ZKS(datasize)) = pData[10];                
             transmode = pData[11];
 
             
