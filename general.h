@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -325,7 +325,7 @@ error type define
 #endif
 //#define SUPPORT_IMEI
 
-#define PACKAGE_ITEM_COUNT_MAX 4
+#define PACKAGE_ITEM_COUNT_MAX 10
 #define SUPPORT_ZKS_PROTOCOL
 
 //#define SUPPORT_FLIGHT_MODE // flight mode
@@ -506,7 +506,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0031
+#define FW_VERSION              0x0043
 #else
 #define FW_VERSION              0x0004
 #endif
@@ -540,7 +540,7 @@ error
     #ifdef S_A
     #define FW_VERSION              0x0036
     #elif defined(S_G)
-    #define FW_VERSION              0x0036
+    #define FW_VERSION              0x0043
     #elif defined(S_C)
     #define FW_VERSION              0x0036
     #endif

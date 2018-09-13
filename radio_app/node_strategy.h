@@ -4,7 +4,7 @@
 
 #define     FAIL_CONNECT_MAX_NUM               5
 
-#define     FAIL_CONNECT_PERIOD_MAX_NUM        3
+#define     FAIL_CONNECT_PERIOD_MAX_NUM        2
 
 #define     FAIL_CHECK_RSSI_BUSY_MAX_NUM	   20
 
