@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-12 19:36:49
+* @Last Modified time: 2018-09-17 18:17:45
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -46,9 +46,6 @@ typedef struct {
 Clock_Struct nodeStrategyStartClock;     /* not static so you can see in ROV */
 Clock_Handle nodeStrategyStartClockHandle;
 
-Semaphore_Struct radomFuncSem;  /* not static so you can see in ROV */
-Semaphore_Handle radomFuncSemHandle;
-
 // the 
 static node_strategy_t      nodeStrategy;
 
@@ -86,10 +83,7 @@ void NodeStrategyInit(void (*StrategyFailCb)(void))
 
         /* Create semaphore used for exclusive radio access */ 
     
-        Semaphore_Params semParam;
-        Semaphore_Params_init(&semParam);
-        Semaphore_construct(&radomFuncSem, 1, &semParam);
-        radomFuncSemHandle = Semaphore_handle(&radomFuncSem); 
+        
 
         NodeStrategyFailCb          = StrategyFailCb;
     }
@@ -150,39 +144,6 @@ void NodeStrategyStop(void)
         Clock_stop(nodeStrategyStartClockHandle);
 }
 
-//***********************************************************************************
-// brief:   generate the random num, this maybe waste almost 1 sec
-// 
-// parameter: 
-// ret: the randdom Num
-//***********************************************************************************
-uint32_t RandomDataGenerate(void)
-{
-    uint32_t randomNum;
-
-    // gennerate a ramdom num maybe waste almost 1sec
-    /* Use the True Random Number Generator to generate sensor node address randomly */
-    Semaphore_pend(radomFuncSemHandle, BIOS_WAIT_FOREVER);
-    Power_setDependency(PowerCC26XX_PERIPH_TRNG);
-    TRNGEnable();
-    while (!(TRNGStatusGet() & TRNG_NUMBER_READY))
-    {
-        //wiat for randum number generator
-    }
-    randomNum = TRNGNumberGet(TRNG_LOW_WORD);
-
-    while (!(TRNGStatusGet() & TRNG_NUMBER_READY))
-    {
-        //wiat for randum number generator
-    }
-
-    randomNum |= ((uint32_t)TRNGNumberGet(TRNG_HI_WORD)) << 16;
-
-    TRNGDisable();
-    Power_releaseDependency(PowerCC26XX_PERIPH_TRNG);
-    Semaphore_post(radomFuncSemHandle);
-    return randomNum;
-}
 
 
 //***********************************************************************************

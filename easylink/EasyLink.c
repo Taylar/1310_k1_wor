@@ -513,6 +513,9 @@ static EasyLink_Status enableTestMode(EasyLink_CtrlOption mode)
     return status;
 }
 
+extern void RadioCoreErrorCb(RF_Handle h, RF_CmdHandle ch, RF_EventMask e);
+
+
 EasyLink_Status EasyLink_init(EasyLink_Params *params)
 {
     if (configured)
@@ -554,7 +557,7 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
             rfParams.pClientEventCb = EasyLink_params.pClientEventCb;
             rfParams.nClientEventMask = EasyLink_params.nClientEventMask;
         }
-
+        rfParams.pErrCb = RadioCoreErrorCb;
         rfParamsConfigured = 1;
     }
     

@@ -1,5 +1,8 @@
 #include "../general.h"
 
+#include <ti/devices/DeviceFamily.h>
+#include DeviceFamily_constructPath(driverlib/aon_batmon.h)
+#include DeviceFamily_constructPath(driverlib/trng.h)
 
 /***** Defines *****/
 #define         SYSTEM_APP_STACK_SIZE        1024
@@ -14,6 +17,11 @@ Task_Struct     systemAppTaskStruct;
 // event 
 Event_Struct systemAppEvtStruct;
 Event_Handle systemAppEvtHandle;
+
+// radom Semaphore
+Semaphore_Struct radomFuncSem;  /* not static so you can see in ROV */
+Semaphore_Handle radomFuncSemHandle;
+
 
 // system application extern variable
 uint8_t deviceMode;
@@ -107,11 +115,52 @@ void SysAppTaskCreate(void)
 
 }
 
+//***********************************************************************************
+// brief:   generate the random num, this maybe waste almost 1 sec
+// 
+// parameter: 
+// ret: the randdom Num
+//***********************************************************************************
+uint32_t RandomDataGenerate(void)
+{
+    uint32_t randomNum;
+
+    // gennerate a ramdom num maybe waste almost 1sec
+    /* Use the True Random Number Generator to generate sensor node address randomly */
+    Semaphore_pend(radomFuncSemHandle, BIOS_WAIT_FOREVER);
+    Power_setDependency(PowerCC26XX_PERIPH_TRNG);
+    TRNGEnable();
+    while (!(TRNGStatusGet() & TRNG_NUMBER_READY))
+    {
+        //wiat for randum number generator
+    }
+    randomNum = TRNGNumberGet(TRNG_LOW_WORD);
+
+    while (!(TRNGStatusGet() & TRNG_NUMBER_READY))
+    {
+        //wiat for randum number generator
+    }
+
+    randomNum |= ((uint32_t)TRNGNumberGet(TRNG_HI_WORD)) << 16;
+
+    TRNGDisable();
+    Power_releaseDependency(PowerCC26XX_PERIPH_TRNG);
+    Semaphore_post(radomFuncSemHandle);
+    return randomNum;
+}
+
+
+
 //#define BOARD_S6_6
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
     // uint32_t	voltageTemp;
+
+    Semaphore_Params semParam;
+    Semaphore_Params_init(&semParam);
+    Semaphore_construct(&radomFuncSem, 1, &semParam);
+    radomFuncSemHandle = Semaphore_handle(&radomFuncSem); 
 
     Event_Params eventParam;
     Event_Params_init(&eventParam);

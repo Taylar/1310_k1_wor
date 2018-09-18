@@ -20,8 +20,8 @@
 #define         RADIO_EVT_RADIO_REPAIL  Event_Id_13
 #define         RADIO_EVT_SEND_CONFIG   Event_Id_14
 #define         RADIO_EVT_SEND_SYC      Event_Id_15
-#define         RADIO_EVT_STRATEGY_UPLOAD 	Event_Id_16
-#define         RADIO_EVT_ALL           0xffff
+#define         RADIO_EVT_CHANNEL_CHECK Event_Id_16
+#define         RADIO_EVT_ALL           0xffffffff
 
 
 
@@ -55,17 +55,17 @@ typedef enum
 {
   // LORA [0: 433 MHz, 1: 433.25 MHz, 2: 433.50 MHz, 3: 433.75 MHz, 4: 434 MHz,
         // 5: 434.25 MHz, 6: 4334.50 MHz, 7: 434.75 MHz, 8: 435 MHz, 9: 435.25 MHz, other: Reserved]
-    BW500KHZ = 0x90,      
-    BW250KHZ = 0x80,
-    BW125KHZ = 0x70,
-    BW62_50KHZ = 0x60,
-    BW41_66KHZ = 0x50,
-    BW31_25KHZ = 0x40,
-    BW20_83KHZ = 0x30,
-    BW15_62KHZ = 0x20,
-    BW10_41KHZ = 0x10,
-    BW7_81KHZ = 0x00,
-}t_BandWidth;      //定义带宽枚举
+    FREQ_435_25 = 0x90,      
+    FREQ_435_00 = 0x80,
+    FREQ_434_75 = 0x70,
+    FREQ_434_50 = 0x60,
+    FREQ_434_25 = 0x50,
+    FREQ_434_00 = 0x40,
+    FREQ_433_75 = 0x30,
+    FREQ_433_50 = 0x20,
+    FREQ_433_25 = 0x10,
+    FREQ_433_00 = 0x00,
+}t_FreqCenter;      //定义带宽枚举
 
 
 
@@ -111,6 +111,8 @@ void SetRadioDstAddr(uint32_t addr);
 uint32_t GetRadioSubSrcAddr(void);
 
 void SetRadioSubSrcAddr(uint32_t addr);
+
+void SetRadioBrocastSrcAddr(uint32_t addr);
 
 void ClearRadioSendBuf(void);
 

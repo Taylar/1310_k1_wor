@@ -331,7 +331,7 @@ error type define
 //#define SUPPORT_FLIGHT_MODE // flight mode
 #define SUPPORT_REMOTE_UPGRADE
 
-#endif
+#endif //SUPPORT_NETWORK
 
 //Bluetooth define
 // #define SUPPORT_BLUETOOTH_PRINT
@@ -392,7 +392,6 @@ error type define
 #undef SUPPORT_FLIGHT_MODE // flight mode
 #undef SUPPORT_DEVICED_STATE_UPLOAD
 
-#define SUPPORT_RSSI_CHECK
 
 #else
 error
@@ -451,7 +450,6 @@ error
 /****************************************************************************/
 
 
-
 //***********************************************************************************
 // S2_2 board define
 //***********************************************************************************
@@ -504,6 +502,9 @@ error
 /* old S1*/
 //#define SUPPORT_BOARD_OLD_S1
 
+#define SUPPORT_RSSI_CHECK
+#define SUPPORT_FREQ_FIND
+
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
 #define FW_VERSION              0x0043
@@ -533,14 +534,16 @@ error
 
 #undef SUPPORT_DOUBLE_PRESS
 
-    #define  SUPPORT_USB
+#define SUPPORT_USB
+// #define SUPPORT_RSSI_CHECK
+// #define SUPPORT_FREQ_FIND
 
 
-    #undef  FW_VERSION
+#undef  FW_VERSION
     #ifdef S_A
     #define FW_VERSION              0x0036
     #elif defined(S_G)
-    #define FW_VERSION              0x0043
+    #define FW_VERSION              0x0044
     #elif defined(S_C)
     #define FW_VERSION              0x0036
     #endif
@@ -555,6 +558,7 @@ error
 //***********************************************************************************
 #define CONFIG_DECEIVE_ID_DEFAULT       0XFFFFFFFA
 #define RADIO_UPGRADE_ADDRESS           0x99999999
+#define RADIO_BROCAST_ADDRESS           0x00000000
 
 #define DECEIVE_ID_DEFAULT              0X88888886
 
@@ -693,6 +697,15 @@ typedef enum {
 #ifdef SUPPORT_BOARD_OLD_S1
 #define        OLD_S1_DEVICES_RADIO_UPGRADE    6
 #endif
+
+
+//***********************************************************************************
+//radio error define.
+//***********************************************************************************
+#define         RADIO_FREQ_SWITCH_ERROR         0X0001
+#define         RADIO_FREQ_SEND_ERROR           0X0002
+#define         RADIO_FREQ_RECIEVE_ERROR        0X0004
+#define         RADIO_FREQ_CORE_ERROR           0X0008
 
 //***********************************************************************************
 //
@@ -872,6 +885,7 @@ typedef struct {
 #include "engmode/engmode.h"
 #include "usb/usb_bsl.h"
 #include "radio_app/radio_upgrade.h"
+#include "radio_app/auto_findfreq.h"
 
 #ifdef SUPPORT_BOARD_OLD_S1
     #include "app/old_s1/old_s1_node_app.h"

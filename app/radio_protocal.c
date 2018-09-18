@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-12 16:24:41
+* @Last Modified time: 2018-09-17 17:26:34
 */
 #include "../general.h"
 
@@ -604,6 +604,16 @@ ConcenterConfigRespondEnd:
 			case RADIO_PRO_CMD_ACK:
 
 			break;
+#ifdef  SUPPORT_FREQ_FIND
+			case RADIO_PRO_CMD_CHANNEL_CHECK:
+
+			break;
+
+			case RADIO_PRO_CMD_CHANNEL_OCCUPY:
+			AutoFreqConcenterOccupy(protocalRxPacket->rssi);
+			break;
+#endif  // SUPPORT_FREQ_FIND
+
 		}
 		// point to new message the head
 		bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);
@@ -839,6 +849,42 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, uint16_
 }
 
 
+//***********************************************************************************
+// brief:   the concenter send the command to check if there is other concenter occupy the channel
+// 
+// parameter: 
+// srcAddr:	the concenter radio addr
+// dstAddr:	the node radio addr
+//***********************************************************************************
+void ConcenterChannelCheckCmdSend(uint32_t srcAddr, uint32_t dstAddr)
+{
+	protocalTxBuf.command	= RADIO_PRO_CMD_CHANNEL_CHECK;
+	protocalTxBuf.dstAddr	= dstAddr;
+	protocalTxBuf.srcAddr	= srcAddr;
+	protocalTxBuf.len 		= 10;
+
+	RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
+    concenterRemainderCache -= protocalTxBuf.len;
+}
+
+//***********************************************************************************
+// brief:   echo the channel has been occupy
+// 
+// parameter: 
+// srcAddr:	the concenter radio addr
+// dstAddr:	the node radio addr
+//***********************************************************************************
+void ConcenterChannelOccupyAck(uint32_t srcAddr, uint32_t dstAddr)
+{
+	protocalTxBuf.command	= RADIO_PRO_CMD_CHANNEL_OCCUPY;
+	protocalTxBuf.dstAddr	= dstAddr;
+	protocalTxBuf.srcAddr	= srcAddr;
+	protocalTxBuf.len 		= 10;
+
+	RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
+    concenterRemainderCache -= protocalTxBuf.len;
+}
+
 
 //***********************************************************************************
 // brief:   send time to the node immediately
@@ -888,6 +934,8 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache);
     concenterRemainderCache -= protocalTxBuf.len;
 }
+
+
 
 
 

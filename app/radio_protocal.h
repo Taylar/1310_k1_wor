@@ -56,6 +56,8 @@
 #define     RADIO_PRO_CMD_RATE_SWITCH       0x25
 #define     RADIO_PRO_CMD_RATE_SWTICH_ACK   0x05
 
+#define     RADIO_PRO_CMD_CHANNEL_CHECK     0x26
+#define     RADIO_PRO_CMD_CHANNEL_OCCUPY    0x06
 
 
 
@@ -93,5 +95,8 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr);
 
 void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr);
 
+void ConcenterChannelCheckCmdSend(uint32_t srcAddr, uint32_t dstAddr);
+
+void ConcenterChannelOccupyAck(uint32_t srcAddr, uint32_t dstAddr);
 
 #endif      // __RADIO_PROTOCAL_H__

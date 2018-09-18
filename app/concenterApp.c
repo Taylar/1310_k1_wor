@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-12 10:32:40
+* @Last Modified time: 2018-09-13 15:17:31
 */
 #include "../general.h"
 
@@ -83,7 +83,7 @@ void ConcenterAppInit(void)
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
                      g_rSysConfigInfo.DeviceId[3]);
     SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-
+    SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
 #endif
 
     // ConcenterSleep();

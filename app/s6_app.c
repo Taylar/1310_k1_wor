@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-12 10:39:58
+* @Last Modified time: 2018-09-17 15:18:35
 */
 #include "../general.h"
 
@@ -533,6 +533,11 @@ void S6Wakeup(void)
 
 #ifdef S_G//网关
     ConcenterWakeup();
+    
+#ifdef SUPPORT_FREQ_FIND
+    AutoFreqInit();
+#endif  // SUPPORT_FREQ_FIND
+
 #endif // S_G//网关
 
 #ifdef S_C //节点

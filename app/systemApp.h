@@ -60,4 +60,6 @@ void SystemLongKey1EventPostIsr(void);
 
 void SystemUsbIntEventPostIsr(void);
 
+uint32_t RandomDataGenerate(void);
+
 #endif      // __SYSTEMAPP_H__
