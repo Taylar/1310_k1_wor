@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-12 16:53:11
+* @Last Modified time: 2018-09-18 10:19:51
 */
 #include "../general.h"
 
@@ -156,11 +156,9 @@ void S1DoubleKeyApp(void)
     }
 }
 
-static uint32_t batMeasureCnt;
 
 void S1AppRtcProcess(void)
 {
-    static uint8_t count;
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
     {
         configModeTimeCnt++;
@@ -175,19 +173,6 @@ void S1AppRtcProcess(void)
         }
     }
 
-    batMeasureCnt++;
-    if(batMeasureCnt >= g_rSysConfigInfo.collectPeriod)
-    {
-        if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
-        {
-            count++;
-            if (count > 10)
-            {
-                count = 0;
-                S1Sleep();
-            }
-        }
-    }
 }
 
 extern void WdtResetCb(uintptr_t handle);

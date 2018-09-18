@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-17 15:18:35
+* @Last Modified time: 2018-09-18 10:25:15
 */
 #include "../general.h"
 
@@ -417,17 +417,9 @@ void S6LongKey1App(void)
 //***********************************************************************************
 void S6AppRtcProcess(void)
 {
-#ifndef BOARD_CONFIG_DECEIVE
-
-    if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
-    {
-#ifdef      SUPPORT_DISP_SCREEN
-        Disp_poweroff();
-#endif
-        S6Sleep();
-    }
-
-#endif  // BOARD_CONFIG_DECEIVE
+#ifdef S_G//网关
+    Battery_porcess();
+#endif //S_G//网关
 }
 
 

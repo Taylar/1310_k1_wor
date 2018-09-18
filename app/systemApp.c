@@ -414,6 +414,7 @@ void SystemAppTaskFxn(void)
 #ifdef SUPPORT_SENSOR
         if (eventId & SYS_EVT_SENSOR) {
             Sensor_measure(1);
+            Battery_porcess();
 
 #ifdef      SUPPORT_UPLOADTIME_LIMIT
             if((g_rSysConfigInfo.uploadPeriod/60) < Flash_get_unupload_items()){

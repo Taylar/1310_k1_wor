@@ -35,6 +35,7 @@
 extern void Battery_init(void);
 extern void Battery_voltage_measure(void);
 extern uint16_t Battery_get_voltage(void);
+extern void Battery_porcess(void);
 
 #endif  /* SUPPORT_BATTERY */
 
