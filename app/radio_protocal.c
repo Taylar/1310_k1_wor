@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-17 17:26:34
+* @Last Modified time: 2018-09-18 15:05:27
 */
 #include "../general.h"
 
@@ -606,11 +606,11 @@ ConcenterConfigRespondEnd:
 			break;
 #ifdef  SUPPORT_FREQ_FIND
 			case RADIO_PRO_CMD_CHANNEL_CHECK:
-
+				ConcenterChannelOccupyAck(bufTemp->dstAddr, bufTemp->srcAddr);
 			break;
 
 			case RADIO_PRO_CMD_CHANNEL_OCCUPY:
-			AutoFreqConcenterOccupy(protocalRxPacket->rssi);
+			    AutoFreqConcenterOccupy(protocalRxPacket->rssi);
 			break;
 #endif  // SUPPORT_FREQ_FIND
 
@@ -858,6 +858,8 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, uint16_
 //***********************************************************************************
 void ConcenterChannelCheckCmdSend(uint32_t srcAddr, uint32_t dstAddr)
 {
+	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
+	
 	protocalTxBuf.command	= RADIO_PRO_CMD_CHANNEL_CHECK;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;

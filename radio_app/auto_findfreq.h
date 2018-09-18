@@ -3,7 +3,7 @@
 
 #define 	AUTO_FINDFREQ_SWITCH_MAX 	10
 #define 	AUTO_FINDFREQ_BUSY_MAX 		20
-#define 	AUTO_FINDFREQ_SEND_MAX 		10
+#define 	AUTO_FINDFREQ_SEND_MAX 		3
 
 
 void AutoFreqInit(void);
@@ -19,6 +19,8 @@ void AutoFreqConcenterSwitchFreqProcess(void);
 void AutoFreqConcenterOccupy(int8_t rssi);
 
 void AutoFreqCarrierBusy(int8_t rssi);
+
+void AutoFreqCarrierRssiSet(int8_t rssi);
 
 void AutoFreqRecTimeout(void);
 

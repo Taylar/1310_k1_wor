@@ -536,7 +536,7 @@ error
 
 #define SUPPORT_USB
 // #define SUPPORT_RSSI_CHECK
-// #define SUPPORT_FREQ_FIND
+#define SUPPORT_FREQ_FIND
 
 
 #undef  FW_VERSION

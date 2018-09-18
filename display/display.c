@@ -1174,6 +1174,20 @@ void Disp_proc(void)
         Disp_sensor_data();
 #endif
         Disp_status_bar();
+
+#ifdef SUPPORT_FREQ_FIND
+       uint8_t buff[8];
+       if(AutoFreqStateRead() == false)
+       {
+            Disp_msg(3, 6, "Register", FONT_8X16);//display
+       }
+       else
+       {
+            sprintf((char *)buff, "ch:%d", (g_rSysConfigInfo.rfBW >> 4));
+            Disp_msg(3, 6, "         ", FONT_8X16);
+            Disp_msg(3, 6, buff, FONT_8X16);//display
+       }
+#endif // SUPPORT_FREQ_FIND
     }
 
 #ifdef SUPPORT_LORA
@@ -1187,6 +1201,8 @@ void Disp_proc(void)
       }
    }
 #endif
+
+
 
 }
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-09-13 11:38:46
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-17 17:37:12
+* @Last Modified time: 2018-09-18 15:13:33
 */
 #include "../general.h"
 
@@ -51,7 +51,7 @@ void AutoFreqInit(void)
 //***********************************************************************************
 void AutoFreqConcenterSuccess(void)
 {
-	uint8_t i, index;
+	uint8_t i, index = 0;
 	int8_t rssiTemp;
 	rssiTemp = autoFindfreq.carrierRssi[0];
 
@@ -85,6 +85,7 @@ void AutoFreqConcenterSuccess(void)
 	}
 	g_rSysConfigInfo.rfBW = index << 4;
 	autoFindfreq.success  = true;
+	RadioSetRxMode();
 }
 
 
@@ -132,10 +133,10 @@ void AutoFreqConcenterSwitchFreqProcess(void)
 	}
 	randomNum = RandomDataGenerate();
 
-	Task_sleep(randomNum % (g_rSysConfigInfo.uploadPeriod / FAIL_CONNECT_MAX_NUM * CLOCK_UNIT_S));
+	Task_sleep(randomNum % (300 * CLOCK_UNIT_MS));
 	
 
-	if((autoFindfreq.checkRssiCnt > AUTO_FINDFREQ_BUSY_MAX) || (autoFindfreq.sendCnt > AUTO_FINDFREQ_SEND_MAX))
+	if((autoFindfreq.checkRssiCnt >= AUTO_FINDFREQ_BUSY_MAX) || (autoFindfreq.sendCnt >= AUTO_FINDFREQ_SEND_MAX))
 	{
 		autoFindfreq.carrierRssi[autoFindfreq.switchTimes] = autoFindfreq.curRssi + autoFindfreq.checkRssiCnt;
 		autoFindfreq.switchTimes ++;
@@ -185,6 +186,20 @@ void AutoFreqCarrierBusy(int8_t rssi)
 	autoFindfreq.checkRssiCnt ++;
 	// SWITCH NEXT FREQ
     RadioEventPost(RADIO_EVT_CHANNEL_CHECK);
+}
+
+
+//***********************************************************************************
+// brief:  currentl center freqency rssi set
+// 
+// parameter: 
+//***********************************************************************************
+void AutoFreqCarrierRssiSet(int8_t rssi)
+{
+	if(rssi > autoFindfreq.curRssi)
+	{
+		autoFindfreq.curRssi = rssi;
+	}
 }
 
 

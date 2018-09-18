@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-17 18:25:39
+* @Last Modified time: 2018-09-18 14:21:45
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -488,6 +488,10 @@ void RadioAppTaskFxn(void)
                     AutoFreqCarrierBusy(rssi);
                     continue;
                 }
+                else
+                {
+                    AutoFreqCarrierRssiSet(rssi);
+                }
             }
 
 #endif // SUPPORT_FREQ_FIND
@@ -625,6 +629,7 @@ void RadioAppTaskFxn(void)
                 EasyLink_abort();
             }
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            Radio_setRxModeRfFrequency();
             RadioReceiveData();
         }
 
