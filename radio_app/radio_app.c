@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-18 14:21:45
+* @Last Modified time: 2018-09-19 09:36:03
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -170,7 +170,7 @@ void RadioSetFrequency(uint32_t ui32Frequency)
 {
     EasyLink_Status status;
 radio_reSetFreq:
-    status = EasyLink_setFrequency(ui32Frequency);
+    // status = EasyLink_setFrequency(ui32Frequency);
     switch(status)
     {
         case EasyLink_Status_Cmd_Error:
@@ -300,7 +300,8 @@ RadioOperationMode RadioModeGet(void)
 {
     return (RadioOperationMode)radioMode;
 }
-
+uint32_t testflag[50];
+uint8_t testcnt = 0;
 //***********************************************************************************
 // brief:   radio task 
 // 
@@ -400,8 +401,11 @@ void RadioAppTaskFxn(void)
     for(;;)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
-
-#if (defined(S_G) || defined(SUPPORT_FREQ_FIND))
+        testflag[testcnt] =events ;
+        testcnt++;
+        //System_printf("events: = %x\r\n", events);
+        //System_flush();
+#if (defined(S_G) && defined(SUPPORT_FREQ_FIND))
 
         if(events & RADIO_EVT_CHANNEL_CHECK)
         {
@@ -477,8 +481,7 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TX)
         {
-#ifdef SUPPORT_FREQ_FIND
-
+#if (defined(S_G) && defined(SUPPORT_FREQ_FIND))
             if(AutoFreqStateRead() == false)
             {
                 Radio_setTxModeRfFrequency();
@@ -494,15 +497,14 @@ void RadioAppTaskFxn(void)
                 }
             }
 
-#endif // SUPPORT_FREQ_FIND
+#endif // (defined(S_G) || defined(SUPPORT_FREQ_FIND))
 
 
 #ifdef SUPPORT_RSSI_CHECK
             Radio_setTxModeRfFrequency();
             if (RADIOMODE_UPGRADE != RadioModeGet() && (deviceMode != DEVICES_CONFIG_MODE) && (NodeContinueFlagRead() == 0)) {
                 //i = 2;
-                rssi = RadioCheckRssi()
-                
+                rssi = RadioCheckRssi();
             }
             else
             {
@@ -688,6 +690,8 @@ void RadioAppTaskFxn(void)
         if(events & RADIO_EVT_SEND_CONFIG) 
         {
 #ifdef   BOARD_S3
+            //EasyLink_abort();
+            Radio_setConfigModeRfFrequency();
             NodeStrategyBuffClear();
             NodeRadioSendConfig();
 #endif
@@ -1060,7 +1064,7 @@ void Radio_setRxModeRfFrequency(void)
 
 #ifndef BOARD_CONFIG_DECEIVE
 
-    if (radioMode != RADIOMODE_UPGRADE) {
+    if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
 #ifdef  S_C//閲囬泦鍣�
         dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 #endif  // S_C//閲囬泦鍣�
@@ -1100,21 +1104,8 @@ void Radio_setTxModeRfFrequency(void)
     freq = EasyLink_getFrequency();
 
 #ifndef BOARD_CONFIG_DECEIVE
-    if (radioMode != RADIOMODE_UPGRADE) {
-        if (deviceMode == DEVICES_ON_MODE) {
-            dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-
-            if (freq < dstFreq) {
-                diffFreq = dstFreq - freq;
-            } else {
-                diffFreq = freq - dstFreq;
-            }
-
-            if (diffFreq < 20000) { ///< 20Khz
-                return;
-            }
-            RadioSetFrequency(dstFreq);
-        }
+    if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
+        
 #ifdef  S_C//閲囬泦鍣�
         dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 #endif  // S_C//閲囬泦鍣�

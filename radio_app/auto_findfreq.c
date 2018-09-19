@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-09-13 11:38:46
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-18 15:13:33
+* @Last Modified time: 2018-09-18 16:08:34
 */
 #include "../general.h"
 
@@ -107,13 +107,14 @@ void AutoFreqNodeSuccess(void)
 //***********************************************************************************
 void AutoFreqNodeSwitchFreq(void)
 {
+	autoFindfreq.switchTimes ++;
 	if(autoFindfreq.switchTimes >= AUTO_FINDFREQ_SWITCH_MAX)
 	{
 		autoFindfreq.switchTimes = 0;
 	}
 	g_rSysConfigInfo.rfBW = autoFindfreq.switchTimes << 4;
 
-	autoFindfreq.switchTimes ++;
+	RadioSend();
 }
 
 

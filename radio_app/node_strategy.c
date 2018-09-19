@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-17 18:17:45
+* @Last Modified time: 2018-09-18 15:35:31
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -201,6 +201,9 @@ void NodeStrategyReceiveTimeoutProcess(void)
         else
         {
             nodeStrategy.sendCnt = 0;
+#ifdef  SUPPORT_FREQ_FIND
+            AutoFreqNodeSwitchFreq();
+#endif  //SUPPORT_FREQ_FIND
         }
     }
 }
@@ -302,6 +305,9 @@ void StrategyCheckRssiBusyProcess(void)
     {
         nodeStrategy.radioBusyCnt = 0;
         nodeStrategy.sendCnt      = 0;
+#ifdef  SUPPORT_FREQ_FIND
+        AutoFreqNodeSwitchFreq();
+#endif  //SUPPORT_FREQ_FIND
     }
 }
 

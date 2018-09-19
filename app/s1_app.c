@@ -135,16 +135,11 @@ void S1DoubleKeyApp(void)
 #endif
         // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
         // if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
-        {
-            EasyLink_abort();
-        }
-        if(deviceMode == DEVICES_ON_MODE)
-            Radio_setConfigModeRfFrequency();
         NodeStrategyReset();
         deviceMode                      = DEVICES_CONFIG_MODE;
         configModeTimeCnt = 0;
         NodeUploadOffectClear();
-        RadioModeSet(RADIOMODE_RECEIVEPORT);
+        //RadioModeSet(RADIOMODE_RECEIVEPORT);
         SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
 #ifdef SUPPORT_BOARD_OLD_S1
         RadioSwitchingUserRate();
