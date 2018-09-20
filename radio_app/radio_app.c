@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-19 09:36:03
+* @Last Modified time: 2018-09-20 14:51:53
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -300,8 +300,7 @@ RadioOperationMode RadioModeGet(void)
 {
     return (RadioOperationMode)radioMode;
 }
-uint32_t testflag[50];
-uint8_t testcnt = 0;
+
 //***********************************************************************************
 // brief:   radio task 
 // 
@@ -401,10 +400,6 @@ void RadioAppTaskFxn(void)
     for(;;)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
-        testflag[testcnt] =events ;
-        testcnt++;
-        //System_printf("events: = %x\r\n", events);
-        //System_flush();
 #if (defined(S_G) && defined(SUPPORT_FREQ_FIND))
 
         if(events & RADIO_EVT_CHANNEL_CHECK)

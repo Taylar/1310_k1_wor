@@ -164,7 +164,7 @@ extern "C"
 #define EASYLINK_MAX_DATA_LENGTH            90
 
 //! \brief defines the Tx/Rx Max Address Size
-#define EASYLINK_MAX_ADDR_SIZE              4
+#define EASYLINK_MAX_ADDR_SIZE              8
 
 //! \brief defines the Max number of Rx Address filters
 #define EASYLINK_MAX_ADDR_FILTERS           3
