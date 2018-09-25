@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-13 15:17:31
+* @Last Modified time: 2018-09-25 11:16:00
 */
 #include "../general.h"
 
@@ -324,22 +324,24 @@ void ConcenterRtcProcess(void)
     if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
     {
         ConcenterRadioMonitorClear();
-        EasyLink_abort();
+        RadioAbort();
         // RadioSetRxMode();
         SetRadioDstAddr(0xdadadada);
+        g_rSysConfigInfo.sysState.lora_send_errors ++;
+        Flash_store_config();
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
     }
 
 #ifdef S_G
-    static uint32_t timingSendDataCnt = 0;
-    /* Send data regularly to ensure that the gateway can receive*/
-    if (timingSendDataCnt > (5 * 60)) {
-        RadioModeSet(RADIOMODE_RECEIVEPORT);
-        timingSendDataCnt = 0;
-        SetRadioDstAddr(0xdadadada);
-        ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
-    }
-    timingSendDataCnt++;
+    // static uint32_t timingSendDataCnt = 0;
+    // /* Send data regularly to ensure that the gateway can receive*/
+    // if (timingSendDataCnt > (5 * 60)) {
+    //     RadioModeSet(RADIOMODE_RECEIVEPORT);
+    //     timingSendDataCnt = 0;
+    //     SetRadioDstAddr(0xdadadada);
+    //     ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+    // }
+    // timingSendDataCnt++;
 #endif  // S_G
 
 }

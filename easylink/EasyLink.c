@@ -150,6 +150,7 @@ static rfc_CMD_PROP_CS_t EasyLink_cmdPropCs;
 #endif // (defined(DeviceFamily_CC13X0) || defined(DeviceFamily_CC13X2))
 
 // The table for setting the Rx Address Filters
+//#pragma DATA_ALIGN (addrFilterTable, 4);
 static uint8_t addrFilterTable[EASYLINK_MAX_ADDR_FILTERS * EASYLINK_MAX_ADDR_SIZE] = {0xaa};
 
 //Mutex for locking the RF driver resource
@@ -1421,6 +1422,8 @@ EasyLink_Status EasyLink_abort(void)
     //force abort (gracefull param set to 0)
     if (RF_cancelCmd(rfHandle, asyncCmdHndl, 0) == RF_StatSuccess)
     {
+        if(radioError)
+            return EasyLink_Status_Config_Error;
         /* If command is cancelled immediately, callback may have set the cmd handle to invalid.
          * In that case, no need to pend.
          */

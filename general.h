@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -507,7 +507,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0043
+#define FW_VERSION              0x0044
 #else
 #define FW_VERSION              0x0004
 #endif
@@ -706,6 +706,7 @@ typedef enum {
 #define         RADIO_FREQ_SEND_ERROR           0X0002
 #define         RADIO_FREQ_RECIEVE_ERROR        0X0004
 #define         RADIO_FREQ_CORE_ERROR           0X0008
+#define         RADIO_ABORT_ERROR               0X0010
 
 //***********************************************************************************
 //
@@ -914,6 +915,8 @@ EXTERN_ATTR  Alarmdata_t    g_AlarmSensor;
 #ifdef SUPPORT_ALARM_SWITCH_PERIOD
 EXTERN_ATTR bool g_alarmFlag;
 #endif //SUPPORT_ALARM_SWITCH_PERIOD
+
+EXTERN_ATTR uint8_t radioError;
 
 extern uint8_t deviceMode;
 

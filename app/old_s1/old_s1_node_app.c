@@ -53,7 +53,7 @@ void OldS1NodeApp_setDataTxRfFreque(void)
          System_printf("setDataTxRfFreque state = %d\r\n", status);
          System_flush();
     } else {
-        EasyLink_abort();
+        RadioAbort();
         EasyLink_setFrequency(OLD_S1_RF_TX_DATA_FREQUE);
     }
 }
@@ -86,7 +86,7 @@ void OldS1NodeApp_setDataRxRfFreque(void)
          System_printf("setDataRxRfFreque state = %d\r\n", status);
          System_flush();
     } else {
-        EasyLink_abort();
+        RadioAbort();
         EasyLink_setFrequency(OLD_S1_RF_RX_DATA_FREQUE);
     }
 //    time2 = Clock_getTicks();

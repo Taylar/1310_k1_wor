@@ -137,6 +137,7 @@ void RadioSwitchingUserRate(void);
 
 void RadioSwitchingS1OldUserRate(void);
 
+void RadioAbort(void);
 
 
 
