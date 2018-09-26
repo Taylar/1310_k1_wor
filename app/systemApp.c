@@ -84,9 +84,9 @@ void WdtResetCb(uintptr_t handle)
 
 	// call this function will reset immediately, otherwise will waite another wdt timeout to reset
 	g_rSysConfigInfo.sysState.err_restarts ++;
-    // Flash_store_config();
-    // while(1)
-        // HWREGBITW( PRCM_BASE + PRCM_O_WARMRESET, PRCM_WARMRESET_WR_TO_PINRESET_BITN ) = 1;
+    Flash_store_config();
+    while(1)
+        HWREGBITW( PRCM_BASE + PRCM_O_WARMRESET, PRCM_WARMRESET_WR_TO_PINRESET_BITN ) = 1;
 }
 
 void RtcEventSet(void)

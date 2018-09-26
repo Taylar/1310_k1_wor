@@ -182,7 +182,8 @@ static void Flash_external_page_program(uint32_t flashAddr, uint8_t *pData, uint
 
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        Task_sleep(1);
+        __delay_cycles(3000);    // 0.5ms
+        // Task_sleep(1);
 
     // Write enable
     do {
@@ -1446,7 +1447,62 @@ ErrorStatus Flash_load_upgrade_info(uint8_t *pData, uint16_t length)
 }
 
 
+//***********************************************************************************
+//
+// Flash external erase: 
+//      flashAddr:  Flash address
+//      eraseMode:  FLASH_EXT_SEGMENT_ERASE
+//                  FLASH_EXT_BANK_ERASE
+//                  FLASH_EXT_MASS_ERASE
+//
+//***********************************************************************************
+static void Flash_external_erase2(uint32_t flashAddr, uint8_t eraseMode)
+{
+    uint8_t buff[5];
 
+    if (eraseMode == FLASH_EXT_SECTOR_ERASE) {
+        buff[0] = FLASHCMD_SECTOR_ERASE;
+    } else if (eraseMode == FLASH_EXT_BLOCK_ERASE) {
+        buff[0] = FLASHCMD_BLOCK_ERASE;
+    } else if (eraseMode == FLASH_EXT_CHIP_ERASE) {
+        buff[0] = FLASHCMD_CHIP_ERASE;
+    } else {
+        return;
+    }
+    
+#ifdef FLASH_W25Q256FV
+    buff[1] = HIBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[3] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[4] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
+#else
+    buff[1] = LOBYTE_ZKS(HIWORD_ZKS(flashAddr));
+    buff[2] = HIBYTE_ZKS(LOWORD_ZKS(flashAddr));
+    buff[3] = LOBYTE_ZKS(LOWORD_ZKS(flashAddr));
+#endif
+    // wait chip idle
+    while (Flash_external_read_status() & WIP_BIT)
+        __delay_cycles(3000);    // 0.5us
+        // Task_sleep(1);
+
+    // Write enable
+    do {
+        Flash_external_write_enable();
+        __delay_cycles(1625);    // 0.5us
+    } while (!(Flash_external_read_status() & WEL_BIT));
+
+    Flash_spi_enable();
+    if (eraseMode == FLASH_EXT_CHIP_ERASE) {
+        Spi_write(buff, 1);
+    } else {    
+    #ifdef FLASH_W25Q256FV
+        Spi_write(buff, 5);
+    #else
+        Spi_write(buff, 4);
+    #endif
+    }
+    Flash_spi_disable();
+}
 
 #define     CONFIG_VALID_FLAG                   "valid config"
 
@@ -1464,7 +1520,7 @@ void Flash_store_config(void)
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 
         
-    Flash_external_erase(FLASH_SYS_CONFIG_INFO_POS, FLASH_EXT_SECTOR_ERASE);
+    Flash_external_erase2(FLASH_SYS_CONFIG_INFO_POS, FLASH_EXT_SECTOR_ERASE);
     //
     Flash_external_write(FLASH_SYS_CONFIG_INFO_POS, (uint8_t *)configFlag, 12);
     Flash_external_write(FLASH_SYS_CONFIG_DATA_POS, (uint8_t*)(&g_rSysConfigInfo), sizeof(ConfigInfo_t));
