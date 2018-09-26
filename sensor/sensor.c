@@ -291,12 +291,14 @@ static void Sensor_store_package(void)
     //Sensor ID
     for (i = 0; i < 4; i++)
         buff[length++] = g_rSysConfigInfo.DeviceId[i];
+#ifdef BOARD_S3
+    length = 0;
+#endif //BOARD_S3
     //娑堟伅娴佹按鍙�
     buff[length++] = HIBYTE_ZKS(rSensorObject.serialNum);
     buff[length++] = LOBYTE_ZKS(rSensorObject.serialNum);
     rSensorObject.serialNum++;
     //閲囬泦鏃堕棿
-
     if(collectPeriod % 60 == 0){//鍙閲囬泦鍛ㄦ湡涓烘暣鍒嗛挓鐨勬儏鍐佃繘琛岃鏁板櫒璋冩暣銆�
         buff[length++] = TransHexToBcd(lastcalendar.Year - 2000);
         buff[length++] = TransHexToBcd(lastcalendar.Month);
@@ -433,8 +435,14 @@ static void Sensor_store_package(void)
     buff[0] = length - 1;
     Flash_store_sensor_data(buff, length + sizeof(NwkLocation_t));
 #else
+
+#ifdef BOARD_S3
+    Flash_store_sensor_data(buff, 16);
+#else
     buff[0] = length - 1;
     Flash_store_sensor_data(buff, length);
+#endif // BOARD_S3
+
 #endif  // G7_PROJECT
 
 #endif  /* FLASH_EXTERNAL */

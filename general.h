@@ -507,9 +507,9 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0044
+#define FW_VERSION              0x0045
 #else
-#define FW_VERSION              0x0004
+#define FW_VERSION              0x0045
 #endif
 #endif
 

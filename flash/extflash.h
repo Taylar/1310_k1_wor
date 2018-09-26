@@ -265,7 +265,7 @@
 #define FLASH_LOG_NUMBER            (FLASH_LOG_AREA_SIZE/FLASH_LOG_SIZE)
 
 
-#define FLASH_UPGRADE_INFO_POS           (FLASH_LOG_POS + FLASH_LOG_AREA_SIZE)// 
+#define FLASH_UPGRADE_INFO_POS           (FLASH_SECTOR_SIZE*4)// start addr: 16K
 
 #define FLASH_UPGRADE_INFO_LENGTH        (sizeof(upgrade_flag_t))
 
@@ -282,16 +282,16 @@
 //External flash sensor data pointer size
 #define FLASH_SENSOR_PTR_SIZE           16
 //External flash sensor data pointer number
-#define FLASH_SENSOR_PTR_NUMBER         (5120L)           // 20*4096
+#define FLASH_SENSOR_PTR_NUMBER         (11520L)           // 180*1024
 //External flash sensor data pointer position offset
 #define FLASH_SENSOR_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)
 
 //External flash sensor data store position
 #define FLASH_SENSOR_DATA_POS           (FLASH_SENSOR_PTR_POS + FLASH_SENSOR_PTR_AREA_SIZE)
 //External flash sensor data size
-#define FLASH_SENSOR_DATA_SIZE          32
+#define FLASH_SENSOR_DATA_SIZE          16
 //External flash sensor data number
-#define FLASH_SENSOR_DATA_NUMBER        (5120L)         // the max store data   //40 *4096
+#define FLASH_SENSOR_DATA_NUMBER        (11520L)         // the max store data   //180 *1024
 //External flash sensor data position offset
 #define FLASH_SENSOR_DATA_AREA_SIZE     (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER)
 

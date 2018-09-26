@@ -124,10 +124,18 @@ void NodeUploadProcess(void)
 
     while(dataItems)
     {
+#ifdef BOARD_S3
+        Flash_load_sensor_data_by_offset(data+6, 16, offsetUnit);
+        data[0] = 21;
+        data[1] = 0;
+        data[2] = g_rSysConfigInfo.DeviceId[0];
+        data[3] = g_rSysConfigInfo.DeviceId[1];
+        data[4] = g_rSysConfigInfo.DeviceId[2];
+        data[5] = g_rSysConfigInfo.DeviceId[3];
+#else
         Flash_load_sensor_data_by_offset(data, 22, offsetUnit);
-
+#endif  // BOARD_S3
         serialNumber = ((data[6] << 8) | data[7]);
-
         // the radio buf is full 
         if(NodeRadioSendSensorData(data, 22) == false)
         {

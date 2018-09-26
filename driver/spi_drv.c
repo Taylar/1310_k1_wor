@@ -49,7 +49,8 @@ const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
         .mosiPin            = CC1310_LAUNCHXL_SPI0_MOSI_NODE,
         .misoPin            = CC1310_LAUNCHXL_SPI0_MISO_NODE,
         .clkPin             = CC1310_LAUNCHXL_SPI0_CLK_NODE,
-        .csnPin             = CC1310_LAUNCHXL_SPI0_CSN_NODE
+        .csnPin             = CC1310_LAUNCHXL_SPI0_CSN_NODE,
+        .minDmaTransferSize = 1024,
     },
     {
         .baseAddr           = SSI1_BASE,
@@ -63,7 +64,8 @@ const SPICC26XXDMA_HWAttrsV1 spiCC26XXDMAHWAttrs[CC1310_LAUNCHXL_SPICOUNT] = {
         .mosiPin            = CC1310_LAUNCHXL_SPI1_MOSI_NODE,
         .misoPin            = CC1310_LAUNCHXL_SPI1_MISO_NODE,
         .clkPin             = CC1310_LAUNCHXL_SPI1_CLK_NODE,
-        .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_NODE
+        .csnPin             = CC1310_LAUNCHXL_SPI1_CSN_NODE,
+        .minDmaTransferSize = 1024,
     }
 };
 
