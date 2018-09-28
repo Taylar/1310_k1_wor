@@ -368,7 +368,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             pData[4] = strlen(PROJECT_NAME);
             memcpy((char *)(pData + 5),PROJECT_NAME, strlen(PROJECT_NAME));
             len = Usb_group_package(AC_Send_Project_Mess, pData, strlen(PROJECT_NAME) + 5);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             break;
 
         case EV_Get_Config:
@@ -377,7 +377,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 #else
             memcpy((char *)pData, (char *)&g_rSysConfigInfo, sizeof(g_rSysConfigInfo));
             len = Usb_group_package(AC_Send_Config, pData, sizeof(g_rSysConfigInfo));
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
 #endif
             break;
 
@@ -399,7 +399,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
 #endif // SYS_CONFIG_USE_ID_MODE
 
 #ifdef  BOARD_CONFIG_DECEIVE
@@ -415,7 +415,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
              
              memcpy((char *)pData, (char *)&g_rSysConfigInfo.apnuserpwd, size);
              len = Usb_group_package(AC_Send_APN, pData, size);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
              break;
 
         case EV_Set_APN:           
@@ -425,7 +425,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
              
             pData[0] = 0;            
             len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
 
             break;
 
@@ -441,7 +441,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 
             memcpy((char *)pData, (char *)&calendar, sizeof(Calendar));
             len = Usb_group_package(AC_Send_Calendar, pData, sizeof(Calendar));
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             break;
 
         case EV_Set_Calendar:
@@ -457,7 +457,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             Rtc_set_calendar(&calendar);
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             break;
 
         case EV_Get_Bluetooth_Name:
@@ -504,7 +504,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             Flash_reset_all();
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             __delay_cycles(60000);
             SysCtrlSystemReset();//閲嶅惎
             break;
@@ -530,7 +530,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                 size = 10;//鏃犳晥鏁版嵁
             
 			len = Usb_group_package(AC_Send_History_Data, pData, size);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
 			break;
             
 #ifdef FLASH_EXTERNAL
@@ -643,7 +643,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             if(readAddr == writeAddr) {//no find
                 pData[0] = 0;
                 len = Usb_group_package(AC_Ack, pData, 1);
-                InterfaceSend(pData, len);
+                InterfaceSendImmediately(pData, len);
             }
             else {
                 
@@ -673,7 +673,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                                 len = Usb_group_package(AC_Send_Device_Data, pData, pData[0]+1);                     
                             }
 
-                            InterfaceSend(pData, len);
+                            InterfaceSendImmediately(pData, len);
                             __delay_cycles(60000);
                         }
                         else{
@@ -690,7 +690,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
         
             len = GetDevicePara(pData[3],pData);
             len = Usb_group_package(AC_Send_DevicePara, pData, len);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
                 
             break;
             
@@ -701,7 +701,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                 pData[0] = 1;
            
             len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             
             break;        
 #ifdef FLASH_EXTERNAL
@@ -733,7 +733,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                     len = Usb_group_package(AC_Send_Unupload_Data, pData, pData[0]+1);                     
                 }
 
-                InterfaceSend(pData, len);
+                InterfaceSendImmediately(pData, len);
                 __delay_cycles(60000);
 
                 readAddr = (readAddr + FLASH_SENSOR_DATA_SIZE) % FLASH_SENSOR_DATA_AREA_SIZE;
@@ -770,7 +770,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                     len = Usb_group_package(AC_Send_Record_Data, pData, pData[0]+1);                     
                 }
 
-                InterfaceSend(pData, len);
+                InterfaceSendImmediately(pData, len);
                 __delay_cycles(60000);
 
                 readAddr = (readAddr + FLASH_SENSOR_DATA_SIZE) % FLASH_SENSOR_DATA_AREA_SIZE;
@@ -806,7 +806,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                     len = Usb_group_package(EV_Send_ReadFlash, pData, size);
                 }
                 
-                InterfaceSend(pData, len);
+                InterfaceSendImmediately(pData, len);
                 __delay_cycles(60000);
 
                 datasize -= size;                 
@@ -826,20 +826,20 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                 pData[0] = 1;
             }
             len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             break;
 
 		case EV_Get_SIM_CCID:
             pData[0] = 20;
 			Nwk_get_simccid(pData+1);
             len = Usb_group_package(EV_Send_SIM_CCID, pData, 21);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             break;
 
         default:
             pData[0] = 2;
             len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSend(pData, len);
+            InterfaceSendImmediately(pData, len);
             return -1;
     }
 	return 0; // No Error
@@ -857,13 +857,13 @@ void UsbSend(USB_TX_MSG_ID msgId)
         case AC_Ack:
         bUsbBuff[0] = 0;
         len = Usb_group_package(AC_Ack, bUsbBuff, 1);
-        InterfaceSend(bUsbBuff, len);
+        InterfaceSendImmediately(bUsbBuff, len);
         break;
 
         case AC_Send_Config:
         memcpy((char *)bUsbBuff, (char *)&g_rSysConfigInfo, sizeof(g_rSysConfigInfo));
         len = Usb_group_package(AC_Send_Config, bUsbBuff, sizeof(g_rSysConfigInfo));
-        InterfaceSend(bUsbBuff, len);
+        InterfaceSendImmediately(bUsbBuff, len);
         break;
 
         case AC_Send_APN:
@@ -882,7 +882,7 @@ void UsbSend(USB_TX_MSG_ID msgId)
 
         memcpy((char *)bUsbBuff, (char *)&calendar, sizeof(Calendar));
         len = Usb_group_package(AC_Send_Calendar, bUsbBuff, sizeof(Calendar));
-        InterfaceSend(bUsbBuff, len);
+        InterfaceSendImmediately(bUsbBuff, len);
         break;
 
         case AC_Send_Bluetooth_Name:

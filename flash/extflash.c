@@ -1213,7 +1213,13 @@ void Flash_log(uint8_t *log)
         Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);    
     }
     
-    currentTime = Rtc_get_calendar();        
+    currentTime            = Rtc_get_calendar();        
+    currentTime.Year       = TransHexToBcd(currentTime.Year%100)+0x2000;
+    currentTime.Month      = TransHexToBcd(currentTime.Month);
+    currentTime.DayOfMonth = TransHexToBcd(currentTime.DayOfMonth);
+    currentTime.Hours      = TransHexToBcd(currentTime.Hours);
+    currentTime.Minutes    = TransHexToBcd(currentTime.Minutes);
+    currentTime.Seconds    = TransHexToBcd(currentTime.Seconds);
     sprintf((char*)buff, "T%04x%02x%02x%02x%02x%02x:",currentTime.Year,
                                                currentTime.Month, 
                                                currentTime.DayOfMonth,

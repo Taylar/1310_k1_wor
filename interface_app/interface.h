@@ -22,6 +22,8 @@ void InterfaceTaskCreate(void);
 
 void InterfaceSend(uint8_t * datap, uint16_t len);
 
+void InterfaceSendImmediately(uint8_t * datap, uint16_t len);
+
 void InterfaceEnable(void);
 
 void InterfaceDisable(void);

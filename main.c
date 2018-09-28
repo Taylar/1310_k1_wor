@@ -89,7 +89,7 @@ xdc_Void myErrorFxn(xdc_runtime_Error_Block* p)
     UInt hwiKey;
 
     hwiKey = Hwi_enable();
-    //Flash_log("UNO\n");
+    Flash_log("UNO\n");
 
     g_rSysConfigInfo.sysState.lora_list_fulls++;
     Flash_store_config();

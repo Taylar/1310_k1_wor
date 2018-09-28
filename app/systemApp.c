@@ -85,7 +85,7 @@ void WdtResetCb(uintptr_t handle)
 	// hwiKey = Hwi_disable();	
 
     hwiKey = Hwi_enable();
-    //Flash_log("UNO\n");
+    Flash_log("WDT\n");
 	// call this function will reset immediately, otherwise will waite another wdt timeout to reset
 	g_rSysConfigInfo.sysState.err_restarts ++;
     Flash_store_config();
@@ -448,4 +448,17 @@ void SystemAppTaskFxn(void)
 
 	}
 }
+
+
+//***********************************************************************************
+// brief:   reset the system and save the rtc data
+// 
+// parameter:   none 
+//***********************************************************************************
+void SystemResetAndSaveRtc(void)
+{
+	g_rSysConfigInfo.rtc = Rtc_get_calendar();
+	SysCtrlSystemReset();
+}
+
 

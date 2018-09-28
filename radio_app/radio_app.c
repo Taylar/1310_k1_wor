@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-26 18:24:25
+* @Last Modified time: 2018-09-27 17:17:56
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -110,7 +110,7 @@ void RadioSendData(void)
     EasyLink_Status status;
 
     if(radioError)
-        SysCtrlSystemReset();
+        SystemResetAndSaveRtc();
 
 radio_reSend:
     status = EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
@@ -127,8 +127,8 @@ radio_reSend:
         case EasyLink_Status_Config_Error:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_FREQ_SEND_ERROR;
-        Flash_store_config();
-        SysCtrlSystemReset();
+        Flash_log("TX R\n");
+        SystemResetAndSaveRtc();
         break;
     }
 }
@@ -144,7 +144,7 @@ void RadioReceiveData(void)
     EasyLink_Status status;
 
     if(radioError)
-        SysCtrlSystemReset();
+        SystemResetAndSaveRtc();
 
     radioStatus = RADIOSTATUS_RECEIVING;
 radio_reReceive:
@@ -161,8 +161,8 @@ radio_reReceive:
         case EasyLink_Status_Config_Error:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_FREQ_RECIEVE_ERROR;
-        Flash_store_config();
-        SysCtrlSystemReset();
+        Flash_log("RX R\n");
+        SystemResetAndSaveRtc();
         break;
     }
 }
@@ -176,7 +176,7 @@ void RadioSetFrequency(uint32_t ui32Frequency)
 {
     EasyLink_Status status;
     if(radioError)
-        SysCtrlSystemReset();
+        SystemResetAndSaveRtc();
 radio_reSetFreq:
     status = EasyLink_setFrequency(ui32Frequency);
     switch(status)
@@ -191,8 +191,9 @@ radio_reSetFreq:
         case EasyLink_Status_Config_Error:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_FREQ_SWITCH_ERROR;
-        Flash_store_config();
-        SysCtrlSystemReset();
+
+        Flash_log("SF R\n");
+        SystemResetAndSaveRtc();
         break;
     }
 }
@@ -206,7 +207,7 @@ void RadioAbort(void)
 {
     EasyLink_Status status;
     if(radioError)
-        SysCtrlSystemReset();
+        SystemResetAndSaveRtc();
 radio_reAbort:
     status = EasyLink_abort();
     switch(status)
@@ -217,8 +218,9 @@ radio_reAbort:
         case EasyLink_Status_Config_Error:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_ABORT_ERROR;
-        Flash_store_config();
-        SysCtrlSystemReset();
+
+        Flash_log("RF ST R\n");
+        SystemResetAndSaveRtc();
         break;
     }
 }

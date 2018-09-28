@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-25 11:16:00
+* @Last Modified time: 2018-09-27 17:13:22
 */
 #include "../general.h"
 
@@ -323,6 +323,7 @@ void ConcenterRtcProcess(void)
     concenterParameter.monitorCnt++;
     if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
     {
+        Flash_log("NoRec\n");
         ConcenterRadioMonitorClear();
         RadioAbort();
         // RadioSetRxMode();

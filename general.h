@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //

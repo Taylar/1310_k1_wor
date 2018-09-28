@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-11 17:50:11
+* @Last Modified time: 2018-09-28 10:53:53
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
@@ -97,6 +97,13 @@ void InterfaceSend(uint8_t * datap, uint16_t len)
     uart0TxData.length =  len > UART_BUFF_SIZE? UART_BUFF_SIZE: len;
     memcpy(uart0TxData.buff, datap, uart0TxData.length);
     Event_post(interfaceEvtHandle, INTERFACE_EVT_TX);    
+}
+
+void InterfaceSendImmediately(uint8_t * datap, uint16_t len)
+{
+    uart0TxData.length =  len > UART_BUFF_SIZE? UART_BUFF_SIZE: len;
+    memcpy(uart0TxData.buff, datap, uart0TxData.length);
+    UartSend(uart0TxData.buff, uart0TxData.length);   
 }
 
 
