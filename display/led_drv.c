@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-07 17:01:22
+* @Last Modified time: 2018-09-29 16:57:13
 */
 #include "../general.h"
 
@@ -15,6 +15,10 @@
 #define LED_G_PIN_NODE                       IOID_23
 #define LED_B_PIN_NODE                       IOID_24
 
+#ifdef BOARD_CONFIG_DECEIVE
+#undef  LED_B_PIN_NODE
+#define LED_B_PIN_NODE                       IOID_28
+#endif  // BOARD_CONFIG_DECEIVE
 
 static const uint8_t LED_ID_CONST[LED_MAX] =
 {
