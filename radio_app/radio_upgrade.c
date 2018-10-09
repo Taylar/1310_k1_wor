@@ -228,7 +228,7 @@ void RadioUpgrade_CmdDataParse(uint8_t *pData, uint16_t length)
 
     // len(2)cmd(1)data(n) // len = n+1
     if (data_len <= 1) {// 空消息处理
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
         g_rSysConfigInfo.rtc = Rtc_get_calendar();
         Flash_store_config();
 #endif

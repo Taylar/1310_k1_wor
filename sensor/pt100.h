@@ -1,7 +1,7 @@
 #ifndef __ZKSIOST_PT100_H__
 #define __ZKSIOST_PT100_H__
 
-#ifdef SUPPORT_PT100
+#ifdef SUPPORT_DEEPTEMP_PT100
 
 #define PT100_START_TEMPERATURE      -200.0
 #define PT100_MAX_T                  190.0  // µ•Œª£∫…„ œ∂»

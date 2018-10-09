@@ -1255,7 +1255,9 @@ bool Disp_poweron(void)
 
     }
 
+#ifdef BOARD_S6_6
     Sys_lcd_start_timing();
+#endif
     return ret;
 }
 
@@ -1275,7 +1277,9 @@ void Disp_poweroff(void)
     Lcd_poweroff();
     rDispObject.init = 0;
     rDispObject.infoIndex = 0;
+#ifdef BOARD_S6_6
     Sys_lcd_stop_timing();
+#endif
 }
 
 #endif  /* SUPPORT_DISP_SCREEN */

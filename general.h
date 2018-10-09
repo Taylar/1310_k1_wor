@@ -458,15 +458,33 @@ error
 #define SUPPORT_SHT2X
 #define SUPPORT_DEEPTEMP_PT100
 
-
-#define SUPPORT_NETWORK
 #define SUPPORT_REMOTE_UPGRADE
 #define SUPPORT_USB_UPGRADE
 
 #define  SUPPORT_USB
 
+#define SUPPORT_CHARGE_DECT
+
+#undef SUPPORT_NTC
+#undef SUPPORT_ENGMODE
+#undef SUPPORT_DISP_SCREEN
+#undef SUPPORT_MENU
+#undef SUPPORT_START_LOGO
+
 #undef  FW_VERSION
-#define FW_VERSION              0x0030
+#define FW_VERSION              0x0031
+
+//#define SUPPORT_BOARD_OLD_S2S_1
+#ifdef  UPPORT_BOARD_OLD_S2S_1
+#undef  SUPPORT_CHARGE_DECT
+#undef  FW_VERSION
+#define FW_VERSION              0x0001
+#undef  BOARD_NAME
+#define BOARD_NAME              "_S2S_1"
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+#endif // UPPORT_BOARD_OLD_S2S_1
+
 #endif
 
 //***********************************************************************************
@@ -501,6 +519,12 @@ error
 #undef SUPPORT_FLASH_LOG
 /* old S1*/
 //#define SUPPORT_BOARD_OLD_S1
+#ifdef SUPPORT_BOARD_OLD_S1
+#undef  BOARD_NAME
+#define BOARD_NAME              "_S3_1"
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+#endif //SUPPORT_BOARD_OLD_S1
 
 #define SUPPORT_RSSI_CHECK
 // #define SUPPORT_FREQ_FIND
@@ -509,7 +533,7 @@ error
 #ifndef SUPPORT_BOARD_OLD_S1
 #define FW_VERSION              0x0046
 #else
-#define FW_VERSION              0x0045
+#define FW_VERSION              0x0006
 #endif
 #endif
 
@@ -518,8 +542,8 @@ error
 //***********************************************************************************
 #ifdef  BOARD_CONFIG_DECEIVE
 
-// #undef SUPPORT_SHT2X
-// #undef SUPPORT_MENU
+#undef SUPPORT_SHT2X
+#undef SUPPORT_MENU
 
 #endif //BOARD_CONFIG_DECEIVE
 
@@ -888,11 +912,11 @@ typedef struct {
 #include "radio_app/radio_upgrade.h"
 #include "radio_app/auto_findfreq.h"
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
     #include "app/old_s1/old_s1_node_app.h"
 #endif
 
-#ifdef SUPPORT_PT100
+#ifdef SUPPORT_DEEPTEMP_PT100
 // #include "ads1247/ads1247.h"
 #include "sensor/pt100.h"
 #include "sensor/ads1247/ads1247.h"
@@ -900,6 +924,10 @@ typedef struct {
 
 #ifdef SUPPORT_FLIGHT_MODE
 #include "network/flight_mode.h"
+#endif
+
+#ifdef SUPPORT_CHARGE_DECT
+#include "chargedetect/chargedect.h"
 #endif
 
 //***********************************************************************************

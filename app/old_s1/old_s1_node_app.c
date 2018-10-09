@@ -6,7 +6,7 @@
 #include DeviceFamily_constructPath(driverlib/aon_batmon.h)
 #include DeviceFamily_constructPath(driverlib/trng.h)
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
 
 uint8_t  g_oldS1OperatingMode = S1_OPERATING_MODE2;
 
@@ -25,8 +25,8 @@ Semaphore_Handle oldS1UploadeSemHandle;
 
 static uint32_t getRandom(void);
 
-static void PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata);
-static void PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata);
+static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata);
+static uint8_t PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata);
 
 static void SendDataTimingFxn(UArg arg0);
 
@@ -53,7 +53,7 @@ void OldS1NodeApp_setDataTxRfFreque(void)
          System_printf("setDataTxRfFreque state = %d\r\n", status);
          System_flush();
     } else {
-        RadioAbort();
+        EasyLink_abort();
         EasyLink_setFrequency(OLD_S1_RF_TX_DATA_FREQUE);
     }
 }
@@ -86,7 +86,7 @@ void OldS1NodeApp_setDataRxRfFreque(void)
          System_printf("setDataRxRfFreque state = %d\r\n", status);
          System_flush();
     } else {
-        RadioAbort();
+        EasyLink_abort();
         EasyLink_setFrequency(OLD_S1_RF_RX_DATA_FREQUE);
     }
 //    time2 = Clock_getTicks();
@@ -124,6 +124,7 @@ void OldS1NodeAPP_Mode2NodeUploadProcess(void)
     uint8_t     data[LENGTH_Pattern2TxPacket];
     uint32_t    dataItems;
     OldSensorData sensorData;
+    uint8_t len = 0;
 
     Semaphore_pend(oldS1UploadeSemHandle, BIOS_WAIT_FOREVER);
     OldS1NodeApp_stopSendSensorData();
@@ -133,7 +134,17 @@ void OldS1NodeAPP_Mode2NodeUploadProcess(void)
     if (dataItems > 0) {
         RadioSwitchingS1OldUserRate();
 
-        Flash_load_sensor_data_by_offset(data, 22, 0);
+#ifdef BOARD_S3
+        Flash_load_sensor_data_by_offset(data+6, 16, offsetUnit);
+        data[0] = 21;
+        data[1] = 0;
+        data[2] = g_rSysConfigInfo.DeviceId[0];
+        data[3] = g_rSysConfigInfo.DeviceId[1];
+        data[4] = g_rSysConfigInfo.DeviceId[2];
+        data[5] = g_rSysConfigInfo.DeviceId[3];
+#else
+        Flash_load_sensor_data_by_offset(data, 22, offsetUnit);
+#endif  // BOARD_S3
         sensorData.serialNumber = ((data[6] << 8) | data[7]);
 
         sensorData.measureCalendar.Year = data[8];
@@ -145,14 +156,25 @@ void OldS1NodeAPP_Mode2NodeUploadProcess(void)
 
         sensorData.voltage = ((data[14] << 8) | data[15]);
 
+#ifdef SUPPORT_BOARD_OLD_S1
         sensorData.temperature = ((data[18] << 8) | data[19]);
         sensorData.humidity = ((data[20] << 8) | data[21]);
+#endif
 
-        PackMode2UplodData(sensorData, data);
+#ifdef  SUPPORT_BOARD_OLD_S2S_1
+        sensorData.tempdeep = 0;
+        HIBYTE(HIWORD(sensorData.tempdeep)) = data[18];
+        LOBYTE(HIWORD(sensorData.tempdeep)) = data[19];
+        HIBYTE(LOWORD(sensorData.tempdeep)) = data[20];
+
+        sensorData.tempdeep = sensorData.tempdeep >> 12;
+#endif
+
+        len = PackMode2UplodData(sensorData, data);
 
         ClearRadioSendBuf();
 
-        RadioCopyPacketToBuf(data, LENGTH_Pattern2TxPacket, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS, 0);
+        RadioCopyPacketToBuf(data, len, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS, 0);
         OldS1NodeApp_startSendSensorData();
     }
 
@@ -164,28 +186,38 @@ void OldS1NodeAPP_scheduledUploadData(void)
     uint16_t randDelay;
     OldSensorData sensorData;
     uint8_t buff[LENGTH_Pattern1TxPacket] = {0};
+    uint8_t len;
 
     if (g_oldS1OperatingMode == S1_OPERATING_MODE1 && deviceMode == DEVICES_ON_MODE ) {
         Sensor_measure(0);
         sensorData.serialNumber = frameSerialNum;
         frameSerialNum++;
+
+#ifdef SUPPORT_BOARD_OLD_S1
         sensorData.humidity = rSensorData[0].humi;
         sensorData.temperature = rSensorData[0].temp;
         sensorData.voltage = Battery_get_voltage();
+#endif
 
-        PackMode1UplodData(sensorData, buff);
+#ifdef  SUPPORT_BOARD_OLD_S2S_1
+        sensorData.tempdeep = rSensorData[0].tempdeep >> 4;
+#endif
+
+
+        len = PackMode1UplodData(sensorData, buff);
         RadioSwitchingS1OldUserRate();
 
         randDelay = 15 * (getRandom() % 20) + 225;
         Task_sleep(randDelay * CLOCK_UNIT_MS);
 
         ClearRadioSendBuf();
-        RadioSendPacket(buff, LENGTH_Pattern1TxPacket, 0, 0);
+        RadioSendPacket(buff, len, 0, 0);
         RadioModeSet(RADIOMODE_SENDPORT);
     } else if(g_oldS1OperatingMode == S1_OPERATING_MODE2) {
         Sensor_measure(1);
         if (deviceMode == DEVICES_ON_MODE) {
-            Event_post(systemAppEvtHandle, SYS_EVT_EVT_OLD_S1_UPLOAD_NODE);
+//            Event_post(systemAppEvtHandle, SYS_EVT_EVT_OLD_S1_UPLOAD_NODE);
+            RadioEventPost(RADIO_EVT_EVT_OLD_S1_UPLOAD_NODE);
         }
     }
 }
@@ -199,12 +231,12 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
     */
 
     static uint16_t lastSerialNum = 0xffff;
-    static uint8_t ackRepeatTimes = 0;
+//    static uint8_t ackRepeatTimes = 0;
 
     uint16_t serialNum, id;
     bool flag = false;
 
-//    ClearRadioSendBuf();
+    ClearRadioSendBuf();
     OldS1NodeApp_stopSendSensorData();
     // Software version after (version: 15 74)
     if (5 == len && pData[0] == 0xba) {
@@ -220,18 +252,23 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
         }
     }
 
+    Semaphore_pend(oldS1UploadeSemHandle, BIOS_WAIT_FOREVER);
+
     id  = Flash_get_unupload_items();
     if (flag) {
-        ackRepeatTimes++; /// 重复次数，如果ack重复次数超过10条表示有两条数据的序列号重复了
+//        ackRepeatTimes++; /// 重复次数，如果ack重复次数超过10条表示有两条数据的序列号重复了
         txResendCntClear();
-        if ((serialNum != lastSerialNum) || (ackRepeatTimes > 20)) {
-            ackRepeatTimes = 0;
+        if ((serialNum != lastSerialNum) /*|| (ackRepeatTimes > 20)*/) {
+//            ackRepeatTimes = 0;
             lastSerialNum = serialNum;
             if (id > 0) {
+                mode2TxFrameSerialNum = 0xffff;
                 Flash_moveto_next_sensor_data();
             }
         }
     }
+
+    Semaphore_post(oldS1UploadeSemHandle);
 
     if (id > 0 && flag) {
         OldS1NodeAPP_Mode2NodeUploadProcess();
@@ -278,13 +315,14 @@ static uint32_t getRandom(void)
 }
 
 
+#ifdef SUPPORT_BOARD_OLD_S1
 /*
 * 模式1的帧格式
  编号    功能                 适用模式    方向           传输速率               频段            起始位 长度  功能   客户标志码          TAG_ID   负载长度    类型  长度  序列号         类型  长度    温度 @1    类型  长度     湿度           类型  长度   电池电压        结束位
  1   上传传感数据     1     TAG->BB 38.4Kbps    433.6   EA   18  01                       10     0F  02          0B  02           0C  02          09  02           AE
  下标：                                                                                                                 0    1   2   3  4       5 6 7 8   9      10  11  12 13   14  15  16 17    18  19   20 21  22  23  24 25    26
 */
-static void PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
+static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
 {
     if (NULL == pdata) {
         return;
@@ -344,15 +382,87 @@ static void PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
 
     // end
     pdata[len] = 0xAE;
+    return len;
 }
+#endif
 
+#ifdef  SUPPORT_BOARD_OLD_S2S_1
+/*
+* 模式1的帧格式
+ 编号    功能                 适用模式    方向           传输速率               频段            起始位 长度  功能   客户标志码          TAG_ID   负载长度    类型  长度  序列号         类型  长度    温度                                    类型  长度   电池电压        结束位
+ 1   上传传感数据     1     TAG->BB 38.4Kbps    433.6   EA   16  01                       10     0F  02          55  04                    09  02           AE
+ 下标：                                                                                                                 0    1   2   3  4       5 6 7 8   9      10  11  12 13   14  15  16 17    18  19   20  21  22 23    24
+*/
+static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
+{
+    if (NULL == pdata) {
+        return 0;
+    }
+
+    uint8_t len = 0;
+    uint32_t tmp;
+
+    // start
+    pdata[len++] = 0xEA;
+
+    // length
+    pdata[len++] = 0x16;
+
+    // cmd
+    pdata[len++] = 0x01;
+
+    // customer
+    pdata[len++] =  g_rSysConfigInfo.customId[0];
+    pdata[len++] =  g_rSysConfigInfo.customId[1];
+
+    // id
+    pdata[len++] =  g_rSysConfigInfo.DeviceId[0];
+    pdata[len++] =  g_rSysConfigInfo.DeviceId[1];
+    pdata[len++] =  g_rSysConfigInfo.DeviceId[2];
+    pdata[len++] =  g_rSysConfigInfo.DeviceId[3];
+
+    // payload length
+    pdata[len++] = 0x10;
+
+    // serial
+    pdata[len++] = 0x0F;
+    pdata[len++] = 0x02;
+    pdata[len++] = sensorData.serialNumber >> 8;
+    pdata[len++] = sensorData.serialNumber & 0x00FF;
+
+    // PT100 temperature
+    pdata[len++]= 0x55;
+    pdata[len++] = 0x04;
+    pdata[len++] = HIBYTE(HIWORD(sensorData.tempdeep));
+    pdata[len++] = LOBYTE(HIWORD(sensorData.tempdeep));
+    pdata[len++] = HIBYTE(LOWORD(sensorData.tempdeep));
+    pdata[len++] = LOBYTE(LOWORD(sensorData.tempdeep));
+
+
+    // 计算公式： U = (上传值)*4/1023, 单位：V;
+    tmp = ((uint32_t)(sensorData.voltage * 1023 / 4)) / 1000;
+    sensorData.voltage = (uint16_t)tmp;
+    // voltage
+    pdata[len++] = 0x09;
+    pdata[len++] = 0x02;
+    pdata[len++] = sensorData.voltage >> 8;
+    pdata[len++] = sensorData.voltage & 0x00FF;
+
+    // end
+    pdata[len] = 0xAE;
+    return len;
+}
+#endif
+
+
+#ifdef SUPPORT_BOARD_OLD_S1
 /*
 *模式2的帧格式
 编号     功能                  适用模式    方向             传输速率             频段            起始位 长度  功能  客户标志码          TAG_ID    负载长度   类型  长度  序列号        类型  长度    时间                                        类型  长度  温度 @1       类型  长度   湿度        类型  长度  电池电压        结束位
  1   上传传感数据     2      TAG->BB 38.4Kbps    433.6  EA   20  02                       18     0F  02          0A  06                     0B  02              0C  02         09 02           AE
  下标：                                                                                                                 0    1   2    3 4        5 6 7 8  9      10  11  12 13   14  15  16 17 18 19 20 21  22  23  24  25      26  27  28 29  30 31  32 33    34
 */
-static void PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata)
+static uint8_t PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata)
 {
     if (NULL == pdata) {
         return;
@@ -410,7 +520,77 @@ static void PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata)
     pdata[len++] = sensorData.voltage & 0x00FF;
 
     pdata[len++] = 0xAE;                           // 结束位
+    return len;
 }
+#endif
+
+#ifdef  SUPPORT_BOARD_OLD_S2S_1
+/*
+*模式2的帧格式
+编号     功能                  适用模式    方向             传输速率             频段            起始位 长度  功能  客户标志码          TAG_ID    负载长度   类型  长度  序列号        类型  长度    时间                                        类型  长度  温度 @1        类型  长度  电池电压        结束位
+ 1   上传传感数据     2      TAG->BB 38.4Kbps    433.6  EA   1E  02                       16     0F  02          0A  06                     55  04               09  02           AE
+ 下标：                                                                                                                 0    1   2    3 4        5 6 7 8  9      10  11  12 13   14  15  16 17 18 19 20 21  22  23  24  25 26 27 28  29  30 31    32
+*/
+static uint8_t PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata)
+{
+    if (NULL == pdata) {
+        return;
+    }
+
+    uint8_t len = 0;
+    uint16_t tmp;
+
+    pdata[len++] = 0xEA;                            // 起始位
+    pdata[len++] = 0x1E;                            // 数据包长度
+    pdata[len++] = 0x02;                            // 数据包类型
+    pdata[len++] = g_rSysConfigInfo.customId[0];          // 客户标识码
+    pdata[len++] = g_rSysConfigInfo.customId[1];
+    pdata[len++] = g_rSysConfigInfo.DeviceId[0];                // Local ID
+    pdata[len++] = g_rSysConfigInfo.DeviceId[1];
+    pdata[len++] = g_rSysConfigInfo.DeviceId[2];
+    pdata[len++] = g_rSysConfigInfo.DeviceId[3];
+
+    mode2TxLastTwoID = ((g_rSysConfigInfo.DeviceId[2] << 8) | g_rSysConfigInfo.DeviceId[3]);
+    mode2TxFrameSerialNum = sensorData.serialNumber;
+
+    pdata[len++] = 0x16;                            // 有效负载长度
+
+    pdata[len++] = 0x0F;                           // 序列号
+    pdata[len++] = 0x02;
+    pdata[len++] = sensorData.serialNumber >> 8;
+    pdata[len++] = sensorData.serialNumber & 0x00FF;
+
+    pdata[len++] = 0x0A;                           // 采集时间
+    pdata[len++] = 0x06;
+
+    pdata[len++] = sensorData.measureCalendar.Year & 0x00FF;
+    pdata[len++] = sensorData.measureCalendar.Month;
+    pdata[len++] = sensorData.measureCalendar.DayOfMonth;
+    pdata[len++] = sensorData.measureCalendar.Hours;
+    pdata[len++] = sensorData.measureCalendar.Minutes;
+    pdata[len++] = sensorData.measureCalendar.Seconds;
+
+    pdata[len++] = 0x55;                           // 温度
+    pdata[len++] = 0x04;
+    pdata[len++] = HIBYTE(HIWORD(sensorData.tempdeep));
+    pdata[len++] = LOBYTE(HIWORD(sensorData.tempdeep));
+    pdata[len++] = HIBYTE(LOWORD(sensorData.tempdeep));
+    pdata[len++] = LOBYTE(LOWORD(sensorData.tempdeep));
+
+
+    // 计算公式： U = (上传值)*4/1023, 单位：V;
+    tmp = ((uint32_t)(sensorData.voltage * 1023 / 4)) / 1000;
+    sensorData.voltage = (uint16_t)tmp;
+    pdata[len++] = 0x09;                           // 电压
+    pdata[len++] = 0x02;
+    pdata[len++] = sensorData.voltage >> 8;
+    pdata[len++] = sensorData.voltage & 0x00FF;
+
+    pdata[len++] = 0xAE;                           // 结束位
+
+    return len;
+}
+#endif
 
 static void SendDataTimingFxn(UArg arg0)
 {

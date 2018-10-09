@@ -28,7 +28,7 @@
 
 #include "../../general.h"
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
 
 #include <ti/devices/DeviceFamily.h>
 #include DeviceFamily_constructPath(driverlib/rf_mailbox.h)

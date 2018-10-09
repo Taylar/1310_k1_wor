@@ -706,6 +706,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             break;        
 #ifdef FLASH_EXTERNAL
         case EV_Get_Unupload_Data://len(2B) cmd(1B)  mode(1B) chk(1B)
+#ifdef SUPPORT_MENU
             if(Menu_is_record())
             {
                 Menu_set_record(0);
@@ -716,7 +717,8 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             BlePrintingRecordNotify();
 #else
             }
-#endif  // G7_PROJECT
+#endif // G7_PROJECT
+#endif //SUPPORT_MENU
 
             transmode = pData[3];
             
@@ -742,6 +744,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
             
         case EV_Get_Record_Data://len(2B) cmd(1B) mode(1B) chk(1B)
+#ifdef SUPPORT_MENU
             if(Menu_is_record())
             {
                 Menu_set_record(0);
@@ -752,7 +755,8 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             BlePrintingRecordNotify();
 #else
             }
-#endif  // G7_PROJECT
+#endif // G7_PROJECT
+#endif //SUPPORT_MENU
 
             transmode = pData[3];
             

@@ -197,7 +197,7 @@ void SystemAppTaskFxn(void)
 	Sensor_init();
 #endif // SUPPORT_SENSOR
 
-#if (defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1))
+#if defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1)|| defined(SUPPORT_BOARD_OLD_S2S_1)
 	RtcStart();
 #endif
 
@@ -231,7 +231,7 @@ void SystemAppTaskFxn(void)
 		S6Sleep();
 #endif // BOARD_S6_6
 
-#ifdef BOARD_B2S		
+#ifdef BOARD_B2S
 	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
 		S2Wakeup();
 	else
@@ -357,9 +357,9 @@ void SystemAppTaskFxn(void)
 			S1AppRtcProcess();
 #endif
 
-#ifdef S_A//一体机
+#ifdef S_C//节点
 			NodeRtcProcess();
-#endif // S_A//一体机
+#endif // S_C//节点
 
 #ifdef S_G//网关
 			ConcenterRtcProcess();
@@ -398,7 +398,7 @@ void SystemAppTaskFxn(void)
 		}
 
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
 		if(eventId &   SYS_EVT_EVT_OLD_S1_UPLOAD_NODE) {
 		    OldS1NodeAPP_Mode2NodeUploadProcess();
 		}

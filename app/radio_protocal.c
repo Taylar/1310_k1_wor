@@ -225,8 +225,8 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					g_rSysConfigInfo.rfBW    	= bufTemp->load[baseAddr+2];
 					g_rSysConfigInfo.rfSF    	= bufTemp->load[baseAddr+3];
 					g_rSysConfigInfo.rfStatus 	= bufTemp->load[baseAddr+4];
-#ifdef SUPPORT_BOARD_OLD_S1
-                    /* μ±éè?amastê±?a?éμ?S11¤×÷?￡ê??a?￡ê?1￡????ü?￡ê?2*/
+#if defined (SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+                    /* 当设为mast时S3_1和S2S_1的工作模式为模式1，其它模式2*/
                     if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
                         OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE1);
                     } else {

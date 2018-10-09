@@ -34,7 +34,7 @@
 #include "EasyLink.h"
 #include "../general.h"
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if  defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
     #include "../smartrf_settings/s1_old_smartrf_settings/s1_old_smartrf_settings.h"
 #endif
 
@@ -657,7 +657,7 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
 //        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
 //        memcpy(&EasyLink_cmdPropTx, RF_pCmdPropTx_preDef, sizeof(rfc_CMD_PROP_TX_t));
     } */
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
     else if ((EasyLink_params.ui32ModType == EasyLink_Phy_Custom_s1_old) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650))
     {
         memcpy(&EasyLink_cmdPropRadioSetup.divSetup, &RF_cmdPropRadioDivSetup_s1_old, sizeof(rfc_CMD_PROP_RADIO_DIV_SETUP_t));
@@ -937,7 +937,7 @@ EasyLink_Status EasyLink_transmit(EasyLink_TxPacket *txPacket)
         return EasyLink_Status_Param_Error;
     }
 
-#ifndef SUPPORT_BOARD_OLD_S1
+#if !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
     memcpy(txBuffer, txPacket->dstAddr, addrSize);
     memcpy(txBuffer + addrSize, txPacket->payload, txPacket->len);
 

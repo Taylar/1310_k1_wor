@@ -354,7 +354,7 @@ void RadioAppTaskFxn(void)
     EasyLink_Params easyLink_params;
     EasyLink_Params_init(&easyLink_params);
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
     easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION_S1_OLD;
 #else
     
@@ -382,6 +382,14 @@ void RadioAppTaskFxn(void)
     g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
 #endif  // BOARD_CONFIG_DECEIVE
 
+#ifdef S_G//网关
+    g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
+#endif // S_G//网关
+
+#ifdef S_C //节点
+            g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;
+#endif // S_C //节点
+
     if(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)
     {
         radioMode = RADIOMODE_RECEIVEPORT;
@@ -390,6 +398,7 @@ void RadioAppTaskFxn(void)
     {
         radioMode = RADIOMODE_SENDPORT;
     }
+
     
 #endif  // BOARD_S6_6
 
@@ -405,7 +414,7 @@ void RadioAppTaskFxn(void)
     if(radioMode == RADIOMODE_SENDPORT)
     {
         NodeAppInit();
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
         OldS1NodeApp_init();
 #endif
 
@@ -453,6 +462,11 @@ void RadioAppTaskFxn(void)
             }
         }
 
+#if (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
+        if(events & RADIO_EVT_EVT_OLD_S1_UPLOAD_NODE) {
+            OldS1NodeAPP_Mode2NodeUploadProcess();
+        }
+#endif
 
         if (events & RADIO_EVT_TEST)
         {
@@ -495,7 +509,7 @@ void RadioAppTaskFxn(void)
 
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
-#ifdef SUPPORT_BOARD_OLD_S1
+#if (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
                             OldS1NodeApp_protocolProcessing(radioRxPacket.payload, radioRxPacket.len);
                     } else {
@@ -548,7 +562,7 @@ void RadioAppTaskFxn(void)
             rssi  = RADIO_RSSI_FLITER - 1;
 #endif  // SUPPORT_RSSI_CHECK
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
             rssi  = RADIO_RSSI_FLITER - 1;
 #endif
 
@@ -572,7 +586,7 @@ void RadioAppTaskFxn(void)
             {
                 Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
                         OldS1NodeApp_setDataTxRfFreque();
                     }
@@ -594,7 +608,7 @@ void RadioAppTaskFxn(void)
 
                 // Clock_stop(radioSendTimeoutClockHandle);
 
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
                         OldS1NodeApp_setDataRxRfFreque();
                     }

@@ -64,10 +64,6 @@ void S1ShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-#ifdef SUPPORT_BOARD_OLD_S1
-        case OLD_S1_DEVICES_RADIO_UPGRADE:
-#endif
-
         Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
 
@@ -130,7 +126,7 @@ void S1DoubleKeyApp(void)
     {
         case DEVICES_ON_MODE:
         case DEVICES_CONFIG_MODE:
-#ifdef SUPPORT_BOARD_OLD_S1
+#if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
             OldS1NodeApp_stopSendSensorData();
 #endif
         // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
@@ -141,7 +137,7 @@ void S1DoubleKeyApp(void)
         NodeUploadOffectClear();
         //RadioModeSet(RADIOMODE_RECEIVEPORT);
         SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
-#ifdef SUPPORT_BOARD_OLD_S1
+#if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
         RadioSwitchingUserRate();
 #endif
         NodeStrategyStop();
@@ -200,7 +196,7 @@ void S1Sleep(void)
 {
     deviceMode = DEVICES_OFF_MODE;
 
-#ifndef SUPPORT_BOARD_OLD_S1
+#if  !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
     RtcStop();
 #endif
     NodeSleep();

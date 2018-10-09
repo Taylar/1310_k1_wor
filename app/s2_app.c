@@ -6,7 +6,7 @@
 */
 #include "../general.h"
 
-
+#ifdef BOARD_B2S
 
 /***** Defines *****/
 
@@ -43,6 +43,10 @@ void S2HwInit(void)
     Spi_init();
 
     Flash_init();
+
+#ifdef SUPPORT_CHARGE_DECT
+    Charge_detect_init();
+#endif
 
     UsbIntInit(SystemUsbIntEventPostIsr);
 
@@ -140,3 +144,85 @@ void S2Sleep(void)
     deviceMode = DEVICES_OFF_MODE;
 }
 
+//***********************************************************************************
+// brief:
+//
+// parameter:
+//***********************************************************************************
+void UsbIntProcess(void)
+{
+    static uint8_t deviceModeTemp = DEVICES_SLEEP_MODE;
+
+    if(GetUsbState() == USB_LINK_STATE)
+    {
+        switch(deviceMode)
+        {
+            case DEVICES_ON_MODE:
+            case DEVICES_SLEEP_MODE:
+
+#ifdef      SUPPORT_DISP_SCREEN
+            Disp_poweroff();
+#endif
+            Task_sleep(100 * CLOCK_UNIT_MS);
+            // wait for the gsm uart close
+#ifdef  SUPPORT_NETWORK
+            Nwk_poweroff();
+            while(Nwk_is_Active())
+                Task_sleep(100 * CLOCK_UNIT_MS);
+#endif
+
+            InterfaceEnable();
+
+            RadioTestDisable();
+            S2Sleep();
+
+            deviceModeTemp = DEVICES_SLEEP_MODE;
+            deviceMode = DEVICES_CONFIG_MODE;
+            break;
+
+            case DEVICES_OFF_MODE:
+            InterfaceEnable();
+            deviceModeTemp = DEVICES_OFF_MODE;
+            deviceMode = DEVICES_CONFIG_MODE;
+            break;
+
+            case DEVICES_CONFIG_MODE:
+            case DEVICES_TEST_MODE:
+            break;
+
+        }
+
+    }
+    else
+    {
+        // the usb has unlink
+        if(deviceMode != DEVICES_CONFIG_MODE)
+            return;
+
+        deviceMode = deviceModeTemp;
+        InterfaceDisable();
+        SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+                         (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+                         (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+                         g_rSysConfigInfo.DeviceId[3]);
+        SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+        switch(deviceMode)
+        {
+            case DEVICES_ON_MODE:
+            case DEVICES_SLEEP_MODE:
+            S2Wakeup();
+            if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
+            {
+                RadioTestEnable();
+            }
+            case DEVICES_OFF_MODE:
+            break;
+
+            case DEVICES_CONFIG_MODE:
+            case DEVICES_TEST_MODE:
+            break;
+
+        }
+    }
+}
+#endif

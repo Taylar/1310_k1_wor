@@ -297,6 +297,9 @@ static void Sensor_store_package(void)
     //娑堟伅娴佹按鍙�
     buff[length++] = HIBYTE_ZKS(rSensorObject.serialNum);
     buff[length++] = LOBYTE_ZKS(rSensorObject.serialNum);
+    if (rSensorObject.serialNum >= 0xfffe) {
+        rSensorObject.serialNum = 0;
+    }
     rSensorObject.serialNum++;
     //閲囬泦鏃堕棿
     if(collectPeriod % 60 == 0){//鍙閲囬泦鍛ㄦ湡涓烘暣鍒嗛挓鐨勬儏鍐佃繘琛岃鏁板櫒璋冩暣銆�
@@ -320,6 +323,10 @@ static void Sensor_store_package(void)
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
 #endif
+#ifdef SUPPORT_CHARGE_DECT
+    value |=  ((Get_Charge_plug()==NO_CHARGE)? 0 :1)<<15;
+#endif
+
     buff[length++] = HIBYTE_ZKS(value);
     buff[length++] = LOBYTE_ZKS(value);
     //鍙傛暟椤瑰垪琛ㄦ暟鎹�
@@ -714,14 +721,14 @@ void Sensor_store_null_package(uint8_t *buff)
 }
 
 #ifdef SUPPORT_NETGATE_DISP_NODE
-#if 1
-#define MEMSENSOR_BUFF_LENGTH USB_BUFF_LENGTH
-sensordata_mem *pMemSensor = (sensordata_mem*)bUsbBuff;// use usb buffer save sensor data in memory  on MSP430F5529
-#else
-#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//支持100台节点数据存储
-sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
-#endif
-#define MEMSENSOR_NUM  (MEMSENSOR_BUFF_LENGTH/sizeof(sensordata_mem))
+//#if 1
+//#define MEMSENSOR_BUFF_LENGTH USB_BUFF_LENGTH
+//sensordata_mem *pMemSensor = (sensordata_mem*)bUsbBuff;// use usb buffer save sensor data in memory  on MSP430F5529
+//#else
+//#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//支持100台节点数据存储
+//sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
+//#endif
+//#define MEMSENSOR_NUM  (MEMSENSOR_BUFF_LENGTH/sizeof(sensordata_mem))
 
 
 

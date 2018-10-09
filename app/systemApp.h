@@ -22,12 +22,9 @@
 #define         SYS_FEED_WATCHDOG                      	Event_Id_15
 #define         SYS_EVT_STRATEGY                      	Event_Id_16
 //#define         SYSTEMAPP_EVT_RADIO_TX_TIMEOUT          Event_Id_17
+#define         SYS_EVT_USB_CHARGE                      Event_Id_17
 
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
-
-#ifdef SUPPORT_BOARD_OLD_S1
-#define         SYS_EVT_EVT_OLD_S1_UPLOAD_NODE          Event_Id_17
-#endif
 
 #define         SYSTEMAPP_EVT_ALL_KEY                   (Event_Id_00 | Event_Id_01 | Event_Id_02 | Event_Id_03)
 

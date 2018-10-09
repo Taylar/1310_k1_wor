@@ -21,6 +21,7 @@
 #define         RADIO_EVT_SEND_CONFIG   Event_Id_14
 #define         RADIO_EVT_SEND_SYC      Event_Id_15
 #define         RADIO_EVT_CHANNEL_CHECK Event_Id_16
+#define         RADIO_EVT_EVT_OLD_S1_UPLOAD_NODE Event_Id_17
 #define         RADIO_EVT_ALL           0xffffffff
 
 

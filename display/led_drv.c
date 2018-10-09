@@ -10,15 +10,20 @@
 #include "led_drv.h"
 
 // board node
-
 #define LED_R_PIN_NODE                       IOID_25
 #define LED_G_PIN_NODE                       IOID_23
 #define LED_B_PIN_NODE                       IOID_24
 
-#ifdef BOARD_CONFIG_DECEIVE
+#ifdef BOARD_B2S
+#undef  LED_R_PIN_NODE
+#undef  LED_G_PIN_NODE
 #undef  LED_B_PIN_NODE
-#define LED_B_PIN_NODE                       IOID_28
-#endif  // BOARD_CONFIG_DECEIVE
+
+#define LED_R_PIN_NODE                       IOID_14
+#define LED_G_PIN_NODE                       IOID_6
+#define LED_B_PIN_NODE                       IOID_15
+#endif
+
 
 static const uint8_t LED_ID_CONST[LED_MAX] =
 {

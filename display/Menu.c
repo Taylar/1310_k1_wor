@@ -223,7 +223,9 @@ void PoweroffMenu_init(void)
 
 void Menu_power_off(void)
 {   
+#ifdef BOARD_S6_6
     S6Sleep();
+#endif
     Menu_exit();
     Disp_poweroff();
     deviceMode = DEVICES_OFF_MODE;

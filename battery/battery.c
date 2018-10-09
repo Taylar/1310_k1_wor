@@ -146,11 +146,13 @@ void Battery_porcess(void)
                 S1Sleep();
 #else
 
+#ifdef BOARD_S6_6
 #ifdef      SUPPORT_DISP_SCREEN
-                Disp_poweroff();
+            Disp_poweroff();
 #endif      //SUPPORT_DISP_SCREEN
 
                 S6Sleep();
+#endif//BOARD_S6_6
 #endif//BOARD_S3
             }
         }

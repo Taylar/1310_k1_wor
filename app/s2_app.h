@@ -26,4 +26,6 @@ void S2Wakeup(void);
 
 void S2Sleep(void);
 
+void UsbIntProcess(void);
+
 #endif		//	__S2_APP_H__

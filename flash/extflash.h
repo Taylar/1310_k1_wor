@@ -76,7 +76,7 @@
 /**************flash area  end**************/
 
 
-#if (defined BOARD_S6_6) || (defined BOARD_S2_2)
+#if (defined BOARD_S6_6) || (defined BOARD_B2S)
 
 /*---    MISC   ----------512KB ---*/
 //External flash system info store position

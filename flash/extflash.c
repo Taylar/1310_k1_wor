@@ -30,16 +30,10 @@ const PIN_Config extFlashPinTable[] = {
 // board gateway
 #ifdef BOARD_B2S
 
-#define FLASH_SPI_CS_PIN        IOID_9
-#define FLASH_WP_PIN            IOID_11
-//#define FLASH_HOLD_PIN          IOID_18
-
-
+#define FLASH_SPI_CS_PIN        IOID_24
 
 const PIN_Config extFlashPinTable[] = {
     FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
-    //FLASH_HOLD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
     PIN_TERMINATE
 };
 
@@ -61,9 +55,9 @@ const PIN_Config extFlashPinTable[] = {
 const PIN_Config extFlashPinTable[] = {
     FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
-// #ifdef BOARD_CONFIG_DECEIVE
+#ifdef BOARD_CONFIG_DECEIVE
     FLASH_HOLD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
-// #endif
+#endif
     PIN_TERMINATE
 };
 
@@ -473,14 +467,31 @@ void Flash_init(void)
         Flash_store_config();
     }
 
+#if  defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+    uint8_t i;
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        g_rSysConfigInfo.sensorModule[i]     = SEN_TYPE_NONE;
+        g_rSysConfigInfo.alarmTemp[i].high   = ALARM_TEMP_HIGH;
+        g_rSysConfigInfo.alarmTemp[i].low    = ALARM_TEMP_LOW;
+        g_rSysConfigInfo.WarningTemp[i].high = ALARM_TEMP_HIGH;
+        g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
+    }
+
 #ifdef SUPPORT_BOARD_OLD_S1
-    /* 褰撹涓簃ast鏃朵负鏃х殑S1宸ヤ綔妯″紡涓烘ā寮�1锛屽叾瀹冩ā寮�2*/
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+#endif
+
+#ifdef SUPPORT_BOARD_OLD_S2S_1
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_DEEPTEMP;
+#endif
+
+    /* 当设为mast时为旧的S1工作模式为模式1，其它模式2*/
     if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
         OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE1);
     } else {
         OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE2);
     }
-#endif
+#endif // (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
 }
 
 void Flash_reset_all(void)

@@ -241,7 +241,7 @@ void NodeHighTemperatureSet(uint8_t num, uint16_t alarmTemp)
 //***********************************************************************************
 void NodeBroadcasting(void)
 {
-#ifndef SUPPORT_BOARD_OLD_S1
+ #if !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
     if(nodeParameter.broadcasting)
     {
         NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
@@ -334,7 +334,7 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
-#ifdef SUPPORT_BOARD_OLD_S1
+#if defined (SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
     static uint8_t count = 0;
     if ((deviceMode == DEVICES_OFF_MODE) || (RADIOMODE_UPGRADE == RadioModeGet())) {
         return;
