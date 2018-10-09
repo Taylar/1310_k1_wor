@@ -69,6 +69,12 @@ typedef union{
     int16_t temp;
     uint16_t humi;
     };
+    struct {
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minutes;
+    };
     int32_t tempdeep;
     uint32_t  lux;
 } SensorData_t;

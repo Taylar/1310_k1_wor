@@ -695,12 +695,12 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
         #ifdef SUPPORT_BB_TIME
         Calendar calendar;
         calendar = Rtc_get_calendar();        
-        packet.buff[packet.length++] = calendar.Year - CALENDAR_BASE_YEAR;
-        packet.buff[packet.length++] = calendar.Month;
-        packet.buff[packet.length++] =  calendar.DayOfMonth;
-        packet.buff[packet.length++] =  calendar.Hours;
-        packet.buff[packet.length++] =  calendar.Minutes;
-        packet.buff[packet.length++] =  calendar.Seconds;
+        packet.buff[packet.length++] = TransHexToBcd(calendar.Year - CALENDAR_BASE_YEAR);
+        packet.buff[packet.length++] = TransHexToBcd(calendar.Month);
+        packet.buff[packet.length++] = TransHexToBcd(calendar.DayOfMonth);
+        packet.buff[packet.length++] = TransHexToBcd(calendar.Hours);
+        packet.buff[packet.length++] = TransHexToBcd(calendar.Minutes);
+        packet.buff[packet.length++] = TransHexToBcd(calendar.Seconds);
         #endif
         //鏃犵嚎淇″彿寮哄害RSSI
         //Sensor ID - 4Byte

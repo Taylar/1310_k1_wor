@@ -126,7 +126,11 @@ void NodeUploadProcess(void)
     {
 #ifdef BOARD_S3
         Flash_load_sensor_data_by_offset(data+6, 16, offsetUnit);
+#ifdef SUPPORT_UPLOAD_ASSET_INFO
+        data[0] = 17;
+#else
         data[0] = 21;
+#endif  //SUPPORT_UPLOAD_ASSET_INFO
         data[1] = 0;
         data[2] = g_rSysConfigInfo.DeviceId[0];
         data[3] = g_rSysConfigInfo.DeviceId[1];
@@ -137,7 +141,7 @@ void NodeUploadProcess(void)
 #endif  // BOARD_S3
         serialNumber = ((data[6] << 8) | data[7]);
         // the radio buf is full 
-        if(NodeRadioSendSensorData(data, 22) == false)
+        if(NodeRadioSendSensorData(data, data[0] + 1) == false)
         {
             Semaphore_post(uploadSemHandle);
             return;

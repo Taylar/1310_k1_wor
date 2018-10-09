@@ -444,6 +444,10 @@ static void Sensor_store_package(void)
 #else
 
 #ifdef BOARD_S3
+#ifdef SUPPORT_UPLOAD_ASSET_INFO
+    buff[length++] = 0;
+    buff[length++] = SEN_TYPE_ASSET;
+#endif 
     Flash_store_sensor_data(buff, 16);
 #else
     buff[0] = length - 1;
@@ -512,8 +516,10 @@ void Sensor_measure(uint8_t store)
             Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn(i);
         }
     }
-
-    if (sensor && store) {
+#ifndef SUPPORT_UPLOAD_ASSET_INFO
+    if (sensor && store)
+#endif //SUPPORT_UPLOAD_ASSET_INFO
+    {
         Sensor_store_package();
     }
 }
@@ -721,14 +727,14 @@ void Sensor_store_null_package(uint8_t *buff)
 }
 
 #ifdef SUPPORT_NETGATE_DISP_NODE
-//#if 1
-//#define MEMSENSOR_BUFF_LENGTH USB_BUFF_LENGTH
-//sensordata_mem *pMemSensor = (sensordata_mem*)bUsbBuff;// use usb buffer save sensor data in memory  on MSP430F5529
-//#else
-//#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//支持100台节点数据存储
-//sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
-//#endif
-//#define MEMSENSOR_NUM  (MEMSENSOR_BUFF_LENGTH/sizeof(sensordata_mem))
+#if 1
+#define MEMSENSOR_BUFF_LENGTH USB_BUFF_LENGTH
+sensordata_mem *pMemSensor = (sensordata_mem*)bUsbBuff;// use usb buffer save sensor data in memory  on MSP430F5529
+#else
+#define MEMSENSOR_BUFF_LENGTH  sizeof(sensordata_mem)*100//支持100台节点数据存储
+sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
+#endif
+#define MEMSENSOR_NUM  (MEMSENSOR_BUFF_LENGTH/sizeof(sensordata_mem))
 
 
 
@@ -788,7 +794,15 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 		if (!(cursensor.type > SEN_TYPE_NONE && cursensor.type < SEN_TYPE_MAX))
 			return;//invalid sensor type
 
-		
+#ifdef  SUPPORT_UPLOAD_ASSET_INFO
+        if(cursensor.type == SEN_TYPE_ASSET) {
+            cursensor.value.month   = pData[9];
+            cursensor.value.day     = pData[10];
+            cursensor.value.hour    = pData[11];
+            cursensor.value.minutes = pData[12];
+        }else
+#endif  //SUPPORT_UPLOAD_ASSET_INFO
+
 		if (Sensor_get_function_by_type(cursensor.type) == (SENSOR_TEMP | SENSOR_HUMI)) {
 			HIBYTE_ZKS(cursensor.value.temp) = pData[Index++];
 			LOBYTE_ZKS(cursensor.value.temp) = pData[Index++];

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-27 17:17:56
+* @Last Modified time: 2018-10-09 17:36:28
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -290,9 +290,9 @@ void RadioAppTaskCreate(void)
     Clock_Params_init(&clkParams);
     clkParams.period = 0;
     clkParams.startFlag = FALSE;
-    Clock_construct(&radioSendTimeoutClock, RadioSendTimeroutCb, 500 * CLOCK_UNIT_MS, &clkParams);
+    Clock_construct(&radioSendTimeoutClock, RadioSendTimeroutCb, 1000 * CLOCK_UNIT_MS, &clkParams);
     radioSendTimeoutClockHandle = Clock_handle(&radioSendTimeoutClock);
-    Clock_setTimeout(radioSendTimeoutClockHandle, 500 * CLOCK_UNIT_MS);
+    Clock_setTimeout(radioSendTimeoutClockHandle, 1000 * CLOCK_UNIT_MS);
     
 
     /* Create the radio protocol task */
@@ -602,11 +602,11 @@ void RadioAppTaskFxn(void)
                     radioStatus = RADIOSTATUS_IDLE;
                 }
 
-                // Clock_start(radioSendTimeoutClockHandle);
+                Clock_start(radioSendTimeoutClockHandle);
                 radioStatus = RADIOSTATUS_TRANSMITTING;
                 RadioSendData();
 
-                // Clock_stop(radioSendTimeoutClockHandle);
+                Clock_stop(radioSendTimeoutClockHandle);
 
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {

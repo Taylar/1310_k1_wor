@@ -415,7 +415,8 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_RADIO_ABORT) 
 		{
-		    RadioAbort();
+			Flash_log("TX Tout R\n");
+	        SystemResetAndSaveRtc();
 		}
 
 #ifdef SUPPORT_SENSOR

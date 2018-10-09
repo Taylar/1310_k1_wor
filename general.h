@@ -517,6 +517,11 @@ error
 #undef SUPPORT_ALARM_RECORD_QURERY
 #undef SUPPORT_ENGMODE
 #undef SUPPORT_FLASH_LOG
+
+#define SUPPORT_RSSI_CHECK
+// #define SUPPORT_FREQ_FIND
+
+
 /* old S1*/
 //#define SUPPORT_BOARD_OLD_S1
 #ifdef SUPPORT_BOARD_OLD_S1
@@ -526,8 +531,18 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
 #endif //SUPPORT_BOARD_OLD_S1
 
-#define SUPPORT_RSSI_CHECK
-// #define SUPPORT_FREQ_FIND
+/* Z4 */
+#define SUPPORT_BOARD_Z4
+#ifdef SUPPORT_BOARD_Z4
+
+#undef SUPPORT_SHT2X
+#define SUPPORT_UPLOAD_ASSET_INFO
+
+#undef  BOARD_NAME
+#define BOARD_NAME              "_Z4"
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+#endif //SUPPORT_BOARD_Z4
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
@@ -564,13 +579,21 @@ error
 
 
 #undef  FW_VERSION
-    #ifdef S_A
-    #define FW_VERSION              0x0036
-    #elif defined(S_G)
-    #define FW_VERSION              0x0046
-    #elif defined(S_C)
-    #define FW_VERSION              0x0036
-    #endif
+
+#ifdef S_A
+
+#define FW_VERSION              0x0036
+
+#elif defined(S_G)
+
+#define SUPPORT_UPLOAD_ASSET_INFO
+#define FW_VERSION              0x0046
+
+#elif defined(S_C)
+
+#define FW_VERSION              0x0036
+
+#endif
 
 #endif // BOARD_S6_6
 
@@ -635,6 +658,11 @@ typedef enum {
     SEN_TYPE_PM25,
     SEN_TYPE_CO2,
     SEN_TYPE_GSENSOR,
+    SEN_TYPE_ORGPOLL,
+    SEN_TYPE_HLW8012,
+    SEN_TYPE_IM33XX,
+    SEN_TYPE_INFRARED,
+    SEN_TYPE_ASSET,
     SEN_TYPE_MAX
 } SENSOR_TYPE;
 #define ALARM_TEMP_HIGH         0x7fff

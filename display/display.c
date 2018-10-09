@@ -790,6 +790,14 @@ void Disp_sensor_data(void)
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
             }
+#ifdef SUPPORT_UPLOAD_ASSET_INFO
+            else if(Sensor.type == SEN_TYPE_ASSET){
+                sprintf((char*)buff, "%02x-%02x %02x:%02x", Sensor.value.month, Sensor.value.day, Sensor.value.hour, Sensor.value.minutes);
+                Lcd_set_font(132, 16, 0);
+                Lcd_clear_area(2, 4);
+                Disp_msg(2, 4, buff, FONT_8X16);
+            }
+#endif // SUPPORT_UPLOAD_ASSET_INFO
         }
     }
         
