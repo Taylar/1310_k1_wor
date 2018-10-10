@@ -963,20 +963,33 @@ void Flash_store_deviced_state_data(uint8_t *pData, uint16_t length)
 //
 //***********************************************************************************
 void Flash_store_devices_state(uint8_t StateType){
-    //虏脡录炉脢卤录盲
+    //采集时间
     Calendar calendar;
+    uint8_t  index = 1;
     uint8_t buff[FLASH_DEVICED_STATE_DATA_SIZE];
-    buff[0]  = StateType;
-    calendar = Rtc_get_calendar();
-    buff[1]  = 0x20;
-    buff[2]  = calendar.Year - CALENDAR_BASE_YEAR;
-    buff[3]   = calendar.Month;
-    buff[4]  =  calendar.DayOfMonth;
-    buff[5]  =  calendar.Hours;
-    buff[6]  =  calendar.Minutes;
-    buff[7]  =  calendar.Seconds;
+    uint32_t num;
+        
+    buff[index ++] = StateType;
+    calendar       = Rtc_get_calendar();
+    buff[index ++] = 0x20;
+    buff[index ++] = TransHexToBcd(calendar.Year - CALENDAR_BASE_YEAR);
+    buff[index ++] = TransHexToBcd(calendar.Month);
+    buff[index ++] = TransHexToBcd(calendar.DayOfMonth);
+    buff[index ++] = TransHexToBcd(calendar.Hours);
+    buff[index ++] = TransHexToBcd(calendar.Minutes);
+    buff[index ++] = TransHexToBcd(calendar.Seconds);
 
-
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(StateType == TYPE_BT_PRINT_END){
+        num = Btp_GetPrintNum();
+        buff[index ++]  =  HIBYTE(HIWORD(num));
+        buff[index ++]  =  LOBYTE(HIWORD(num));
+        buff[index ++]  =  HIBYTE(LOWORD(num));
+        buff[index ++]  =  LOBYTE(LOWORD(num));
+    }
+#endif
+    buff[index]     =  0;
+    buff[0]  = index;
 
     Flash_store_deviced_state_data((uint8_t *)buff,FLASH_DEVICED_STATE_DATA_SIZE);
 

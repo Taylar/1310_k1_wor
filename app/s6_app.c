@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-27 17:30:09
+* @Last Modified time: 2018-10-10 15:30:24
 */
 #include "../general.h"
 
@@ -516,6 +516,7 @@ void S6Wakeup(void)
     deviceMode = DEVICES_ON_MODE;
     RtcStart();
     Flash_log("PON\n");
+    Flash_store_devices_state(TYPE_POWER_DOWN);
     if(GetUsbState() == USB_UNLINK_STATE)
     {
 #ifdef  SUPPORT_NETWORK
@@ -548,6 +549,7 @@ void S6Sleep(void)
 {
     RtcStop();
     Flash_log("POF\n");
+    Flash_store_devices_state(TYPE_POWER_DOWN);
     // wait the nwk disable the uart
 #ifdef  SUPPORT_NETWORK
     Nwk_poweroff();
