@@ -546,7 +546,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0046
+#define FW_VERSION              0x0047
 #else
 #define FW_VERSION              0x0006
 #endif
@@ -587,7 +587,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0046
+#define FW_VERSION              0x0047
 
 #elif defined(S_C)
 
