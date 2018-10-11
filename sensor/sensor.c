@@ -80,10 +80,10 @@ const Sensor_FxnTable NTC_FxnTable = {
 };
 #endif
 
-#if defined( SUPPORT_DEEPTEMP) || defined( SUPPORT_PT100)
-extern const Sensor_FxnTable  DeepTemp_FxnTable;
+#if defined( SUPPORT_DEEPTEMP) || defined(SUPPORT_DEEPTEMP_PT100)
+extern const Sensor_FxnTable  DeepTemp_PT100_FxnTable;
 #else
-const Sensor_FxnTable  DeepTemp_FxnTable = {
+const Sensor_FxnTable  DeepTemp_PT100_FxnTable = {
     SENSOR_DEEP_TEMP,
     NULL,
     NULL,
@@ -125,7 +125,7 @@ static const Sensor_FxnTable *Sensor_FxnTablePtr[]={
 #endif
 	&NTC_FxnTable,
     &OPT3001_FxnTable,
-    &DeepTemp_FxnTable,
+    &DeepTemp_PT100_FxnTable,
     NULL,//&HCHO_FxnTable,
     NULL,//&PM25_FxnTable,
     NULL,//&CO2_FxnTable,
@@ -603,6 +603,12 @@ uint32_t Sensor_get_lux(uint8_t chNum)
 //***********************************************************************************
 void Sensor_collect_time_isr(void)
 {
+#if  defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+    if (deviceMode != DEVICES_ON_MODE) {
+        return;
+    }
+#endif
+
     rSensorObject.collectTime++;
 	uint32_t collectPeriod = g_rSysConfigInfo.collectPeriod;
 	

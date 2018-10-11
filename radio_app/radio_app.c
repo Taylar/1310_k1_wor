@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-10 17:07:01
+* @Last Modified time: 2018-10-10 09:54:04
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -509,11 +509,12 @@ void RadioAppTaskFxn(void)
 
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
-#if (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
-                            OldS1NodeApp_protocolProcessing(radioRxPacket.payload, radioRxPacket.len);
+                        OldS1NodeApp_protocolProcessing(radioRxPacket.payload, radioRxPacket.len);
                     } else {
-                            NodeProtocalDispath(&radioRxPacket);
+                        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
+                        NodeProtocalDispath(&radioRxPacket);
                     }
 #else
                     NodeProtocalDispath(&radioRxPacket);
@@ -567,12 +568,14 @@ void RadioAppTaskFxn(void)
 #endif
 
 #ifdef      S_C
+#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
             if((GetStrategyRegisterStatus() == false) && (deviceMode != DEVICES_CONFIG_MODE))
             {
                 NodeStrategyBuffClear();
                 NodeStartBroadcast();
                 NodeRadioSendSynReq();
             }
+#endif //!defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
 #endif //S_C
 
 #ifdef SUPPORT_RSSI_CHECK            
@@ -584,7 +587,10 @@ void RadioAppTaskFxn(void)
 #endif // SUPPORT_RSSI_CHECK
             if((currentRadioOperation.easyLinkTxPacket.len) <= EASYLINK_MAX_DATA_LENGTH && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
             {
-                Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
+                if (deviceMode != DEVICES_OFF_MODE)
+                {
+                    Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
+                }
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
@@ -605,7 +611,6 @@ void RadioAppTaskFxn(void)
                 Clock_start(radioSendTimeoutClockHandle);
                 radioStatus = RADIOSTATUS_TRANSMITTING;
                 RadioSendData();
-
                 Clock_stop(radioSendTimeoutClockHandle);
 
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
@@ -658,7 +663,10 @@ void RadioAppTaskFxn(void)
 #ifdef S_C//閲囬泦鍣�
             if(radioMode == RADIOMODE_SENDPORT)
             {
+#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
                 NodeStrategyReceiveTimeoutProcess();
+#endif
+
             }
 #endif  // S_C//閲囬泦鍣�
 
@@ -744,6 +752,10 @@ void RadioAppTaskFxn(void)
 #endif
 
 #ifdef   BOARD_S6_6
+            ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+#endif
+
+#ifdef   BOARD_B2S
             ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
 #endif
             // RadioSend();

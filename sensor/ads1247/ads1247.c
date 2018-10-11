@@ -110,6 +110,10 @@ void ADS1247_ConfigInit(void)
 
     //³õÊ¼»¯MUX1¼Ä´æÆ÷
     ADS1247_SetReference(CLK_INTER, REF_INTER_ALWAYS_ON, SELT_REF0);
+
+//    System_printf("SYS0=0x02:0x%x, MUX1=0x20:0x%x\r\n",ADS1247_ReadReg(ADS1247REG_SYS0), ADS1247_ReadReg(ADS1247REG_MUX1));
+//    System_printf("IDAC0=0x96:0x%x, IDAC1=0x01:0x%x\r\n",ADS1247_ReadReg(ADS1247REG_IDAC0), ADS1247_ReadReg(ADS1247REG_IDAC1));
+//    System_flush();
 }
 
 

@@ -221,6 +221,7 @@ void RadioUpgrade_CmdDataParse(uint8_t *pData, uint16_t length)
     deviceMode = DEVICES_CONFIG_MODE;
     if (NULL == pData || 0 == length) {
         // do nothing
+        Clock_start(radioUpgradeRxClkHandle);
         return;
     }
 
@@ -233,6 +234,7 @@ void RadioUpgrade_CmdDataParse(uint8_t *pData, uint16_t length)
         Flash_store_config();
 #endif
         RadioUpgrade_NodataParse(pData, length);
+        Clock_start(radioUpgradeRxClkHandle);
         return ;
     }
 
@@ -428,6 +430,7 @@ static bool RadioUpgrade_isResend(void)
 //            System_flush();
             RadioUpgrade_stopFileSendTimer();
             if (radio_upgrade_tx_info.info[i].switchResend > RADIO_UPGRAD_SWITCH_MAX) {
+                RadioUpgrade_stop();
                 System_printf("Radio Upgrade Fail!!!\r\n");
                 // Return usb error response, end here transmission
                 bsl_ack_error(buff, 32);
@@ -479,8 +482,9 @@ static ErrorStatus RadioUpgrade_TxInfoMatch(uint32_t offset, uint8_t len)
 
 static UPGRADE_RESULT_E RaidoUpgrade_LoadCheck(void)
 {
-    if((sRadio_upgrade_info.fileLength <= 128) || sRadio_upgrade_info.fileLength > (1024*128))
+    if (sRadio_upgrade_info.fileLength <= 128 || sRadio_upgrade_info.fileLength > (128 * 1024)) {
         return UPGRADE_RESULT_CRC_ERR;
+    }
     return Usb_bsl_UpgradeLoad_check(sRadio_upgrade_info.fileLength);
 #if 0
     uint16_t crc2;
@@ -558,16 +562,21 @@ static void RadioUpagrade_JumpBoot(void)
 
 // Empty message analysis
 // ret -1:ERR   0:OK
+extern void RadioSendData(void);
 static int RadioUpgrade_NodataParse(uint8_t *pData, uint16_t length)
 {
     UPGRADE_RESULT_E result;
+    uint16_t pack_len = pData[0];
+    uint32_t data_offset_addr = ((uint32_t)(pData[1]) << 24) | ((uint32_t)(pData[2]) << 16) | ((uint32_t)(pData[3]) << 8) | (uint32_t)pData[4];
 
     Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
     // CRC check // MAKE BSL flag if OK
     result = RaidoUpgrade_LoadCheck();
 
     if(UPGRADE_RESULT_LOADING_COMPLETE == result) {
-        //RadioUpgrade_DataTransmitAck(ES_SUCCESS);
+        RadioUpgrade_DataTransmitAck(data_offset_addr, pack_len, ES_SUCCESS);
+        RadioSendData();
+        Task_sleep(50 * CLOCK_UNIT_MS);
         RadioUpagrade_JumpBoot();
         return 0; // will not execute here
     } else {
@@ -575,7 +584,8 @@ static int RadioUpgrade_NodataParse(uint8_t *pData, uint16_t length)
         sRadio_upgrade_info.pack_num = 0;
         sRadio_upgrade_info.fileLength = 0;
 
-        //RadioUpgrade_DataTransmitAck(ES_ERROR );
+        RadioUpgrade_DataTransmitAck(data_offset_addr, pack_len, ES_ERROR );
+        RadioSendData();
         return -1;
     }
 }

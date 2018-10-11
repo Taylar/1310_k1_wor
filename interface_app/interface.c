@@ -141,7 +141,7 @@ void InterfaceRecTimeroutCb(UArg arg0)
             interfaceBusyFlag = 0;
             uart0RxData.length    = g_rUart1RxData.length;
             g_rUart1RxData.length = 0;
-            memcpy(uart0RxData.buff, g_rUart1RxData.buff, uart0RxData.length);;
+            memcpy(uart0RxData.buff, g_rUart1RxData.buff, uart0RxData.length);
             Event_post(interfaceEvtHandle, INTERFACE_EVT_RX);
         }    
     }

@@ -73,10 +73,10 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
-// #define BOARD_CONFIG_DECEIVE
+#define BOARD_S6_6
+#define BOARD_CONFIG_DECEIVE
 
 
 //#define FACTOR_RADIO_TEST
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -470,21 +470,9 @@ error
 #undef SUPPORT_DISP_SCREEN
 #undef SUPPORT_MENU
 #undef SUPPORT_START_LOGO
-
-#undef  FW_VERSION
-#define FW_VERSION              0x0031
+#undef SUPPORT_NETGATE_DISP_NODE
 
 //#define SUPPORT_BOARD_OLD_S2S_1
-#ifdef  UPPORT_BOARD_OLD_S2S_1
-#undef  SUPPORT_CHARGE_DECT
-#undef  FW_VERSION
-#define FW_VERSION              0x0001
-#undef  BOARD_NAME
-#define BOARD_NAME              "_S2S_1"
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
-#endif // UPPORT_BOARD_OLD_S2S_1
-
 #endif
 
 //***********************************************************************************
@@ -532,7 +520,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-#define SUPPORT_BOARD_Z4
+//#define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -546,7 +534,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0047
+#define FW_VERSION              0x0048
 #else
 #define FW_VERSION              0x0006
 #endif
@@ -557,8 +545,12 @@ error
 //***********************************************************************************
 #ifdef  BOARD_CONFIG_DECEIVE
 
-#undef SUPPORT_SHT2X
-#undef SUPPORT_MENU
+// #undef SUPPORT_SHT2X
+// #undef SUPPORT_MENU
+#undef  BOARD_NAME
+#define BOARD_NAME              "_S3_CONFIG"
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
 
 #endif //BOARD_CONFIG_DECEIVE
 
@@ -587,15 +579,35 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0047
+#define FW_VERSION              0x0048
 
 #elif defined(S_C)
 
 #define FW_VERSION              0x0036
-
-#endif
+#endif //S_A
 
 #endif // BOARD_S6_6
+
+#ifdef BOARD_B2S
+#undef  FW_VERSION
+    #ifdef S_A
+    #define FW_VERSION              0x0040
+    #elif defined(S_G)
+    #define FW_VERSION              0x0040
+    #elif defined(S_C)
+    #undef SUPPORT_CHARGE_DECT
+    #define FW_VERSION              0x0040
+    #endif
+#ifdef  UPPORT_BOARD_OLD_S2S_1
+#undef  SUPPORT_CHARGE_DECT
+#undef  FW_VERSION
+#define FW_VERSION              0x0001
+#undef  BOARD_NAME
+#define BOARD_NAME              "_S2S_1"
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+#endif // UPPORT_BOARD_OLD_S2S_1
+#endif // BOARD_B2S
 
 
 //***********************************************************************************

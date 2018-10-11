@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-10 15:30:24
+* @Last Modified time: 2018-10-11 16:00:15
 */
 #include "../general.h"
 
@@ -263,6 +263,13 @@ void S6HwInit(void)
 //***********************************************************************************
 void S6ShortKeyApp(void)
 {
+    if (g_bAlarmSensorFlag) {
+        Sys_buzzer_disable();
+        Clock_stop(sysAlarmClkHandle);
+        g_bAlarmSensorFlag = 0;
+        return;
+    }
+
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -298,6 +305,13 @@ void S6ShortKeyApp(void)
 //***********************************************************************************
 void S6ConcenterLongKeyApp(void)
 {
+    if (g_bAlarmSensorFlag) {
+        Sys_buzzer_disable();
+        Clock_stop(sysAlarmClkHandle);
+        g_bAlarmSensorFlag = 0;
+        return;
+    }
+
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -340,6 +354,13 @@ void S6ConcenterLongKeyApp(void)
 void S6ShortKey1App(void)
 {
 #ifdef BOARD_S6_6
+    if (g_bAlarmSensorFlag) {
+        Sys_buzzer_disable();
+        Clock_stop(sysAlarmClkHandle);
+        g_bAlarmSensorFlag = 0;
+        return;
+    }
+
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -379,6 +400,13 @@ void S6ShortKey1App(void)
 //***********************************************************************************
 void S6LongKey1App(void)
 {
+    if (g_bAlarmSensorFlag) {
+        Sys_buzzer_disable();
+        Clock_stop(sysAlarmClkHandle);
+        g_bAlarmSensorFlag = 0;
+        return;
+    }
+
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:

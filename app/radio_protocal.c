@@ -409,7 +409,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
 
 #ifdef  S_G
+#ifdef SUPPORT_NETGATE_DISP_NODE
 			sensor_unpackage_to_memory(bufTemp->load, bufTemp->load[0]+1);
+#endif // SUPPORT_NETGATE_DISP_NODE
 #endif // S_G
 			HIBYTE_ZKS(serialNum) = bufTemp->load[6];
 			LOBYTE_ZKS(serialNum) = bufTemp->load[7];

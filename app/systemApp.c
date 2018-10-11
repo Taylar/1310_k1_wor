@@ -362,6 +362,7 @@ void SystemAppTaskFxn(void)
 #endif // S_C//节点
 
 #ifdef S_G//网关
+			Battery_porcess();
 			ConcenterRtcProcess();
 #endif // S_G//网关
 
@@ -379,18 +380,29 @@ void SystemAppTaskFxn(void)
 #endif // SUPPORT_USB
 
 #ifdef BOARD_S6_6
-		if(eventId & SYS_EVT_ALARM_SAVE)
-		{
 #ifndef BOARD_CONFIG_DECEIVE
-			buzzerAlarmCnt = 2;
-			Sys_buzzer_enable();
-            Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
-            Clock_start(sysAlarmClkHandle);
-            Disp_info_close();
-            Disp_poweron();
-#endif
+		if(eventId & SYS_EVT_ALARM)
+		{
+			if (!(g_rSysConfigInfo.status & STATUS_ALARM_OFF)) {
+                buzzerAlarmCnt = 2;
+                Sys_buzzer_enable();
+                Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
+                Clock_start(sysAlarmClkHandle);
+                Disp_info_close();
+                Disp_poweron();
+            }
 		}
-#endif
+#endif  // BOARD_CONFIG_DECEIVE
+
+#ifdef SUPPORT_ALARM_RECORD_QURERY
+      	if(eventId & SYS_EVT_ALARM_SAVE)
+      	{
+          	Flash_store_alarm_record((uint8_t*)(&g_AlarmSensor),sizeof(Alarmdata_t));
+        }
+
+#endif  // SUPPORT_ALARM_RECORD_QURERY
+
+#endif  // BOARD_S6_6
 
 		if(eventId & SYSTEMAPP_EVT_STORE_SYS_CONFIG)
 		{
@@ -398,11 +410,11 @@ void SystemAppTaskFxn(void)
 		}
 
 
-#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-		if(eventId &   SYS_EVT_EVT_OLD_S1_UPLOAD_NODE) {
-		    OldS1NodeAPP_Mode2NodeUploadProcess();
-		}
-#endif
+//#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+//		if(eventId &   SYS_EVT_EVT_OLD_S1_UPLOAD_NODE) {
+//		    OldS1NodeAPP_Mode2NodeUploadProcess();
+//		}
+//#endif
 
 		if(eventId & SYS_EVT_STRATEGY) 
 		{

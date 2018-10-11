@@ -127,19 +127,26 @@ void S2Wakeup(void)
 //***********************************************************************************
 void S2Sleep(void)
 {
+#if !defined(SUPPORT_BOARD_OLD_S2S_1)
     RtcStop();
+#endif
     // wait the nwk disable the uart
 #ifdef  SUPPORT_NETWORK
-    Nwk_poweroff();
-    while(Nwk_is_Active())
+    while(Nwk_is_Active()) {
+        Nwk_poweroff();
         Task_sleep(100 * CLOCK_UNIT_MS);
+    }
 #endif
 
-    InterfaceEnable();
+//    InterfaceEnable();
 
-#ifndef S_A
+#ifdef S_G
     ConcenterSleep();
-#endif // S_A
+#endif // S_G
+
+#ifdef S_C
+    NodeSleep();
+#endif // S_C
 
     deviceMode = DEVICES_OFF_MODE;
 }
@@ -167,12 +174,12 @@ void UsbIntProcess(void)
             // wait for the gsm uart close
 #ifdef  SUPPORT_NETWORK
             Nwk_poweroff();
+            Task_sleep(100 * CLOCK_UNIT_MS);
             while(Nwk_is_Active())
                 Task_sleep(100 * CLOCK_UNIT_MS);
 #endif
 
             InterfaceEnable();
-
             RadioTestDisable();
             S2Sleep();
 

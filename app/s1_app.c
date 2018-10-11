@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-09 14:22:59
+* @Last Modified time: 2018-10-11 14:44:24
 */
 #include "../general.h"
 
@@ -145,6 +145,7 @@ void S1DoubleKeyApp(void)
         RadioSwitchingUserRate();
 #endif
         NodeStrategyStop();
+        EasyLink_setRfPower(7);
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
         Led_ctrl2(LED_G, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         break;
@@ -157,9 +158,10 @@ void S1AppRtcProcess(void)
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
     {
         configModeTimeCnt++;
-        if(configModeTimeCnt >= 120)
+        if(configModeTimeCnt >= 60)
         {
             NodeStrategyBuffClear();
+            EasyLink_setRfPower(14);
             RadioModeSet(RADIOMODE_SENDPORT);
             NodeStartBroadcast();
             NodeBroadcasting();

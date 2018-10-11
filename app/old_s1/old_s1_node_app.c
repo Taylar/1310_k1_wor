@@ -115,6 +115,7 @@ void OldS1NodeApp_init(void)
     //
     SetRadioDstAddr(0xdadadada);
     ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
+    RadioModeSet(RADIOMODE_SENDPORT);
 
     txResendCnt = 0;
 }
@@ -135,7 +136,7 @@ void OldS1NodeAPP_Mode2NodeUploadProcess(void)
         RadioSwitchingS1OldUserRate();
 
 #ifdef BOARD_S3
-        Flash_load_sensor_data_by_offset(data+6, 16, offsetUnit);
+        Flash_load_sensor_data_by_offset(data+6, 16, 0);
         data[0] = 21;
         data[1] = 0;
         data[2] = g_rSysConfigInfo.DeviceId[0];
@@ -143,7 +144,7 @@ void OldS1NodeAPP_Mode2NodeUploadProcess(void)
         data[4] = g_rSysConfigInfo.DeviceId[2];
         data[5] = g_rSysConfigInfo.DeviceId[3];
 #else
-        Flash_load_sensor_data_by_offset(data, 22, offsetUnit);
+        Flash_load_sensor_data_by_offset(data, 22, 0);
 #endif  // BOARD_S3
         sensorData.serialNumber = ((data[6] << 8) | data[7]);
 
@@ -241,12 +242,12 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
     // Software version after (version: 15 74)
     if (5 == len && pData[0] == 0xba) {
         id = (uint16_t)((pData[1] << 8) | pData[2]);
-        serialNum = ((pData[3] << 8) | pData[4]);
+        serialNum = (uint16_t)((pData[3] << 8) | pData[4]);
         if ((id == mode2TxLastTwoID) && (serialNum == mode2TxFrameSerialNum)) {
             flag = true;
         }
     } else if (3 == len && pData[0] == 0xba) { // Software version before (version: 15 74)
-        serialNum = ((pData[1] << 8) | pData[2]);
+        serialNum = (uint16_t)((pData[1] << 8) | pData[2]);
         if ((serialNum == mode2TxFrameSerialNum)) {
             flag = true;
         }
@@ -465,7 +466,7 @@ static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
 static uint8_t PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata)
 {
     if (NULL == pdata) {
-        return;
+        return 0;
     }
 
     uint8_t len = 0;

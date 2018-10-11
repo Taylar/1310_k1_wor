@@ -356,6 +356,8 @@ void NodeRtcProcess(void)
             S1Sleep();
         }
         // SysCtrlSystemReset();
+    } else {
+        count = 0;
     }
     nodeParameter.collectTimeCnt++;
 #else
