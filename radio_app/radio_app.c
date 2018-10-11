@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-10 09:54:04
+* @Last Modified time: 2018-10-10 17:07:01
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -1201,6 +1201,8 @@ void RadioSwitchingUpgradeRate(void)
     Task_sleep(500 * CLOCK_UNIT_MS);
     RadioDefaultParaInit();
 
+    EasyLink_setRfPower(7);
+
     RadioAbort();
     /* Set the filter to the generated random address */
     if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
@@ -1227,6 +1229,8 @@ void RadioSwitchingUserRate(void)
     }
 
     Task_sleep(500 * CLOCK_UNIT_MS);
+
+    EasyLink_setRfPower(14);
 
     RadioDefaultParaInit();
     /* Set the filter to the generated random address */

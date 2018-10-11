@@ -479,6 +479,8 @@ static ErrorStatus RadioUpgrade_TxInfoMatch(uint32_t offset, uint8_t len)
 
 static UPGRADE_RESULT_E RaidoUpgrade_LoadCheck(void)
 {
+    if((sRadio_upgrade_info.fileLength <= 128) || sRadio_upgrade_info.fileLength > (1024*128))
+        return UPGRADE_RESULT_CRC_ERR;
     return Usb_bsl_UpgradeLoad_check(sRadio_upgrade_info.fileLength);
 #if 0
     uint16_t crc2;
