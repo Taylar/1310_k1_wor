@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-11 16:00:15
+* @Last Modified time: 2018-10-12 11:16:50
 */
 #include "../general.h"
 
@@ -224,6 +224,11 @@ void S6HwInit(void)
     Disp_init();
 
     Spi_init();
+
+#ifdef SUPPORT_SHT3X
+    //SHT3X Reset Pin initial
+    SHT3x_ResetIoInitial();
+#endif
 
     I2c_init();
     

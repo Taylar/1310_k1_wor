@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-11 14:44:24
+* @Last Modified time: 2018-10-12 11:17:07
 */
 #include "../general.h"
 
@@ -42,6 +42,11 @@ void S1HwInit(void)
     KeyRegister(SystemDoubleKeyEventPostIsr, KEY_0_DOUBLE_PRESS);
 
     Spi_init();
+
+#ifdef SUPPORT_SHT3X
+    //SHT3X Reset Pin initial
+    SHT3x_ResetIoInitial();
+#endif
 
     I2c_init();
 

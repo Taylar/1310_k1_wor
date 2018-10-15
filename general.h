@@ -73,10 +73,10 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
+#define BOARD_S3
 // #define BOARD_B2S
-#define BOARD_S6_6
-#define BOARD_CONFIG_DECEIVE
+// #define BOARD_S6_6
+// #define BOARD_CONFIG_DECEIVE
 
 
 //#define FACTOR_RADIO_TEST
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -211,8 +211,8 @@ error type define
 #define SUPPORT_SENSOR
 #ifdef SUPPORT_SENSOR
 
-#define SUPPORT_SHT2X
-//#define SUPPORT_SHT3X
+// #define SUPPORT_SHT2X
+#define SUPPORT_SHT3X
 
 #define SUPPORT_NTC
 
@@ -480,7 +480,8 @@ error
 //***********************************************************************************
 #ifdef BOARD_S3
 #define SUPPORT_SENSOR
-#define SUPPORT_SHT2X
+// #define SUPPORT_SHT2X
+#define SUPPORT_SHT3X
 
 
 #define SUPPORT_RADIO_UPGRADE
@@ -524,6 +525,7 @@ error
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
+#undef SUPPORT_SHT3X
 #define SUPPORT_UPLOAD_ASSET_INFO
 
 #undef  BOARD_NAME
@@ -534,7 +536,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0048
+#define FW_VERSION              0x0049
 #else
 #define FW_VERSION              0x0006
 #endif
@@ -965,7 +967,9 @@ typedef struct {
 #ifdef SUPPORT_FLIGHT_MODE
 #include "network/flight_mode.h"
 #endif
-
+#ifdef SUPPORT_SHT3X
+#include "sensor/sht3x.h"
+#endif
 #ifdef SUPPORT_CHARGE_DECT
 #include "chargedetect/chargedect.h"
 #endif
