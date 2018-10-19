@@ -60,6 +60,9 @@
 #define     RADIO_PRO_CMD_CHANNEL_OCCUPY    0x06
 
 
+#define 	RADIO_REQUEST_CHANNEL 			0xFFFF
+#define 	RADIO_INVAILD_CHANNEL 			0xFFFE
+
 
 /***** Type declarations *****/
 

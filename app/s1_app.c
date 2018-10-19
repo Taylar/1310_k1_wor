@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-12 11:17:07
+* @Last Modified time: 2018-10-18 15:17:28
 */
 #include "../general.h"
 
@@ -151,6 +151,7 @@ void S1DoubleKeyApp(void)
 #endif
         NodeStrategyStop();
         EasyLink_setRfPower(7);
+        RadioSetRxMode();
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
         Led_ctrl2(LED_G, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         break;

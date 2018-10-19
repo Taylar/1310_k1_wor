@@ -62,9 +62,9 @@ void ConcenterCollectStop(void);
 
 #ifdef SUPPORT_STRATEGY_SORT
 
-uint8_t ConcenterSetNodeChannel(uint32_t nodeAddr);
+uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel);
 
-uint8_t ConcenterReadNodeChannel(uint32_t nodeAddr);
+uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr);
 
 #endif // SUPPORT_STRATEGY_SORT
 

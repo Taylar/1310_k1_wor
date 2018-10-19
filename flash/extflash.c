@@ -1728,3 +1728,44 @@ ErrorStatus Flash_external_Selftest(void)
     System_printf("\n ");
     return ES_SUCCESS;
 } 
+
+#ifdef SUPPORT_STORE_ID_IN_EXTFLASH
+//***********************************************************************************
+//
+// Flash store the node id in extflash.
+//
+//***********************************************************************************
+void Flash_store_nodeid(uint8_t *pData, uint32_t offset)
+{
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    if(offset >= FLASH_NODEID_STORE_NUMBER)
+        return;
+    offset = offset * FLASH_NODEID_STORE_SIZE;
+    //If the position is the first byte of a sector, clear the sector.
+    if ((offset % (FLASH_SECTOR_SIZE)) == 0) {
+        Flash_external_erase(FLASH_NODEID_STORE_POS + offset , FLASH_EXT_SECTOR_ERASE);
+    }
+
+    Flash_external_write(FLASH_NODEID_STORE_POS + offset, pData, FLASH_NODEID_STORE_SIZE);
+
+    Semaphore_post(spiSemHandle);
+}
+
+
+//***********************************************************************************
+//
+// Flash load upgrade info.
+//
+//***********************************************************************************
+void Flash_load_nodeid(uint8_t *pData, uint32_t offset)
+{
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    //
+    Flash_external_read(FLASH_NODEID_STORE_POS + (offset * FLASH_NODEID_STORE_SIZE), pData, FLASH_NODEID_STORE_SIZE);
+
+    Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+#endif  //SUPPORT_STORE_ID_IN_EXTFLASH

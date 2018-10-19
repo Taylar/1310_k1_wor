@@ -8,6 +8,7 @@
 
 #define     FAIL_CHECK_RSSI_BUSY_MAX_NUM	   20
 
+#define 	SORT_CHANNEL_TIME_SLOT				250
 
 
 void NodeStrategyReset(void);
@@ -38,5 +39,6 @@ void StrategyRegisterSuccess(void);
 
 void StrategyCheckRssiBusyProcess(void);
 
+uint32_t NodeStrategyGetChannel(void);
 
 #endif			// __NODE_STRATEGY_H__

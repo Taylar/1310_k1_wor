@@ -508,7 +508,7 @@ static UInt Gsm_wait_ack(uint32_t timeout)
     UInt eventId;
     UInt key;
 
-    eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN | GSM_EVT_CMD_OK | GSM_EVT_CMD_ERROR, timeout * CLOCK_UNIT_MS);
+    eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN | GSM_EVT_CMD_OK | GSM_EVT_CMD_ERROR | GSM_EVT_CMD_RECONNECT, timeout * CLOCK_UNIT_MS);
 
     while(gsmBusyFlag)
     {
@@ -926,12 +926,12 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
         AT_ack_query();
         eventId = Gsm_wait_ack(30);
         Task_sleep(270 * CLOCK_UNIT_MS);
-        if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
+        if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN | GSM_EVT_CMD_RECONNECT))
             break;
     }
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
-    } else if (i == 0) {
+    } else if ((i == 0) || (eventId & GSM_EVT_CMD_RECONNECT)) {
         //timeout
         goto LAB_UPLOAD_CLOSE_CONNECT;
     }
@@ -1444,6 +1444,17 @@ static void Gsm_rxSwiFxn(void)
             break;
 
         case AT_CMD_ACK_QUERY:
+            ptr = strstr((char *)tempRx.buff, "CLOSE");
+            if(ptr != NULL){
+                Gsm_event_post(GSM_EVT_CMD_RECONNECT);
+                break;
+            }
+            ptr = strstr((char *)tempRx.buff, "PDP DEACT");
+            if(ptr != NULL){
+                Gsm_event_post(GSM_EVT_CMD_RECONNECT);
+                break;
+            }
+
             ptr = strstr((char *)tempRx.buff, "OK\r\n");
             if (ptr != NULL) {
                 ptr = strstr((char *)tempRx.buff, "+QISACK:");
@@ -1742,6 +1753,11 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
 {
     uint8_t result;
 
+	if (cmd == NWK_CONTROL_SIMCCID_GET){//return ccid  whether gsm is on or not
+		memcpy((char *)arg, (char *)rGsmObject.simCcid, 20);
+		return TRUE;
+	}
+	
     if (rGsmObject.isOpen == 0) {
         return FALSE;
     }

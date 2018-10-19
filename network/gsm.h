@@ -171,6 +171,7 @@ typedef enum {
 #define GSM_EVT_SHUTDOWN            Event_Id_00
 #define GSM_EVT_CMD_OK              Event_Id_01
 #define GSM_EVT_CMD_ERROR           Event_Id_02
+#define GSM_EVT_CMD_RECONNECT       Event_Id_03
 #define GSM_EVT_ALL                 0xffff
 
 typedef struct {

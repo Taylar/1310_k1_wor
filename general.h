@@ -211,8 +211,8 @@ error type define
 #define SUPPORT_SENSOR
 #ifdef SUPPORT_SENSOR
 
-// #define SUPPORT_SHT2X
-#define SUPPORT_SHT3X
+#define SUPPORT_SHT2X
+// #define SUPPORT_SHT3X
 
 #define SUPPORT_NTC
 
@@ -380,6 +380,7 @@ error type define
 #undef SUPPORT_PT100
 
 #undef SUPPORT_SHT2X
+#undef SUPPORT_SHT3X
 #undef SUPPORT_NTC
 
 #elif defined(S_C)//collection
@@ -536,7 +537,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0049
+#define FW_VERSION              0x0050
 #else
 #define FW_VERSION              0x0006
 #endif
@@ -740,9 +741,13 @@ typedef enum {
 //***********************************************************************************
 #define STATUS_POWERON          0x0001
 
-// #define SUPPORT_STRATEGY_SORT
-#define CONCENTER_MAX_CHANNEL       20
-
+#define SUPPORT_STRATEGY_SORT
+#define CONCENTER_MAX_CHANNEL       100
+#ifdef SUPPORT_STRATEGY_SORT
+#ifdef S_G
+#define SUPPORT_STORE_ID_IN_EXTFLASH
+#endif //S_G
+#endif  //SUPPORT_STRATEGY_SORT
 //***********************************************************************************
 //
 //mode define.

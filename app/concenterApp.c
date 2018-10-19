@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-27 17:13:22
+* @Last Modified time: 2018-10-17 18:14:09
 */
 #include "../general.h"
 
@@ -350,21 +350,79 @@ void ConcenterRtcProcess(void)
 
 
 #ifdef SUPPORT_STRATEGY_SORT
-uint32_t nodeAddrTable[CONCENTER_MAX_CHANNEL];
-uint8_t  nodeNumDispath;
+#ifdef SUPPORT_STORE_ID_IN_EXTFLASH
+uint16_t  nodeNumDispath;
+uint16_t  nodeRecentId;
+uint32_t  nodeIdRecentAddr;
 
 //***********************************************************************************
-// brief:concenter set the channel
+// brief:dispath the channel to the node ande return the channel
 // 
 // parameter: 
 //***********************************************************************************
-uint8_t ConcenterSetNodeChannel(uint32_t nodeAddr)
+uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel)
+{
+    uint32_t nodeIdTemp;
+    if(channel == RADIO_INVAILD_CHANNEL)
+        return RADIO_INVAILD_CHANNEL;
+
+    if(channel < nodeNumDispath)
+    {
+        Flash_load_nodeid((uint8_t*)(&nodeIdTemp), channel);
+        if(nodeIdTemp == channel)
+        {
+            nodeRecentId = channel;
+            return channel;
+        }
+    }
+    nodeRecentId = nodeNumDispath;
+    nodeNumDispath++;
+    if(nodeNumDispath > FLASH_NODEID_STORE_NUMBER)
+        nodeNumDispath = 0;
+    Flash_store_nodeid((uint8_t*)(&nodeAddr), nodeRecentId);
+    return nodeRecentId;
+}
+
+//***********************************************************************************
+// brief:fine the node channel through the Node ID in the memory
+// 
+// parameter: 
+//***********************************************************************************
+uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr)
+{
+    uint32_t i; 
+    uint32_t nodeIdTemp;
+    for(i = 0; i < nodeNumDispath; i++)
+    {
+        Flash_load_nodeid((uint8_t*)(&nodeIdTemp), i);
+        if(nodeIdTemp == nodeAddr)
+        {
+            nodeRecentId = i;
+            return i;
+        }
+    }
+    return 0xffff;
+}
+
+#else
+uint32_t nodeAddrTable[CONCENTER_MAX_CHANNEL];
+uint16_t  nodeNumDispath;
+uint16_t  nodeRecentId;
+
+//***********************************************************************************
+// brief:dispath the channel to the node ande return the channel
+// 
+// parameter: 
+//***********************************************************************************
+uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel)
 {
     uint8_t i;
-    for(i = 0; i < CONCENTER_MAX_CHANNEL; i++)
+
+    if(channel < nodeNumDispath)
     {
-        if(nodeAddrTable[i] == nodeAddr)
+        if(nodeAddrTable[channel] == nodeAddr)
         {
+            nodeRecentId = channel;
             return i;
         }
     }
@@ -375,21 +433,43 @@ uint8_t ConcenterSetNodeChannel(uint32_t nodeAddr)
         nodeNumDispath = 0;
     }
     nodeAddrTable[nodeNumDispath] = nodeAddr;
+    nodeRecentId = nodeNumDispath;
     nodeNumDispath++;
-    return (nodeNumDispath - 1);
+    return (nodeRecentId);
 }
 
-uint8_t ConcenterReadNodeChannel(uint32_t nodeAddr)
+//***********************************************************************************
+// brief:fine the node channel through the Node ID in the memory
+// 
+// parameter: 
+//***********************************************************************************
+uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr)
 {
     uint8_t i; 
     for(i = 0; i < CONCENTER_MAX_CHANNEL; i++)
     {
         if(nodeAddrTable[i] == nodeAddr)
         {
+            nodeRecentId = i;
             return i;
         }
     }
-    return 0xff;
+    return 0xffff;
 }
+
+//***********************************************************************************
+// brief:read the 
+// 
+// parameter: 
+//***********************************************************************************
+uint16_t ConcenterReadResentNodeChannel(void)
+{
+    return nodeRecentId;
+}
+
+
+#endif //SUPPORT_STORE_ID_IN_EXTFLASH
+
+
 
 #endif // SUPPORT_STRATEGY_SORT

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-10 09:54:04
+* @Last Modified time: 2018-10-19 12:00:18
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -442,6 +442,7 @@ void RadioAppTaskFxn(void)
 
 
 
+
     for(;;)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
@@ -623,7 +624,10 @@ void RadioAppTaskFxn(void)
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
                     radioStatus = RADIOSTATUS_RECEIVING;
-                    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
+                    if(GetStrategyRegisterStatus() == false)
+                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(1500));
+                    else
+                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
                     RadioReceiveData();
                 }
 
@@ -650,7 +654,7 @@ void RadioAppTaskFxn(void)
             {
                 NodeStrategyBuffClear();
             }
-
+            
         }
 
 

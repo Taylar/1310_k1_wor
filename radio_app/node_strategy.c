@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-18 15:35:31
+* @Last Modified time: 2018-10-18 15:27:44
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -74,6 +74,7 @@ void NodeStrategyInit(void (*StrategyFailCb)(void))
         NodeStrategyReset();
 
         nodeStrategy.init         = true;
+        nodeStrategy.channel      = RADIO_REQUEST_CHANNEL;
         Clock_Params clkParams;
         Clock_Params_init(&clkParams);
         clkParams.period    = 0;
@@ -326,29 +327,29 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint
     concenterTick = concenterTick / 100 + (length * 16 / 10);
 
 
-    if(nodeStrategy.success)
-    {
-        if(channel != nodeStrategy.channel)
-        {
-            // readjust the timer
-            goto ReadjustChannel;
-        }
-        else
-        {
-            offsetTicksTemp = concenterTick - Clock_getTicks();
-            if(offsetTicksTemp > nodeStrategy.offsetTicks)
-            {
-                if((offsetTicksTemp - nodeStrategy.offsetTicks) > 200 * CLOCK_UNIT_MS)
-                    goto ReadjustChannel;
-            }
-            else
-            {
-                if((nodeStrategy.offsetTicks - offsetTicksTemp) > 200 * CLOCK_UNIT_MS)
-                    goto ReadjustChannel;
-            }
-        }
-    }
-    else
+    // if(nodeStrategy.success)
+    // {
+    //     if(channel != nodeStrategy.channel)
+    //     {
+    //         // readjust the timer
+    //         goto ReadjustChannel;
+    //     }
+    //     else
+    //     {
+    //         offsetTicksTemp = concenterTick - Clock_getTicks();
+    //         if(offsetTicksTemp > nodeStrategy.offsetTicks)
+    //         {
+    //             if((offsetTicksTemp - nodeStrategy.offsetTicks) > 200 * CLOCK_UNIT_MS)
+    //                 goto ReadjustChannel;
+    //         }
+    //         else
+    //         {
+    //             if((nodeStrategy.offsetTicks - offsetTicksTemp) > 200 * CLOCK_UNIT_MS)
+    //                 goto ReadjustChannel;
+    //         }
+    //     }
+    // }
+    // else
     {
         // need to register the new channel
 ReadjustChannel:
@@ -359,7 +360,9 @@ ReadjustChannel:
 
         concenterTick = concenterTick % (nodeStrategy.period * 1000);
         // transform to ms
-        launchTime  = nodeStrategy.channel * nodeStrategy.period * 1000 / nodeStrategy.channelNum;
+        // launchTime  = nodeStrategy.channel * nodeStrategy.period * 1000 / nodeStrategy.channelNum;
+        // the channel time space fix 
+        launchTime  = nodeStrategy.channel * SORT_CHANNEL_TIME_SLOT;
         
         if(Clock_isActive(nodeStrategyStartClockHandle))
         {
@@ -381,3 +384,16 @@ ReadjustChannel:
             Clock_start(nodeStrategyStartClockHandle);
     }
 }
+
+
+//***********************************************************************************
+// brief:   get the channel dispatch from concentor
+// 
+// parameter: 
+//***********************************************************************************
+uint32_t NodeStrategyGetChannel(void)
+{
+    return nodeStrategy.channel;
+}
+
+

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-18 15:05:27
+* @Last Modified time: 2018-10-19 11:48:21
 */
 #include "../general.h"
 
@@ -81,11 +81,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			temp2 |=  ((uint32_t)bufTemp->load[12]) << 8;
 			temp2 |=  ((uint32_t)bufTemp->load[13]);
 
-			if(setChannel == 0)
-			{
-				NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
-				setChannel = 1;
-			}
+			NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
 #endif
 			StrategyRegisterSuccess();
 			calendarTemp.Year       = 2000 + bufTemp->load[0];
@@ -274,21 +270,16 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			case RADIO_PRO_CMD_ACK:
 #ifdef  SUPPORT_STRATEGY_SORT
-			// get the concenter tick
-			temp   =  ((uint32_t)bufTemp->load[3]) << 24;
-			temp  |=  ((uint32_t)bufTemp->load[4]) << 16;
-			temp  |=  ((uint32_t)bufTemp->load[5]) << 8;
-			temp  |=  ((uint32_t)bufTemp->load[6]);
-
-			// get the channel
-			temp2  =  ((uint32_t)bufTemp->load[7]) << 24;
-			temp2 |=  ((uint32_t)bufTemp->load[8]) << 16;
-			temp2 |=  ((uint32_t)bufTemp->load[9]) << 8;
-			temp2 |=  ((uint32_t)bufTemp->load[10]);
 			if(setChannel == 0)
 			{
-				NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
-				setChannel = 1;
+				// get the concenter tick
+				temp   =  ((uint32_t)bufTemp->load[3]) << 24;
+				temp  |=  ((uint32_t)bufTemp->load[4]) << 16;
+				temp  |=  ((uint32_t)bufTemp->load[5]) << 8;
+				temp  |=  ((uint32_t)bufTemp->load[6]);
+
+				NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, NodeStrategyGetChannel());
+				setChannel = 1;	
 			}
 #endif	// SUPPORT_STRATEGY_SORT
 			StrategyRegisterSuccess();
@@ -384,9 +375,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	
 	SetRadioDstAddr(bufTemp->srcAddr);
 
-#ifdef SUPPORT_STRATEGY_SORT
-	ConcenterSetNodeChannel(bufTemp->srcAddr);
-#endif // SUPPORT_STRATEGY_SORT
+
 
 	while(len)
 	{
@@ -429,7 +418,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 
 			case RADIO_PRO_CMD_SYN_TIME_REQ:
-
+#ifdef SUPPORT_STRATEGY_SORT
+			ConcenterSetNodeChannel(bufTemp->srcAddr, ((uint16_t)bufTemp->load[0])<<8 + bufTemp->load[1]);
+#endif // SUPPORT_STRATEGY_SORT
 
 			// send the time
 			if(ConcenterReadSynTimeFlag())
@@ -668,7 +659,7 @@ bool NodeRadioSendSensorData(uint8_t * dataP, uint8_t length)
 //***********************************************************************************
 bool NodeRadioSendSynReq(void)
 {
-	protocalTxBuf.len = 10;
+	protocalTxBuf.len = 10 + 2;
 	protocalTxBuf.dstAddr	= GetRadioDstAddr();
 	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
 
@@ -677,8 +668,16 @@ bool NodeRadioSendSynReq(void)
 		return false;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME_REQ;
-
-
+	if(GetStrategyRegisterStatus() == false)
+	{
+		protocalTxBuf.load[0]	= (uint8_t)(NodeStrategyGetChannel() >> 8);
+		protocalTxBuf.load[1]	= (uint8_t)NodeStrategyGetChannel();
+	}
+	else
+	{
+		protocalTxBuf.load[0]	= (uint8_t)(RADIO_INVAILD_CHANNEL >> 8);
+		protocalTxBuf.load[1]	= (uint8_t)RADIO_INVAILD_CHANNEL;
+	}
 
 	return NodeStrategySendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len);
 }
@@ -820,7 +819,7 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, uint16_
 	protocalTxBuf.command	= RADIO_PRO_CMD_ACK;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
-	protocalTxBuf.len 		= 10 + 11;
+	protocalTxBuf.len 		= 10 + 7;
 
 
 	protocalTxBuf.load[0]	= (uint8_t)(status);
@@ -835,11 +834,11 @@ void ConcenterRadioSendSensorDataAck(uint32_t srcAddr, uint32_t dstAddr, uint16_
 	protocalTxBuf.load[5]	= (uint8_t)(temp >> 8);
 	protocalTxBuf.load[6]	= (uint8_t)(temp);
 
-	temp = ConcenterReadNodeChannel(dstAddr);
-    protocalTxBuf.load[7]   = (uint8_t)(temp >> 24);
-    protocalTxBuf.load[8]   = (uint8_t)(temp >> 16);
-    protocalTxBuf.load[9]   = (uint8_t)(temp >> 8);
-    protocalTxBuf.load[10]   = (uint8_t)(temp);
+	// temp = ConcenterReadNodeChannel(dstAddr);
+ //    protocalTxBuf.load[7]   = (uint8_t)(temp >> 24);
+ //    protocalTxBuf.load[8]   = (uint8_t)(temp >> 16);
+ //    protocalTxBuf.load[9]   = (uint8_t)(temp >> 8);
+ //    protocalTxBuf.load[10]   = (uint8_t)(temp);
 
 #endif
 
