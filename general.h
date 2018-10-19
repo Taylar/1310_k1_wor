@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -510,7 +510,8 @@ error
 
 #define SUPPORT_RSSI_CHECK
 // #define SUPPORT_FREQ_FIND
-
+#define SUPPORT_STRATEGY_SORT
+#define CONCENTER_MAX_CHANNEL       100
 
 /* old S1*/
 //#define SUPPORT_BOARD_OLD_S1
@@ -571,7 +572,13 @@ error
 #define SUPPORT_USB
 // #define SUPPORT_RSSI_CHECK
 // #define SUPPORT_FREQ_FIND
-
+#define SUPPORT_STRATEGY_SORT
+#define CONCENTER_MAX_CHANNEL       100
+#ifdef SUPPORT_STRATEGY_SORT
+#ifdef S_G
+#define SUPPORT_STORE_ID_IN_EXTFLASH
+#endif //S_G
+#endif  //SUPPORT_STRATEGY_SORT
 
 #undef  FW_VERSION
 
@@ -582,7 +589,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0048
+#define FW_VERSION              0x0050
 
 #elif defined(S_C)
 
@@ -741,13 +748,7 @@ typedef enum {
 //***********************************************************************************
 #define STATUS_POWERON          0x0001
 
-#define SUPPORT_STRATEGY_SORT
-#define CONCENTER_MAX_CHANNEL       100
-#ifdef SUPPORT_STRATEGY_SORT
-#ifdef S_G
-#define SUPPORT_STORE_ID_IN_EXTFLASH
-#endif //S_G
-#endif  //SUPPORT_STRATEGY_SORT
+
 //***********************************************************************************
 //
 //mode define.

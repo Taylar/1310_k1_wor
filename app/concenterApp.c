@@ -457,6 +457,8 @@ uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr)
     return 0xffff;
 }
 
+#endif //SUPPORT_STORE_ID_IN_EXTFLASH
+
 //***********************************************************************************
 // brief:read the 
 // 
@@ -466,10 +468,5 @@ uint16_t ConcenterReadResentNodeChannel(void)
 {
     return nodeRecentId;
 }
-
-
-#endif //SUPPORT_STORE_ID_IN_EXTFLASH
-
-
 
 #endif // SUPPORT_STRATEGY_SORT

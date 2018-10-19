@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-19 12:00:18
+* @Last Modified time: 2018-10-19 16:01:38
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -654,7 +654,6 @@ void RadioAppTaskFxn(void)
             {
                 NodeStrategyBuffClear();
             }
-            
         }
 
 

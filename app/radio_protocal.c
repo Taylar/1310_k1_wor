@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-19 11:48:21
+* @Last Modified time: 2018-10-19 15:42:47
 */
 #include "../general.h"
 
@@ -418,13 +418,14 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 
 			case RADIO_PRO_CMD_SYN_TIME_REQ:
-#ifdef SUPPORT_STRATEGY_SORT
-			ConcenterSetNodeChannel(bufTemp->srcAddr, ((uint16_t)bufTemp->load[0])<<8 + bufTemp->load[1]);
-#endif // SUPPORT_STRATEGY_SORT
-
 			// send the time
 			if(ConcenterReadSynTimeFlag())
+			{
+#ifdef SUPPORT_STRATEGY_SORT
+				ConcenterSetNodeChannel(bufTemp->srcAddr, ((uint16_t)bufTemp->load[0])<<8 + bufTemp->load[1]);
+#endif // SUPPORT_STRATEGY_SORT				
 				ConcenterRadioSendSynTime(bufTemp->dstAddr, bufTemp->srcAddr);
+			}
 
 			break;
 
@@ -924,7 +925,7 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.load[8]	= (uint8_t)(temp >> 8);
 	protocalTxBuf.load[9]	= (uint8_t)(temp);
 
-	temp 					= ConcenterReadNodeChannel(dstAddr);
+	temp 					= ConcenterReadResentNodeChannel();
 	protocalTxBuf.load[10]	= (uint8_t)(temp >> 24);
 	protocalTxBuf.load[11]	= (uint8_t)(temp >> 16);
 	protocalTxBuf.load[12]	= (uint8_t)(temp >> 8);
