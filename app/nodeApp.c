@@ -248,7 +248,7 @@ void NodeBroadcasting(void)
  #if !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
     if(nodeParameter.broadcasting)
     {
-        NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
+        // NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
         RadioEventPost(RADIO_EVT_SEND_SYC);
 //        RadioSensorDataPack();
     }

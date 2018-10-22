@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-18 15:27:44
+* @Last Modified time: 2018-10-22 16:34:00
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -100,7 +100,6 @@ void NodeStrategyInit(void (*StrategyFailCb)(void))
 void NodeStrategyReset(void)
 {
     nodeStrategy.success       = false;
-    nodeStrategy.channel       = INVALID_CHANNEL;
     nodeStrategy.channelNum    = CONCENTER_MAX_CHANNEL;
     nodeStrategy.sendCnt       = 0;
     nodeStrategy.radioBusyCnt  = 0;
@@ -121,10 +120,12 @@ void NodeStrategySetPeriod(uint32_t period)
 {
     if(Clock_isActive(nodeStrategyStartClockHandle))
     {
-        Clock_stop(nodeStrategyStartClockHandle);
-        nodeStrategy.period         = period;
-        Clock_setPeriod(nodeStrategyStartClockHandle, (uint32_t)nodeStrategy.period * CLOCK_UNIT_S);
-        Clock_start(nodeStrategyStartClockHandle);
+        if(nodeStrategy.period != period)
+        {
+            Clock_stop(nodeStrategyStartClockHandle);
+            Clock_setPeriod(nodeStrategyStartClockHandle, (uint32_t)nodeStrategy.period * CLOCK_UNIT_S);
+            Clock_start(nodeStrategyStartClockHandle);
+        }
     }
     else
     {

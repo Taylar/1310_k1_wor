@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-19 15:42:47
+* @Last Modified time: 2018-10-22 19:06:41
 */
 #include "../general.h"
 
@@ -422,7 +422,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			if(ConcenterReadSynTimeFlag())
 			{
 #ifdef SUPPORT_STRATEGY_SORT
-				ConcenterSetNodeChannel(bufTemp->srcAddr, ((uint16_t)bufTemp->load[0])<<8 + bufTemp->load[1]);
+				ConcenterSetNodeChannel(bufTemp->srcAddr, (((uint32_t)(bufTemp->load[0]))<<8) + (uint32_t)(bufTemp->load[1]));
 #endif // SUPPORT_STRATEGY_SORT				
 				ConcenterRadioSendSynTime(bufTemp->dstAddr, bufTemp->srcAddr);
 			}

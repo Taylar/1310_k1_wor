@@ -369,7 +369,7 @@ uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel)
     if(channel < nodeNumDispath)
     {
         Flash_load_nodeid((uint8_t*)(&nodeIdTemp), channel);
-        if(nodeIdTemp == channel)
+        if(nodeIdTemp == nodeAddr)
         {
             nodeRecentId = channel;
             return channel;
