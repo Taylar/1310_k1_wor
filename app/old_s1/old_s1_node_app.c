@@ -211,6 +211,7 @@ void OldS1NodeAPP_scheduledUploadData(void)
         randDelay = 15 * (getRandom() % 20) + 225;
         Task_sleep(randDelay * CLOCK_UNIT_MS);
 
+        OldS1NodeApp_setDataTxRfFreque();
         ClearRadioSendBuf();
         RadioSendPacket(buff, len, 0, 0);
         RadioModeSet(RADIOMODE_SENDPORT);
@@ -326,7 +327,7 @@ static uint32_t getRandom(void)
 static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
 {
     if (NULL == pdata) {
-        return;
+        return 0;
     }
 
     uint8_t len = 0;
@@ -382,7 +383,7 @@ static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
     pdata[len++] = sensorData.voltage & 0x00FF;
 
     // end
-    pdata[len] = 0xAE;
+    pdata[len++] = 0xAE;
     return len;
 }
 #endif
@@ -450,7 +451,7 @@ static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
     pdata[len++] = sensorData.voltage & 0x00FF;
 
     // end
-    pdata[len] = 0xAE;
+    pdata[len++] = 0xAE;
     return len;
 }
 #endif

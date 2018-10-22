@@ -604,7 +604,7 @@ uint32_t Sensor_get_lux(uint8_t chNum)
 void Sensor_collect_time_isr(void)
 {
 #if  defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-    if (deviceMode != DEVICES_ON_MODE) {
+    if (deviceMode != DEVICES_ON_MODE || g_oldS1OperatingMode == S1_OPERATING_MODE1) {
         return;
     }
 #endif

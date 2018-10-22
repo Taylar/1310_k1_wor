@@ -416,14 +416,13 @@ uint16_t  nodeRecentId;
 //***********************************************************************************
 uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel)
 {
-    uint8_t i;
 
     if(channel < nodeNumDispath)
     {
         if(nodeAddrTable[channel] == nodeAddr)
         {
             nodeRecentId = channel;
-            return i;
+            return channel;
         }
     }
     // could not find the nodeaddr in the nodeAddrTable

@@ -445,7 +445,9 @@ void SystemAppTaskFxn(void)
 #ifdef  S_C
             if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
 	        {
+#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
 	            RadioSensorDataPack();
+#endif //!defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
 	        }
 #endif // S_C
 

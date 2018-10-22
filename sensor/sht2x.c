@@ -291,7 +291,7 @@ err_retrys:
                 if(retrys++ < 3)goto err_retrys;
             }
 
-#if !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
+#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
             //convert rawdata to temperature
             rSensorData[chNum].temp = SHT2x_calc_temperatureC(rSensorData[chNum].temp );
             //convert rawdata to humidty

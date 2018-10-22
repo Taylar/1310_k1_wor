@@ -937,7 +937,7 @@ EasyLink_Status EasyLink_transmit(EasyLink_TxPacket *txPacket)
         return EasyLink_Status_Param_Error;
     }
 
-#if !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
+#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
     memcpy(txBuffer, txPacket->dstAddr, addrSize);
     memcpy(txBuffer + addrSize, txPacket->payload, txPacket->len);
 

@@ -387,7 +387,9 @@ void RadioAppTaskFxn(void)
 #endif // S_G//网关
 
 #ifdef S_C //节点
+#if !defined(SUPPORT_BOARD_OLD_S2S_1)
             g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;
+#endif //!defined(SUPPORT_BOARD_OLD_S2S_1)
 #endif // S_C //节点
 
     if(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)
@@ -513,7 +515,7 @@ void RadioAppTaskFxn(void)
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
                         OldS1NodeApp_protocolProcessing(radioRxPacket.payload, radioRxPacket.len);
-                    } else {
+                    } else if (deviceMode == DEVICES_CONFIG_MODE) {
                         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
                         NodeProtocalDispath(&radioRxPacket);
                     }
@@ -1277,6 +1279,7 @@ void RadioSwitchingS1OldUserRate(void)
     }
 
     Task_sleep(500 * CLOCK_UNIT_MS);
+	EasyLink_setRfPower(14);
 
     EasyLink_setCtrl(EasyLink_Ctrl_AddSize, 0);
     /* Set the filter to the generated random address */

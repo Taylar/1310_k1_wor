@@ -208,7 +208,7 @@ void S1Sleep(void)
 {
     deviceMode = DEVICES_OFF_MODE;
 
-#if  !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
+#if  !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
     RtcStop();
 #endif
     NodeSleep();
