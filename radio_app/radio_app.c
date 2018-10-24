@@ -635,7 +635,7 @@ void RadioAppTaskFxn(void)
 
                 if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
                 {
-#ifdef SUPPORT_FREQ_FIND
+#if defined(SUPPORT_FREQ_FIND) && defined(S_G)
                     if(AutoFreqStateRead() == false)
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(PASSRADIO_ACK_TIMEOUT_TIME_MS));
                     else

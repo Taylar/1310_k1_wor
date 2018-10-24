@@ -362,7 +362,9 @@ void SystemAppTaskFxn(void)
 #endif // S_C//节点
 
 #ifdef S_G//网关
+#ifndef BOARD_CONFIG_DECEIVE
 			Battery_porcess();
+#endif  // BOARD_CONFIG_DECEIVE
 			ConcenterRtcProcess();
 #endif // S_G//网关
 

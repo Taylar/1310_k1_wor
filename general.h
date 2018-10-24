@@ -73,10 +73,10 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
-// #define BOARD_CONFIG_DECEIVE
+#define BOARD_S6_6
+#define BOARD_CONFIG_DECEIVE
 
 
 //#define FACTOR_RADIO_TEST
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -509,8 +509,8 @@ error
 #undef SUPPORT_FLASH_LOG
 
 #define SUPPORT_RSSI_CHECK
-// #define SUPPORT_FREQ_FIND
-#define SUPPORT_STRATEGY_SORT
+#define SUPPORT_FREQ_FIND
+// #define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
 
 /* old S1*/
@@ -539,7 +539,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0050
+#define FW_VERSION              0x0051
 #else
 #define FW_VERSION              0x0008
 #endif
@@ -571,9 +571,9 @@ error
 #undef SUPPORT_DOUBLE_PRESS
 
 #define SUPPORT_USB
-// #define SUPPORT_RSSI_CHECK
-// #define SUPPORT_FREQ_FIND
-#define SUPPORT_STRATEGY_SORT
+#define SUPPORT_RSSI_CHECK
+#define SUPPORT_FREQ_FIND
+// #define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
 #ifdef SUPPORT_STRATEGY_SORT
 #ifdef S_G
@@ -590,12 +590,19 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0050
+#define FW_VERSION              0x0051
 
 #elif defined(S_C)
 
 #define FW_VERSION              0x0036
 #endif //S_A
+
+#ifdef BOARD_CONFIG_DECEIVE
+#undef  SUPPORT_RSSI_CHECK
+#undef  SUPPORT_FREQ_FIND
+#undef  SUPPORT_STRATEGY_SORT
+#endif // BOARD_CONFIG_DECEIVE
+
 
 #endif // BOARD_S6_6
 
