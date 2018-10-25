@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-22 19:06:41
+* @Last Modified time: 2018-10-25 15:25:17
 */
 #include "../general.h"
 
@@ -605,6 +605,7 @@ ConcenterConfigRespondEnd:
 
 			case RADIO_PRO_CMD_CHANNEL_OCCUPY:
 			    AutoFreqConcenterOccupy(protocalRxPacket->rssi);
+			    return;
 			break;
 #endif  // SUPPORT_FREQ_FIND
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-12 11:16:50
+* @Last Modified time: 2018-10-25 16:22:11
 */
 #include "../general.h"
 
@@ -453,6 +453,14 @@ void S6AppRtcProcess(void)
 #ifdef S_G//网关
     Battery_porcess();
 #endif //S_G//网关
+    //电量低至一格,每5秒闪红灯一次     
+    if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE)) {
+        Clock_start(BatAlarmClkHandle);
+    }
+    
+    if((Battery_get_voltage()> BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == TRUE)) {
+        Clock_stop(BatAlarmClkHandle);
+    }
 }
 
 

@@ -3,7 +3,7 @@
 
 #define 	AUTO_FINDFREQ_SWITCH_MAX 	10
 #define 	AUTO_FINDFREQ_BUSY_MAX 		20
-#define 	AUTO_FINDFREQ_SEND_MAX 		3
+#define 	AUTO_FINDFREQ_SEND_MAX 		4
 
 
 void AutoFreqInit(void);

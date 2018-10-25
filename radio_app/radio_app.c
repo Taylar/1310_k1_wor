@@ -637,7 +637,7 @@ void RadioAppTaskFxn(void)
                 {
 #if defined(SUPPORT_FREQ_FIND) && defined(S_G)
                     if(AutoFreqStateRead() == false)
-                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(PASSRADIO_ACK_TIMEOUT_TIME_MS));
+                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(500));
                     else
 #endif // SUPPORT_FREQ_FIND
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
@@ -675,7 +675,7 @@ void RadioAppTaskFxn(void)
             }
 #endif  // S_C//閲囬泦鍣�
 
-#ifdef SUPPORT_FREQ_FIND
+#if defined(SUPPORT_FREQ_FIND) && defined(S_G)
             if(AutoFreqStateRead() == false)
             {
                 AutoFreqRecTimeout();

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-09-13 11:38:46
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-18 16:08:34
+* @Last Modified time: 2018-10-25 14:43:49
 */
 #include "../general.h"
 
@@ -131,6 +131,7 @@ void AutoFreqConcenterSwitchFreqProcess(void)
 	if(autoFindfreq.switchTimes >= AUTO_FINDFREQ_SWITCH_MAX)
 	{
 		AutoFreqConcenterSuccess();
+		return;
 	}
 	randomNum = RandomDataGenerate();
 

@@ -150,6 +150,7 @@ void S1DoubleKeyApp(void)
         RadioSwitchingUserRate();
 #endif
         NodeStrategyStop();
+        RadioAbort();
         EasyLink_setRfPower(7);
         RadioSetRxMode();
         RadioEventPost(RADIO_EVT_SEND_CONFIG);

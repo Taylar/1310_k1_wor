@@ -1249,6 +1249,10 @@ static void Nwk_taskFxn(void)
 #endif
 
         if (rNwkObject.ntp == 0) {
+            //wakeup.
+            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
+                continue;
+            }
             Nwk_group_package(NMI_TX_NTP, &rNwkMsgPacket);
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
             continue;

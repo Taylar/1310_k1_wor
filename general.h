@@ -76,7 +76,7 @@
 // #define BOARD_S3
 // #define BOARD_B2S
 #define BOARD_S6_6
-#define BOARD_CONFIG_DECEIVE
+// #define BOARD_CONFIG_DECEIVE
 
 
 //#define FACTOR_RADIO_TEST
@@ -539,7 +539,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0051
+#define FW_VERSION              0x0052
 #else
 #define FW_VERSION              0x0008
 #endif
@@ -571,7 +571,6 @@ error
 #undef SUPPORT_DOUBLE_PRESS
 
 #define SUPPORT_USB
-#define SUPPORT_RSSI_CHECK
 #define SUPPORT_FREQ_FIND
 // #define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
@@ -590,7 +589,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0051
+#define FW_VERSION              0x0052
 
 #elif defined(S_C)
 

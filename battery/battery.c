@@ -84,31 +84,33 @@ void Battery_voltage_measure(void)
 uint16_t Battery_get_voltage(void)
 {
 #ifdef  BOARD_S3
-    uint32_t voltageTemp[10];
-    uint32_t count = 0;
-    uint32_t max, min;
-    uint32_t voltage = 0;
-    uint8_t i = 0;
-
-    for (; i < 10; i++) {
-        voltageTemp[i] = AONBatMonBatteryVoltageGet();
-        voltage = ((voltageTemp[i]&0xff00)>>8)*1000 +1000*(voltageTemp[i]&0xff)/256;
-        if (0 == i) {
-            max = voltage;
-            min = voltage;
-        }
-
-        if (max < voltage) {
-            max = voltage;
-        }
-
-        if (min > voltage) {
-            min = voltage;
-        }
-
-        count += voltage;
+    static uint8_t init = 0, batLowCnt = 0;
+    static uint16_t batVoltageBuf;
+    uint16_t    voltage;
+    voltage = AONBatMonBatteryVoltageGet();
+    voltage = ((voltage&0xff00)>>8)*1000 +1000*(voltage&0xff)/256;
+    
+    if(init == 0)
+    {
+        batVoltageBuf = voltage; 
     }
-    return (uint16_t)((count - max - min) / 8);
+
+    if(batVoltageBuf > voltage)
+    {
+        if(batLowCnt > 2)
+        {
+            batVoltageBuf -= 5;
+        }
+        else
+        {
+            batLowCnt++;
+        }
+    }
+    else
+    {
+        batLowCnt = 0;
+    }
+    return batVoltageBuf;
 #else
     return bBatVoltage;
 #endif

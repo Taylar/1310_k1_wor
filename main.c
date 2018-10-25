@@ -94,4 +94,6 @@ xdc_Void myErrorFxn(xdc_runtime_Error_Block* p)
     g_rSysConfigInfo.sysState.lora_list_fulls++;
     Flash_store_config();
     Hwi_restore(hwiKey);
+    while(1)
+        SysCtrlSystemReset();
 }

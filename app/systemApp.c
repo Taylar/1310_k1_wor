@@ -157,13 +157,11 @@ uint32_t RandomDataGenerate(void)
 }
 
 
-
 //#define BOARD_S6_6
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
     // uint32_t	voltageTemp;
-
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);
     Semaphore_construct(&radomFuncSem, 1, &semParam);
