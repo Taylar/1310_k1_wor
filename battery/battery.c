@@ -92,7 +92,8 @@ uint16_t Battery_get_voltage(void)
     
     if(init == 0)
     {
-        batVoltageBuf = voltage; 
+        batVoltageBuf = voltage;
+        init          = 1;
     }
 
     if(batVoltageBuf > voltage)

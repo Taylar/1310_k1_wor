@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-25 15:25:17
+* @Last Modified time: 2018-10-26 11:32:47
 */
 #include "../general.h"
 
@@ -70,16 +70,16 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_SYN_TIME:
 #ifdef  SUPPORT_STRATEGY_SORT
 			// get the concenter tick
-			temp   =  ((uint32_t)bufTemp->load[6]) << 24;
-			temp  |=  ((uint32_t)bufTemp->load[7]) << 16;
-			temp  |=  ((uint32_t)bufTemp->load[8]) << 8;
-			temp  |=  ((uint32_t)bufTemp->load[9]);
+			temp   =  ((uint32_t)bufTemp->load[10]) << 24;
+			temp  |=  ((uint32_t)bufTemp->load[11]) << 16;
+			temp  |=  ((uint32_t)bufTemp->load[12]) << 8;
+			temp  |=  ((uint32_t)bufTemp->load[13]);
 
 			// get the channel
-			temp2  =  ((uint32_t)bufTemp->load[10]) << 24;
-			temp2 |=  ((uint32_t)bufTemp->load[11]) << 16;
-			temp2 |=  ((uint32_t)bufTemp->load[12]) << 8;
-			temp2 |=  ((uint32_t)bufTemp->load[13]);
+			temp2  =  ((uint32_t)bufTemp->load[14]) << 24;
+			temp2 |=  ((uint32_t)bufTemp->load[15]) << 16;
+			temp2 |=  ((uint32_t)bufTemp->load[16]) << 8;
+			temp2 |=  ((uint32_t)bufTemp->load[17]);
 
 			NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
 #endif
@@ -92,6 +92,19 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			calendarTemp.Seconds    = bufTemp->load[5];
 			
 			Rtc_set_calendar(&calendarTemp);
+
+			temp   =  ((uint32_t)bufTemp->load[6]) << 24;
+			temp  |=  ((uint32_t)bufTemp->load[7]) << 16;
+			temp  |=  ((uint32_t)bufTemp->load[8]) << 8;
+			temp  |=  ((uint32_t)bufTemp->load[9]);
+
+			if(temp == 0)
+			{
+				temp = g_rSysConfigInfo.collectPeriod;
+			}
+			g_rSysConfigInfo.uploadPeriod = temp;
+			NodeStrategySetPeriod(temp);
+
 			NodeStopBroadcast();
 			break;
 
@@ -114,10 +127,11 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						   ((uint32_t)bufTemp->load[baseAddr+4]);
 					lenTemp -= 5;
 					g_rSysConfigInfo.collectPeriod = temp;
-					if (g_rSysConfigInfo.collectPeriod == 0 || g_rSysConfigInfo.collectPeriod >= 0xffff) {
+					if (g_rSysConfigInfo.collectPeriod == 0) {
 					    g_rSysConfigInfo.collectPeriod = COLLECT_PERIOD_DEFAULT;
 					}
 					
+					NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
 					break;
 
 					case PARASETTING_UPLOAD_INTERVAL:
@@ -130,7 +144,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					lenTemp -= 5;
 
 					g_rSysConfigInfo.uploadPeriod = temp;
-					NodeStrategySetPeriod(temp);
+					// NodeStrategySetPeriod(temp);
 
 					break;
 
@@ -901,12 +915,16 @@ void ConcenterChannelOccupyAck(uint32_t srcAddr, uint32_t dstAddr)
 void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 {
 	Calendar	calendarTemp;
+    uint32_t temp;
 
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
 	protocalTxBuf.len 		= 10+14;
+#ifdef SUPPORT_STRATEGY_SORT
+	protocalTxBuf.len 		= 10+18;
+#endif  // SUPPORT_STRATEGY_SORT
 
 	calendarTemp			= Rtc_get_calendar();
 
@@ -917,20 +935,25 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.load[4]	= calendarTemp.Minutes;
 	protocalTxBuf.load[5]	= calendarTemp.Seconds;
 
-#ifdef SUPPORT_STRATEGY_SORT
-    uint32_t temp;
-	temp 					= Clock_getTicks();
+	temp 					= g_rSysConfigInfo.uploadPeriod;
 
 	protocalTxBuf.load[6]	= (uint8_t)(temp >> 24);
 	protocalTxBuf.load[7]	= (uint8_t)(temp >> 16);
 	protocalTxBuf.load[8]	= (uint8_t)(temp >> 8);
 	protocalTxBuf.load[9]	= (uint8_t)(temp);
+#ifdef SUPPORT_STRATEGY_SORT
+	temp 					= Clock_getTicks();
 
-	temp 					= ConcenterReadResentNodeChannel();
 	protocalTxBuf.load[10]	= (uint8_t)(temp >> 24);
 	protocalTxBuf.load[11]	= (uint8_t)(temp >> 16);
 	protocalTxBuf.load[12]	= (uint8_t)(temp >> 8);
 	protocalTxBuf.load[13]	= (uint8_t)(temp);
+
+	temp 					= ConcenterReadResentNodeChannel();
+	protocalTxBuf.load[14]	= (uint8_t)(temp >> 24);
+	protocalTxBuf.load[15]	= (uint8_t)(temp >> 16);
+	protocalTxBuf.load[16]	= (uint8_t)(temp >> 8);
+	protocalTxBuf.load[17]	= (uint8_t)(temp);
 
 #endif  // SUPPORT_STRATEGY_SORT
 	SetRadioDstAddr(dstAddr);

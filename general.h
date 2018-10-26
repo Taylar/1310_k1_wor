@@ -539,7 +539,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0052
+#define FW_VERSION              0x0053
 #else
 #define FW_VERSION              0x0008
 #endif
@@ -589,7 +589,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0052
+#define FW_VERSION              0x0053
 
 #elif defined(S_C)
 
