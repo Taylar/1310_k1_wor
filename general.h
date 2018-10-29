@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
+#define BOARD_S3
 // #define BOARD_B2S
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -506,7 +506,7 @@ error
 #undef SUPPORT_NTC
 #undef SUPPORT_ALARM_RECORD_QURERY
 #undef SUPPORT_ENGMODE
-#undef SUPPORT_FLASH_LOG
+// #undef SUPPORT_FLASH_LOG
 
 #define SUPPORT_RSSI_CHECK
 #define SUPPORT_FREQ_FIND
@@ -539,7 +539,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0053
+#define FW_VERSION              0x0054
 #else
 #define FW_VERSION              0x0008
 #endif

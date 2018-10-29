@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-19 16:01:38
+* @Last Modified time: 2018-10-29 17:31:42
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -600,16 +600,18 @@ void RadioAppTaskFxn(void)
                         OldS1NodeApp_setDataTxRfFreque();
                     }
 #else
-                 Radio_setTxModeRfFrequency();
 #endif //SUPPORT_BOARD_OLD_S1
                 // stop receive radio, otherwise couldn't send successful
 
-                if(radioStatus == RADIOSTATUS_RECEIVING)
-                {
-                    radioStatus = RADIOSTATUS_ABSORT;
-                    RadioAbort();                    
-                    radioStatus = RADIOSTATUS_IDLE;
-                }
+                // if(radioStatus == RADIOSTATUS_RECEIVING)
+                // {
+                //     radioStatus = RADIOSTATUS_ABSORT;
+                //     RadioAbort();                    
+                //     radioStatus = RADIOSTATUS_IDLE;
+                // }
+                RadioAbort();                    
+                Radio_setTxModeRfFrequency();
+                RadioAbort();                    
 
                 Clock_start(radioSendTimeoutClockHandle);
                 radioStatus = RADIOSTATUS_TRANSMITTING;

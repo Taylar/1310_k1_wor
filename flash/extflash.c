@@ -314,7 +314,7 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
 #endif
     // wait chip idle
     while (Flash_external_read_status() & WIP_BIT)
-        Task_sleep(1);
+        __delay_cycles(3000);    // 0.5ms
 
     Flash_spi_enable();
 #ifdef FLASH_W25Q256FV    
@@ -1233,12 +1233,12 @@ void Flash_log(uint8_t *log)
 
     if((log_pos % FLASH_SECTOR_SIZE) == 0){//first write in the section, earse first
         //earse...
-        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);  
+        Flash_external_erase2(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
     }
         
     while(startsec++ < endsec){//erase all need  section
          //earse...
-        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);    
+        Flash_external_erase2(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
     }
     
     currentTime            = Rtc_get_calendar();        
@@ -1270,12 +1270,12 @@ void Flash_log(uint8_t *log)
 
     if((log_pos % FLASH_SECTOR_SIZE) == 0){//first write in the section, earse first
         //earse...
-        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);  
+        Flash_external_erase2(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
     }
     
     while(startsec++ < endsec){//erase all need  section
          //earse...
-        Flash_external_erase(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);    
+        Flash_external_erase2(FLASH_LOG_POS + startsec*FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
     }
         
     Flash_external_write(FLASH_LOG_POS + log_pos, log, len);

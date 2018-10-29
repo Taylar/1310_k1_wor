@@ -325,7 +325,7 @@ void StrategyCheckRssiBusyProcess(void)
 //***********************************************************************************
 void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint32_t channel)
 {
-    int32_t launchTime, offsetTicksTemp;
+    int32_t launchTime;
     uint8_t timerFlag = 0;
 
     // transform to ms
@@ -357,7 +357,7 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint
     // else
     {
         // need to register the new channel
-ReadjustChannel:
+//ReadjustChannel:
 
         nodeStrategy.offsetTicks = concenterTick - Clock_getTicks();
         nodeStrategy.success     = true;

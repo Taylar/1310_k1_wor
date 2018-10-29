@@ -620,7 +620,7 @@ ConcenterConfigRespondEnd:
 			case RADIO_PRO_CMD_CHANNEL_OCCUPY:
 			    AutoFreqConcenterOccupy(protocalRxPacket->rssi);
 			    return;
-			break;
+
 #endif  // SUPPORT_FREQ_FIND
 
 		}

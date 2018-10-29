@@ -476,6 +476,7 @@ void SystemResetAndSaveRtc(void)
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
     Flash_store_devices_state(TYPE_POWER_RESTART);
 #endif
+    Flash_store_config();
 	SysCtrlSystemReset();
 }
 
