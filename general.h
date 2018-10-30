@@ -539,7 +539,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0054
+#define FW_VERSION              0x0055
 #else
 #define FW_VERSION              0x0008
 #endif

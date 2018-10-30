@@ -122,6 +122,7 @@ void NodeStrategySetPeriod(uint32_t period)
     {
         if(nodeStrategy.period != period)
         {
+            nodeStrategy.period         = period;
             Clock_stop(nodeStrategyStartClockHandle);
             Clock_setPeriod(nodeStrategyStartClockHandle, (uint32_t)nodeStrategy.period * CLOCK_UNIT_S);
             Clock_start(nodeStrategyStartClockHandle);

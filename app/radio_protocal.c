@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-26 11:32:47
+* @Last Modified time: 2018-10-30 11:12:21
 */
 #include "../general.h"
 
@@ -131,7 +131,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					    g_rSysConfigInfo.collectPeriod = COLLECT_PERIOD_DEFAULT;
 					}
 					
-					NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
+					// NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
 					break;
 
 					case PARASETTING_UPLOAD_INTERVAL:
