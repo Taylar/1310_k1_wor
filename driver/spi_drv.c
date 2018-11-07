@@ -196,3 +196,42 @@ ErrorStatus Spi_writeRead(uint8_t *pTxBuff, uint8_t *pRxBuff, uint16_t length)
     return ES_SUCCESS;
 }
 
+//***********************************************************************************
+//
+// SPI master open.
+//
+//***********************************************************************************
+ErrorStatus Spi_open(void)
+{
+    SPI_Params mSpiParams;
+
+    if (NULL != mSpiHandle)
+    {
+        return ES_SUCCESS;
+    }
+    SPI_init();
+
+    SPI_Params_init(&mSpiParams);
+    mSpiParams.mode = SPI_MASTER;
+    mSpiParams.bitRate = SPI_4MHz;
+    mSpiHandle = SPI_open(CC1310_LAUNCHXL_SPI0, &mSpiParams);
+    if (mSpiHandle == NULL) {
+        System_printf("SPI Master was not opened\n");
+        return ES_ERROR;
+    }
+
+    return ES_SUCCESS;
+}
+
+
+//***********************************************************************************
+//
+// SPI master open.
+//
+//***********************************************************************************
+void Spi_close(void)
+{
+    SPI_close(mSpiHandle);
+    mSpiHandle = NULL;
+
+}

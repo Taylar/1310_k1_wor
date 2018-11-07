@@ -442,8 +442,11 @@ void RadioAppTaskFxn(void)
     }
 #endif
 
-
-
+#ifdef BOARD_B2S
+#ifdef S_C //节点
+    Task_sleep(5000 *CLOCK_UNIT_MS);
+#endif // S_C //节点
+#endif // BOARD_B2S
 
     for(;;)
     {
@@ -566,10 +569,6 @@ void RadioAppTaskFxn(void)
             rssi  = RADIO_RSSI_FLITER - 1;
 #endif  // SUPPORT_RSSI_CHECK
 
-#if (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
-            rssi  = RADIO_RSSI_FLITER - 1;
-#endif
-
 #ifdef      S_C
 #if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
             if((GetStrategyRegisterStatus() == false) && (deviceMode != DEVICES_CONFIG_MODE))
@@ -596,22 +595,17 @@ void RadioAppTaskFxn(void)
                 }
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-                    if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
-                        OldS1NodeApp_setDataTxRfFreque();
-                    }
+                if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
+                    RadioAbort();
+                    OldS1NodeApp_setDataTxRfFreque();
+                    RadioAbort();
+                }
 #else
-#endif //SUPPORT_BOARD_OLD_S1
-                // stop receive radio, otherwise couldn't send successful
-
-                // if(radioStatus == RADIOSTATUS_RECEIVING)
-                // {
-                //     radioStatus = RADIOSTATUS_ABSORT;
-                //     RadioAbort();                    
-                //     radioStatus = RADIOSTATUS_IDLE;
-                // }
-                RadioAbort();                    
+                RadioAbort();
                 Radio_setTxModeRfFrequency();
-                RadioAbort();                    
+                RadioAbort();
+#endif //SUPPORT_BOARD_OLD_S1
+
 
                 Clock_start(radioSendTimeoutClockHandle);
                 radioStatus = RADIOSTATUS_TRANSMITTING;

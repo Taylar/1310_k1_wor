@@ -101,6 +101,7 @@ static void PT100_measure(uint8_t chNum)
     ADS1247_PowerOn();
 
     ADS1247_ConfigInit();
+
     for (i = 0; i < sampleNum; ++i) {
         resArry[i] = ADS1247_MeasureOneResistance();
     }
@@ -127,9 +128,9 @@ static void PT100_measure(uint8_t chNum)
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_DEEPTEMP) {
         temp = (int32_t)(PT100_CalcTemperature(res) * 100.0);
         if (temp <  PT100_MIN_T * 100.0 || temp > PT100_MAX_T * 100.0) {
-            rSensorData[chNum].tempdeep = DEEP_TEMP_OVERLOAD;
+            rSensorData[chNum].tempdeep = 0xfffffff8;
         } else {
-            rSensorData[chNum].tempdeep =  temp << 4;
+            rSensorData[chNum].tempdeep =  (temp + g_rSysConfigInfo.deepTempAdjust * 10) << 4;
         }
     }
 }

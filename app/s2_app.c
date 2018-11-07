@@ -70,11 +70,11 @@ void S2ShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
+        Led_ctrl(LED_R, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
     }
 }
@@ -90,11 +90,11 @@ void S2LongKeyApp(void)
     {
         case DEVICES_ON_MODE:
         S2Sleep();
-        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
+        Led_ctrl2(LED_R, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
+        //Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 3);
         SysCtrlSystemReset();
         break;
     }
@@ -150,6 +150,7 @@ void S2Sleep(void)
 #endif // S_G
 
 #ifdef S_C
+    RadioAbort();
     NodeSleep();
 #endif // S_C
 

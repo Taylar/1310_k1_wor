@@ -149,10 +149,14 @@ void S1DoubleKeyApp(void)
 #if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
         RadioSwitchingUserRate();
 #endif
+
+#if  !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
         NodeStrategyStop();
         RadioAbort();
         EasyLink_setRfPower(7);
         RadioSetRxMode();
+#endif
+
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
         Led_ctrl2(LED_G, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         break;

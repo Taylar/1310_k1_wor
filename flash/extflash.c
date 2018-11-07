@@ -31,14 +31,38 @@ const PIN_Config extFlashPinTable[] = {
 #ifdef BOARD_B2S
 
 #define FLASH_SPI_CS_PIN        IOID_24
+#define FLASH_SPI_SIMO          IOID_27
+#define FLASH_SPI_CLK           IOID_26
+#define FLASH_SPI_SOMI          IOID_25
+
+static PIN_Handle  FLASH_SPI_COM_PinHandle = NULL;
+static PIN_State   FLASH_SPI_COM_State;
 
 const PIN_Config extFlashPinTable[] = {
-    FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+    FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,
     PIN_TERMINATE
 };
 
-#define Flash_spi_enable()      PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0)
-#define Flash_spi_disable()     PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1)
+const PIN_Config extFlashComPinTable[] = {
+    FLASH_SPI_SIMO | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    FLASH_SPI_SOMI | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    FLASH_SPI_CLK | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    PIN_TERMINATE
+};
+
+#define Flash_spi_enable()      do { \
+                                       if (FLASH_SPI_COM_PinHandle) { \
+                                            PIN_close(FLASH_SPI_COM_PinHandle); \
+                                        } \
+                                        Spi_open(); \
+                                       PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0); \
+                                } while(0)
+#define Flash_spi_disable()     do { \
+                                       Spi_close(); \
+                                       PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1); \
+                                       FLASH_SPI_COM_PinHandle = PIN_open(&FLASH_SPI_COM_State, extFlashComPinTable); \
+                                   }while(0)
+
 
 #endif
 
@@ -492,6 +516,12 @@ void Flash_init(void)
         OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE2);
     }
 #endif // (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
+
+#if  defined(BOARD_B2S) && defined(S_C)
+    if ((uint8_t)g_rSysConfigInfo.deepTempAdjust == 0xff) {
+        g_rSysConfigInfo.deepTempAdjust = 0;
+    }
+#endif
 }
 
 void Flash_reset_all(void)

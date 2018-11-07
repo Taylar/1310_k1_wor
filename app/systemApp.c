@@ -106,6 +106,7 @@ void RtcEventSet(void)
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RTC);
 }
 
+
 void SysAppTaskCreate(void)
 {
     Error_Block eb;
@@ -184,6 +185,7 @@ void SystemAppTaskFxn(void)
 
 #ifdef BOARD_B2S
     S2HwInit();
+    Led_ctrl2(LED_B, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
 #endif
 
 #ifdef BOARD_S3
@@ -249,10 +251,6 @@ void SystemAppTaskFxn(void)
 	    WdtInit(WdtResetCb);
     #endif
 #endif //SUPPORT_WATCHDOG
-
-#ifdef BOARD_B2S
-	    Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-#endif
 
 #ifdef BOARD_S3
 	if(g_rSysConfigInfo.sysState.wtd_restarts & STATUS_POWERON)

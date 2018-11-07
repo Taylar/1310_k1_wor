@@ -383,6 +383,7 @@ error type define
 #undef SUPPORT_SHT3X
 #undef SUPPORT_NTC
 
+#define SUPPORT_NETGATE_BIND_NODE
 #elif defined(S_C)//collection
 
 #undef SUPPORT_ALARM_SWITCH_PERIOD
@@ -524,9 +525,11 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 
 /* old S1*/
-//#define SUPPORT_BOARD_OLD_S1
+#define SUPPORT_BOARD_OLD_S1
+
 #ifdef SUPPORT_BOARD_OLD_S1
 #undef SUPPORT_RSSI_CHECK
+#undef SUPPORT_FREQ_FIND
 #undef  BOARD_NAME
 #define BOARD_NAME              "_S3_1"
 #undef  PROJECT_NAME
@@ -623,17 +626,29 @@ error
 #endif // BOARD_S6_6
 
 #ifdef BOARD_B2S
+#define SUPPORT_RSSI_CHECK
+#define SUPPORT_FREQ_FIND
+#define CONCENTER_MAX_CHANNEL       100
 #undef  FW_VERSION
     #ifdef S_A
     #define FW_VERSION              0x0040
     #elif defined(S_G)
-    #define FW_VERSION              0x0040
+    #undef  SUPPORT_RSSI_CHECK
+    #define FW_VERSION              0x0042
     #elif defined(S_C)
+    #undef  BOARD_NAME
+    #define  BOARD_NAME              "_S2S"
     #undef SUPPORT_CHARGE_DECT
-    #define FW_VERSION              0x0040
+    #define FW_VERSION              0x0042
     #endif
+
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""MENU_NAME)
+
 #ifdef  UPPORT_BOARD_OLD_S2S_1
 #undef  SUPPORT_CHARGE_DECT
+#undef  SUPPORT_RSSI_CHECK
+#undef  SUPPORT_FREQ_FIND
 #undef  FW_VERSION
 #define FW_VERSION              0x0001
 #undef  BOARD_NAME
@@ -917,11 +932,14 @@ typedef struct {
 
    //offset 256
     SystemState_t  sysState;  //size =20
-    
+
+#ifdef SUPPORT_NETGATE_BIND_NODE
     //offset 256 +20    
     BindNode_t  bindnode[NETGATE_BIND_NODE_MAX];
+#endif
 
-	//total size 276+9*2 = 294
+    //total size 276+9*2 = 294
+    int8_t deepTempAdjust; // 0.1C
 
 } ConfigInfo_t;
 #pragma pack ()

@@ -1249,6 +1249,7 @@ static void Nwk_taskFxn(void)
 #endif
 
         if (rNwkObject.ntp == 0) {
+            Task_sleep(3 * CLOCK_UNIT_S);
             //wakeup.
             if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
                 continue;

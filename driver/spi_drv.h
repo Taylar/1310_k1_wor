@@ -32,6 +32,8 @@ extern ErrorStatus Spi_init(void);
 extern ErrorStatus Spi_write(uint8_t *pData, uint16_t length);
 extern ErrorStatus Spi_read(uint8_t *pData, uint16_t length);
 extern ErrorStatus Spi_writeRead(uint8_t *pTxBuff, uint8_t *pRxBuff, uint16_t length);
+extern ErrorStatus Spi_open(void);
+extern void Spi_close(void);
 
 #endif	/* __ZKSIOT_SPI_DRV_H__ */
 

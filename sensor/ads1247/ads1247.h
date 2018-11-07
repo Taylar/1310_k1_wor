@@ -126,7 +126,11 @@
 #define ADS1247_SPI_SIMO_PIN          IOID_18
 #define ADS1247_SPI_SOMI_PIN          IOID_20
 
-#define READ_ADS1247_DRDY_PIN_LEVEL() PIN_getInputValue(ADS1247_DRDY_PIN)
+#define READ_ADS1247_DRDY_PIN_LEVEL()  PIN_getInputValue(ADS1247_DRDY_PIN)
+#define READ_ADS1247_DRDY_PIN_INPUT()  PIN_setConfig(ads1247PinHandle, PIN_BM_INPUT_MODE, \
+                                                     ADS1247_DRDY_PIN | PIN_INPUT_EN | PIN_PULLUP)
+#define READ_ADS1247_DRDY_PIN_OUTPUT() PIN_setConfig(ads1247PinHandle, PIN_BM_OUTPUT_MODE, \
+                                                     ADS1247_DRDY_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW  | PIN_PUSHPULL)
 
 #define ENABLE_ADS1247_CS()           PIN_setOutputValue(ads1247PinHandle, ADS1247_CS_PIN, 0)
 #define DISENABLE_ADS1247_CS()        PIN_setOutputValue(ads1247PinHandle, ADS1247_CS_PIN, 1)
@@ -137,9 +141,13 @@
 #define ADS_SPI_SIMO_LOW()            PIN_setOutputValue(ads1247PinHandle, ADS1247_SPI_SIMO_PIN, 0)
 #define ADS_SPI_SIMO_HIGH()           PIN_setOutputValue(ads1247PinHandle, ADS1247_SPI_SIMO_PIN, 1)
 
-#define READ_ADS_SPI_SOMI_PIN_LEVEL() PIN_getInputValue(ADS1247_SPI_SOMI_PIN)
+#define READ_ADS_SPI_SOMI_PIN_LEVEL()  PIN_getInputValue(ADS1247_SPI_SOMI_PIN)
+#define READ_ADS1247_SOMI_PIN_INPUT()  PIN_setConfig(ads1247PinHandle, PIN_BM_INPUT_MODE, \
+                                                     ADS1247_SPI_SOMI_PIN | PIN_INPUT_EN | PIN_PULLUP)
+#define READ_ADS1247_SOMI_PIN_OUTPUT() PIN_setConfig(ads1247PinHandle, PIN_BM_OUTPUT_MODE, \
+                                                     ADS1247_SPI_SOMI_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW  | PIN_PUSHPULL)
 
-#define ADS_SPI_CLK_DELAY()           __delay_cycles // 500KHz
+#define ADS_SPI_CLK_DELAY()           delay_us(2) // 500KHz
 
 #define ADS1247_POWER_ON()            PIN_setOutputValue(ads1247PinHandle, ADS1247_POWER_CTR_PIN, 1)
 #define ADS1247_POWER_OFF()           PIN_setOutputValue(ads1247PinHandle, ADS1247_POWER_CTR_PIN, 0)
