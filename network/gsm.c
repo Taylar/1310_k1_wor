@@ -542,7 +542,7 @@ static void Gsm_poweron(void)
         Gsm_pwrkey_ctrl(1);
 //      Task_sleep(1000 * CLOCK_UNIT_MS);
 
-        rGsmObject.sleep = 0;
+        rGsmObject.sleep = GSM_SLEEP_OFF;
         rGsmObject.actPDPCnt = 0;
         rGsmObject.uploadFailCnt = 0;
         rGsmObject.state = GSM_STATE_CONFIG;
@@ -568,7 +568,7 @@ static void Gsm_poweroff(void)
         Gsm_power_ctrl(0);
         Task_sleep(800 * CLOCK_UNIT_MS);
 
-        rGsmObject.sleep = 0;
+        rGsmObject.sleep = GSM_SLEEP_OFF;
         rGsmObject.actPDPCnt = 0;
         rGsmObject.uploadFailCnt = 0;
         rGsmObject.state = GSM_STATE_POWEROFF;
@@ -983,7 +983,6 @@ static GSM_RESULT Gsm_query_csq(void)
          return RESULT_RESET;
     }
 
-
     return RESULT_OK;
 }
 
@@ -1083,6 +1082,7 @@ static GSM_RESULT Gsm_wakeup(void)
         if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
             break;
     }
+
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
@@ -1106,7 +1106,6 @@ static GSM_RESULT Gsm_test(void)
 
     rGsmObject.error = GSM_NO_ERR;
 
-	while(1){
     //uart sync
     for (i = 30; i > 0; i--) {
         AT_uart_sync();
@@ -1118,7 +1117,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_UART_SYNC;
-        continue;//return RESULT_RESET;        
+        return RESULT_RESET;
     }
 
     //sim card query
@@ -1132,7 +1131,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_SIM_QUERY;
-        continue;//return RESULT_RESET;        
+        return RESULT_RESET;
     }
 
     //csq query
@@ -1146,7 +1145,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_CSQ_QUERY;
-        continue;//return RESULT_RESET;        
+        return RESULT_RESET;
     }
 
     //creg query
@@ -1160,7 +1159,7 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_CREG_QUERY;
-        continue;//return RESULT_RESET;        
+        return RESULT_RESET;
     }
 
     //auto answer
@@ -1174,9 +1173,8 @@ static GSM_RESULT Gsm_test(void)
         return RESULT_SHUTDOWN;
     } else if (i == 0) {
         rGsmObject.error = GSM_ERR_AUTO_ANSWER;
-        continue;//return RESULT_RESET;        
+        return RESULT_RESET;
     }
-	}
 
     return RESULT_OK;
 }
@@ -1256,6 +1254,7 @@ LAB_CONNECT:
             goto LAB_GPRS_QUERY;
         } else if (result == RESULT_CONNECT) {
             //Active PDP fail
+
             rGsmObject.state = GSM_STATE_TCP_CONNECT;
             goto LAB_CONNECT;
         }
@@ -1629,7 +1628,8 @@ static void Gsm_hwiIntCallback(void)
 //***********************************************************************************
 static void Gsm_event_post(UInt event)
 {
-    Event_post(gsmEvtHandle, event);
+	if(gsmEvtHandle)
+    	Event_post(gsmEvtHandle, event);
 }
 
 
@@ -1688,7 +1688,7 @@ static void Gsm_init(Nwk_Params *params)
     rGsmObject.isOpen = 0;
     rGsmObject.actPDPCnt = 0;
     rGsmObject.uploadFailCnt = 0;
-    rGsmObject.sleep = 0;
+    rGsmObject.sleep = GSM_SLEEP_OFF;
     rGsmObject.resetCnt = 0;
     rGsmObject.state = GSM_STATE_POWEROFF;
 
@@ -1758,14 +1758,16 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
 		return TRUE;
 	}
 	
+    if (cmd == NWK_CONTROL_RSSI_GET){//return rssi  whether gsm is on or not
+        *(uint8_t *)arg = rGsmObject.rssi;
+        return TRUE;
+    }
+
     if (rGsmObject.isOpen == 0) {
         return FALSE;
     }
 
     switch (cmd) {
-        case NWK_CONTROL_RSSI_GET:
-            *(uint8_t *)arg = rGsmObject.rssi;
-            break;
 
         case NWK_CONTROL_RSSI_QUERY:
             if (rGsmObject.state > GSM_STATE_GPRS_QUERY && rGsmObject.state <= GSM_STATE_TCP_UPLOAD) {
@@ -1777,12 +1779,9 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
             }
             break;
 
-        case NWK_CONTROL_SIMCCID_GET:
-            memcpy((char *)arg, (char *)rGsmObject.simCcid, 20);
-            break;
 
         case NWK_CONTROL_WAKEUP:
-            if (rGsmObject.sleep) {
+            if (rGsmObject.sleep == GSM_SLEEP_ON) {
                 result = Gsm_wakeup();
                 if (result == RESULT_SHUTDOWN) {
                     return FALSE;
@@ -1790,12 +1789,12 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
                     Gsm_reset();
                     return FALSE;
                 }
-                rGsmObject.sleep = 0;
+                rGsmObject.sleep = GSM_SLEEP_OFF;
             }
             break;
 
         case NWK_CONTROL_SLEEP:
-            if (rGsmObject.sleep == 0) {
+            if (rGsmObject.sleep == GSM_SLEEP_OFF) {
                 result = Gsm_sleep();
                 if (result == RESULT_SHUTDOWN) {
                     return FALSE;
@@ -1803,7 +1802,7 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
                     Gsm_reset();
                     return FALSE;
                 }
-                rGsmObject.sleep = 1;
+                rGsmObject.sleep = GSM_SLEEP_ON;
             }
             break;
 

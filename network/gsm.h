@@ -167,6 +167,31 @@ typedef enum {
     RESULT_MAX
 } GSM_RESULT;
 
+typedef enum{
+    UPDATA_NONE_TYPE = 0,
+    UPDATA_LOCAL_TYPE,
+    UPDATA_ACK_TYPE,
+}GSM_UPDATA_TYPE;
+
+typedef enum{
+    GSM_SLEEP_OFF = 0,
+    GSM_SLEEP_ON = 1,
+
+}SLEEP_MODE;
+
+typedef enum{
+    GPS_ENGINE_OFF = 0,
+    GPS_ENGINE_ON = 1,
+
+}GPS_ENGINE_MODE;
+
+typedef enum{
+    GPS_PORT_NONE = 0,
+    GPS_PORT_UART_DEBUG ,
+    GPS_PORT_USB,
+
+}GPS_PORT;
+
 #define GSM_EVT_NONE                Event_Id_NONE
 #define GSM_EVT_SHUTDOWN            Event_Id_00
 #define GSM_EVT_CMD_OK              Event_Id_01

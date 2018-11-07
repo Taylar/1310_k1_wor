@@ -237,7 +237,7 @@ static uint32_t Is_direct_upgrade(uint16_t crc)
 #endif
 
 #endif //SUPPORT_USB
-
+uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataLen);
 void bsl_ack_error(uint8_t *pData, uint16_t length)
 {
     pData[0] = BSL_ACK_ERROR; // 2

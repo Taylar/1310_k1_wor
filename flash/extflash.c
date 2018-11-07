@@ -1206,6 +1206,8 @@ void Flash_store_sensor_codec(uint16_t no, uint32_t deviceid)
 }
 #endif
 
+static void Flash_external_erase2(uint32_t flashAddr, uint8_t eraseMode);
+
 #ifdef SUPPORT_FLASH_LOG
 void Flash_log(uint8_t *log)
 {

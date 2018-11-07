@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -512,7 +512,7 @@ error
 
 #define SUPPORT_RSSI_CHECK
 #define SUPPORT_FREQ_FIND
-// #define SUPPORT_STRATEGY_SORT
+#define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
 
 #ifdef SUPPORT_STRATEGY_SORT
@@ -525,7 +525,7 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 
 /* old S1*/
-#define SUPPORT_BOARD_OLD_S1
+// #define SUPPORT_BOARD_OLD_S1
 
 #ifdef SUPPORT_BOARD_OLD_S1
 #undef SUPPORT_RSSI_CHECK
@@ -537,7 +537,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-// #define SUPPORT_BOARD_Z4
+#define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X

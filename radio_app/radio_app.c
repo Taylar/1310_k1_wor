@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-29 17:31:42
+* @Last Modified time: 2018-11-07 15:49:05
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -438,7 +438,8 @@ void RadioAppTaskFxn(void)
     {
         EasyLink_setRfPower(14);
         RadioAbort();
-        EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+        RadioSetFrequency(RADIO_BASE_FREQ);
+        EasyLink_setCtrl(EasyLink_Ctrl_Test_Tone, 0);
     }
 #endif
 
@@ -476,10 +477,14 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TEST)
         {
+            RadioAbort();
+            EasyLink_setRfPower(14);
+            RadioAbort();
+            RadioSetFrequency(RADIO_BASE_FREQ);
+            EasyLink_setCtrl(EasyLink_Ctrl_Test_Tone, 0);
             while(radioTestFlag)
             {
-                RadioAbort();
-                EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+                Task_sleep(100 * CLOCK_UNIT_MS);
             }
             continue;
         }
