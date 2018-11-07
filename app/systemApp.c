@@ -259,6 +259,7 @@ void SystemAppTaskFxn(void)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
 		S1Wakeup();
+		Sys_event_post(SYS_EVT_SENSOR);
 	}
 #endif // (defined BOARD_S6_6 || defined BOARD_B2S)
 

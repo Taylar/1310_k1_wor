@@ -482,7 +482,8 @@ error
 #ifdef BOARD_S3
 #define SUPPORT_SENSOR
 #define SUPPORT_SHT2X
-//#define SUPPORT_SHT3X
+// #undef  SUPPORT_SHT2X
+// #define SUPPORT_SHT3X
 
 
 #define SUPPORT_RADIO_UPGRADE
@@ -513,6 +514,15 @@ error
 // #define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
 
+#ifdef SUPPORT_STRATEGY_SORT
+#define         STRATEG_NAME               "_SORT"
+#else
+#define         STRATEG_NAME               ""
+#endif  // SUPPORT_STRATEGY_SORT
+
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
+
 /* old S1*/
 //#define SUPPORT_BOARD_OLD_S1
 #ifdef SUPPORT_BOARD_OLD_S1
@@ -524,7 +534,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-//#define SUPPORT_BOARD_Z4
+// #define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -534,12 +544,12 @@ error
 #undef  BOARD_NAME
 #define BOARD_NAME              "_Z4"
 #undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 #endif //SUPPORT_BOARD_Z4
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0055
+#define FW_VERSION              0x0056
 #else
 #define FW_VERSION              0x0008
 #endif
@@ -589,7 +599,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0053
+#define FW_VERSION              0x0055
 
 #elif defined(S_C)
 
@@ -602,7 +612,14 @@ error
 #undef  SUPPORT_STRATEGY_SORT
 #endif // BOARD_CONFIG_DECEIVE
 
+#ifdef SUPPORT_STRATEGY_SORT
+#define         STRATEG_NAME               "_SORT"
+#else
+#define         STRATEG_NAME               ""
+#endif  // SUPPORT_STRATEGY_SORT
 
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 #endif // BOARD_S6_6
 
 #ifdef BOARD_B2S

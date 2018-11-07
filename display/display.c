@@ -1047,7 +1047,11 @@ static void Disp_info(void)
 
         case 3:
             //Software version.
+#ifdef SUPPORT_STRATEGY_SORT
+            sprintf((char *)buff, "FW:  %x.%x.%x(R)", FW_VERSION >> 12, (FW_VERSION >> 8) & 0x0f, FW_VERSION & 0xff);
+#else
             sprintf((char *)buff, "FW:  %x.%x.%x", FW_VERSION >> 12, (FW_VERSION >> 8) & 0x0f, FW_VERSION & 0xff);
+#endif  // SUPPORT_STRATEGY_SORT
             Disp_msg(0, 0, buff, FONT_8X16);
            
 
