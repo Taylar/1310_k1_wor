@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-24 19:21:00
+* @Last Modified time: 2018-11-08 16:02:30
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -74,7 +74,7 @@ void NodeStrategyInit(void (*StrategyFailCb)(void))
         NodeStrategyReset();
 
         nodeStrategy.init         = true;
-        nodeStrategy.channel      = RADIO_REQUEST_CHANNEL;
+        nodeStrategy.channel      = g_rSysConfigInfo.alarmuploadPeriod; // the alarmupload period as node channel
         Clock_Params clkParams;
         Clock_Params_init(&clkParams);
         clkParams.period    = 0;
@@ -388,6 +388,12 @@ void NodeStrategySetOffset_Channel(uint32_t concenterTick, uint32_t length, uint
         
         if(timerFlag)
             Clock_start(nodeStrategyStartClockHandle);
+
+        if(channel != g_rSysConfigInfo.alarmuploadPeriod)
+        {
+            g_rSysConfigInfo.alarmuploadPeriod = channel;
+            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+        }
     }
 }
 

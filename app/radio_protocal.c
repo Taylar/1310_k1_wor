@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-06 11:07:05
+* @Last Modified time: 2018-11-08 11:11:44
 */
 #include "../general.h"
 
@@ -81,7 +81,8 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			temp2 |=  ((uint32_t)bufTemp->load[16]) << 8;
 			temp2 |=  ((uint32_t)bufTemp->load[17]);
 
-			NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
+			if(GetStrategyRegisterStatus() == false)
+				NodeStrategySetOffset_Channel(temp, protocalRxPacket->len, temp2);
 #endif
 			StrategyRegisterSuccess();
 			calendarTemp.Year       = 2000 + bufTemp->load[0];

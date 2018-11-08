@@ -16,6 +16,8 @@ void AutoFreqNodeSwitchFreq(void);
 
 void AutoFreqConcenterSwitchFreqProcess(void);
 
+void AutoFreqConcenterStop(void);
+
 void AutoFreqConcenterOccupy(int8_t rssi);
 
 void AutoFreqCarrierBusy(int8_t rssi);

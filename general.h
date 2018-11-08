@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
+#define BOARD_S3
 // #define BOARD_B2S
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -585,7 +585,7 @@ error
 
 #define SUPPORT_USB
 #define SUPPORT_FREQ_FIND
-// #define SUPPORT_STRATEGY_SORT
+#define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
 #ifdef SUPPORT_STRATEGY_SORT
 #ifdef S_G
@@ -602,7 +602,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0055
+#define FW_VERSION              0x0056
 
 #elif defined(S_C)
 

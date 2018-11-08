@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-07 15:49:05
+* @Last Modified time: 2018-11-08 16:09:33
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -114,6 +114,7 @@ void RadioSendData(void)
 
 radio_reSend:
     status = EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
+    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     switch(status)
     {
         case EasyLink_Status_Tx_Error:
@@ -149,6 +150,7 @@ void RadioReceiveData(void)
     radioStatus = RADIOSTATUS_RECEIVING;
 radio_reReceive:
     status = EasyLink_receiveAsync(RxDoneCallback, 0);
+    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     switch(status)
     {
         case EasyLink_Status_Rx_Error:
@@ -179,6 +181,7 @@ void RadioSetFrequency(uint32_t ui32Frequency)
         SystemResetAndSaveRtc();
 radio_reSetFreq:
     status = EasyLink_setFrequency(ui32Frequency);
+    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     switch(status)
     {
         case EasyLink_Status_Cmd_Error:
@@ -210,6 +213,7 @@ void RadioAbort(void)
         SystemResetAndSaveRtc();
 radio_reAbort:
     status = EasyLink_abort();
+    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     switch(status)
     {
         case EasyLink_Status_Cmd_Error:

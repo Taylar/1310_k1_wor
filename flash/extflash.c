@@ -373,6 +373,7 @@ static void Flash_reset_data(void)
     Flash_external_erase(FLASH_SYS_POS, FLASH_EXT_SECTOR_ERASE);
     Flash_external_erase(FLASH_SENSOR_PTR_POS, FLASH_EXT_SECTOR_ERASE);
     Flash_external_erase(FLASH_SENSOR_DATA_POS, FLASH_EXT_SECTOR_ERASE);
+    Flash_external_erase(FLASH_SENSOR_DATA_POS + FLASH_SENSOR_DATA_AREA_SIZE - FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
 
 
 

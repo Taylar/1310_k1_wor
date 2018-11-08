@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-09-13 11:38:46
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-25 14:43:49
+* @Last Modified time: 2018-11-08 11:21:52
 */
 #include "../general.h"
 
@@ -155,6 +155,15 @@ void AutoFreqConcenterSwitchFreqProcess(void)
 	RadioSend();
 }
 
+//***********************************************************************************
+// brief:  concenter stop find the idle freq
+// 
+// parameter: 
+//***********************************************************************************
+void AutoFreqConcenterStop(void)
+{
+	autoFindfreq.switchTimes = AUTO_FINDFREQ_SWITCH_MAX;
+}
 
 //***********************************************************************************
 // brief:  the center freq was occupy by other concenter process

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-17 18:14:09
+* @Last Modified time: 2018-11-08 11:25:56
 */
 #include "../general.h"
 
@@ -232,7 +232,11 @@ void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 void ConcenterSleep(void)
 {
     concenterParameter.synTimeFlag  = false;
+#ifdef SUPPORT_STRATEGY_SORT
+    AutoFreqConcenterStop();
+#endif // SUPPORT_STRATEGY_SORT
     RadioDisable();
+    
 }
 
 //***********************************************************************************
@@ -364,7 +368,10 @@ uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel)
 {
     uint32_t nodeIdTemp;
     if(channel == RADIO_INVAILD_CHANNEL)
+    {
+        nodeRecentId = RADIO_INVAILD_CHANNEL;
         return RADIO_INVAILD_CHANNEL;
+    }
 
     if(channel < nodeNumDispath)
     {

@@ -563,9 +563,12 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                 if ((GetUsbState() == USB_UNLINK_STATE))
                     return;//usb忙鈥撀ヂ尖偓茂录艗氓聛艙忙颅垄忙鈥奥∨捗ｂ偓?
 
+#ifdef      SUPPORT_WATCHDOG
+                WdtClear();
+#endif  
+
 
                 Flash_get_record(readAddr, pData, FLASH_SENSOR_HEAD_DATA_SIZE);
-
                 if( (0xff == pData[8]) ||
                     (0xff == pData[9]) ||
                     (0xff == pData[10])||
@@ -611,6 +614,9 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 
                     if ((GetUsbState() == USB_UNLINK_STATE))
                         return 0;//usb忙鈥撀ヂ尖偓茂录艗氓聛艙忙颅垄忙鈥奥∨捗ｂ偓?
+#ifdef      SUPPORT_WATCHDOG
+                    WdtClear();
+#endif  
 
                     Flash_get_record(readAddr, pData, FLASH_SENSOR_HEAD_DATA_SIZE);
                     if((tmpData[4] == 0x20) && (datecmp(&tmpData[5], &pData[8],5) < 0)){//find   date < startdate
@@ -648,7 +654,9 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             else {
                 
                 while ((readAddr != writeAddr) ){
-                    
+#ifdef      SUPPORT_WATCHDOG
+                    WdtClear();
+#endif                      
                     Flash_get_record(readAddr, pData, FLASH_SENSOR_DATA_SIZE);
                     // 閺堝鏅ID
                     if((0xff != pData[2]) &&
