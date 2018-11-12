@@ -37,7 +37,7 @@ void S6ShortKey1App(void);
 
 void S6LongKey1App(void);
 
-void S6AppRtcProcess(void);
+void S6AppBatProcess(void);
 
 void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
 

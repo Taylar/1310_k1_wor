@@ -117,9 +117,6 @@ uint16_t Battery_get_voltage(void)
 #endif
 }
 
-#ifdef S_G//网关
-static uint32_t batMeasureCnt;
-#endif //S_G//网关
 static uint8_t  batCount = 0;
 //***********************************************************************************
 //
@@ -127,16 +124,7 @@ static uint8_t  batCount = 0;
 //
 //***********************************************************************************
 void Battery_porcess(void)
-{
-#ifdef S_G//网关
-    batMeasureCnt++;
-    if(batMeasureCnt < g_rSysConfigInfo.uploadPeriod)
-    {
-        return;
-    }
-    batMeasureCnt = 0;
-#endif //S_G//网关
-    
+{ 
     Battery_voltage_measure();
 
     if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)

@@ -338,36 +338,12 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
-#if defined (SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-    static uint8_t count = 0;
-    if ((deviceMode == DEVICES_OFF_MODE) || (RADIOMODE_UPGRADE == RadioModeGet())) {
-        return;
-    } else if (nodeParameter.collectTimeCnt >= g_rSysConfigInfo.collectPeriod) {
-        OldS1NodeAPP_scheduledUploadData();
-        nodeParameter.collectTimeCnt = 1;
-    }
-
-    if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
-    {
-        count++;
-        if (count > 10)
-        {
-            count = 0;
-            S1Sleep();
-        }
-        // SysCtrlSystemReset();
-    } else {
-        count = 0;
-    }
-    nodeParameter.collectTimeCnt++;
-#else
     nodeParameter.sysTime++;
     if(nodeParameter.sysTime >= 3600)
     {
         RadioEventPost(RADIO_EVT_SEND_SYC);
         nodeParameter.sysTime       = 0;
     }
-#endif
 }
 
 

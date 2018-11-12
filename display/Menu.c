@@ -877,7 +877,7 @@ void Alarm_record_Menu_show(void)
        switch(buff[5]){
 
        case SENSOR_DATA_TEMP:
-           TempToDisplayBuff(value,strBuffer,buff[4]);
+           TempToDisplayBuff(value,(uint8_t*)strBuffer,buff[4]);
            Disp_msg(3, 4, (uint8_t*)strBuffer, FONT_8X16);
            break;
        case SENSOR_DATA_HUMI:

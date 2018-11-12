@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-08 11:25:56
+* @Last Modified time: 2018-11-12 15:03:33
 */
 #include "../general.h"
 
@@ -323,32 +323,28 @@ void ConcenterRadioMonitorClear(void)
 //***********************************************************************************
 void ConcenterRtcProcess(void)
 {
-
     concenterParameter.monitorCnt++;
     if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
     {
-        Flash_log("NoRec\n");
-        ConcenterRadioMonitorClear();
-        RadioAbort();
-        // RadioSetRxMode();
-        SetRadioDstAddr(0xdadadada);
-        g_rSysConfigInfo.sysState.lora_send_errors ++;
-        Flash_store_config();
-        RadioEventPost(RADIO_EVT_SEND_CONFIG);
+        Sys_event_post(SYSTEMAPP_EVT_CONCENTER_MONITER);
     }
+}
 
-#ifdef S_G
-    // static uint32_t timingSendDataCnt = 0;
-    // /* Send data regularly to ensure that the gateway can receive*/
-    // if (timingSendDataCnt > (5 * 60)) {
-    //     RadioModeSet(RADIOMODE_RECEIVEPORT);
-    //     timingSendDataCnt = 0;
-    //     SetRadioDstAddr(0xdadadada);
-    //     ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
-    // }
-    // timingSendDataCnt++;
-#endif  // S_G
-
+//***********************************************************************************
+// brief:the concenter send the radio data in order to reset radio state
+// 
+// parameter: 
+//***********************************************************************************
+void ConcenterResetRadioState(void)
+{
+    Flash_log("NoRec\n");
+    ConcenterRadioMonitorClear();
+    RadioAbort();
+    // RadioSetRxMode();
+    SetRadioDstAddr(0xdadadada);
+    g_rSysConfigInfo.sysState.lora_send_errors ++;
+    Flash_store_config();
+    RadioEventPost(RADIO_EVT_SEND_CONFIG);
 }
 
 

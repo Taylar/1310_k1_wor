@@ -998,7 +998,7 @@ void Flash_store_devices_state(uint8_t StateType){
     Calendar calendar;
     uint8_t  index = 1;
     uint8_t buff[FLASH_DEVICED_STATE_DATA_SIZE];
-    uint32_t num;
+
         
     buff[index ++] = StateType;
     calendar       = Rtc_get_calendar();
@@ -1011,6 +1011,7 @@ void Flash_store_devices_state(uint8_t StateType){
     buff[index ++] = TransHexToBcd(calendar.Seconds);
 
 #ifdef SUPPORT_BLUETOOTH_PRINT
+    uint32_t num;
     if(StateType == TYPE_BT_PRINT_END){
         num = Btp_GetPrintNum();
         buff[index ++]  =  HIBYTE(HIWORD(num));
@@ -1798,7 +1799,5 @@ void Flash_load_nodeid(uint8_t *pData, uint32_t offset)
     Flash_external_read(FLASH_NODEID_STORE_POS + (offset * FLASH_NODEID_STORE_SIZE), pData, FLASH_NODEID_STORE_SIZE);
 
     Semaphore_post(spiSemHandle);
-
-    return ES_SUCCESS;
 }
 #endif  //SUPPORT_STORE_ID_IN_EXTFLASH

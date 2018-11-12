@@ -432,7 +432,9 @@ bool Flash_load_config(void);
 
 void Sys_config_reset(void);
 
+void Flash_store_nodeid(uint8_t *pData, uint32_t offset);
 
+void Flash_load_nodeid(uint8_t *pData, uint32_t offset);
 #endif  /* FLASH_EXTERNAL */
 
 

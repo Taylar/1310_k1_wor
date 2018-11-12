@@ -10,7 +10,7 @@
 #define         SYSTEMAPP_EVT_KEY1                      Event_Id_03
 #define         SYSTEMAPP_EVT_KEY1_LONG                 Event_Id_04
 #define         SYSTEMAPP_EVT_KEY1_DOUBLE               Event_Id_05
-#define         SYSTEMAPP_EVT_RTC                       Event_Id_06
+#define         SYSTEMAPP_EVT_CONCENTER_MONITER         Event_Id_06
 #define         SYSTEMAPP_EVT_STORE_CONCENTER           Event_Id_07
 #define         SYSTEMAPP_EVT_USBINT                    Event_Id_08
 #define         SYSTEMAPP_EVT_RADIO_ABORT				Event_Id_09
@@ -21,8 +21,8 @@
 #define         SYS_EVT_SENSOR                      	Event_Id_14
 #define         SYS_FEED_WATCHDOG                      	Event_Id_15
 #define         SYS_EVT_STRATEGY                      	Event_Id_16
-//#define         SYSTEMAPP_EVT_RADIO_TX_TIMEOUT          Event_Id_17
 #define         SYS_EVT_USB_CHARGE                      Event_Id_17
+#define         SYS_EVT_CONFIG_MODE_EXIT                Event_Id_18
 
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 

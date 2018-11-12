@@ -56,6 +56,8 @@ void ConcenterRadioMonitorClear(void);
 
 void ConcenterRtcProcess(void);
 
+void ConcenterResetRadioState(void);
+
 void ConcenterCollectStart(void);
 
 void ConcenterCollectStop(void);

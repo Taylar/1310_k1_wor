@@ -25,6 +25,8 @@ void S1DoubleKeyApp(void);
 
 void S1AppRtcProcess(void);
 
+void S1AppConfigModeExit(void);
+
 void S1Wakeup(void);
 
 void S1Sleep(void);

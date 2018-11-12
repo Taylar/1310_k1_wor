@@ -103,7 +103,17 @@ void RtcEventSet(void)
 
 	Nwk_upload_time_isr();
 
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_RTC);
+#ifdef BOARD_S3
+	S1AppRtcProcess();
+#endif
+
+#ifdef S_C//节点
+	NodeRtcProcess();
+#endif // S_C//节点
+
+#ifdef S_G//网关
+	ConcenterRtcProcess();
+#endif // S_G//网关
 }
 
 
@@ -348,23 +358,14 @@ void SystemAppTaskFxn(void)
 
 #endif
 
-		if(eventId &SYSTEMAPP_EVT_RTC)
+		if(eventId & SYSTEMAPP_EVT_CONCENTER_MONITER)
 		{
-#ifdef BOARD_S3
-			S1AppRtcProcess();
-#endif
+			ConcenterResetRadioState();
+		}
 
-#ifdef S_C//节点
-			NodeRtcProcess();
-#endif // S_C//节点
-
-#ifdef S_G//网关
-#ifndef BOARD_CONFIG_DECEIVE
-			Battery_porcess();
-#endif  // BOARD_CONFIG_DECEIVE
-			ConcenterRtcProcess();
-#endif // S_G//网关
-
+		if(eventId & SYS_EVT_CONFIG_MODE_EXIT)
+		{
+			S1AppConfigModeExit();
 		}
 
 		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)
@@ -379,6 +380,7 @@ void SystemAppTaskFxn(void)
 #endif // SUPPORT_USB
 
 #ifdef BOARD_S6_6
+		S6AppBatProcess();
 #ifndef BOARD_CONFIG_DECEIVE
 		if(eventId & SYS_EVT_ALARM)
 		{

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-25 16:22:11
+* @Last Modified time: 2018-11-12 15:10:27
 */
 #include "../general.h"
 
@@ -444,15 +444,13 @@ void S6LongKey1App(void)
 
 
 //***********************************************************************************
-// brief:the screen monitor
+// brief:S6 measure the bat
 // 
 // parameter: 
 //***********************************************************************************
-void S6AppRtcProcess(void)
+void S6AppBatProcess(void)
 {
-#ifdef S_G//网关
     Battery_porcess();
-#endif //S_G//网关
     //电量低至一格,每5秒闪红灯一次     
     if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE)) {
         Clock_start(BatAlarmClkHandle);

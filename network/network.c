@@ -318,6 +318,7 @@ uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
         
 #ifdef SUPPORT_NETGATE_DISP_NODE
     case PTI_SENSOR_CODEC:
+        deviceid = 0;
         rxData[index++] = HIBYTE_ZKS(HIWORD_ZKS(deviceid));
         rxData[index++] = LOBYTE_ZKS(HIWORD_ZKS(deviceid));
         rxData[index++] = HIBYTE_ZKS(LOWORD_ZKS(deviceid));

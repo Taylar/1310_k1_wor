@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-18 15:17:28
+* @Last Modified time: 2018-11-12 14:52:21
 */
 #include "../general.h"
 
@@ -171,16 +171,20 @@ void S1AppRtcProcess(void)
         configModeTimeCnt++;
         if(configModeTimeCnt >= 60)
         {
-            NodeStrategyBuffClear();
-            EasyLink_setRfPower(14);
-            RadioModeSet(RADIOMODE_SENDPORT);
-            NodeStartBroadcast();
-            NodeBroadcasting();
-            NodeStrategyStart();
-            deviceMode = DEVICES_ON_MODE;
+            Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
         }
     }
+}
 
+void S1AppConfigModeExit(void)
+{
+    NodeStrategyBuffClear();
+    EasyLink_setRfPower(14);
+    RadioModeSet(RADIOMODE_SENDPORT);
+    NodeStartBroadcast();
+    NodeBroadcasting();
+    NodeStrategyStart();
+    deviceMode = DEVICES_ON_MODE;
 }
 
 extern void WdtResetCb(uintptr_t handle);

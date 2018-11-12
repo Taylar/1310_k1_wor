@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-08 16:09:33
+* @Last Modified time: 2018-11-12 14:46:36
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -598,10 +598,6 @@ void RadioAppTaskFxn(void)
 #endif // SUPPORT_RSSI_CHECK
             if((currentRadioOperation.easyLinkTxPacket.len) <= EASYLINK_MAX_DATA_LENGTH && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
             {
-                if (deviceMode != DEVICES_OFF_MODE)
-                {
-                    Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
-                }
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                 if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
@@ -615,11 +611,12 @@ void RadioAppTaskFxn(void)
                 RadioAbort();
 #endif //SUPPORT_BOARD_OLD_S1
 
-
+                Led_set(LED_B, 1);
                 Clock_start(radioSendTimeoutClockHandle);
                 radioStatus = RADIOSTATUS_TRANSMITTING;
                 RadioSendData();
                 Clock_stop(radioSendTimeoutClockHandle);
+                Led_set(LED_B, 0);
 
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
