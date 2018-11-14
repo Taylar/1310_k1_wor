@@ -13,6 +13,20 @@
 #define FLASH_WP_PIN            IOID_11
 #define FLASH_HOLD_PIN          IOID_5
 
+#define FLASH_SPI_SIMO          IOID_10
+#define FLASH_SPI_CLK           IOID_7
+#define FLASH_SPI_SOMI          IOID_6
+
+static PIN_Handle  FLASH_SPI_COM_PinHandle = NULL;
+static PIN_State   FLASH_SPI_COM_State;
+
+const PIN_Config extFlashComPinTable[] = {
+    FLASH_SPI_SIMO | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    FLASH_SPI_SOMI | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    FLASH_SPI_CLK | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
+    PIN_TERMINATE
+};
+
 const PIN_Config extFlashPinTable[] = {
     FLASH_POWER_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,      /*          */
     FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
@@ -22,9 +36,18 @@ const PIN_Config extFlashPinTable[] = {
 };
 
 
-#define Flash_spi_enable()      PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0)
-#define Flash_spi_disable()     PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1)
-
+#define Flash_spi_enable()      do { \
+                                       if (FLASH_SPI_COM_PinHandle) { \
+                                            PIN_close(FLASH_SPI_COM_PinHandle); \
+                                        } \
+                                        Spi_open(); \
+                                       PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0); \
+                                } while(0)
+#define Flash_spi_disable()     do { \
+                                       Spi_close(); \
+                                       PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1); \
+                                       FLASH_SPI_COM_PinHandle = PIN_open(&FLASH_SPI_COM_State, extFlashComPinTable); \
+                                   }while(0)
 #endif
 
 // board gateway
@@ -1571,7 +1594,6 @@ static void Flash_external_erase2(uint32_t flashAddr, uint8_t eraseMode)
     }
     Flash_spi_disable();
 }
-
 #define     CONFIG_VALID_FLAG                   "valid config"
 
 const uint8_t configFlag[12] = CONFIG_VALID_FLAG;
@@ -1583,15 +1605,14 @@ const uint8_t configFlag[12] = CONFIG_VALID_FLAG;
 //***********************************************************************************
 void Flash_store_config(void)
 {
-
-
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 
-        
-    Flash_external_erase2(FLASH_SYS_CONFIG_INFO_POS, FLASH_EXT_SECTOR_ERASE);
-    //
-    Flash_external_write(FLASH_SYS_CONFIG_INFO_POS, (uint8_t *)configFlag, 12);
+    Flash_external_erase2(FLASH_SYS_CONFIG_DATA_POS, FLASH_EXT_SECTOR_ERASE);
     Flash_external_write(FLASH_SYS_CONFIG_DATA_POS, (uint8_t*)(&g_rSysConfigInfo), sizeof(ConfigInfo_t));
+
+
+    Flash_external_erase2(FLASH_SYS_CONFIG_BAK_DATA_POS, FLASH_EXT_SECTOR_ERASE);
+    Flash_external_write(FLASH_SYS_CONFIG_BAK_DATA_POS, (uint8_t*)(&g_rSysConfigInfo), sizeof(ConfigInfo_t));
 
     Semaphore_post(spiSemHandle);
 }
@@ -1603,37 +1624,25 @@ void Flash_store_config(void)
 //***********************************************************************************
 bool Flash_load_config(void)
 {
-    uint8_t i, buf[16];
-
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-
-    //
-    Flash_external_read(FLASH_SYS_CONFIG_INFO_POS, buf, 12);
-
-    Semaphore_post(spiSemHandle);
-
-    for(i = 0; i < 12; i++)
-    {
-        if(configFlag[i] != buf[i])
-        {
-            Semaphore_post(spiSemHandle);
-            return false;
-        }
-    }
-
-    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-
-    //
     Flash_external_read(FLASH_SYS_CONFIG_DATA_POS, (uint8_t*)&g_rSysConfigInfo, sizeof(ConfigInfo_t));
-
     Semaphore_post(spiSemHandle);
 
-    // if(g_rSysConfigInfo.swVersion != FW_VERSION)
-    // {
-    //     return false;
-    // }
-
+    if(g_rSysConfigInfo.size == 0 || g_rSysConfigInfo.size == 0xffff)
+    {
+        goto ReadBakConfig;
+    }
     return true;
+
+ReadBakConfig:
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    Flash_external_read(FLASH_SYS_CONFIG_BAK_DATA_POS, (uint8_t*)&g_rSysConfigInfo, sizeof(ConfigInfo_t));
+    Semaphore_post(spiSemHandle);
+    if(g_rSysConfigInfo.size == 0 || g_rSysConfigInfo.size == 0xffff)
+        return false;
+    else
+        return true;
 }
 
 

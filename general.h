@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
+#define BOARD_S3
 // #define BOARD_B2S
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -537,7 +537,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-#define SUPPORT_BOARD_Z4
+// #define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -552,7 +552,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0056
+#define FW_VERSION              0x0057
 #else
 #define FW_VERSION              0x0008
 #endif
@@ -602,7 +602,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0056
+#define FW_VERSION              0x0057
 
 #elif defined(S_C)
 

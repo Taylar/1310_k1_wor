@@ -89,15 +89,22 @@
 
 //External flash system config info store position
 #define FLASH_SYS_CONFIG_INFO_POS                   (FLASH_SYS_POS + FLASH_SYS_AREA_SIZE) 
-//External flash system config info store position
+//External flash system config data store position
 #define FLASH_SYS_CONFIG_DATA_POS                   (FLASH_SYS_CONFIG_INFO_POS + 0X20)   
 //External flash system config info length
-#define FLASH_SYS_CONFIG_LENGTH                sizeof(FlashSysInfo_t)
+#define FLASH_SYS_CONFIG_LENGTH                sizeof(ConfigInfo_t)
 //External flash system config info area size
 #define FLASH_SYS_CONFIG_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
 
+//External flash system config info store position
+#define FLASH_SYS_CONFIG_BAK_INFO_POS                   (FLASH_SYS_CONFIG_INFO_POS + FLASH_SYS_CONFIG_AREA_SIZE) 
+//External flash system config data store position
+#define FLASH_SYS_CONFIG_BAK_DATA_POS                   (FLASH_SYS_CONFIG_BAK_INFO_POS + 0X20)  
+//External flash system config info length
+#define FLASH_SYS_CONFIG_BAK_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
 
-#define FLASH_LOG_POS               (FLASH_SYS_CONFIG_INFO_POS + FLASH_SYS_CONFIG_AREA_SIZE)
+
+#define FLASH_LOG_POS               (FLASH_SYS_CONFIG_BAK_INFO_POS + FLASH_SYS_CONFIG_BAK_AREA_SIZE)
 #define FLASH_LOG_SIZE              (32)
 #ifdef SUPPORT_FLASH_LOG
 #define FLASH_LOG_AREA_SIZE         (FLASH_SECTOR_SIZE*2)           //8KB
@@ -260,10 +267,10 @@
 
 //External flash system config info store position
 #define FLASH_SYS_CONFIG_INFO_POS                   (FLASH_SYS_POS + FLASH_SYS_AREA_SIZE) 
-//External flash system config info store position
+//External flash system config data store position
 #define FLASH_SYS_CONFIG_DATA_POS                   (FLASH_SYS_CONFIG_INFO_POS + 0X20)   
 //External flash system config info length
-#define FLASH_SYS_CONFIG_LENGTH                sizeof(FlashSysInfo_t)
+#define FLASH_SYS_CONFIG_LENGTH                sizeof(ConfigInfo_t)
 //External flash system config info area size
 #define FLASH_SYS_CONFIG_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
 
@@ -289,12 +296,20 @@
 #define FLASH_UPGRADE_DATA_AREA_SIZE     (132 * 1024L) //132 KB
 
 
+
+//External flash system config info store position
+#define FLASH_SYS_CONFIG_BAK_INFO_POS                   (FLASH_UPGRADE_INFO_POS + FLASH_UPGRADE_DATA_AREA_SIZE) 
+//External flash system config data store position
+#define FLASH_SYS_CONFIG_BAK_DATA_POS                   (FLASH_SYS_CONFIG_BAK_INFO_POS + 0X20)  
+//External flash system config info length
+#define FLASH_SYS_CONFIG_BAK_AREA_SIZE             FLASH_SECTOR_SIZE * 1                           //4KB
+
 //External flash sensor data pointer store position
-#define FLASH_SENSOR_PTR_POS            (FLASH_UPGRADE_INFO_POS + FLASH_UPGRADE_DATA_AREA_SIZE)
+#define FLASH_SENSOR_PTR_POS            (FLASH_SYS_CONFIG_BAK_INFO_POS + FLASH_SYS_CONFIG_BAK_AREA_SIZE)
 //External flash sensor data pointer size
 #define FLASH_SENSOR_PTR_SIZE           16
 //External flash sensor data pointer number
-#define FLASH_SENSOR_PTR_NUMBER         (11520L)           // 180*1024
+#define FLASH_SENSOR_PTR_NUMBER         (11264L)           // 176*1024
 //External flash sensor data pointer position offset
 #define FLASH_SENSOR_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-12 14:46:36
+* @Last Modified time: 2018-11-14 18:23:13
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -628,9 +628,11 @@ void RadioAppTaskFxn(void)
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
                     radioStatus = RADIOSTATUS_RECEIVING;
+#ifdef SUPPORT_STRATEGY_SORT
                     if(GetStrategyRegisterStatus() == false)
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(1500));
                     else
+#endif  // SUPPORT_STRATEGY_SORT
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
                     RadioReceiveData();
                 }
