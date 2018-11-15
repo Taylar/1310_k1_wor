@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-14 18:23:13
+* @Last Modified time: 2018-11-15 19:50:08
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -368,11 +368,20 @@ void RadioAppTaskFxn(void)
         easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
     #endif
 #endif
+        
+#ifdef SUPPORT_RARIO_SPEED_SET
+    if((g_rSysConfigInfo.rfSF >> 4) > RADIO_EASYLINK_MODULATION_S1_OLD)
+        g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
+    easyLink_params.ui32ModType = g_rSysConfigInfo.rfSF >> 4;
+#endif // SUPPORT_RARIO_SPEED_SET
 
+    if((g_rSysConfigInfo.rfPA >> 4) < RADIO_MIN_POWER)
+        g_rSysConfigInfo.rfPA = RADIO_MIN_POWER << 4;
 
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
     }
+    EasyLink_setRfPower(SET_RADIO_POWER);
 #ifndef BOARD_CONFIG_DECEIVE
 #ifndef BOARD_S3
     Radio_setRxModeRfFrequency();
@@ -1222,6 +1231,7 @@ void RadioSwitchingUpgradeRate(void)
     Task_sleep(500 * CLOCK_UNIT_MS);
     RadioDefaultParaInit();
 
+    RadioAbort();
     EasyLink_setRfPower(7);
 
     RadioAbort();
@@ -1251,7 +1261,8 @@ void RadioSwitchingUserRate(void)
 
     Task_sleep(500 * CLOCK_UNIT_MS);
 
-    EasyLink_setRfPower(14);
+    RadioAbort();
+    EasyLink_setRfPower(SET_RADIO_POWER);
 
     RadioDefaultParaInit();
     /* Set the filter to the generated random address */
@@ -1262,6 +1273,35 @@ void RadioSwitchingUserRate(void)
     RadioAbort();
     RadioReceiveData();
 }
+
+// Wireless rate is switched to user rate
+void RadioSwitchingSettingRate(void)
+{
+    EasyLink_Params easyLink_params;
+    if ((g_rSysConfigInfo.rfSF>>4) == GetEasyLinkParamsModType()) {
+        return;
+    }
+
+    RadioAbort();
+    EasyLink_Params_init(&easyLink_params);
+    easyLink_params.ui32ModType = g_rSysConfigInfo.rfSF >> 4;
+    if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
+        System_abort("EasyLink_init failed");
+    }
+
+    Task_sleep(500 * CLOCK_UNIT_MS);
+
+    RadioAbort();
+    EasyLink_setRfPower(SET_RADIO_POWER);
+
+    RadioDefaultParaInit();
+    /* Set the filter to the generated random address */
+    if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
+    {
+        System_abort("EasyLink_enableRxAddrFilter failed");
+    }
+}
+
 
 // Wireless rate is switched to S1_OLD user rate
 void RadioSwitchingS1OldUserRate(void)
@@ -1282,8 +1322,9 @@ void RadioSwitchingS1OldUserRate(void)
         System_abort("EasyLink_init failed");
     }
 
+    RadioAbort();
     Task_sleep(500 * CLOCK_UNIT_MS);
-	EasyLink_setRfPower(14);
+	EasyLink_setRfPower(SET_RADIO_POWER);
 
     EasyLink_setCtrl(EasyLink_Ctrl_AddSize, 0);
     /* Set the filter to the generated random address */

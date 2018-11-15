@@ -221,18 +221,18 @@ typedef enum
 #define EasyLink_PHY_50KBPS2GFSK        1
 #define EasyLink_PHY_625BPSLRM          2
 #define EasyLink_PHY_2_4_200KBPS2GFSK   3
-#define EasyLink_PHY_5KBPSSLLR      4
+#define EasyLink_PHY_5KBPSSLLR      5
 
 //! \brief Phy Type passed to EasyLink_init()
 typedef enum
 {
     EasyLink_Phy_Custom = EasyLink_PHY_CUSTOM,            //!< Customer Phy specific settings exported from SmartRF Studio
-    EasyLink_Phy_50kbps2gfsk = EasyLink_PHY_50KBPS2GFSK,  //!< Phy settings for Sub1G 50kbps data rate, IEEE 802.15.4g GFSK.
+    EasyLink_Phy_50K_GPSK = EasyLink_PHY_50KBPS2GFSK,
     EasyLink_Phy_625bpsLrm = EasyLink_PHY_625BPSLRM,      //!< Phy settings for Sub1G 625bps data rate, Long Range Mode.
     EasyLink_Phy_2_4_200kbps2gfsk = EasyLink_PHY_2_4_200KBPS2GFSK,   //!< Phy settings for 2.4Ghz 200kbps data rate, IEEE 802.15.4g GFSK.
-    EasyLink_Phy_5kbpsSlLr = EasyLink_PHY_5KBPSSLLR,      //!< SimpleLink Long Range (5 kbps)
-    EasyLink_Phy_50K_GPSK = 5,
-    EasyLink_Phy_Custom_s1_old = 6,
+    EasyLink_Phy_Custom_s1_old = 4,
+    EasyLink_Phy_50kbps2gfsk = 5,  //!< Phy settings for Sub1G 50kbps data rate, IEEE 802.15.4g GFSK.
+    EasyLink_Phy_5kbpsSlLr = 6,      //!< SimpleLink Long Range (5 kbps)
 } EasyLink_PhyType;
 
 //! \brief Advance configuration options

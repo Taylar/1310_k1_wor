@@ -38,4 +38,29 @@ extern const rfc_CMD_PROP_RX_t RF_cmdPropRx_50K;
 #endif
 
 
+// ******************************************************************************
+// 2.5K
+// ******************************************************************************
+// TI-RTOS RF Mode Object
+extern RF_Mode RF_prop_2_5K;
+
+
+// RF Core API command_2_5Ks
+extern rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_2_5K;
+extern rfc_CMD_FS_t RF_cmdFs_2_5K;
+extern rfc_CMD_PROP_TX_t RF_cmdPropTx_2_5K;
+extern rfc_CMD_PROP_RX_t RF_cmdPropRx_2_5K;
+
+// ******************************************************************************
+// 625
+// ******************************************************************************
+// TI-RTOS RF Mode Object
+extern RF_Mode RF_prop_625;
+
+
+// RF Core API command_625s
+extern rfc_CMD_PROP_RADIO_DIV_SETUP_t RF_cmdPropRadioDivSetup_625;
+extern rfc_CMD_FS_t RF_cmdFs_625;
+extern rfc_CMD_PROP_TX_t RF_cmdPropTx_625;
+extern rfc_CMD_PROP_RX_t RF_cmdPropRx_625;
 #endif // _SMARTRF_SETTINGS_H_

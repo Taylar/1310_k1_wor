@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-08 11:11:44
+* @Last Modified time: 2018-11-15 16:52:30
 */
 #include "../general.h"
 
@@ -18,7 +18,7 @@ radio_protocal_t   protocalTxBuf;
 
 static uint8_t     concenterRemainderCache;
 
-
+#ifdef S_C
 //***********************************************************************************
 // brief:   analysis the node protocal 
 // 
@@ -236,6 +236,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 					g_rSysConfigInfo.rfBW    	= bufTemp->load[baseAddr+2];
 					g_rSysConfigInfo.rfSF    	= bufTemp->load[baseAddr+3];
 					g_rSysConfigInfo.rfStatus 	= bufTemp->load[baseAddr+4];
+					if((g_rSysConfigInfo.rfSF >> 4) > RADIO_EASYLINK_MODULATION_S1_OLD)
+						g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
+					if((g_rSysConfigInfo.rfPA >> 4) < RADIO_MIN_POWER)
+						g_rSysConfigInfo.rfPA = (RADIO_MIN_POWER<<4) + (g_rSysConfigInfo.rfPA & 0xf);
 #if defined (SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     /* 当设为mast时S3_1和S2S_1的工作模式为模式1，其它模式2*/
                     if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
@@ -354,7 +358,7 @@ NodeDispath:
 }
 
 
-
+#endif // S_C
 
 
 //***********************************************************************************

@@ -6,7 +6,7 @@
 #include "../APP/systemApp.h"
 #include "../APP/radio_protocal.h"
 /***** Defines *****/
-
+#ifdef S_C
 
 /***** Type declarations *****/
 typedef struct 
@@ -413,3 +413,5 @@ bool NodeContinueFlagRead(void)
 {
     return nodeParameter.configFlag;
 }
+
+#endif // S_C

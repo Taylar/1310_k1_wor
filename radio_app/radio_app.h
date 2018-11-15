@@ -37,6 +37,9 @@
 #define RADIO_DIFF_UNIT_FREQ             125000
 #define RADIO_BASE_UNIT_FREQ             250000
 
+#define RADIO_MIN_POWER                 5
+
+#define SET_RADIO_POWER                 (g_rSysConfigInfo.rfPA >> 4)
 enum RadioOperationStatus {
     RADIOSTATUS_IDLE,
     RADIOSTATUS_RECEIVING,
@@ -135,6 +138,7 @@ void Radio_setTxModeRfFrequency(void);
 
 void RadioSwitchingUpgradeRate(void);
 void RadioSwitchingUserRate(void);
+void RadioSwitchingSettingRate(void);
 
 void RadioSwitchingS1OldUserRate(void);
 

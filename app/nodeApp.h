@@ -11,7 +11,29 @@ typedef struct {
 }TxFrameRecord_t;
 
 
-
+#ifdef S_G
+#define NodeAppInit(...)
+#define NodeUploadPeriodSet(...)
+#define NodeUploadProcess(...)
+#define NodeCollectPeriodSet(...)
+#define NodeCollectProcess(...)
+#define NodeLowTemperatureSet(...)
+#define NodeHighTemperatureSet(...)
+#define NodeBroadcasting(...)
+#define NodeStartBroadcast(...)
+#define NodeStopBroadcast(...)
+#define NodeSleep(...)
+#define NodeWakeup(...)
+#define NodeUploadOffectClear(...)
+#define NodeUploadSucessProcess(temp)
+#define NodeRtcProcess(...)
+#define NodeSetCustomId(...)
+#define NodeGetCustomId(...)
+#define NodeStrategyTimeoutProcess(...)
+#define NodeContinueFlagClear(...)
+#define NodeContinueFlagSet(...)
+#define NodeContinueFlagRead(...)
+#else
 
 void NodeAppInit(void);
 
@@ -55,4 +77,5 @@ void NodeContinueFlagSet(void);
 
 bool NodeContinueFlagRead(void);
 
+#endif  // S_G
 #endif			// __NODEAPP_H__

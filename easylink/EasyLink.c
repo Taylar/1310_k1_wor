@@ -150,7 +150,7 @@ static rfc_CMD_PROP_CS_t EasyLink_cmdPropCs;
 #endif // (defined(DeviceFamily_CC13X0) || defined(DeviceFamily_CC13X2))
 
 // The table for setting the Rx Address Filters
-//#pragma DATA_ALIGN (addrFilterTable, 4);
+#pragma DATA_ALIGN (addrFilterTable, 4);
 static uint8_t addrFilterTable[EASYLINK_MAX_ADDR_FILTERS * EASYLINK_MAX_ADDR_SIZE] = {0xaa};
 
 //Mutex for locking the RF driver resource
@@ -615,27 +615,23 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
         memcpy(&EasyLink_RF_prop, &RF_prop_50K, sizeof(RF_Mode));
         memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
         memcpy(&EasyLink_cmdPropTx, &RF_cmdPropTx_50K, sizeof(rfc_CMD_PROP_TX_t));
-    } /*
-    else if ( (EasyLink_params.ui32ModType == EasyLink_Phy_50kbps2gfsk) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650) )
+    } 
+    else if ( (EasyLink_params.ui32ModType == EasyLink_Phy_2_4_200kbps2gfsk) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650) )
     {
-//        memcpy(&EasyLink_cmdPropRadioSetup.divSetup,
-//                RF_pCmdPropRadioDivSetup_fsk,
-//                sizeof(rfc_CMD_PROP_RADIO_DIV_SETUP_t));
-//        memcpy(&EasyLink_cmdFs, RF_pCmdFs_preDef, sizeof(rfc_CMD_FS_t));
-//        memcpy(&EasyLink_RF_prop, RF_pProp_fsk, sizeof(RF_Mode));
-//        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
-//        memcpy(&EasyLink_cmdPropTx, RF_pCmdPropTx_preDef, sizeof(rfc_CMD_PROP_TX_t));
+        memcpy(&EasyLink_cmdPropRadioSetup.divSetup, &RF_cmdPropRadioDivSetup_2_5K, sizeof(rfc_CMD_PROP_RADIO_DIV_SETUP_t));
+        memcpy(&EasyLink_cmdFs, &RF_cmdFs_2_5K, sizeof(rfc_CMD_FS_t));
+        memcpy(&EasyLink_RF_prop, &RF_prop_2_5K, sizeof(RF_Mode));
+        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
+        memcpy(&EasyLink_cmdPropTx, &RF_cmdPropTx_2_5K, sizeof(rfc_CMD_PROP_TX_t));
     }
     else if ( (EasyLink_params.ui32ModType == EasyLink_Phy_625bpsLrm) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650) )
     {
-//        memcpy(&EasyLink_cmdPropRadioSetup.divSetup,
-//                RF_pCmdPropRadioDivSetup_lrm,
-//                sizeof(rfc_CMD_PROP_RADIO_DIV_SETUP_t));
-//        memcpy(&EasyLink_cmdFs, RF_pCmdFs_preDef, sizeof(rfc_CMD_FS_t));
-//        memcpy(&EasyLink_RF_prop, RF_pProp_lrm, sizeof(RF_Mode));
-//        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
-//        memcpy(&EasyLink_cmdPropTx, RF_pCmdPropTx_preDef, sizeof(rfc_CMD_PROP_TX_t));
-    }
+        memcpy(&EasyLink_cmdPropRadioSetup.divSetup, &RF_cmdPropRadioDivSetup_625, sizeof(rfc_CMD_PROP_RADIO_DIV_SETUP_t));
+        memcpy(&EasyLink_cmdFs, &RF_cmdFs_625, sizeof(rfc_CMD_FS_t));
+        memcpy(&EasyLink_RF_prop, &RF_prop_625, sizeof(RF_Mode));
+        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
+        memcpy(&EasyLink_cmdPropTx, &RF_cmdPropTx_625, sizeof(rfc_CMD_PROP_TX_t));
+    }/*
     else if ( (EasyLink_params.ui32ModType == EasyLink_Phy_2_4_200kbps2gfsk) && (ChipInfo_GetChipType() == CHIP_TYPE_CC2650) )
     {
 //        memcpy(&EasyLink_cmdPropRadioSetup.setup,
@@ -657,6 +653,7 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
 //        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
 //        memcpy(&EasyLink_cmdPropTx, RF_pCmdPropTx_preDef, sizeof(rfc_CMD_PROP_TX_t));
     } */
+
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
     else if ((EasyLink_params.ui32ModType == EasyLink_Phy_Custom_s1_old) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650))
     {
@@ -667,6 +664,17 @@ EasyLink_Status EasyLink_init(EasyLink_Params *params)
         memcpy(&EasyLink_cmdPropTx, &RF_cmdPropTx_s1_old, sizeof(rfc_CMD_PROP_TX_t));
     }
 #endif
+#ifdef SUPPORT_RARIO_SPEED_SET
+    else if ((EasyLink_params.ui32ModType == EasyLink_Phy_Custom_s1_old) && (ChipInfo_GetChipType() != CHIP_TYPE_CC2650))
+    {
+        memcpy(&EasyLink_cmdPropRadioSetup.divSetup, &RF_cmdPropRadioDivSetup_50K, sizeof(rfc_CMD_PROP_RADIO_DIV_SETUP_t));
+        memcpy(&EasyLink_cmdFs, &RF_cmdFs_50K, sizeof(rfc_CMD_FS_t));
+        memcpy(&EasyLink_RF_prop, &RF_prop_50K, sizeof(RF_Mode));
+        memcpy(&EasyLink_cmdPropRxAdv, RF_pCmdPropRxAdv_preDef, sizeof(rfc_CMD_PROP_RX_ADV_t));
+        memcpy(&EasyLink_cmdPropTx, &RF_cmdPropTx_50K, sizeof(rfc_CMD_PROP_TX_t));
+        EasyLink_cmdPropRadioSetup.divSetup.symbolRate.rateWord = 0x624E;
+    }
+#endif  // SUPPORT_RARIO_SPEED_SET
     else
     {
         if (busyMutex != NULL)

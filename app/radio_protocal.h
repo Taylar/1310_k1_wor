@@ -77,8 +77,11 @@ typedef  struct {
 /***** Prototypes *****/
 
 // void NodeProtocalEvtSet(EasyLink_RxPacket *rxPacket);
-
+#ifdef S_C
 void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket);
+#else
+#define NodeProtocalDispath(...)
+#endif // S_C
 
 // void ConcenterProtocalEvtSet(EasyLink_RxPacket *rxPacket);
 

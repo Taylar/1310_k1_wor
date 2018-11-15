@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-12 14:52:21
+* @Last Modified time: 2018-11-15 15:31:57
 */
 #include "../general.h"
 
@@ -146,7 +146,7 @@ void S1DoubleKeyApp(void)
         NodeUploadOffectClear();
         //RadioModeSet(RADIOMODE_RECEIVEPORT);
         SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
-#if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+#if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1) || defined(SUPPORT_RARIO_SPEED_SET)
         RadioSwitchingUserRate();
 #endif
 
@@ -178,8 +178,8 @@ void S1AppRtcProcess(void)
 
 void S1AppConfigModeExit(void)
 {
+    RadioSwitchingSettingRate();
     NodeStrategyBuffClear();
-    EasyLink_setRfPower(14);
     RadioModeSet(RADIOMODE_SENDPORT);
     NodeStartBroadcast();
     NodeBroadcasting();
