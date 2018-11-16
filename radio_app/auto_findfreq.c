@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-09-13 11:38:46
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-08 11:21:52
+* @Last Modified time: 2018-11-16 11:05:51
 */
 #include "../general.h"
 
@@ -117,7 +117,22 @@ void AutoFreqNodeSwitchFreq(void)
 	RadioSend();
 }
 
-
+//***********************************************************************************
+// brief:  node switch the freq to find the concenter
+// 
+// parameter: 
+//***********************************************************************************
+void AutoFreqNodeResetCurFreq(void)
+{
+	if(autoFindfreq.switchTimes == 0)
+	{
+		autoFindfreq.switchTimes = AUTO_FINDFREQ_SWITCH_MAX - 1;
+	}
+	else
+	{
+		autoFindfreq.switchTimes--;
+	}
+}
 
 //***********************************************************************************
 // brief:  concenter switch the freq to find idle freqency

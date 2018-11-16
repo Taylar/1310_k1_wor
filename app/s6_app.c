@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-12 15:10:27
+* @Last Modified time: 2018-11-16 11:51:53
 */
 #include "../general.h"
 
@@ -517,7 +517,6 @@ void UsbIntProcess(void)
         // the usb has unlink
         if(deviceMode != DEVICES_CONFIG_MODE)
             return;
-
         deviceMode = deviceModeTemp;
         InterfaceDisable();
         SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
@@ -529,6 +528,7 @@ void UsbIntProcess(void)
         {
             case DEVICES_ON_MODE:
             case DEVICES_SLEEP_MODE:
+            RadioSwitchingSettingRate();
             S6Wakeup();
             if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
             {

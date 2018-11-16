@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-15 19:50:08
+* @Last Modified time: 2018-11-16 11:32:11
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -74,7 +74,14 @@ Clock_Struct radioSendTimeoutClock;     /* not static so you can see in ROV */
 
 Clock_Handle radioSendTimeoutClockHandle;
 
-
+const uint16_t RECEIVE_TIMEOUT[5] = 
+{
+    160,//5K bps
+    25, // 50k bps
+    1500, // 625bps
+    320, //2.5k bps
+    30, // 50k bps
+};
 
 /***** Prototypes *****/
 
@@ -294,9 +301,9 @@ void RadioAppTaskCreate(void)
     Clock_Params_init(&clkParams);
     clkParams.period = 0;
     clkParams.startFlag = FALSE;
-    Clock_construct(&radioSendTimeoutClock, RadioSendTimeroutCb, 1000 * CLOCK_UNIT_MS, &clkParams);
+    Clock_construct(&radioSendTimeoutClock, RadioSendTimeroutCb, 4000 * CLOCK_UNIT_MS, &clkParams);
     radioSendTimeoutClockHandle = Clock_handle(&radioSendTimeoutClock);
-    Clock_setTimeout(radioSendTimeoutClockHandle, 1000 * CLOCK_UNIT_MS);
+    Clock_setTimeout(radioSendTimeoutClockHandle, 4000 * CLOCK_UNIT_MS);
     
 
     /* Create the radio protocol task */

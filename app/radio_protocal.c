@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-15 16:52:30
+* @Last Modified time: 2018-11-16 10:59:43
 */
 #include "../general.h"
 
@@ -26,7 +26,7 @@ static uint8_t     concenterRemainderCache;
 //***********************************************************************************
 void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
-	uint8_t len, lenTemp, baseAddr, flag;
+	uint8_t len, lenTemp, baseAddr, flag, sendContinue;
 	uint32_t	temp;
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
@@ -51,6 +51,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	SetRadioDstAddr(bufTemp->srcAddr);
 
 	flag = 0;
+	sendContinue = 1;
 	while(len)
 	{
 		// the receive data is not integrated
@@ -305,14 +306,14 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			if(bufTemp->load[0] == PROTOCAL_FAIL) {
 				NodeUploadOffectClear();
+				sendContinue = 0;
 			} else {
                 HIBYTE_ZKS(serialNum) = bufTemp->load[1];
                 LOBYTE_ZKS(serialNum) = bufTemp->load[2];
                 rxSensorDataAckRecord.lastFrameSerial[rxSensorDataAckRecord.Cnt] = serialNum;
                 rxSensorDataAckRecord.Cnt++;
+				flag = 1;
 			}
-
-			flag = 1;
 			// resever more 6 package and is the last ack
 			
 			break;
@@ -343,7 +344,7 @@ NodeDispath:
         if (1 == flag) {
             flag = NodeUploadSucessProcess(&rxSensorDataAckRecord);
         }
-	    if(Flash_get_unupload_items() > 0)
+	    if((Flash_get_unupload_items() > 0) && sendContinue)
 	    {
 #ifdef SUPPORT_RSSI_CHECK
 	    	NodeContinueFlagSet();

@@ -4,7 +4,7 @@
 
 
 #define	SENSOR_DATA_LENGTH_MAX			24
-#define EXTFLASH_QUEUE_MAX 				20  
+#define EXTFLASH_QUEUE_MAX 				32
 
 
   

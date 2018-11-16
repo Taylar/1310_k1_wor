@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-08 16:02:30
+* @Last Modified time: 2018-11-16 11:06:13
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -194,6 +194,9 @@ void NodeStrategyReceiveTimeoutProcess(void)
             nodeStrategy.success       = false;
             nodeStrategy.sendCnt       = 0;
             nodeStrategy.radioBusyCnt  = 0;
+#ifdef  SUPPORT_FREQ_FIND
+            AutoFreqNodeResetCurFreq();
+#endif  //SUPPORT_FREQ_FIND
             NodeStrategyFailCb();
         }
     }
@@ -251,7 +254,7 @@ bool NodeStrategySendPacket(uint8_t *dataP, uint8_t len)
     if(len > nodeStrategy.remainderCache)
         return false;
 
-    flag = RadioCopyPacketToBuf(dataP, len, 0, PASSRADIO_ACK_TIMEOUT_TIME_MS, EASYLINK_MAX_DATA_LENGTH - nodeStrategy.remainderCache);
+    flag = RadioCopyPacketToBuf(dataP, len, 0, RADIO_RECEIVE_TIMEOUT, EASYLINK_MAX_DATA_LENGTH - nodeStrategy.remainderCache);
     nodeStrategy.remainderCache -= len;
 
     return flag;

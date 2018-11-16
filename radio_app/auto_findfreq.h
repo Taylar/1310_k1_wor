@@ -14,6 +14,8 @@ void AutoFreqNodeSuccess(void);
 
 void AutoFreqNodeSwitchFreq(void);
 
+void AutoFreqNodeResetCurFreq(void);
+
 void AutoFreqConcenterSwitchFreqProcess(void);
 
 void AutoFreqConcenterStop(void);

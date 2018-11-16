@@ -28,6 +28,7 @@
 
 #define PASSRADIO_ACK_TIMEOUT_TIME_MS (150)
 #define CONCENTER_RADIO_DELAY_TIME_MS (1)
+#define RADIO_RECEIVE_TIMEOUT       RECEIVE_TIMEOUT[g_rSysConfigInfo.rfSF >> 4]
 
 #define RADIO_EASYLINK_MODULATION      EasyLink_Phy_Custom
 #define RADIO_EASYLINK_MODULATION_50K  EasyLink_Phy_50K_GPSK
@@ -76,6 +77,7 @@ typedef enum
 // radioRxPacket
 extern EasyLink_RxPacket radioRxPacket;
 
+extern const uint16_t RECEIVE_TIMEOUT[5];
 
 
 
