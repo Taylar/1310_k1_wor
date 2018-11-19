@@ -18,7 +18,7 @@
 
 #define BAT_VOLTAGE_LOW             2150
 #define BAT_VOLTAGE_L1              2500
-#define BAT_VOLTAGE_L2              2700
+#define BAT_VOLTAGE_L2              2800
 #define BAT_VOLTAGE_L3              3050
 #define BAT_VOLTAGE_FULL            3100
 

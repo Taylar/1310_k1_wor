@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
+#define BOARD_S3
 // #define BOARD_B2S
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -515,7 +515,6 @@ error
 
 #define SUPPORT_RARIO_SPEED_SET
 #define SUPPORT_RSSI_CHECK
-#define SUPPORT_FREQ_FIND
 // #define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
 
@@ -533,7 +532,6 @@ error
 
 #ifdef SUPPORT_BOARD_OLD_S1
 #undef SUPPORT_RSSI_CHECK
-#undef SUPPORT_FREQ_FIND
 #undef  BOARD_NAME
 #define BOARD_NAME              "_S3_1"
 #undef  PROJECT_NAME
@@ -541,7 +539,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-// #define SUPPORT_BOARD_Z4
+#define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -556,7 +554,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0057
+#define FW_VERSION              0x0058
 #else
 #define FW_VERSION              0x0008
 #endif
@@ -589,7 +587,6 @@ error
 
 #define SUPPORT_USB
 #define SUPPORT_RARIO_SPEED_SET
-#define SUPPORT_FREQ_FIND
 // #define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
 #ifdef SUPPORT_STRATEGY_SORT
@@ -607,7 +604,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0057
+#define FW_VERSION              0x0058
 
 #elif defined(S_C)
 
@@ -616,7 +613,6 @@ error
 
 #ifdef BOARD_CONFIG_DECEIVE
 #undef  SUPPORT_RSSI_CHECK
-#undef  SUPPORT_FREQ_FIND
 #undef  SUPPORT_STRATEGY_SORT
 #endif // BOARD_CONFIG_DECEIVE
 
@@ -632,7 +628,6 @@ error
 
 #ifdef BOARD_B2S
 #define SUPPORT_RSSI_CHECK
-#define SUPPORT_FREQ_FIND
 #define CONCENTER_MAX_CHANNEL       100
 #undef  FW_VERSION
     #ifdef S_A
@@ -653,7 +648,6 @@ error
 #ifdef  UPPORT_BOARD_OLD_S2S_1
 #undef  SUPPORT_CHARGE_DECT
 #undef  SUPPORT_RSSI_CHECK
-#undef  SUPPORT_FREQ_FIND
 #undef  FW_VERSION
 #define FW_VERSION              0x0001
 #undef  BOARD_NAME

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-16 11:51:53
+* @Last Modified time: 2018-11-19 15:33:46
 */
 #include "../general.h"
 
@@ -566,9 +566,8 @@ void S6Wakeup(void)
 #ifdef S_G//网关
     ConcenterWakeup();
     
-#ifdef SUPPORT_FREQ_FIND
+    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
     AutoFreqInit();
-#endif  // SUPPORT_FREQ_FIND
 
 #endif // S_G//网关
 

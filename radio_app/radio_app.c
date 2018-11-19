@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-16 11:32:11
+* @Last Modified time: 2018-11-19 15:35:22
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -449,9 +449,8 @@ void RadioAppTaskFxn(void)
         ConcenterAppInit();
     }
 
-#ifdef SUPPORT_FREQ_FIND
-    AutoFreqInit();
-#endif  //SUPPORT_FREQ_FIND
+    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+        AutoFreqInit();
 
 #ifdef FACTOR_RADIO_TEST
     while(1)
@@ -472,13 +471,13 @@ void RadioAppTaskFxn(void)
     for(;;)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
-#if (defined(S_G) && defined(SUPPORT_FREQ_FIND))
-
+#ifdef S_G
         if(events & RADIO_EVT_CHANNEL_CHECK)
         {
-            AutoFreqConcenterSwitchFreqProcess();
+            if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+                AutoFreqConcenterSwitchFreqProcess();
         }
-#endif // (defined(S_G) || defined(SUPPORT_FREQ_FIND))
+#endif // S_G
 
         if(events & RADIO_EVT_SENSOR_PACK)
         {
@@ -560,23 +559,26 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TX)
         {
-#if (defined(S_G) && defined(SUPPORT_FREQ_FIND))
-            if(AutoFreqStateRead() == false)
+#ifdef S_G
+            if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
             {
-                Radio_setTxModeRfFrequency();
-                rssi = RadioCheckRssi();
-                if(rssi > RADIO_RSSI_FLITER)
+                if(AutoFreqStateRead() == false)
                 {
-                    AutoFreqCarrierBusy(rssi);
-                    continue;
-                }
-                else
-                {
-                    AutoFreqCarrierRssiSet(rssi);
+                    Radio_setTxModeRfFrequency();
+                    rssi = RadioCheckRssi();
+                    if(rssi > RADIO_RSSI_FLITER)
+                    {
+                        AutoFreqCarrierBusy(rssi);
+                        continue;
+                    }
+                    else
+                    {
+                        AutoFreqCarrierRssiSet(rssi);
+                    }
                 }
             }
 
-#endif // (defined(S_G) || defined(SUPPORT_FREQ_FIND))
+#endif // S_G
 
 
 #ifdef SUPPORT_RSSI_CHECK
@@ -655,11 +657,16 @@ void RadioAppTaskFxn(void)
 
                 if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
                 {
-#if defined(SUPPORT_FREQ_FIND) && defined(S_G)
-                    if(AutoFreqStateRead() == false)
-                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(500));
+#ifdef S_G//网关
+                    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+                    {
+                        if(AutoFreqStateRead() == false)
+                            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(500));
+                        else
+                            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+                    }
                     else
-#endif // SUPPORT_FREQ_FIND
+#endif // S_G
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
 
                     RadioReceiveData();
@@ -695,12 +702,15 @@ void RadioAppTaskFxn(void)
             }
 #endif  // S_C//閲囬泦鍣�
 
-#if defined(SUPPORT_FREQ_FIND) && defined(S_G)
-            if(AutoFreqStateRead() == false)
+#ifdef S_G
+            if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
             {
-                AutoFreqRecTimeout();
+                if(AutoFreqStateRead() == false)
+                {
+                    AutoFreqRecTimeout();
+                }
             }
-#endif // SUPPORT_FREQ_FIND
+#endif // S_G
         }
 
         if(events & RADIO_EVT_SET_RX_MODE)
@@ -1154,11 +1164,9 @@ void Radio_setRxModeRfFrequency(void)
 #endif  // S_C//閲囬泦鍣�
 
 #ifdef  S_G//缃戝叧
-    #ifdef SUPPORT_FREQ_FIND
-        if(AutoFreqStateRead() == false)
+        if((AutoFreqStateRead() == false) && (!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)))
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         else
-    #endif  // SUPPORT_FREQ_FIND
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 #endif  // S_G//缃戝叧
 
@@ -1195,11 +1203,9 @@ void Radio_setTxModeRfFrequency(void)
 #endif  // S_C//閲囬泦鍣�
 
 #ifdef  S_G//缃戝叧
-    #ifdef SUPPORT_FREQ_FIND
-        if(AutoFreqStateRead() == false)
+        if((AutoFreqStateRead() == false) && (!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)))
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         else
-    #endif // SUPPORT_FREQ_FIND
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ +  ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 #endif  // S_G//缃戝叧
 

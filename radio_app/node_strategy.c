@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-16 11:06:13
+* @Last Modified time: 2018-11-19 15:34:40
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -166,11 +166,10 @@ void NodeStrategyStart(void)
     randomNum = RandomDataGenerate();
     // Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
     // Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % 100) * 200 * CLOCK_UNIT_MS/*(g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S))*/);
-#ifdef SUPPORT_FREQ_FIND
-    Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (3 * CLOCK_UNIT_S));
-#else
-    Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period / FAIL_CONNECT_MAX_NUM * CLOCK_UNIT_S));
-#endif // SUPPORT_FREQ_FIND
+    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+        Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (3 * CLOCK_UNIT_S));
+    else
+        Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period / FAIL_CONNECT_MAX_NUM * CLOCK_UNIT_S));
     Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
     Clock_start(nodeStrategyStartClockHandle);
 }
@@ -194,9 +193,10 @@ void NodeStrategyReceiveTimeoutProcess(void)
             nodeStrategy.success       = false;
             nodeStrategy.sendCnt       = 0;
             nodeStrategy.radioBusyCnt  = 0;
-#ifdef  SUPPORT_FREQ_FIND
-            AutoFreqNodeResetCurFreq();
-#endif  //SUPPORT_FREQ_FIND
+
+            if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+                AutoFreqNodeResetCurFreq();
+
             NodeStrategyFailCb();
         }
     }
@@ -211,9 +211,9 @@ void NodeStrategyReceiveTimeoutProcess(void)
         else
         {
             nodeStrategy.sendCnt = 0;
-#ifdef  SUPPORT_FREQ_FIND
-            AutoFreqNodeSwitchFreq();
-#endif  //SUPPORT_FREQ_FIND
+            if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+                AutoFreqNodeSwitchFreq();
+            
         }
     }
 }
@@ -315,9 +315,8 @@ void StrategyCheckRssiBusyProcess(void)
     {
         nodeStrategy.radioBusyCnt = 0;
         nodeStrategy.sendCnt      = 0;
-#ifdef  SUPPORT_FREQ_FIND
-        AutoFreqNodeSwitchFreq();
-#endif  //SUPPORT_FREQ_FIND
+        if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+            AutoFreqNodeSwitchFreq();
     }
 }
 

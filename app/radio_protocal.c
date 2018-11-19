@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-16 10:59:43
+* @Last Modified time: 2018-11-19 14:37:55
 */
 #include "../general.h"
 
@@ -618,7 +618,6 @@ ConcenterConfigRespondEnd:
 			case RADIO_PRO_CMD_ACK:
 
 			break;
-#ifdef  SUPPORT_FREQ_FIND
 			case RADIO_PRO_CMD_CHANNEL_CHECK:
 				ConcenterChannelOccupyAck(bufTemp->dstAddr, bufTemp->srcAddr);
 			break;
@@ -627,7 +626,6 @@ ConcenterConfigRespondEnd:
 			    AutoFreqConcenterOccupy(protocalRxPacket->rssi);
 			    return;
 
-#endif  // SUPPORT_FREQ_FIND
 
 		}
 		// point to new message the head
