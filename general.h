@@ -669,11 +669,11 @@ error
 
 #define CUSTOM_ID_DEFAULT               0X0000
 
-#define UPLOAD_PERIOD_DEFAULT           60
+#define UPLOAD_PERIOD_DEFAULT           600
 
-#define COLLECT_PERIOD_DEFAULT          60
+#define COLLECT_PERIOD_DEFAULT          600
 
-#define HEARTBEAT_PERIOD_DEFAULT        60
+#define HEARTBEAT_PERIOD_DEFAULT        600
 
 #define NTC_DEFAULT                     (60*60)
 
