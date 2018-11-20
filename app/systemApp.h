@@ -23,6 +23,7 @@
 #define         SYS_EVT_STRATEGY                      	Event_Id_16
 #define         SYS_EVT_USB_CHARGE                      Event_Id_17
 #define         SYS_EVT_CONFIG_MODE_EXIT                Event_Id_18
+#define         SYS_EVT_S1_SENSOR                       Event_Id_19
 
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 

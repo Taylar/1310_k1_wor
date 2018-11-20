@@ -119,7 +119,9 @@ void S2Wakeup(void)
 #endif // S_G//网关
 
 #ifdef S_C //节点
+#if !defined (SUPPORT_BOARD_OLD_S1)
     NodeWakeup();
+#endif
 #endif // S_C //节点
 }
 

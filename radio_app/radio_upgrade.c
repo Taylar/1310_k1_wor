@@ -358,7 +358,7 @@ static void radioUpgradeShakeHanleTimeoutFxn(void)
 {
     if (radio_upgrade_shake_handle_Cnt > RADIO_UPGRADE_SHAKE_HANDLE_TIMES_MAX) {
         Led_ctrl(LED_R, 1, 0, 0);
-        System_printf("Upgrade handshake failed!!!\r\n");
+        //System_printf("Upgrade handshake failed!!!\r\n");
         Clock_stop(radioUpgradeClkHandle);
         return;
     }
@@ -431,7 +431,7 @@ static bool RadioUpgrade_isResend(void)
             RadioUpgrade_stopFileSendTimer();
             if (radio_upgrade_tx_info.info[i].switchResend > RADIO_UPGRAD_SWITCH_MAX) {
                 RadioUpgrade_stop();
-                System_printf("Radio Upgrade Fail!!!\r\n");
+                //System_printf("Radio Upgrade Fail!!!\r\n");
                 // Return usb error response, end here transmission
                 bsl_ack_error(buff, 32);
                 return false;

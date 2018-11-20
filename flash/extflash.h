@@ -165,7 +165,7 @@
 /*---    SENSORDATA  -----XMB---*/
 //External flash sensor data store position
 #define FLASH_SENSOR_DATA_POS           (1*1024*1024L)// 1MB
-#define FLASH_SENSOR_DATA_32BYTE
+//#define FLASH_SENSOR_DATA_32BYTE
 
 //External flash sensor data size
 #ifdef FLASH_SENSOR_DATA_32BYTE

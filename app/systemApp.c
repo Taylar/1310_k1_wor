@@ -103,6 +103,10 @@ void RtcEventSet(void)
 
 	Nwk_upload_time_isr();
 
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+	OldS1NodeApp_RtcIProcess();
+#endif
+
 #ifdef BOARD_S3
 	S1AppRtcProcess();
 #endif
@@ -207,11 +211,11 @@ void SystemAppTaskFxn(void)
 	Sensor_init();
 #endif // SUPPORT_SENSOR
 
-#if defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1)|| defined(SUPPORT_BOARD_OLD_S2S_1)
-	RtcStart();
-#endif
-
     Task_sleep(10 * CLOCK_UNIT_MS);
+
+#if defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1)|| defined(SUPPORT_BOARD_OLD_S2S_1)
+    RtcStart();
+#endif
 
 #ifdef BOARD_CONFIG_DECEIVE
 	ConcenterConfigDeceiveInit();
@@ -267,7 +271,9 @@ void SystemAppTaskFxn(void)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
 		S1Wakeup();
+#ifndef SUPPORT_BOARD_OLD_S1
 		Sys_event_post(SYS_EVT_SENSOR);
+#endif
 	}
 #endif // (defined BOARD_S6_6 || defined BOARD_B2S)
 
@@ -462,6 +468,13 @@ void SystemAppTaskFxn(void)
 		}
 #endif
 
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+        if(eventId & SYS_EVT_S1_SENSOR)
+        {
+            Battery_porcess();
+            OldS1NodeAPP_scheduledUploadData();
+        }
+#endif
 	}
 }
 

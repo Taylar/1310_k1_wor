@@ -43,6 +43,7 @@ extern void OldS1NodeApp_setDataRxRfFreque(void);
 extern void OldS1NodeApp_init(void);
 extern void OldS1NodeAPP_Mode2NodeUploadProcess(void);
 extern void OldS1NodeAPP_scheduledUploadData(void);
+extern void OldS1NodeApp_RtcIProcess(void);
 
 extern void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len);
 

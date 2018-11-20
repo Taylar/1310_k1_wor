@@ -124,7 +124,7 @@ ErrorStatus Spi_init(void)
     mSpiParams.bitRate = SPI_4MHz;
     mSpiHandle = SPI_open(CC1310_LAUNCHXL_SPI0, &mSpiParams);
     if (mSpiHandle == NULL) {
-        System_printf("SPI Master was not opened\n");
+        //System_printf("SPI Master was not opened\n");
         return ES_ERROR;
     }
 
@@ -149,7 +149,7 @@ ErrorStatus Spi_write(uint8_t *pData, uint16_t length)
     mSpiTransaction.txBuf = pData;
     mSpiTransaction.rxBuf = NULL;
     if (!SPI_transfer(mSpiHandle, &mSpiTransaction)) {
-        System_printf("Bad SPI master write transfer!\n");
+        //System_printf("Bad SPI master write transfer!\n");
         return ES_ERROR;
     }
 
@@ -169,7 +169,7 @@ ErrorStatus Spi_read(uint8_t *pData, uint16_t length)
     mSpiTransaction.txBuf = NULL;
     mSpiTransaction.rxBuf = pData;
     if (!SPI_transfer(mSpiHandle, &mSpiTransaction)) {
-        System_printf("Bad SPI master read transfer!\n");
+        //System_printf("Bad SPI master read transfer!\n");
         return ES_ERROR;
     }
 
@@ -189,7 +189,7 @@ ErrorStatus Spi_writeRead(uint8_t *pTxBuff, uint8_t *pRxBuff, uint16_t length)
     mSpiTransaction.txBuf = pTxBuff;
     mSpiTransaction.rxBuf = pRxBuff;
     if (!SPI_transfer(mSpiHandle, &mSpiTransaction)) {
-        System_printf("Bad SPI master read transfer!\n");
+        //System_printf("Bad SPI master read transfer!\n");
         return ES_ERROR;
     }
 
@@ -216,7 +216,7 @@ ErrorStatus Spi_open(void)
     mSpiParams.bitRate = SPI_4MHz;
     mSpiHandle = SPI_open(CC1310_LAUNCHXL_SPI0, &mSpiParams);
     if (mSpiHandle == NULL) {
-        System_printf("SPI Master was not opened\n");
+        //System_printf("SPI Master was not opened\n");
         return ES_ERROR;
     }
 

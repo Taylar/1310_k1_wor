@@ -204,7 +204,10 @@ void S1Wakeup(void)
 #ifdef  SUPPORT_WATCHDOG
     WdtInit(WdtResetCb);
 #endif
+
+#if !defined (SUPPORT_BOARD_OLD_S1)
     NodeWakeup();
+#endif
 }
 
 

@@ -486,8 +486,7 @@ error
 #ifdef BOARD_S3
 #define SUPPORT_SENSOR
 #define SUPPORT_SHT2X
-// #undef  SUPPORT_SHT2X
-// #define SUPPORT_SHT3X
+//#define SUPPORT_SHT3X
 
 
 #define SUPPORT_RADIO_UPGRADE
@@ -528,8 +527,7 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 
 /* old S1*/
-// #define SUPPORT_BOARD_OLD_S1
-
+#define SUPPORT_BOARD_OLD_S1
 #ifdef SUPPORT_BOARD_OLD_S1
 #undef SUPPORT_RSSI_CHECK
 #undef  BOARD_NAME
@@ -556,7 +554,7 @@ error
 #ifndef SUPPORT_BOARD_OLD_S1
 #define FW_VERSION              0x0058
 #else
-#define FW_VERSION              0x0008
+#define FW_VERSION              0x0011
 #endif
 #endif
 

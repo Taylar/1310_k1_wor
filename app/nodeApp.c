@@ -338,12 +338,14 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
+#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
     nodeParameter.sysTime++;
     if(nodeParameter.sysTime >= 3600)
     {
         RadioEventPost(RADIO_EVT_SEND_SYC);
         nodeParameter.sysTime       = 0;
     }
+#endif
 }
 
 

@@ -50,11 +50,11 @@ void OldS1NodeApp_setDataTxRfFreque(void)
 
     EasyLink_Status status = EasyLink_setFrequency(OLD_S1_RF_TX_DATA_FREQUE);
     if (status != EasyLink_Status_Success) {
-         System_printf("setDataTxRfFreque state = %d\r\n", status);
-         System_flush();
-    } else {
         EasyLink_abort();
         EasyLink_setFrequency(OLD_S1_RF_TX_DATA_FREQUE);
+    } else {
+        //System_printf("setDataTxRfFreque state = %d\r\n", status);
+        //System_flush();
     }
 }
 
@@ -83,11 +83,11 @@ void OldS1NodeApp_setDataRxRfFreque(void)
 //    time1 = Clock_getTicks();
     EasyLink_Status status = EasyLink_setFrequency(OLD_S1_RF_RX_DATA_FREQUE);
     if (status != EasyLink_Status_Success) {
-         System_printf("setDataRxRfFreque state = %d\r\n", status);
-         System_flush();
-    } else {
         EasyLink_abort();
         EasyLink_setFrequency(OLD_S1_RF_RX_DATA_FREQUE);
+    } else {
+        //System_printf("setDataTxRfFreque state = %d\r\n", status);
+        //System_flush();
     }
 //    time2 = Clock_getTicks();
 //    System_printf("shijianRfS: = %d\r\n", (time2-time1));
@@ -99,10 +99,10 @@ void OldS1NodeApp_init(void)
     /* Construct a 1000ms periodic Clock Instance to is Tx */
     Clock_Params clkParams;
     Clock_Params_init(&clkParams);
-    clkParams.period = 1100 * CLOCK_UNIT_MS;
+    clkParams.period = 1000 * CLOCK_UNIT_MS;
     clkParams.startFlag = FALSE;
     Clock_construct(&oldS1StartClock, (Clock_FuncPtr)SendDataTimingFxn,
-                    ((getRandom() % 30) * CLOCK_UNIT_MS), &clkParams);
+                    1000 * CLOCK_UNIT_MS, &clkParams);
     /* Obtain clock instance handle */
     oldS1StartClockHandle = Clock_handle(&oldS1StartClock);
 
@@ -117,6 +117,7 @@ void OldS1NodeApp_init(void)
     ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
     RadioModeSet(RADIOMODE_SENDPORT);
 
+    EasyLink_setCtrl(EasyLink_Ctrl_AddSize, 0);
     txResendCnt = 0;
 }
 
@@ -208,22 +209,38 @@ void OldS1NodeAPP_scheduledUploadData(void)
         len = PackMode1UplodData(sensorData, buff);
         RadioSwitchingS1OldUserRate();
 
-        randDelay = 15 * (getRandom() % 20) + 225;
+        randDelay = 15 * (getRandom() % 20) + 100;
         Task_sleep(randDelay * CLOCK_UNIT_MS);
 
         OldS1NodeApp_setDataTxRfFreque();
         ClearRadioSendBuf();
-        RadioSendPacket(buff, len, 0, 0);
-        RadioModeSet(RADIOMODE_SENDPORT);
+        RadioSendPacket(buff, len, 0, 100);
+        //RadioModeSet(RADIOMODE_SENDPORT);
     } else if(g_oldS1OperatingMode == S1_OPERATING_MODE2) {
-        Sensor_measure(1);
         if (deviceMode == DEVICES_ON_MODE) {
-//            Event_post(systemAppEvtHandle, SYS_EVT_EVT_OLD_S1_UPLOAD_NODE);
+            Sensor_measure(1);
             RadioEventPost(RADIO_EVT_EVT_OLD_S1_UPLOAD_NODE);
         }
     }
 }
 
+
+void OldS1NodeApp_RtcIProcess(void)
+{
+    static uint32_t collectTimeCnt = 0;
+    uint32_t collectPeriod = g_rSysConfigInfo.collectPeriod;
+
+    if ((deviceMode == DEVICES_OFF_MODE) || (RADIOMODE_UPGRADE == RadioModeGet())) {
+        return;
+    } else {
+        collectTimeCnt++;
+        if (collectTimeCnt >= collectPeriod) {
+            collectTimeCnt = (collectTimeCnt - collectPeriod) % collectPeriod;
+            Event_post(systemAppEvtHandle, SYS_EVT_S1_SENSOR);
+        }
+    }
+
+}
 
 void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
 {
@@ -232,14 +249,12 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
     上传传感数据的ACK  2        BB->TAG 38.4Kbps    433.8MHz    BA
     */
 
-    static uint16_t lastSerialNum = 0xffff;
-//    static uint8_t ackRepeatTimes = 0;
-
     uint16_t serialNum, id;
     bool flag = false;
 
     ClearRadioSendBuf();
     OldS1NodeApp_stopSendSensorData();
+
     // Software version after (version: 15 74)
     if (5 == len && pData[0] == 0xba) {
         id = (uint16_t)((pData[1] << 8) | pData[2]);
@@ -258,16 +273,11 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
 
     id  = Flash_get_unupload_items();
     if (flag) {
-//        ackRepeatTimes++; /// 重复次数，如果ack重复次数超过10条表示有两条数据的序列号重复了
         txResendCntClear();
-        if ((serialNum != lastSerialNum) /*|| (ackRepeatTimes > 20)*/) {
-//            ackRepeatTimes = 0;
-            lastSerialNum = serialNum;
-            if (id > 0) {
-                mode2TxFrameSerialNum = 0xffff;
-                Flash_moveto_next_sensor_data();
-            }
-        }
+        if (id > 0) {
+           mode2TxFrameSerialNum = 0xffff;
+           Flash_moveto_next_sensor_data();
+       }
     }
 
     Semaphore_post(oldS1UploadeSemHandle);
@@ -293,6 +303,7 @@ extern Semaphore_Handle radomFuncSemHandle;
 static uint32_t getRandom(void)
 {
     uint32_t randomNum;
+#if 0
     // gennerate a ramdom num maybe waste almost 1sec
     /* Use the True Random Number Generator to generate sensor node address randomly */
     Semaphore_pend(radomFuncSemHandle, BIOS_WAIT_FOREVER);
@@ -312,7 +323,8 @@ static uint32_t getRandom(void)
     TRNGDisable();
     Power_releaseDependency(PowerCC26XX_PERIPH_TRNG);
     Semaphore_post(radomFuncSemHandle);
-
+#endif
+    randomNum = *((uint32_t*)g_rSysConfigInfo.DeviceId);
     return randomNum;
 }
 

@@ -527,11 +527,11 @@ void Flash_init(void)
 
 #ifdef SUPPORT_BOARD_OLD_S1
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
-#endif
+#endif //SUPPORT_BOARD_OLD_S1
 
 #ifdef SUPPORT_BOARD_OLD_S2S_1
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_DEEPTEMP;
-#endif
+#endif //SUPPORT_BOARD_OLD_S2S_1
 
     /* 当设为mast时为旧的S1工作模式为模式1，其它模式2*/
     if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
@@ -1755,7 +1755,7 @@ ErrorStatus Flash_external_Selftest(void)
     Flash_external_read(FLASH_EXTERNAL_SELFTEST_ADDR, zxtTest, 16);
     for(i = 0; i < 16; i++)
     {
-       System_printf("%d, ", zxtTest[i]);
+       //System_printf("%d, ", zxtTest[i]);
         if(zxtTest[i] != 0xff)
             return ES_ERROR;
     }
@@ -1763,12 +1763,12 @@ ErrorStatus Flash_external_Selftest(void)
     Flash_external_read(FLASH_EXTERNAL_SELFTEST_ADDR, zxtTest, 16);
     for(i = 0; i < 16; i++)
     {
-        System_printf("%d, ", zxtTest[i]);
+        //System_printf("%d, ", zxtTest[i]);
 
         if(zxtTest[i] != test[i])
             return ES_ERROR;
     }
-    System_printf("\n ");
+    //System_printf("\n ");
     return ES_SUCCESS;
 } 
 

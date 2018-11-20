@@ -464,7 +464,7 @@ void RadioAppTaskFxn(void)
 
 #ifdef BOARD_B2S
 #ifdef S_C //节点
-    Task_sleep(5000 *CLOCK_UNIT_MS);
+    Task_sleep(3000 *CLOCK_UNIT_MS);
 #endif // S_C //节点
 #endif // BOARD_B2S
 
@@ -629,7 +629,13 @@ void RadioAppTaskFxn(void)
                 RadioAbort();
 #endif //SUPPORT_BOARD_OLD_S1
 
-                Led_set(LED_B, 1);
+                if (deviceMode != DEVICES_OFF_MODE && deviceMode != DEVICES_CONFIG_MODE)
+                {
+                    Led_set(LED_B, 1);
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+                    Task_sleep(50 * CLOCK_UNIT_MS);
+#endif
+                }
                 Clock_start(radioSendTimeoutClockHandle);
                 radioStatus = RADIOSTATUS_TRANSMITTING;
                 RadioSendData();
@@ -645,6 +651,17 @@ void RadioAppTaskFxn(void)
 #endif //SUPPORT_BOARD_OLD_S1
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
+#if (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
+                    if (deviceMode == DEVICES_CONFIG_MODE || RADIOMODE_UPGRADE == RadioModeGet() || g_oldS1OperatingMode == S1_OPERATING_MODE2)
+                    {
+                        radioStatus = RADIOSTATUS_RECEIVING;
+                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
+                        RadioReceiveData();
+                    } else
+                    {
+                        radioStatus = RADIOSTATUS_IDLE;
+                    }
+#else
                     radioStatus = RADIOSTATUS_RECEIVING;
 #ifdef SUPPORT_STRATEGY_SORT
                     if(GetStrategyRegisterStatus() == false)
@@ -653,6 +670,8 @@ void RadioAppTaskFxn(void)
 #endif  // SUPPORT_STRATEGY_SORT
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
                     RadioReceiveData();
+#endif
+
                 }
 
                 if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
@@ -780,7 +799,7 @@ void RadioAppTaskFxn(void)
         if(events & RADIO_EVT_SEND_CONFIG) 
         {
 #ifdef   BOARD_S3
-            //RadioAbort();
+            RadioAbort();
             Radio_setConfigModeRfFrequency();
             NodeStrategyBuffClear();
             NodeRadioSendConfig();
@@ -1238,7 +1257,7 @@ void RadioSwitchingUpgradeRate(void)
     EasyLink_Params_init(&easyLink_params);
     easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION_50K;
     if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
-        System_abort("EasyLink_init failed");
+        //System_abort("EasyLink_init failed");
     }
 
     Task_sleep(500 * CLOCK_UNIT_MS);
@@ -1251,7 +1270,7 @@ void RadioSwitchingUpgradeRate(void)
     /* Set the filter to the generated random address */
     if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
     {
-        System_abort("EasyLink_enableRxAddrFilter failed");
+        //System_abort("EasyLink_enableRxAddrFilter failed");
     }
     RadioAbort();
     RadioReceiveData();
@@ -1265,11 +1284,12 @@ void RadioSwitchingUserRate(void)
         return;
     }
 
+    Task_sleep(50 * CLOCK_UNIT_MS);
     RadioAbort();
     EasyLink_Params_init(&easyLink_params);
     easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
     if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
-        System_abort("EasyLink_init failed");
+        //System_abort("EasyLink_init failed");
     }
 
     Task_sleep(500 * CLOCK_UNIT_MS);
@@ -1281,7 +1301,7 @@ void RadioSwitchingUserRate(void)
     /* Set the filter to the generated random address */
     if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
     {
-        System_abort("EasyLink_enableRxAddrFilter failed");
+       // System_abort("EasyLink_enableRxAddrFilter failed");
     }
     RadioAbort();
     RadioReceiveData();
@@ -1332,7 +1352,7 @@ void RadioSwitchingS1OldUserRate(void)
     EasyLink_Params_init(&easyLink_params);
     easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION_S1_OLD;
     if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
-        System_abort("EasyLink_init failed");
+       // System_abort("EasyLink_init failed");
     }
 
     RadioAbort();
@@ -1343,7 +1363,7 @@ void RadioSwitchingS1OldUserRate(void)
     /* Set the filter to the generated random address */
     if (EasyLink_enableRxAddrFilter(NULL, 1, 1) != EasyLink_Status_Success)
     {
-        System_abort("EasyLink_enableRxAddrFilter failed");
+        //System_abort("EasyLink_enableRxAddrFilter failed");
     }
     RadioAbort();
     RadioReceiveData();
