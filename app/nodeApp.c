@@ -16,6 +16,7 @@ typedef struct
     uint32_t customId;
     uint32_t sysTime;
     uint16_t monitorCnt;
+    uint8_t  radioPower;
     bool     broadcasting;
     bool     continueFlag;
     bool     configFlag;
@@ -57,6 +58,7 @@ void NodeAppInit(void)
     nodeParameter.uploadTimeCnt  = 0;
     nodeParameter.collectTimeCnt = 0;
     nodeParameter.monitorCnt     = 0;
+    nodeParameter.monitorCnt     = 0;
     
     
     offsetUnit                   = 0;
@@ -80,7 +82,7 @@ void NodeAppInit(void)
     NodeStrategyInit(NodeStrategyTimeoutProcess);
     
     NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
-
+    NodeResetAPC();
     // NodeWakeup();
 }
 
@@ -415,5 +417,42 @@ bool NodeContinueFlagRead(void)
 {
     return nodeParameter.configFlag;
 }
+
+//***********************************************************************************
+// brief:read the node continue flag
+// 
+// parameter: 
+//***********************************************************************************
+void NodeAPC(int8_t rssi)
+{
+    if(rssi < RADIO_APC_THRESHOLD)
+    {
+        if(nodeParameter.radioPower)
+            nodeParameter.radioPower--; 
+    }
+}
+
+//***********************************************************************************
+// brief:read the node continue flag
+// 
+// parameter: 
+//***********************************************************************************
+void NodeResetAPC(void)
+{
+    nodeParameter.radioPower = g_rSysConfigInfo.rfPA >> 4;
+}
+
+
+//***********************************************************************************
+// brief:read the node continue flag
+// 
+// parameter: 
+//***********************************************************************************
+void NodeSetAPC(void)
+{
+    if(g_rSysConfigInfo.rfStatus & STATUS_LORA_APC)
+        RadioSetRfPower(nodeParameter.radioPower);
+}
+
 
 #endif // S_C

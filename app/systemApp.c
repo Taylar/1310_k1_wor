@@ -176,6 +176,7 @@ uint32_t RandomDataGenerate(void)
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
+    uint8_t     engmodeFlag = 0;
     // uint32_t	voltageTemp;
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);
@@ -233,13 +234,14 @@ void SystemAppTaskFxn(void)
     {
         SetEngModeConfig();
  		EngMode();
+ 		engmodeFlag = 1;
     }
 #endif  // SUPPORT_ENGMODE
 
 #ifndef  BOARD_CONFIG_DECEIVE
 
 #ifdef BOARD_S6_6		
-	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
+	if((Battery_get_voltage() > BAT_VOLTAGE_LOW) && (engmodeFlag == 0))
 		S6Wakeup();
 	else
 		S6Sleep();

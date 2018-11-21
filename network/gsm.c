@@ -1273,10 +1273,11 @@ LAB_CONNECT:
 //***********************************************************************************
 static void Gsm_rxSwiFxn(void)
 {
-    char *ptr;
+    char *ptr, *ptr2;
     UInt key;
     uint8_t index;
     uint16_t value, rxLen;
+    uint32_t sentNum, ackedNum;
     UartRxData_t tempRx;
 #ifdef USE_QUECTEL_API_FOR_LBS
     float latitudetmp;
@@ -1301,15 +1302,28 @@ static void Gsm_rxSwiFxn(void)
         g_rUart1RxData.length = g_rUart1RxData.length - tempRx.length;
     }
     Hwi_restore(key);
-
+    value = tempRx.length;
+    ptr2  = (char *)tempRx.buff;
     if (ptr != NULL) {
-        index = ptr - (char *)tempRx.buff;
+redispath:
+        index = ptr - ptr2;
         rxLen = atoi(ptr + 3);
-        if ((tempRx.length - index) > rxLen && rxLen < UART_BUFF_SIZE) {
+        if ((value - index) > rxLen && rxLen < UART_BUFF_SIZE) {
             //Second 0x7e
             g_rUart1RxData.length = index;
             ptr = strstr((char *)ptr, "\x7e");
             rGsmObject.dataProcCallbackFxn((uint8_t *)ptr, rxLen);
+            value -= rxLen;
+            if(value > 3)
+            {
+                ptr2 = ptr + rxLen;
+                ptr = strstr((char *)(ptr2), "IPD");
+                if(ptr != NULL)
+                {
+                    goto redispath;
+                }
+
+            }
         } else {
             //First 0x7e
         }
@@ -1458,12 +1472,22 @@ static void Gsm_rxSwiFxn(void)
             if (ptr != NULL) {
                 ptr = strstr((char *)tempRx.buff, "+QISACK:");
                 if (ptr != NULL) {
-                    //find last position
-                    ptr = strrchr((char *)tempRx.buff, ',');
-                    if (ptr != NULL) {
-                        value = atoi(ptr + 1);
-                        if (value == 0)
-                            Gsm_event_post(GSM_EVT_CMD_OK);
+                    //find first position
+                    sentNum = atoi(ptr + sizeof("+QISACK:"));
+
+                    //find second position
+                    ptr = strstr((char *)tempRx.buff, ",");
+                    ackedNum = atoi(ptr + 1);
+
+                    if((sentNum == ackedNum) && (ackedNum != 0))
+                    {
+                        //find last position
+                        ptr = strrchr((char *)tempRx.buff, ',');
+                        if (ptr != NULL) {
+                            value = atoi(ptr + 1);
+                            if (value == 0)
+                                Gsm_event_post(GSM_EVT_CMD_OK);
+                        }
                     }
                 }
             }
@@ -1599,6 +1623,16 @@ static void Gsm_rxSwiFxn(void)
 
         default:
             g_rUart1RxData.length = 0;
+            ptr = strstr((char *)tempRx.buff, "CLOSE");
+            if(ptr != NULL){
+                Gsm_event_post(GSM_EVT_CMD_RECONNECT);
+                break;
+            }
+            ptr = strstr((char *)tempRx.buff, "PDP DEACT");
+            if(ptr != NULL){
+                Gsm_event_post(GSM_EVT_CMD_RECONNECT);
+                break;
+            }
             break;
     }
 }
@@ -1809,6 +1843,11 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
 #ifdef SUPPORT_LBS
         case NWK_CONTROL_LBS_QUERY:
             result = Gsm_transmit_process(NULL, 0);
+            if(result == RESULT_SHUTDOWN || result == RESULT_RESET)
+            {
+                memset((char *)&rGsmObject.location, 0, sizeof(rGsmObject.location));
+                memcpy((char *)arg, (char *)&rGsmObject.location, sizeof(rGsmObject.location));
+            }
             if (result == RESULT_SHUTDOWN) {
                 return FALSE;
             } else if (result == RESULT_RESET) {
@@ -1825,8 +1864,9 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
                 }
 #elif defined(USE_ENGINEERING_MODE_FOR_LBS)
                 if (result != RESULT_OK) {
+                    memset((char *)&rGsmObject.location, 0, sizeof(rGsmObject.location));
+                    memcpy((char *)arg, (char *)&rGsmObject.location, sizeof(rGsmObject.location));
                     Gsm_reset();
-                    // ((NwkLocation_t *)arg)->mcc = 0;
                     return FALSE;
                 }
 #endif

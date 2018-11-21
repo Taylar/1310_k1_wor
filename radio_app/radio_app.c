@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-19 15:35:22
+* @Last Modified time: 2018-11-20 18:03:04
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -235,6 +235,32 @@ radio_reAbort:
         break;
     }
 }
+
+//***********************************************************************************
+// brief:   reset the radio transmit power
+// 
+// parameter:   none 
+//***********************************************************************************
+void RadioSetRfPower(uint8_t rfPower)
+{
+    EasyLink_Status status;
+    if(radioError)
+        SystemResetAndSaveRtc();
+    RadioAbort();
+radio_reSetPower:
+    status = EasyLink_setRfPower(rfPower);
+    switch(status)
+    {
+        case EasyLink_Status_Cmd_Error:
+        goto radio_reSetPower;
+
+        case EasyLink_Status_Config_Error:
+        Flash_log("RF SP R\n");
+        SystemResetAndSaveRtc();
+        break;
+    }
+}
+
 
 
 //***********************************************************************************
@@ -632,6 +658,9 @@ void RadioAppTaskFxn(void)
                 if (deviceMode != DEVICES_OFF_MODE && deviceMode != DEVICES_CONFIG_MODE)
                 {
                     Led_set(LED_B, 1);
+#ifdef SUPPORT_RARIO_APC_SET
+                    NodeSetAPC();
+#endif // SUPPORT_RARIO_APC_SET
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                     Task_sleep(50 * CLOCK_UNIT_MS);
 #endif

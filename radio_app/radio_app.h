@@ -146,7 +146,7 @@ void RadioSwitchingS1OldUserRate(void);
 
 void RadioAbort(void);
 
-
+void RadioSetRfPower(uint8_t rfPower);
 
 
 #endif		// __RADIO_APP_H__

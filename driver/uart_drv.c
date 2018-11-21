@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-12 15:48:51
+* @Last Modified time: 2018-11-21 14:08:53
 */
 #include "../general.h"
 
@@ -16,8 +16,8 @@
 
 #ifdef BOARD_S6_6
 
-#define UART_RX_INTERFACE               IOID_13          /* RXD */
-#define UART_TX_INTERFACE               IOID_12          /* TXD */
+#define UART_RX_INTERFACE               IOID_12          /* RXD */
+#define UART_TX_INTERFACE               IOID_13          /* TXD */
 
 #endif // BOARD_S6_6
 

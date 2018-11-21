@@ -72,6 +72,8 @@ void SetEngModeConfig()
 	g_rSysConfigInfo.module   &= ~MODULE_RADIO;
 }
 
+extern int8_t RadioCheckRssi(void);
+
 //***********************************************************************************
 //
 // EngMode.
@@ -246,7 +248,7 @@ void EngMode()
     }
 #endif
 
-#ifdef SUPPORT_RADIO
+// #ifdef SUPPORT_RADIO
     // if (g_rSysConfigInfo.module & MODULE_CC1310) {
 
 		//lora
@@ -257,8 +259,9 @@ void EngMode()
         //display rssi
 		Lcd_set_font(16, 32, 0);
         while(1){
-        	EasyLink_getRssi(&rssi);
-            
+			//RadioModeSet(RADIOMODE_RECEIVEPORT);
+        	// EasyLink_getRssi(&rssi);
+            rssi = RadioCheckRssi();
     		if (rssi < 0) {
     	        rssi = -rssi;
     	        Disp_icon(0, 2, ICON_16X32_SUB, 1);
@@ -280,7 +283,7 @@ void EngMode()
 		}
     // }
 	
-#endif
+// #endif
 
 #ifdef SUPPORT_BLUETOOTH_PRINT
 
@@ -321,8 +324,8 @@ void EngMode()
 #endif
 
 	Disp_clear_all();
-
-    SysCtrlSystemReset();
+	Disp_poweroff();
+    // SysCtrlSystemReset();
 #endif
 
 }

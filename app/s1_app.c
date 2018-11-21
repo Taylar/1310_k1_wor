@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-15 15:31:57
+* @Last Modified time: 2018-11-20 18:12:56
 */
 #include "../general.h"
 
@@ -141,6 +141,7 @@ void S1DoubleKeyApp(void)
         // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
         // if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
         NodeStrategyReset();
+        NodeResetAPC();
         deviceMode                      = DEVICES_CONFIG_MODE;
         configModeTimeCnt = 0;
         NodeUploadOffectClear();

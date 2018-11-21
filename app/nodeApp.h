@@ -3,7 +3,7 @@
 
 
 #define 			BROADCASTING_MAX			10
-
+#define 			RADIO_APC_THRESHOLD 		(-95)
 
 typedef struct {
     uint16_t lastFrameSerial[6];
@@ -33,6 +33,7 @@ typedef struct {
 #define NodeContinueFlagClear(...)
 #define NodeContinueFlagSet(...)
 #define NodeContinueFlagRead(...)
+
 #else
 
 void NodeAppInit(void);
@@ -77,5 +78,12 @@ void NodeContinueFlagSet(void);
 
 bool NodeContinueFlagRead(void);
 
+
 #endif  // S_G
+
+void NodeAPC(int8_t rssi);
+
+void NodeResetAPC(void);
+
+void NodeSetAPC(void);
 #endif			// __NODEAPP_H__
