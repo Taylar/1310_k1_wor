@@ -869,7 +869,7 @@ static void Disp_status_bar(void)
 
 	Lcd_set_font(SBICON_W, SBICON_H, 0);
 
-#if 1//def SUPPORT_SENSOR
+#if 0//def SUPPORT_SENSOR
 //Display external sensor flag
     if ( (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
         (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_NONE) ||

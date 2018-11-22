@@ -485,8 +485,9 @@ error
 //***********************************************************************************
 #ifdef BOARD_S3
 #define SUPPORT_SENSOR
-#define SUPPORT_SHT2X
-//#define SUPPORT_SHT3X
+// #define SUPPORT_SHT2X
+#undef SUPPORT_SHT2X
+#define SUPPORT_SHT3X
 
 
 #define SUPPORT_RADIO_UPGRADE
@@ -538,7 +539,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-#define SUPPORT_BOARD_Z4
+// #define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
