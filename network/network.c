@@ -1132,6 +1132,7 @@ static void Nwk_taskFxn(void)
         eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_ALL, BIOS_WAIT_FOREVER);
 
         if (eventId & NWK_EVT_POWERON) {
+            Task_sleep(3100 *CLOCK_UNIT_MS);
             if (g_rSysConfigInfo.module & MODULE_GSM) {
                 rNwkObject.moduleIndex = NWK_MODULE_GSM;
             } else {

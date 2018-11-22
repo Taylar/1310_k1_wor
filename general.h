@@ -460,7 +460,7 @@ error
 //***********************************************************************************
 #ifdef BOARD_B2S
 #define SUPPORT_SENSOR
-#define SUPPORT_SHT2X
+//#define SUPPORT_SHT3X
 #define SUPPORT_DEEPTEMP_PT100
 
 #define SUPPORT_REMOTE_UPGRADE
@@ -628,17 +628,18 @@ error
 #ifdef BOARD_B2S
 #define SUPPORT_RSSI_CHECK
 #define CONCENTER_MAX_CHANNEL       100
+#define SUPPORT_RARIO_SPEED_SET
 #undef  FW_VERSION
     #ifdef S_A
     #define FW_VERSION              0x0040
     #elif defined(S_G)
     #undef  SUPPORT_RSSI_CHECK
-    #define FW_VERSION              0x0042
+    #define FW_VERSION              0x0044
     #elif defined(S_C)
     #undef  BOARD_NAME
     #define  BOARD_NAME              "_S2S"
     #undef SUPPORT_CHARGE_DECT
-    #define FW_VERSION              0x0042
+    #define FW_VERSION              0x0044
     #endif
 
 #undef  PROJECT_NAME
@@ -647,6 +648,7 @@ error
 #ifdef  UPPORT_BOARD_OLD_S2S_1
 #undef  SUPPORT_CHARGE_DECT
 #undef  SUPPORT_RSSI_CHECK
+#undef  SUPPORT_RARIO_SPEED_SET
 #undef  FW_VERSION
 #define FW_VERSION              0x0001
 #undef  BOARD_NAME

@@ -9,8 +9,8 @@
 /* UART Board */
 #ifdef BOARD_B2S
 
-#define UART_RX_INTERFACE               IOID_13        /* RXD */
-#define UART_TX_INTERFACE               IOID_10        /* TXD */
+#define UART_RX_INTERFACE               IOID_10        /* RXD */
+#define UART_TX_INTERFACE               IOID_13        /* TXD */
 
 #endif //BOARD_B2S
 

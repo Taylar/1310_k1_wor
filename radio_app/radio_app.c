@@ -489,9 +489,7 @@ void RadioAppTaskFxn(void)
 #endif
 
 #ifdef BOARD_B2S
-#ifdef S_C //节点
-    Task_sleep(3000 *CLOCK_UNIT_MS);
-#endif // S_C //节点
+    Task_sleep(4000 *CLOCK_UNIT_MS);
 #endif // BOARD_B2S
 
     for(;;)

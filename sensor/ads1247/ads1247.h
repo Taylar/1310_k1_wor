@@ -121,7 +121,7 @@
 #define ADS1247_POWER_CTR_PIN         IOID_8
 
 #define ADS1247_DRDY_PIN              IOID_21
-#define ADS1247_CS_PIN                IOID_28
+//#define ADS1247_CS_PIN                IOID_28
 #define ADS1247_SPI_CLK_PIN           IOID_9
 #define ADS1247_SPI_SIMO_PIN          IOID_18
 #define ADS1247_SPI_SOMI_PIN          IOID_20
@@ -132,8 +132,8 @@
 #define READ_ADS1247_DRDY_PIN_OUTPUT() PIN_setConfig(ads1247PinHandle, PIN_BM_OUTPUT_MODE, \
                                                      ADS1247_DRDY_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW  | PIN_PUSHPULL)
 
-#define ENABLE_ADS1247_CS()           PIN_setOutputValue(ads1247PinHandle, ADS1247_CS_PIN, 0)
-#define DISENABLE_ADS1247_CS()        PIN_setOutputValue(ads1247PinHandle, ADS1247_CS_PIN, 1)
+#define ENABLE_ADS1247_CS()           //PIN_setOutputValue(ads1247PinHandle, ADS1247_CS_PIN, 0)
+#define DISENABLE_ADS1247_CS()        //PIN_setOutputValue(ads1247PinHandle, ADS1247_CS_PIN, 1)
 
 #define ADS_SPI_CLK_LOW()             PIN_setOutputValue(ads1247PinHandle, ADS1247_SPI_CLK_PIN, 0)
 #define ADS_SPI_CLK_HIGH()            PIN_setOutputValue(ads1247PinHandle, ADS1247_SPI_CLK_PIN, 1)

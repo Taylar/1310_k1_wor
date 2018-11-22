@@ -47,6 +47,11 @@ static PIN_Handle  sht3xResetPinHandle;
 
 #define SHT3X_RESET_PIN        IOID_26
 
+#ifdef BOARD_B2S
+#undef SHT3X_RESET_PIN
+#define SHT3X_RESET_PIN       IOID_23
+#endif
+
 const PIN_Config sht3xResetPinTable[] = {
     SHT3X_RESET_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     PIN_TERMINATE

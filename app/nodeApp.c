@@ -107,7 +107,7 @@ void NodeUploadPeriodSet(uint32_t period)
 //***********************************************************************************
 void NodeUploadProcess(void)
 {
-    uint8_t     data[24];
+    uint8_t     data[32];
     uint32_t    dataItems;
     uint16_t serialNumber;
 
@@ -139,7 +139,7 @@ void NodeUploadProcess(void)
         data[4] = g_rSysConfigInfo.DeviceId[2];
         data[5] = g_rSysConfigInfo.DeviceId[3];
 #else
-        Flash_load_sensor_data_by_offset(data, 22, offsetUnit);
+        Flash_load_sensor_data_by_offset(data, 32, offsetUnit);
 #endif  // BOARD_S3
         serialNumber = ((data[6] << 8) | data[7]);
         // the radio buf is full 
