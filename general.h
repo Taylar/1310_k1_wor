@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
+#define BOARD_S3
 // #define BOARD_B2S
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -538,7 +538,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-//#define SUPPORT_BOARD_Z4
+#define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -553,7 +553,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0058
+#define FW_VERSION              0x0059
 #else
 #define FW_VERSION              0x0011
 #endif
@@ -676,7 +676,7 @@ error
 
 #define HEARTBEAT_PERIOD_DEFAULT        600
 
-#define NTC_DEFAULT                     (60*60)
+#define NTP_DEFAULT                     (60*60)
 
 #define NODE_BROADCASTING_TIME          UPLOAD_PERIOD_DEFAULT
 #define NODE_BROADCAST_TESTRESUT_TIME   UPLOAD_PERIOD_DEFAULT

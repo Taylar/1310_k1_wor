@@ -425,11 +425,18 @@ bool NodeContinueFlagRead(void)
 //***********************************************************************************
 void NodeAPC(int8_t rssi)
 {
-    if(rssi < RADIO_APC_THRESHOLD)
+    if(rssi > RADIO_APC_THRESHOLD_HIGH)
     {
         if(nodeParameter.radioPower)
             nodeParameter.radioPower--; 
     }
+
+    if(rssi < RADIO_APC_THRESHOLD_LOW)
+    {
+        if(nodeParameter.radioPower < (g_rSysConfigInfo.rfPA >> 4))
+            nodeParameter.radioPower++;
+    }
+    //System_printf("rssi:%d,Power:%d\n", rssi, nodeParameter.radioPower);
 }
 
 //***********************************************************************************
@@ -441,6 +448,8 @@ void NodeResetAPC(void)
 {
     nodeParameter.radioPower = g_rSysConfigInfo.rfPA >> 4;
 }
+
+
 
 
 //***********************************************************************************

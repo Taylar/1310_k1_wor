@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-20 17:59:41
+* @Last Modified time: 2018-11-22 11:04:30
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -167,7 +167,7 @@ void NodeStrategyStart(void)
     // Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
     // Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % 100) * 200 * CLOCK_UNIT_MS/*(g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S))*/);
     if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-        Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (3 * CLOCK_UNIT_S));
+        Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (5 * CLOCK_UNIT_S));
     else
         Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period / FAIL_CONNECT_MAX_NUM * CLOCK_UNIT_S));
     Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);

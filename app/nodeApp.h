@@ -3,7 +3,8 @@
 
 
 #define 			BROADCASTING_MAX			10
-#define 			RADIO_APC_THRESHOLD 		(-95)
+#define 			RADIO_APC_THRESHOLD_LOW 		(-90)
+#define 			RADIO_APC_THRESHOLD_HIGH 		(-80)
 
 typedef struct {
     uint16_t lastFrameSerial[6];

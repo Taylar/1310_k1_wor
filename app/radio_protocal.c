@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-20 18:10:50
+* @Last Modified time: 2018-11-22 11:20:07
 */
 #include "../general.h"
 
@@ -94,7 +94,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			calendarTemp.Seconds    = bufTemp->load[5];
 			
 			Rtc_set_calendar(&calendarTemp);
-
+#ifndef SUPPORT_BOARD_Z4
 			temp   =  ((uint32_t)bufTemp->load[6]) << 24;
 			temp  |=  ((uint32_t)bufTemp->load[7]) << 16;
 			temp  |=  ((uint32_t)bufTemp->load[8]) << 8;
@@ -106,7 +106,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			}
 			g_rSysConfigInfo.uploadPeriod = temp;
 			NodeStrategySetPeriod(temp);
-
+#endif  // SUPPORT_BOARD_Z4
 			NodeStopBroadcast();
 			break;
 

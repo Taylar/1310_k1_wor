@@ -33,7 +33,7 @@
 /***** Includes *****/
 #include "EasyLink.h"
 #include "../general.h"
-
+#define CCFG_FORCE_VDDR_HH                           0x1
 #if  defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
     #include "../smartrf_settings/s1_old_smartrf_settings/s1_old_smartrf_settings.h"
 #endif

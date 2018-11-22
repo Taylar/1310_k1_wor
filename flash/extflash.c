@@ -1718,19 +1718,20 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.module          = MODULE_RADIO;
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
-    g_rSysConfigInfo.rfPA            = (14 << 4);
-    g_rSysConfigInfo.rfBW            = 0;
-    g_rSysConfigInfo.rfSF            = 0;
-    g_rSysConfigInfo.rfStatus        = STATUS_LORA_CHANGE_FREQ;
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 #endif
 
+
+    g_rSysConfigInfo.rfStatus        &= (0xFFFF ^ STATUS_LORA_CHANGE_FREQ);
+    g_rSysConfigInfo.rfSF            = 0;
+    g_rSysConfigInfo.rfBW            = FREQ_434_00;
+    g_rSysConfigInfo.rfPA            = (14 << 4);
 
     g_rSysConfigInfo.collectPeriod   = COLLECT_PERIOD_DEFAULT;   //unit is sec
     
     g_rSysConfigInfo.uploadPeriod    = UPLOAD_PERIOD_DEFAULT; // unit is sec
     
-    g_rSysConfigInfo.ntpPeriod       = NTC_DEFAULT;    // 
+    g_rSysConfigInfo.ntpPeriod       = NTP_DEFAULT;    // 
     
 
     
