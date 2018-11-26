@@ -539,7 +539,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-// #define SUPPORT_BOARD_Z4
+#define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -554,7 +554,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0059
+#define FW_VERSION              0x0060
 #else
 #define FW_VERSION              0x0011
 #endif
