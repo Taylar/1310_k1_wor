@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-22 11:20:07
+* @Last Modified time: 2018-11-27 10:46:04
 */
 #include "../general.h"
 
@@ -644,6 +644,7 @@ ConcenterConfigRespondEnd:
 		Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
 	    RadioSend();
 	}
+    Sys_event_post(SYSTEMAPP_EVT_DISP);
 }
 
 

@@ -2,7 +2,7 @@
 #define			__NODE_STRATEGY_H__
 
 
-#define     FAIL_CONNECT_MAX_NUM               5
+#define     FAIL_CONNECT_MAX_NUM               2
 
 #define     FAIL_CONNECT_PERIOD_MAX_NUM        1
 

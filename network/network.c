@@ -1381,6 +1381,7 @@ static void Nwk_taskFxn(void)
                         else
                         {
                             Flash_moveto_next_deviced_state_data();
+                            Sys_event_post(SYSTEMAPP_EVT_DISP);
                         }
                     }
 
