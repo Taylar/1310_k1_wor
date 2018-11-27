@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-27 10:46:04
+* @Last Modified time: 2018-11-27 17:20:03
 */
 #include "../general.h"
 
@@ -386,9 +386,16 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	i8Rssi = protocalRxPacket->rssi;
 //    System_printf("Rssi = %d\r\n", i8Rssi);
 //    System_flush();
-    if (RADIOMODE_UPGRADE != RadioModeGet() && i8Rssi < -65) {
-        return;
-    }
+	if(RADIOMODE_UPGRADE != RadioModeGet())
+	{
+		if(i8Rssi < -55)
+			return;
+	}
+	else if(i8Rssi < -65)
+	{
+
+	}
+
 #endif
 
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;

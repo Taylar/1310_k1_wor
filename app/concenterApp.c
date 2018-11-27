@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-16 11:51:26
+* @Last Modified time: 2018-11-27 17:14:24
 */
 #include "../general.h"
 
@@ -231,12 +231,15 @@ void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 //***********************************************************************************
 void ConcenterSleep(void)
 {
+#ifndef BOARD_CONFIG_DECEIVE
+
     concenterParameter.synTimeFlag  = false;
 #ifdef SUPPORT_STRATEGY_SORT
     AutoFreqConcenterStop();
 #endif // SUPPORT_STRATEGY_SORT
     RadioDisable();
-    
+
+#endif // BOARD_CONFIG_DECEIVE
 }
 
 //***********************************************************************************

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-21 14:08:53
+* @Last Modified time: 2018-11-27 15:21:13
 */
 #include "../general.h"
 
@@ -16,9 +16,13 @@
 
 #ifdef BOARD_S6_6
 
+#ifdef  BOARD_CONFIG_DECEIVE
+#define UART_RX_INTERFACE               IOID_13          /* RXD */
+#define UART_TX_INTERFACE               IOID_12          /* TXD */
+#else
 #define UART_RX_INTERFACE               IOID_12          /* RXD */
 #define UART_TX_INTERFACE               IOID_13          /* TXD */
-
+#endif //BOARD_CONFIG_DECEIVE
 #endif // BOARD_S6_6
 
 #if (!defined BOARD_S6_6) && (!defined BOARD_B2S)

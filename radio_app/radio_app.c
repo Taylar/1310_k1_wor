@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-20 18:03:04
+* @Last Modified time: 2018-11-27 17:32:39
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -121,7 +121,7 @@ void RadioSendData(void)
 
 radio_reSend:
     status = EasyLink_transmit(&currentRadioOperation.easyLinkTxPacket);
-    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
+    //Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     switch(status)
     {
         case EasyLink_Status_Tx_Error:
@@ -401,7 +401,13 @@ void RadioAppTaskFxn(void)
         easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
     #endif
 #endif
-        
+
+#ifdef  BOARD_CONFIG_DECEIVE
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
+    g_rSysConfigInfo.rfSF = 3 << 4;
+#endif  // BOARD_CONFIG_DECEIVE
+
 #ifdef SUPPORT_RARIO_SPEED_SET
     if((g_rSysConfigInfo.rfSF >> 4) > RADIO_EASYLINK_MODULATION_S1_OLD)
         g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
@@ -424,9 +430,7 @@ void RadioAppTaskFxn(void)
 
 #if (defined(BOARD_S6_6) || defined(BOARD_B2S))
 
-#ifdef  BOARD_CONFIG_DECEIVE
-    g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
-#endif  // BOARD_CONFIG_DECEIVE
+
 
 #ifdef S_G//网关
     g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
@@ -496,11 +500,13 @@ void RadioAppTaskFxn(void)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
 #ifdef S_G
+    #ifndef  BOARD_CONFIG_DECEIVE
         if(events & RADIO_EVT_CHANNEL_CHECK)
         {
             if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                 AutoFreqConcenterSwitchFreqProcess();
         }
+    #endif // BOARD_CONFIG_DECEIVE
 #endif // S_G
 
         if(events & RADIO_EVT_SENSOR_PACK)
@@ -584,6 +590,7 @@ void RadioAppTaskFxn(void)
         if (events & RADIO_EVT_TX)
         {
 #ifdef S_G
+    #ifndef  BOARD_CONFIG_DECEIVE
             if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
             {
                 if(AutoFreqStateRead() == false)
@@ -601,6 +608,7 @@ void RadioAppTaskFxn(void)
                     }
                 }
             }
+    #endif // BOARD_CONFIG_DECEIVE
 
 #endif // S_G
 
@@ -704,6 +712,7 @@ void RadioAppTaskFxn(void)
                 if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
                 {
 #ifdef S_G//网关
+    #ifndef BOARD_CONFIG_DECEIVE
                     if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                     {
                         if(AutoFreqStateRead() == false)
@@ -712,6 +721,7 @@ void RadioAppTaskFxn(void)
                             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                     }
                     else
+    #endif // BOARD_CONFIG_DECEIVE
 #endif // S_G
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
 
@@ -1291,8 +1301,11 @@ void RadioSwitchingUpgradeRate(void)
     RadioDefaultParaInit();
 
     RadioAbort();
+#ifdef BOARD_CONFIG_DECEIVE
+    EasyLink_setRfPower(0);
+#else
     EasyLink_setRfPower(7);
-
+#endif //BOARD_CONFIG_DECEIVE
     RadioAbort();
     /* Set the filter to the generated random address */
     if (EasyLink_enableRxAddrFilter(srcRadioAddr, srcAddrLen, 1) != EasyLink_Status_Success)
@@ -1322,7 +1335,11 @@ void RadioSwitchingUserRate(void)
     Task_sleep(500 * CLOCK_UNIT_MS);
 
     RadioAbort();
+#ifdef BOARD_CONFIG_DECEIVE
+    EasyLink_setRfPower(0);
+#else
     EasyLink_setRfPower(SET_RADIO_POWER);
+#endif //BOARD_CONFIG_DECEIVE
 
     RadioDefaultParaInit();
     /* Set the filter to the generated random address */

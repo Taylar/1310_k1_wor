@@ -73,10 +73,10 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
-// #define BOARD_CONFIG_DECEIVE
+#define BOARD_S6_6
+#define BOARD_CONFIG_DECEIVE
 
 
 //#define FACTOR_RADIO_TEST
@@ -95,8 +95,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -514,6 +514,7 @@ error
 #undef SUPPORT_ENGMODE
 // #undef SUPPORT_FLASH_LOG
 
+#define SUPPORT_RARIO_WOR
 #define SUPPORT_RARIO_SPEED_SET
 #define SUPPORT_RSSI_CHECK
 // #define SUPPORT_STRATEGY_SORT
@@ -563,21 +564,6 @@ error
 #define FW_VERSION              0x0012
 #endif
 #endif
-
-//***********************************************************************************
-// config board define
-//***********************************************************************************
-#ifdef  BOARD_CONFIG_DECEIVE
-
-// #undef SUPPORT_SHT2X
-// #undef SUPPORT_MENU
-#undef  BOARD_NAME
-#define BOARD_NAME              "_S3_CONFIG"
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
-
-#endif //BOARD_CONFIG_DECEIVE
-
 
 
 //***********************************************************************************
@@ -662,6 +648,25 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
 #endif // UPPORT_BOARD_OLD_S2S_1
 #endif // BOARD_B2S
+
+
+//***********************************************************************************
+// config board define
+//***********************************************************************************
+#ifdef  BOARD_CONFIG_DECEIVE
+
+#undef SUPPORT_RARIO_SPEED_SET
+#undef SUPPORT_STRATEGY_SORT
+// #undef SUPPORT_SHT2X
+// #undef SUPPORT_MENU
+#undef  BOARD_NAME
+#define BOARD_NAME              "_S3_CONFIG"
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+
+#endif //BOARD_CONFIG_DECEIVE
+
+
 
 
 //***********************************************************************************
