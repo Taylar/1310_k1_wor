@@ -1,8 +1,11 @@
 #ifndef			__NODE_STRATEGY_H__
 #define			__NODE_STRATEGY_H__
 
-
+#ifdef  SUPPORT_BOARD_Z4
 #define     FAIL_CONNECT_MAX_NUM               2
+#else
+#define     FAIL_CONNECT_MAX_NUM               5
+#endif  //SUPPORT_BOARD_Z4
 
 #define     FAIL_CONNECT_PERIOD_MAX_NUM        1
 

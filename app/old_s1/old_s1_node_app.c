@@ -228,14 +228,13 @@ void OldS1NodeAPP_scheduledUploadData(void)
 void OldS1NodeApp_RtcIProcess(void)
 {
     static uint32_t collectTimeCnt = 0;
-    uint32_t collectPeriod = g_rSysConfigInfo.collectPeriod;
 
     if ((deviceMode == DEVICES_OFF_MODE) || (RADIOMODE_UPGRADE == RadioModeGet())) {
         return;
     } else {
         collectTimeCnt++;
-        if (collectTimeCnt >= collectPeriod) {
-            collectTimeCnt = (collectTimeCnt - collectPeriod) % collectPeriod;
+        if (collectTimeCnt >= g_rSysConfigInfo.collectPeriod) {
+            collectTimeCnt = 0;
             Event_post(systemAppEvtHandle, SYS_EVT_S1_SENSOR);
         }
     }
@@ -374,13 +373,13 @@ static uint8_t PackMode1UplodData(OldSensorData sensorData, uint8_t *pdata)
     pdata[len++] = sensorData.serialNumber & 0x00FF;
 
     // SHT20 temperature
-    pdata[len++]= 0x0B;
+    pdata[len++]= 0x56;
     pdata[len++] = 0x02;
     pdata[len++] = sensorData.temperature >> 8;
     pdata[len++] = sensorData.temperature & 0x00FF;
 
     // SHT20 humidity
-    pdata[len++] = 0x0C;
+    pdata[len++] = 0x57;
     pdata[len++] = 0x02;
     pdata[len++] = sensorData.humidity >> 8;
     pdata[len++] = sensorData.humidity & 0x00FF;
@@ -515,12 +514,12 @@ static uint8_t PackMode2UplodData(OldSensorData sensorData, uint8_t *pdata)
     pdata[len++] = sensorData.measureCalendar.Minutes;
     pdata[len++] = sensorData.measureCalendar.Seconds;
 
-    pdata[len++] = 0x0B;                           // 梁業
+    pdata[len++] = 0x56;                           // 梁業
     pdata[len++] = 0x02;
     pdata[len++] = sensorData.temperature >> 8;
     pdata[len++] = sensorData.temperature & 0x00FF;
 
-    pdata[len++] = 0x0C;                           // 物業
+    pdata[len++] = 0x57;                           // 物業
     pdata[len++] = 0x02;
     pdata[len++] = sensorData.humidity >> 8;
     pdata[len++] = sensorData.humidity & 0x00FF;

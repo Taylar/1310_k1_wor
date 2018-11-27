@@ -460,7 +460,8 @@ error
 //***********************************************************************************
 #ifdef BOARD_B2S
 #define SUPPORT_SENSOR
-//#define SUPPORT_SHT3X
+#undef  SUPPORT_SHT2X
+#define SUPPORT_SHT3X
 #define SUPPORT_DEEPTEMP_PT100
 
 #define SUPPORT_REMOTE_UPGRADE
@@ -529,8 +530,11 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 
 /* old S1*/
-//#define SUPPORT_BOARD_OLD_S1
+// #define SUPPORT_BOARD_OLD_S1
 #ifdef SUPPORT_BOARD_OLD_S1
+#undef  SUPPORT_SHT2X
+#define SUPPORT_SHT3X
+#undef SUPPORT_RARIO_SPEED_SET
 #undef SUPPORT_RSSI_CHECK
 #undef  BOARD_NAME
 #define BOARD_NAME              "_S3_1"
@@ -539,7 +543,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-#define SUPPORT_BOARD_Z4
+//#define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -556,7 +560,7 @@ error
 #ifndef SUPPORT_BOARD_OLD_S1
 #define FW_VERSION              0x0061
 #else
-#define FW_VERSION              0x0011
+#define FW_VERSION              0x0012
 #endif
 #endif
 
