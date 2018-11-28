@@ -1688,6 +1688,7 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    strcpy((char*)g_rSysConfigInfo.serverAddr, "newss.coldclouds.com");
 #endif
 
 #ifdef      BOARD_S6_6
@@ -1699,6 +1700,7 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.serverIpAddr[3] = 32;
     g_rSysConfigInfo.serverIpPort    = 12200;
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    strcpy((char*)g_rSysConfigInfo.serverAddr, "newss.coldclouds.com");
     #endif //S_G
 
     #ifdef S_A//涓�浣撴満
