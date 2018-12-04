@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-26 10:26:58
+* @Last Modified time: 2018-12-04 11:19:01
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -316,9 +316,7 @@ void StrategyCheckRssiBusyProcess(void)
     nodeStrategy.radioBusyCnt++;
     if(nodeStrategy.radioBusyCnt < FAIL_CHECK_RSSI_BUSY_MAX_NUM)
     {
-        NodeStrategyReceiveTimeoutProcess();
-        if(nodeStrategy.sendCnt)
-            nodeStrategy.sendCnt --;
+        NodeStrategyStart();
     }
     else
     {

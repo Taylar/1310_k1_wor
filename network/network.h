@@ -85,6 +85,7 @@ typedef enum {
     NWK_CONTROL_NEARBY_LOCATION,
     NWK_CONTROL_NEARBY_LOCATION_OFF,
     NWK_CONTROL_TRANSMIT,
+    NWK_CONTROL_NB_UPDATA_TIME,
     NWK_CONTROL_SHUTDOWN_MSG,
     NWK_CONTROL_IMEI_GET,
     NWK_CONTROL_TEST
@@ -98,10 +99,67 @@ extern void Nwk_poweron(void);
 extern void Nwk_poweroff(void);
 extern uint8_t Nwk_get_rssi(void);
 extern void Nwk_get_simccid(uint8_t *pBuff);
-extern char Nwk_is_Active(void);
 extern bool SetDevicePara(uint8_t *rxData, uint16_t length);
 extern uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData);
-uint8_t Nwk_get_state(void);
-void Nwk_upload_set(void);
+extern void Nwk_upload_set(void);
+extern void Nwk_upload_clear(void);
+extern void GsmUploadTimeoutClear(void);
+extern void GsmUploadTimeoutSet(uint8_t min);
+extern uint8_t GsmUploadTimeoutStateRead(void);
+extern void Nwk_poweroffEventSet(void);
+extern void Nwk_send_upload_event(void);
+extern uint8_t Nwk_Is_Ntp();
+
+#define     GSM_UPLOAD_WAIT_2_MIN    1
+#define     GSM_UPLOAD_WAIT_3_MIN    2
+#define     GSM_UPLOAD_WAIT_4_MIN    3
+#define     GSM_UPLOAD_WAIT_5_MIN    4
+#define     GSM_UPLOAD_WAIT_6_MIN    5
+#define     GSM_UPLOAD_WAIT_7_MIN    6
+#define     GSM_UPLOAD_WAIT_8_MIN    7
+#define     GSM_UPLOAD_WAIT_10_MIN   9
+#define     GSM_UPLOAD_WAIT_15_MIN   14
+#define     GSM_UPLOAD_WAIT_20_MIN   19
+extern int16_t uploadStartData;
+extern uint8_t uploadContinueTime;
+
+#ifdef SUPPORT_G7_PROTOCOL
+uint32_t GetUploadPeriodTemp(void);
+
+void SurroundingMonitor(uint16_t value);
+
+void BlePrintRecordStartNotify(void);
+
+void BlePrintRecordStopNotify(void);
+
+void BlePrintingRecordNotify(void);
+
+NwkLocation_t * G7GetLbs(void);
+
+void G7StoreInfo(void);
+
+void BleRecordSearch(void);
+
+void G7ProtocalFunctionInit(void);
+#endif  // SUPPORT_G7_PROTOCOL
+
+#ifdef SUPPORT_MCOOL_PROTOCOL
+uint32_t GetUploadPeriodTemp(void);
+
+void SurroundingMonitor(uint16_t value);
+
+void BlePrintRecordStartNotify(void);
+
+void BlePrintRecordStopNotify(void);
+
+void BlePrintingRecordNotify(void);
+
+NwkLocation_t * G7GetLbs(void);
+
+void BleRecordSearch(void);
+
+void G7ProtocalFunctionInit(void);
+#endif  // SUPPORT_MCOOL_PROTOCOL
+
 #endif	/* __ZKSIOT_NETWORK_H__ */
 

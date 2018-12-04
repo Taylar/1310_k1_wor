@@ -157,7 +157,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
                     HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
                     LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
 
-					index +=4;//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�
+					index +=4;//兼容协议，5529不支持湿度报警信息
                 }
                 congfig = true;           
             }
@@ -213,7 +213,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
     		break;            
 #endif
         default:
-            return false;//鍙傛暟鏈夎
+            return false;//参数有误
     	}	
     }
 
@@ -303,7 +303,7 @@ uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
                 rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
                 rxData[index++] = HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;
                 rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;      
-				rxData[index++] = 0xff;		//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�
+				rxData[index++] = 0xff;		//兼容协议，5529不支持湿度报警信息
 				rxData[index++] = 0xff;
 				rxData[index++] = 0xff;
 				rxData[index++] = 0xff;
@@ -430,8 +430,8 @@ typedef struct {
 #define NWK_EVT_TEST                Event_Id_04
 #define NWK_EVT_ACK                 Event_Id_05
 #define NWK_EVT_UPGRADE             Event_Id_06
-
-
+#define NWK_EVT_POWERSLEEP          Event_Id_07
+#define NWK_EVT_SEVER_ACK           Event_Id_08
 #define NWK_EVT_ALL                 0xffff
 
 
@@ -454,14 +454,28 @@ typedef enum {
 #ifdef SUPPORT_GSM
     NWK_MODULE_GSM,
 #endif
+#ifdef SUPPORT_NB
+    NWK_MODULE_NB,
+#endif
     NWK_MODULE_MAX
 } NWK_MODULE;
 
+#ifdef SUPPORT_GSM
 extern const Nwk_FxnTable Gsm_FxnTable;
+#endif
+
+#ifdef SUPPORT_NB
+extern const Nwk_FxnTable Nb_FxnTable;
+#endif
+
 static const Nwk_FxnTable *Nwk_FxnTablePtr[NWK_MODULE_MAX] = {
 #ifdef SUPPORT_GSM
     &Gsm_FxnTable,
 #endif
+#ifdef SUPPORT_NB
+    &Nb_FxnTable,
+#endif
+
 };
 
 #ifdef  SUPPORT_REMOTE_UPGRADE
@@ -481,6 +495,54 @@ typedef enum{
 
 
 #ifdef SUPPORT_UPLOADTIME_LIMIT
+uint8_t  gsmTransTimeout;
+int16_t uploadStartData = TEMPERATURE_OVERLOAD;
+uint8_t uploadContinueTime;
+//***********************************************************************************
+//
+// upload continue time read.
+//
+//***********************************************************************************
+void GsmUploadTimeoutClear(void)
+{
+    if(g_rSysConfigInfo.collectPeriod < 60)
+    {
+        if(gsmTransTimeout)
+            gsmTransTimeout--;
+    }
+    else
+    {
+        if(gsmTransTimeout >= (g_rSysConfigInfo.collectPeriod/60))
+            gsmTransTimeout -= g_rSysConfigInfo.collectPeriod/60;
+        else
+            gsmTransTimeout = 0;
+    }
+    uploadStartData = TEMPERATURE_OVERLOAD;
+}
+
+//***********************************************************************************
+//
+// upload continue time read.
+//
+//***********************************************************************************
+void GsmUploadTimeoutSet(uint8_t min)
+{
+    if(gsmTransTimeout < min)
+        gsmTransTimeout = min;
+    Nwk_upload_clear();
+}
+
+//***********************************************************************************
+//
+// upload continue time read.
+//
+//***********************************************************************************
+uint8_t GsmUploadTimeoutStateRead(void)
+{
+    return gsmTransTimeout;
+}
+
+
 #define     UPLOAD_MAX_CONTINUE_TIME    15
 
 void Nwk_upload_set(void)
@@ -489,6 +551,22 @@ void Nwk_upload_set(void)
     rNwkObject.hbTime = 0;
 	if(nwkEvtHandle)
     	Event_post(nwkEvtHandle, NWK_EVT_DATA_UPLOAD);
+}
+
+void Nwk_upload_clear(void)
+{
+    rNwkObject.uploadTime = 0;
+    rNwkObject.hbTime = 0;
+}
+
+//***********************************************************************************
+//
+// Network poweroff event set.
+//
+//***********************************************************************************
+void Nwk_poweroffEventSet(void)
+{
+    Nwk_event_post(NWK_EVT_POWERSLEEP);
 }
 #endif // SUPPORT_UPLOADTIME_LIMIT
 
@@ -514,8 +592,8 @@ void Nwk_upgrade_process(void)
     {
         case UPGRADE_STATE_CHANGE_SEVER:
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
-        memcpy((char*)g_rSysConfigInfo.serverAddr, "114.215.122.32", 40);
-        g_rSysConfigInfo.serverIpPort = 12201;
+        // memcpy((char*)g_rSysConfigInfo.serverAddr, "114.215.122.32", 40);
+        // g_rSysConfigInfo.serverIpPort = 12201;
 
         rNwkObject.upgradeState = UPGRADE_STATE_START;
         Nwk_event_post(NWK_EVT_UPGRADE);
@@ -527,8 +605,8 @@ void Nwk_upgrade_process(void)
         Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
-        memcpy((char*)g_rSysConfigInfo.serverAddr, "114.215.122.32", 40);
-        g_rSysConfigInfo.serverIpPort = 12201;
+        // memcpy((char*)g_rSysConfigInfo.serverAddr, "114.215.122.32", 40);
+        // g_rSysConfigInfo.serverIpPort = 12201;
 
         rNwkObject.upgradeState = UPGRADE_STATE_START;
         Nwk_event_post(NWK_EVT_UPGRADE);
@@ -557,7 +635,8 @@ RerequestVersion:
         {
             rNwkObject.upgradeState = UPGRADE_STATE_OFF;
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
-            Flash_load_config();
+
+            UpgradeCancel();
             // send the ack to the g7 server
 
         }
@@ -617,7 +696,8 @@ UpgradeTimeout:
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
             rNwkObject.upgradeState = UPGRADE_STATE_OFF;
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
-            Flash_load_config();
+            memset(upgradeSeverIp, 0, 64);
+            upgradeSeverPort = 0;
             break;
 
         }
@@ -654,11 +734,11 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
     NwkMsgPacket_t packet;
     NwkMsgPacket_t *pPacket = pPackets;
     packet.length = 0;
-    //娑堟伅澶�
-    //娑堟伅ID
+    //消息头
+    //消息ID
     packet.buff[packet.length++] = HIBYTE_ZKS(msgId);
     packet.buff[packet.length++] = LOBYTE_ZKS(msgId);
-    //娑堟伅浣撳睘鎬�
+    //消息体属性
     packet.buff[packet.length++] = 0;
     packet.buff[packet.length++] = 0;
     //Gateway ID
@@ -671,26 +751,32 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
 
 
     if (msgId == NMI_TX_SENSOR) {
-        //娑堟伅娴佹按鍙�
+        //消息流水号
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
 
-        //娑堟伅浣�
-        //鍥哄畾瀛楁绫诲瀷
+        //消息体
+        //固定字段类型
         #ifdef SUPPORT_BB_TIME
         packet.buff[packet.length++] = 0x03;
         #else
         packet.buff[packet.length++] = 0x01;
         #endif
         
-        //缃戝叧鐢靛帇
+        //网关电压
 #ifdef SUPPORT_BATTERY
         value = Battery_get_voltage();
 #endif
+
+#ifdef SUPPORT_CHARGE_CHECK
+    value |=  ((Battery_get_chargestate()==0)? 0 :1)<<15;
+#endif
+
+
         packet.buff[packet.length++] = HIBYTE_ZKS(value);
         packet.buff[packet.length++] = LOBYTE_ZKS(value);
-        //缃戝叧缃戠粶淇″彿
+        //网关网络信号
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &packet.buff[packet.length++]);
 
         #ifdef SUPPORT_BB_TIME
@@ -703,20 +789,20 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
         packet.buff[packet.length++] = TransHexToBcd(calendar.Minutes);
         packet.buff[packet.length++] = TransHexToBcd(calendar.Seconds);
         #endif
-        //鏃犵嚎淇″彿寮哄害RSSI
+        //无线信号强度RSSI
         //Sensor ID - 4Byte
-        //閲囬泦娴佹按鍙� - 2Byte
-        //閲囬泦鏃堕棿
-        //Sensor鐢靛帇
-        //鍙傛暟椤瑰垪琛ㄦ暟鎹�
+        //采集流水号 - 2Byte
+        //采集时间
+        //Sensor电压
+        //参数项列表数据
 ONEDATA:
         for (i = 0; i < pPacket->buff[0]; i++) {//sensor data: length(1B) rssi(1B) devicedi(4B)...
             packet.buff[packet.length++] = pPacket->buff[1 + i];
         }
 
-        //鍒ゆ柇鏄惁杩樻湁鏁版嵁
+        //判断是否还有数据
         if(pPacket->buff[pPacket->buff[0] + 1]!= 0){
-            //涓�鏉℃暟鎹殑缁撴潫
+            //一条数据的结束
             packet.buff[packet.length++] = 0xFF;
             pPacket = (NwkMsgPacket_t*)&(pPacket->buff[pPacket->buff[0] + 1]);
             goto ONEDATA;
@@ -743,7 +829,7 @@ ONEDATA:
 #endif
     else if(msgId == NMI_TX_G_SENSOR) {
 
-        //娑堟伅娴佹按鍙�
+        //消息流水号
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumGSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumGSensor);
         rNwkObject.serialNumGSensor++;
@@ -752,7 +838,7 @@ ONEDATA:
             packet.buff[packet.length++] = pPacket->buff[1 + i];
         }
     } else if (msgId == NMI_TX_COM_ACK) {
-        //娑堟伅娴佹按鍙�
+        //消息流水号
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
@@ -762,7 +848,7 @@ ONEDATA:
     }
 #ifdef USE_ENGINEERING_MODE_FOR_LBS
     else if(msgId == NMI_TX_CELL_INFO) {
-        //娑堟伅娴佹按鍙�
+        //消息流水号
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumLbs);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumLbs);
         rNwkObject.serialNumLbs++;
@@ -771,7 +857,7 @@ ONEDATA:
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.mcc);
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.mnc);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.mnc);
-        packet.buff[packet.length++] = 0;   //灏忓尯搴忓彿锛�0浠ｈ〃褰撳墠鏈嶅姟灏忓尯
+        packet.buff[packet.length++] = 0;   //小区序号，0代表当前服务小区
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.local.lac);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.local.lac);
         packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.local.cellid));
@@ -781,10 +867,10 @@ ONEDATA:
         packet.buff[packet.length++] = rNwkObject.location.local.dbm;
 #ifdef SUPPOERT_LBS_NEARBY_CELL
         for (i = 0; i < LBS_NEARBY_CELL_MAX; i++) {
-            // 鏃犳晥鏁版嵁涓嶄笂浼�
+            // 无效数据不上传
             if (rNwkObject.location.nearby[i].cellid == 0)
                 break;
-            packet.buff[packet.length++] = i + 1;   //灏忓尯搴忓彿
+            packet.buff[packet.length++] = i + 1;   //小区序号
             packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.nearby[i].lac);
             packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.nearby[i].lac);
             packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.nearby[i].cellid));
@@ -855,7 +941,7 @@ ONEDATA:
 #endif
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
     else if(msgId == NMI_TX_SYS_STATE){
-        //娑堟伅娴佹按鍙�
+        //消息流水号
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSysState);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSysState);
         rNwkObject.serialNumSysState++;
@@ -879,23 +965,44 @@ ONEDATA:
         }
     }
 #endif
-    else {//鍏朵粬鎵撳寘搴忓垪鍙蜂篃闇�澧炲姞 濡傛巿鏃�
-        //娑堟伅娴佹按鍙�
+    else if(msgId == NMI_TX_SETTING){
+        //消息流水号
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
+
+        packet.buff[packet.length++] = (uint8_t)(PROTOCAL_VERSION>>8);
+        packet.buff[packet.length++] = (uint8_t)(PROTOCAL_VERSION);
+
+        Nwk_get_simccid(&packet.buff[packet.length]);
+        packet.length += 20;
+
+        packet.buff[packet.length++] = (uint8_t)(FW_VERSION>>8);
+        packet.buff[packet.length++] = (uint8_t)(FW_VERSION);
+
+        // project name
+        packet.buff[packet.length++] = sizeof(PROJECT_NAME);
+        strcpy((char*)&packet.buff[packet.length], PROJECT_NAME);
+        packet.length += sizeof(PROJECT_NAME);
+    }
+
+    else {//其他打包序列号也需增加 如授时
+        //消息流水号
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
     }
-    //娑堟伅浣撳睘鎬�
+    //消息体属性
     value = packet.length - 12;
     packet.buff[2] = HIBYTE_ZKS(value);
     packet.buff[3] = LOBYTE_ZKS(value);
 
-    //鏍￠獙鐮�
+    //校验码
     packet.buff[packet.length++] = CheckCode8(&packet.buff[0], packet.length);
 
-    //杩涜杞箟
+    //进行转义
     pPackets->length = Protocol_escape(&pPackets->buff[1], &packet.buff[0], packet.length);
-    //娑堟伅鏍囧織浣�
+    //消息标志位
     pPackets->buff[0] = PROTOCOL_TOKEN;
     pPackets->buff[pPackets->length + 1] = PROTOCOL_TOKEN;
     pPackets->length += 2;
@@ -931,6 +1038,10 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
     bool     congfig = false;
     //uint32_t deviceid;
     
+#ifdef SUPPORT_FLIGHT_MODE
+	uint16_t minutes_flight = 0;
+#endif
+
     //pBuff maybe include more one data package
     ptrstart = pBuff;
     while(1) {
@@ -966,6 +1077,9 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
         msgId = (rxData[0] << 8) | rxData[1];
         switch (msgId) {
             case NMI_RX_COM_ACK:
+#ifdef  SUPPORT_NB
+                Nwk_event_post(NWK_EVT_SEVER_ACK);
+#endif
                 break;
 
             case NMI_RX_SETTING:
@@ -980,7 +1094,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 #ifdef SUPPORT_NETGATE_DISP_NODE
             case NMI_RX_ALARM:
                 index = NWK_MSG_BODY_START;
-                if((index + 10) <= package_length) {//鍙兘鍖呭惈澶氭潯鎶ヨ鏁版嵁锛岀洰鍓嶅彧澶勭悊1鏉�
+                if((index + 10) <= package_length) {//可能包含多条报警数据，目前只处理1条
                     HIBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
                     LOBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
                     HIBYTE_ZKS(LOWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
@@ -1008,7 +1122,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 #ifdef SUPPORT_ALARM_RECORD_QURERY					
                     Sys_event_post(SYS_EVT_ALARM_SAVE);
 #endif
-                    g_bAlarmSensorFlag = 0x100;
+                    g_bAlarmSensorFlag = ALARM_NMI_RX_ALARM;
 
                     Sys_event_post(SYS_EVT_ALARM);
 
@@ -1038,7 +1152,6 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 
                 // Message: UINT16 2(B)<TIMES-MINUTES>
                 // Get MINUTES TO FLIGHT MODE
-                uint16_t minutes_flight = 0;
 
                 HIBYTE_ZKS(minutes_flight) = rxData[index++];
                 LOBYTE_ZKS(minutes_flight) = rxData[index++];
@@ -1071,9 +1184,22 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
                 break;
 
             case NMI_RX_UPGRADE_REQ:
+                index = NWK_MSG_BODY_START;
+                if((index + 2) <= package_length && rxData[package_length-1] == '\0')
+                {
+                    upgradeSeverPort  = (rxData[index] << 8) + rxData[index+1];
+                    strcpy((char*)upgradeSeverIp, (char *)(rxData+index+2));
+                }
+                else
+                {
+                    memcpy((char*)upgradeSeverIp, "114.215.122.32", 40);
+                    upgradeSeverPort = 12201;
+                }
+
                 //send ack to server
                 Send_ack_to_server(rxData);
                 rNwkObject.upgradeState = UPGRADE_STATE_CHANGE_SEVER;
+
                 Nwk_event_post(NWK_EVT_UPGRADE);
                 break;
 #endif
@@ -1098,7 +1224,9 @@ static void Nwk_init(void)
 
     rNwkObject.poweron      = 0;
     rNwkObject.ntp          = 0;
+#ifdef SUPPORT_REMOTE_UPGRADE
     rNwkObject.upgradeState = UPGRADE_STATE_OFF;
+#endif
     rNwkObject.hbTime       = 0;
     rNwkObject.uploadTime   = 0;
     rNwkObject.ntpTime      = 0;
@@ -1111,7 +1239,7 @@ static void Nwk_init(void)
 //***********************************************************************************
 static void Nwk_taskFxn(void)
 {
-    UInt eventId;
+    UInt eventId, eventIdTemp = 0;
     bool bsensordata;
     uint8_t  package_count;
     uint8_t* pbuff;
@@ -1132,10 +1260,16 @@ static void Nwk_taskFxn(void)
         eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_ALL, BIOS_WAIT_FOREVER);
 
         if (eventId & NWK_EVT_POWERON) {
-            Task_sleep(3100 *CLOCK_UNIT_MS);
             if (g_rSysConfigInfo.module & MODULE_GSM) {
+
+#ifdef SUPPORT_NB
+                rNwkObject.moduleIndex = NWK_MODULE_NB;
+#else
                 rNwkObject.moduleIndex = NWK_MODULE_GSM;
-            } else {
+#endif
+
+            }
+            else {
                 //No network module
                 continue;
             }
@@ -1144,20 +1278,63 @@ static void Nwk_taskFxn(void)
             rNwkObject.poweron = 1;
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->openFxn();
         } else if (eventId & NWK_EVT_SHUTDOWN) {
+
             if (g_rSysConfigInfo.module & MODULE_GSM) {
+#ifdef SUPPORT_NB
+                rNwkObject.moduleIndex = NWK_MODULE_NB;
+#else
                 rNwkObject.moduleIndex = NWK_MODULE_GSM;
-            } else {
+#endif
+            }
+            else {
                 //No network module
                 continue;
             }
             rNwkObject.poweron = 0;
-            //Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_SHUTDOWN_MSG, NULL);
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
         }
 
         if (rNwkObject.poweron == 0)
             continue;
 
+		if (eventId & NWK_EVT_TEST) {//test mode 
+            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TEST, NULL) == FALSE) {
+                Nwk_event_post(NWK_EVT_TEST);
+                continue;
+            }
+            while (1) {
+                Led_ctrl(LED_G, 1, 0, 0);
+                eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_ALL, BIOS_WAIT_FOREVER);
+                if ((eventId & NWK_EVT_SHUTDOWN) == NWK_EVT_SHUTDOWN) {
+                    Nwk_event_post(NWK_EVT_SHUTDOWN);
+                    break;
+                }
+            }
+            continue;
+		}//end test mode
+
+
+#ifdef  SUPPORT_UPLOADTIME_LIMIT
+        if(eventId & NWK_EVT_POWERSLEEP)
+        {
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
+            continue;
+        }
+#endif  //SUPPORT_UPLOADTIME_LIMIT
+
+
+#ifdef SUPPORT_GSM_SHORT_CONNECT
+		//if support short connect, must network  poweron first
+        Nwk_FxnTablePtr[rNwkObject.moduleIndex]->openFxn();
+#endif
+
+		//wakeup first.
+            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
+                continue;
+            }
+
+        Led_ctrl(LED_B, 1, 0, 0);
+		
 #ifdef SUPPORT_FLIGHT_MODE
         // When in flight mode, priority process ACK event
 		if(Flight_mode_isFlightMode()){
@@ -1201,37 +1378,10 @@ static void Nwk_taskFxn(void)
         }
 #endif
 
-
-#ifdef SUPPORT_GSM_SHORT_CONNECT
-        Nwk_FxnTablePtr[rNwkObject.moduleIndex]->openFxn();
-#endif
-
-        if (eventId & NWK_EVT_TEST) {
-            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TEST, NULL) == FALSE) {
-                Nwk_event_post(NWK_EVT_TEST);
-                continue;
-            }
-            while (1) {
-                Led_ctrl(LED_G, 1, 0, 0);
-                eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_ALL, BIOS_WAIT_FOREVER);
-                if ((eventId & NWK_EVT_SHUTDOWN) == NWK_EVT_SHUTDOWN) {
-                    Nwk_event_post(NWK_EVT_SHUTDOWN);
-                    break;
-                }
-            }
-            continue;
-        }
-
-        Led_ctrl(LED_B, 1, 0, 0);
-
-
 #ifdef  SUPPORT_REMOTE_UPGRADE
         if(eventId & NWK_EVT_UPGRADE)
         {
-            //wakeup.
-            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
-                continue;
-            }
+            
             if(eventId & NWK_EVT_ACK)
             {
                 Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
@@ -1252,29 +1402,28 @@ static void Nwk_taskFxn(void)
 
         if (rNwkObject.ntp == 0) {
             Task_sleep(3 * CLOCK_UNIT_S);
-            //wakeup.
-            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
-                continue;
-            }
             Nwk_group_package(NMI_TX_NTP, &rNwkMsgPacket);
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
+
+            Nwk_group_package(NMI_TX_SETTING, &rNwkMsgPacket);
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
             continue;
         }
 
         if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
 #ifdef      SUPPORT_UPLOADTIME_LIMIT
-            rNwkObject.uploadTime = 0;
+            uploadContinueTime = 0;
 #endif      // SUPPORT_UPLOADTIME_LIMIT
-            //wakeup.
-            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
-                continue;
-            }
+            
             if (eventId & NWK_EVT_HEARTBEAT) {
                 //send heartbeat data.
+                #ifndef   SUPPORT_NB
                 Nwk_group_package(NMI_TX_HEARTBEAT, &rNwkMsgPacket);
                 if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
                     continue;
                 }
+                #endif
+
             } else if (eventId & NWK_EVT_ACK) {
                 //send ack data.
                 Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
@@ -1307,6 +1456,18 @@ static void Nwk_taskFxn(void)
                 //send data second.
                 bsensordata = 0;
                 while(Flash_get_unupload_items()> 0){
+            #ifdef      SUPPORT_UPLOADTIME_LIMIT
+                    uint16_t txTimeOut;
+                    if(Nwk_get_rssi() < 3){  // 3:-103dbm
+                        GsmUploadTimeoutSet(GSM_UPLOAD_WAIT_5_MIN);
+                        Nwk_poweroffEventSet();
+                        break;
+                    }
+                    else if(Nwk_get_rssi() <= 26)  // 26:-59dbm
+                        txTimeOut = 5;
+                    else
+                        txTimeOut = 15;
+            #endif    // SUPPORT_UPLOADTIME_LIMIT
 
             #ifdef SUPPORT_FLIGHT_MODE
                     // When Get Flight Mode, terminate UPLOAD data
@@ -1326,19 +1487,15 @@ static void Nwk_taskFxn(void)
                         if(Flash_load_sensor_data_by_offset(pbuff, FLASH_SENSOR_DATA_SIZE, package_count) == ES_SUCCESS) {
                                 bsensordata = 1;
                                 package_count++;
-                                pbuff = pbuff+ pbuff[0]+ 1;
-                                pbuff[0] = 0;
+                                if(pbuff[0] < FLASH_SENSOR_DATA_SIZE)
+                                {
+                                    pbuff = pbuff+ pbuff[0]+ 1;
+                                    pbuff[0] = 0;
+                                }
+
                         }else{
                             break;
                          }
-#ifdef      SUPPORT_UPLOADTIME_LIMIT
-                        if(rNwkObject.uploadTime >= UPLOAD_MAX_CONTINUE_TIME){
-                            Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT, BIOS_NO_WAIT);
-                            rNwkObject.uploadTime = 0;
-                            rNwkObject.hbTime = 0;
-                            break;
-                        }
-#endif      // SUPPORT_UPLOADTIME_LIMIT
                     }
 
                     if(bsensordata == 1){
@@ -1347,12 +1504,41 @@ static void Nwk_taskFxn(void)
                             break;
                         }
                         else{
+#ifdef SUPPORT_GSM
                             Flash_moveto_offset_sensor_data(package_count);
+#ifdef      SUPPORT_UPLOADTIME_LIMIT
+                              if(uploadContinueTime >= txTimeOut){
+                                  Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT, BIOS_NO_WAIT);
+                                  rNwkObject.uploadTime = 0;
+                                  rNwkObject.hbTime = 0;
+                                  break;
+                              }
+#endif      // SUPPORT_UPLOADTIME_LIMIT
+
+#else/*SUPPORT_NB*/
+                            eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_SEVER_ACK, 2000*CLOCK_UNIT_MS);
+                            if(eventId&NWK_EVT_SEVER_ACK){
+                              Flash_moveto_offset_sensor_data(package_count);
+                            }
+						   else
+                            {
+                               break;
+                            }
+
+
+#endif
                         }
                     }
+                    eventIdTemp = Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD, BIOS_NO_WAIT);
+                    if(eventIdTemp & NWK_EVT_DATA_UPLOAD)
+                    {
+                        Nwk_event_post(NWK_EVT_DATA_UPLOAD);
+                        break;
+                    }
                 }
-                
-                //褰撶綉鍏虫病鏈塻ensor鏁版嵁鏃朵笂浼犱竴涓棤鏁坰ensor鏁版嵁浠ラ伩鍏嶇綉鍏充俊鎭け鑱斻��
+
+
+                //当网关没有sensor数据时上传一个无效sensor数据以避免网关信息失联。
                 if(!bsensordata){
                     memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
                     Sensor_store_null_package(rNwkMsgPacket.buff);
@@ -1361,7 +1547,7 @@ static void Nwk_taskFxn(void)
                 }
                 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
-                //绯荤粺鐘舵�佷俊鎭�
+                //系统状态信息
 
                     while(Flash_get_deviced_state_items() > 0 )
                     {
@@ -1380,10 +1566,25 @@ static void Nwk_taskFxn(void)
                         }
                         else
                         {
+#ifndef SUPPORT_NB
                             Flash_moveto_next_deviced_state_data();
-                            Sys_event_post(SYSTEMAPP_EVT_DISP);
+#else
+                            eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_SEVER_ACK, 2000*CLOCK_UNIT_MS);
+                            if(eventId&NWK_EVT_SEVER_ACK){
+                              Flash_moveto_offset_sensor_data(package_count);
+                            }
+                           else
+                            {
+                               break;
+                            }
+#endif
                         }
                     }
+
+//                    if(rSysTask.state == SYS_STATE_STANDBY && rSysTask.stateStep == 0){
+//                        Sys_event_post(SYS_EVT_SHUTDODN);//notify systask it's time to shutdown
+//                        continue;
+//                    }
 
 #endif
 #ifdef SUPPORT_GSENSOR
@@ -1412,6 +1613,8 @@ static void Nwk_taskFxn(void)
 #endif             
 
             }
+            if(eventIdTemp & NWK_EVT_DATA_UPLOAD)
+                continue;
             
 #ifdef SUPPORT_GSM_SHORT_CONNECT
             uint32_t temp;
@@ -1420,6 +1623,11 @@ static void Nwk_taskFxn(void)
             if(g_alarmFlag)
                 temp = g_rSysConfigInfo.alarmuploadPeriod;
 #endif // SUPPORT_ALARM_SWITCH_PERIOD
+
+#ifdef SUPPORT_UPLOADTIME_LIMIT
+            if(((g_rSysConfigInfo.uploadPeriod/g_rSysConfigInfo.collectPeriod) < Flash_get_unupload_items()))
+                temp = NWK_KEEP_CONNET_MAX_TIME-1;
+#endif
             if(temp >= NWK_KEEP_CONNET_MAX_TIME) {//uploadPeriod>=5min ,shutdown 
                 Nwk_FxnTablePtr[rNwkObject.moduleIndex]->closeFxn();
             }
@@ -1474,6 +1682,10 @@ void Nwk_upload_time_isr(void)
         return;
 
     if (rNwkObject.poweron) {
+#ifdef SUPPORT_UPLOADTIME_LIMIT
+            if(GsmUploadTimeoutStateRead())
+                return;
+#endif  // SUPPORT_UPLOADTIME_LIMIT
         rNwkObject.uploadTime++;
         temp = g_rSysConfigInfo.uploadPeriod;
 
@@ -1593,6 +1805,11 @@ char Nwk_is_Active(void)
     return rNwkObject.poweron;
 }
 
+uint8_t Nwk_Is_Ntp()
+{
+	return rNwkObject.ntp;
+}
+
 #else
 void Nwk_task_create(void)
 {
@@ -1618,6 +1835,12 @@ uint8_t Nwk_get_rssi(void)
 void Nwk_get_simccid(uint8_t *pBuff)
 {
 }
+
+uint8_t Nwk_Is_Ntp()
+{
+	return 0;
+}
+
 #endif  /* SUPPORT_NETWORK */
 #endif
 

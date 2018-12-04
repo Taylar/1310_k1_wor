@@ -330,7 +330,10 @@ static void AT_start_connect(void)
     strcpy((char *)buff, ATCMD_START_CONNECT);
     index = sizeof(ATCMD_START_CONNECT) - 1;
     
-    if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//名称优先
+    if(strlen((const char *)upgradeSeverIp) > 0){
+        length = sprintf((char *)(buff + index), "\"%s\",\"%d\"\r\n", upgradeSeverIp, upgradeSeverPort);
+    }
+    else if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//名称优先
         length = sprintf((char *)(buff + index), "\"%s\",\"%d\"\r\n", g_rSysConfigInfo.serverAddr, g_rSysConfigInfo.serverIpPort);
     
     }

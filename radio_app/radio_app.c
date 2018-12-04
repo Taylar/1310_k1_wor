@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-27 17:32:39
+* @Last Modified time: 2018-12-04 11:20:28
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -28,7 +28,7 @@
 #if (defined(BOARD_S6_6) || defined(BOARD_B2S))
 #define RADIO_RSSI_FLITER               -40
 #else
-#define RADIO_RSSI_FLITER               -85
+#define RADIO_RSSI_FLITER               -95
 #endif
 
 

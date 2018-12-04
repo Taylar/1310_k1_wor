@@ -76,9 +76,10 @@ typedef struct
     uint8_t		complete;			// test this flag when upgrade complete, and then clear it;     1:updata complete; 0: donot occur upgrade
     uint16_t	crc;
     uint32_t	fileLength;			// the len is the file length that include UPGRADE_FILE_INFO_LENGTH;
-    bool     	endFlag;
 }upgrade_flag_t;
 
+extern uint8_t upgradeSeverIp[64];
+extern uint16_t upgradeSeverPort;
 
 void UpgradeInit(void);
 

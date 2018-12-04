@@ -130,9 +130,9 @@ void Battery_porcess(void)
     if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
         {
             batCount++;
-            if (batCount > 5)
+            if (batCount > 5 && (deviceMode != DEVICES_OFF_MODE))
             {
-
+                batCount = 6;
 #ifdef  BOARD_S3
                 S1Sleep();
 #else

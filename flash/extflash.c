@@ -417,6 +417,9 @@ static void Flash_reset_data(void)
 
 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
+    Flash_external_erase(FLASH_DEVICED_STATE_PTR_POS, FLASH_EXT_SECTOR_ERASE);
+    Flash_external_erase(FLASH_DEVICED_STATE_DATA_POS, FLASH_EXT_SECTOR_ERASE);
+    
     rFlashSysRunState.ptrDataAddr = 0;
     rFlashSysRunState.ptrData.head = FLASH_PTRDATA_VALID;
     rFlashSysRunState.ptrData.frontAddr = 0;

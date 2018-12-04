@@ -13,6 +13,8 @@
 const uint8_t PROJECT_INFO_NAME[64]  = PROJECT_NAME;
 const uint32_t PROJECT_INFO_VERSION   = FW_VERSION;
 
+uint8_t upgradeSeverIp[64];
+uint16_t upgradeSeverPort;
 #ifdef SUPPORT_NETWORK
 
 #define				CODE_DATA_LENGTH		64
@@ -60,6 +62,8 @@ void UpgradeInit(void)
 	upgradeInfo.packTimeout  = 0;
 	upgradeInfo.infoFlag	 = UPGRADE_RESULT_UNREC_VER;
 
+	memset(upgradeSeverIp, 0, 64);
+	upgradeSeverPort = 0;
 }
 
 //***********************************************************************************
@@ -77,6 +81,9 @@ void UpgradeCancel(void)
 	upgradeInfo.monitorTimer = 0;
 	upgradeInfo.packTimeout  = 0;
 	upgradeInfo.infoFlag	 = UPGRADE_RESULT_UNREC_VER;
+
+	memset(upgradeSeverIp, 0, 64);
+	upgradeSeverPort = 0;
 }
 
 

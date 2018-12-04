@@ -76,7 +76,7 @@
 // #define BOARD_S3
 // #define BOARD_B2S
 #define BOARD_S6_6
-#define BOARD_CONFIG_DECEIVE
+// #define BOARD_CONFIG_DECEIVE
 
 
 //#define FACTOR_RADIO_TEST
@@ -88,6 +88,13 @@
 //
 //***********************************************************************************
 #define FW_VERSION              0x0082
+
+//***********************************************************************************
+//
+// protocal version define.
+//
+//***********************************************************************************
+#define PROTOCAL_VERSION              0x0001
 
 //***********************************************************************************
 //
@@ -594,7 +601,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0060
+#define FW_VERSION              0x0058
 
 #elif defined(S_C)
 
@@ -762,6 +769,8 @@ typedef enum {
 #define STATUS_1310_MASTER      0x0020//1310做master或slaver
 
 
+#define ALARM_NMI_RX_ALARM      0x100  //网络下发报警
+#define ALARM_CHARGE_DECT_ALARM 0x200 //断电报警
 
 //***********************************************************************************
 //
