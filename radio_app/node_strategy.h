@@ -9,7 +9,7 @@
 
 #define     FAIL_CONNECT_PERIOD_MAX_NUM        1
 
-#define     FAIL_CHECK_RSSI_BUSY_MAX_NUM	   20
+#define     FAIL_CHECK_RSSI_BUSY_MAX_NUM	   60
 
 #define 	SORT_CHANNEL_TIME_SLOT				250
 

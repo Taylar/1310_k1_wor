@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-04 11:20:28
+* @Last Modified time: 2018-12-04 17:26:34
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -623,7 +623,6 @@ void RadioAppTaskFxn(void)
             {
                 rssi  = RADIO_RSSI_FLITER - 1;
             }
-            NodeContinueFlagClear();
 #else
             rssi  = RADIO_RSSI_FLITER - 1;
 #endif  // SUPPORT_RSSI_CHECK
@@ -752,7 +751,8 @@ void RadioAppTaskFxn(void)
             if(radioMode == RADIOMODE_SENDPORT)
             {
 #if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
-                NodeStrategyReceiveTimeoutProcess();
+                if(NodeContinueFlagRead() == 0)
+                    NodeStrategyReceiveTimeoutProcess();
 #endif
 
             }

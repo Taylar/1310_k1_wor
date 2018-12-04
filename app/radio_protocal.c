@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-27 17:20:03
+* @Last Modified time: 2018-12-04 17:23:23
 */
 #include "../general.h"
 
@@ -352,9 +352,7 @@ NodeDispath:
         }
 	    if((Flash_get_unupload_items() > 0) && sendContinue)
 	    {
-#ifdef SUPPORT_RSSI_CHECK
 	    	NodeContinueFlagSet();
-#endif // SUPPORT_RSSI_CHECK
 	    	// clear the offect, the buf has been clear
 		    NodeUploadProcess();
 		    // waiting the gateway to change to receive
