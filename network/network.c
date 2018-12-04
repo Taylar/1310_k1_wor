@@ -670,7 +670,7 @@ RerequestVersion:
 #endif
             // __disable_interrupt();
             Task_sleep(200*CLOCK_UNIT_MS);
-            SysCtrlSystemReset();
+            SystemResetAndSaveRtc();
             break;
 
             case UPGRADE_RESULT_NEXT_PACKAGE:

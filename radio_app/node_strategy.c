@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-04 11:19:01
+* @Last Modified time: 2018-12-04 13:43:59
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -174,6 +174,28 @@ void NodeStrategyStart(void)
     Clock_start(nodeStrategyStartClockHandle);
 }
 
+//***********************************************************************************
+// brief:   select the random time to send the radio packet
+//
+// parameter: none
+//***********************************************************************************
+void NodeStrategyRssiOverProcess(void)
+{
+    uint32_t randomNum;
+
+
+    if(Clock_isActive(nodeStrategyStartClockHandle))
+        Clock_stop(nodeStrategyStartClockHandle);
+
+
+    randomNum = RandomDataGenerate();
+    // Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
+    // Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % 100) * 200 * CLOCK_UNIT_MS/*(g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S))*/);
+    Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period / FAIL_CHECK_RSSI_BUSY_MAX_NUM * CLOCK_UNIT_S));
+    Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
+    Clock_start(nodeStrategyStartClockHandle);
+}
+
 
 
 
@@ -316,7 +338,7 @@ void StrategyCheckRssiBusyProcess(void)
     nodeStrategy.radioBusyCnt++;
     if(nodeStrategy.radioBusyCnt < FAIL_CHECK_RSSI_BUSY_MAX_NUM)
     {
-        NodeStrategyStart();
+        NodeStrategyRssiOverProcess();
     }
     else
     {
