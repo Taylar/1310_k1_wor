@@ -534,8 +534,14 @@ error
 #define         STRATEG_NAME               ""
 #endif  // SUPPORT_STRATEGY_SORT
 
+#ifdef  SUPPORT_SHT2X
+#define SENSOR_TYPE_NAME                    "_SHT20"
+#else
+#define SENSOR_TYPE_NAME                    "_SHT30"
+#endif  // SUPPORT_SHT2X
+
 #undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""SENSOR_TYPE_NAME)
 
 /* old S1*/
 // #define SUPPORT_BOARD_OLD_S1
@@ -551,7 +557,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-//#define SUPPORT_BOARD_Z4
+// #define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -566,7 +572,7 @@ error
 
 #undef  FW_VERSION
 #ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0060
+#define FW_VERSION              0x0062
 #else
 #define FW_VERSION              0x0012
 #endif
@@ -632,7 +638,7 @@ error
     #define FW_VERSION              0x0040
     #elif defined(S_G)
     #undef  SUPPORT_RSSI_CHECK
-    #define FW_VERSION              0x0044
+    #define FW_VERSION              0x0045
     #elif defined(S_C)
     #undef  BOARD_NAME
     #define  BOARD_NAME              "_S2S"

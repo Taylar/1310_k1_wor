@@ -208,18 +208,6 @@ uint16_t ContinueCRC16(uint8_t *pData,  uint16_t length)
 #endif  /* CRC16_HW_MODULE */
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 #endif  /* SUPPORT_CRC16 */
 
 //***********************************************************************************

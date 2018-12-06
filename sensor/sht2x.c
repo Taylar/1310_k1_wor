@@ -247,6 +247,7 @@ static void SHT2x_measure(uint8_t chNum)
     uint8_t buff[3];
     uint8_t retrys = 0;//?????3?
 
+    error = 0;
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
         if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {

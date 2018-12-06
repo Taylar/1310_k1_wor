@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-04 17:24:43
+* @Last Modified time: 2018-12-06 14:27:28
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -164,13 +164,13 @@ void NodeStrategyStart(void)
         Clock_stop(nodeStrategyStartClockHandle);
 
     
-    randomNum = RandomDataGenerate();
+    randomNum = RandomDataGenerate_Software();
     // Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
     // Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % 100) * 200 * CLOCK_UNIT_MS/*(g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S))*/);
     if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-        Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (5 * CLOCK_UNIT_S));
+        Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % 5000) * CLOCK_UNIT_MS);
     else
-        Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % ((nodeStrategy.period *1000) / FAIL_CONNECT_MAX_NUM * CLOCK_UNIT_MS));
+        Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % ((nodeStrategy.period*1000) / FAIL_CONNECT_MAX_NUM)) * CLOCK_UNIT_MS);
     Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
     Clock_start(nodeStrategyStartClockHandle);
 }
@@ -189,10 +189,10 @@ void NodeStrategyRssiOverProcess(void)
         Clock_stop(nodeStrategyStartClockHandle);
 
 
-    randomNum = RandomDataGenerate();
-    // Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % (nodeStrategy.period * CLOCK_UNIT_S));
-    // Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % 100) * 200 * CLOCK_UNIT_MS/*(g_rSysConfigInfo.collectPeriod / 10 * CLOCK_UNIT_S))*/);
-    Clock_setTimeout(nodeStrategyStartClockHandle, randomNum % ((nodeStrategy.period*1000) / FAIL_CHECK_RSSI_BUSY_MAX_NUM * CLOCK_UNIT_MS));
+    randomNum = RandomDataGenerate_Software();
+    Clock_setTimeout(nodeStrategyStartClockHandle, (randomNum % ((nodeStrategy.period*1000) / FAIL_CHECK_RSSI_BUSY_MAX_NUM)) * CLOCK_UNIT_MS);
+    // System_printf("sleeptiem:%d\n", (randomNum % ((nodeStrategy.period*1000) / FAIL_CHECK_RSSI_BUSY_MAX_NUM)));
+
     Clock_setPeriod(nodeStrategyStartClockHandle, nodeStrategy.period * CLOCK_UNIT_S);
     Clock_start(nodeStrategyStartClockHandle);
 }
@@ -339,6 +339,7 @@ void StrategyCheckRssiBusyProcess(void)
     nodeStrategy.radioBusyCnt++;
     if(nodeStrategy.radioBusyCnt < FAIL_CHECK_RSSI_BUSY_MAX_NUM)
     {
+        Task_sleep(RADIO_RECEIVE_TIMEOUT * CLOCK_UNIT_MS);
         NodeStrategyRssiOverProcess();
     }
     else

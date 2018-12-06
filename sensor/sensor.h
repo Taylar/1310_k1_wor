@@ -138,6 +138,7 @@ extern uint32_t Sensor_get_deepTemperatureC(uint8_t chNum);
 extern uint32_t Sensor_get_lux(uint8_t chNum);
 extern void Sensor_collect_time_isr(void);
 extern void Sensor_set_collect_time(uint32_t  collectTime);
+extern void Sensor_collect_time_Adjust(uint8_t  Localtime, uint8_t  Nettime);
 
 #endif  /* SUPPORT_SENSOR */
 

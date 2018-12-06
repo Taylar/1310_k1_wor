@@ -171,6 +171,12 @@ uint32_t RandomDataGenerate(void)
     return randomNum;
 }
 
+uint32_t RandomDataGenerate_Software(void)
+{
+	return rand();
+}
+
+
 
 //#define BOARD_S6_6
 void SystemAppTaskFxn(void)

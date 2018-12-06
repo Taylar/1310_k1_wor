@@ -769,8 +769,8 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
         value = Battery_get_voltage();
 #endif
 
-#ifdef SUPPORT_CHARGE_CHECK
-    value |=  ((Battery_get_chargestate()==0)? 0 :1)<<15;
+#ifdef SUPPORT_CHARGE_DECT
+    value |=  ((Get_Charge_plug()==NO_CHARGE)? 0 :1)<<15;
 #endif
 
 
