@@ -37,7 +37,6 @@ typedef enum {
 }KEY_NUM_E;
 
 
-
 // Define key action
 #define KEY_ACTION_TYPE_MAX    3
 typedef enum {
@@ -51,7 +50,6 @@ typedef enum {
     KEY_1_LONG_PRESS,
     KEY_1_DOUBLE_PRESS,
 #endif
-
     KEY_ACTION_MAX
 } KEY_ACTION;
 

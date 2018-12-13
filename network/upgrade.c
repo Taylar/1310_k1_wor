@@ -253,12 +253,16 @@ void SetUpgradeInfo(uint16_t version, uint32_t fileLength)
 	{
 		upgradeInfo.infoFlag = UPGRADE_RESULT_NEEDNOT_UPDATA;
 	}
-	if((upgradeInfo.upgradeVer != version) || (fileLength != upgradeInfo.fileLength))
+	else if((upgradeInfo.upgradeVer != version) || (fileLength != upgradeInfo.fileLength))
 	{
 		upgradeInfo.upgradeStep = UPGRADE_LOADING;
 		upgradeInfo.upgradeVer  = version;
 		upgradeInfo.fileLength  = fileLength;
 		upgradeInfo.packNum     = 0;
+		upgradeInfo.infoFlag    = UPGRADE_RESULT_NEED_UPDATA;
+	}
+	else
+	{
 		upgradeInfo.infoFlag    = UPGRADE_RESULT_NEED_UPDATA;
 	}
 
