@@ -236,6 +236,8 @@ void Menu_restart(void)
     // ConcenterSleep();
     g_rSysConfigInfo.rtc =Rtc_get_calendar();
     Flash_store_config();
+    Flash_log("RST\n");
+    Flash_store_devices_state(TYPE_POWER_RESTART);
     while(1)
         SysCtrlSystemReset();
    // Menu_exit();

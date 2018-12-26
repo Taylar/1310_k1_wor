@@ -493,9 +493,9 @@ error
 //***********************************************************************************
 #ifdef BOARD_S3
 #define SUPPORT_SENSOR
-// #define SUPPORT_SHT2X
-#undef SUPPORT_SHT2X
-#define SUPPORT_SHT3X
+#define SUPPORT_SHT2X
+// #undef SUPPORT_SHT2X
+// #define SUPPORT_SHT3X
 
 
 #define SUPPORT_RADIO_UPGRADE
@@ -510,6 +510,7 @@ error
 
 #undef LCD_ST7567A
 #undef SUPPORT_MENU
+#undef SUPPORT_DEVICED_STATE_UPLOAD
 
 #undef SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
 #undef SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
@@ -607,7 +608,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0060
+#define FW_VERSION              0x0062
 
 #elif defined(S_C)
 

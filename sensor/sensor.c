@@ -458,13 +458,6 @@ static void Sensor_store_package(void)
 
 #endif  // G7_PROJECT
 
-#ifdef	SUPPORT_DEVICED_STATE_UPLOAD
-	if(g_bNeedUploadRecord){
-		Flash_store_devices_state(TYPE_RECORD_START);
-		g_bNeedUploadRecord = 0;
-	}		
-#endif
-
 #endif  /* FLASH_EXTERNAL */
 }
 

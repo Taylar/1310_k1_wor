@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-19 15:33:46
+* @Last Modified time: 2018-12-18 14:45:24
 */
 #include "../general.h"
 
@@ -452,7 +452,7 @@ void S6AppBatProcess(void)
 {
     Battery_porcess();
     //电量低至一格,每5秒闪红灯一次     
-    if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE)) {
+    if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE) && (deviceMode != DEVICES_OFF_MODE)) {
         Clock_start(BatAlarmClkHandle);
     }
     
@@ -555,7 +555,7 @@ void S6Wakeup(void)
     deviceMode = DEVICES_ON_MODE;
     RtcStart();
     Flash_log("PON\n");
-    Flash_store_devices_state(TYPE_POWER_DOWN);
+    Flash_store_devices_state(TYPE_POWER_ON);
     if(GetUsbState() == USB_UNLINK_STATE)
     {
 #ifdef  SUPPORT_NETWORK
@@ -600,6 +600,8 @@ void S6Sleep(void)
 #endif // S_A
 
     deviceMode = DEVICES_OFF_MODE;
+    if(Clock_isActive(BatAlarmClkHandle) == TRUE)
+        Clock_stop(BatAlarmClkHandle);
 }
 
 

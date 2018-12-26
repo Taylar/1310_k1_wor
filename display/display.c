@@ -1201,6 +1201,10 @@ void Disp_proc(void)
                 Disp_msg(3, 6, buff, FONT_8X16);//display
            }
        }
+       else{
+            sprintf((char *)buff, "Fix ch:%d", (g_rSysConfigInfo.rfBW >> 4));
+            Disp_msg(3, 6, buff, FONT_8X16);//display
+       }
     }
 
 #ifdef SUPPORT_LORA
