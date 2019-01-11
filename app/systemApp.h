@@ -62,4 +62,6 @@ uint32_t RandomDataGenerate(void);
 
 void SystemResetAndSaveRtc(void);
 
+uint32_t RandomDataGenerate_Software(void);
+
 #endif      // __SYSTEMAPP_H__

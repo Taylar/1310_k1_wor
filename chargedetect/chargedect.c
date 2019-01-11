@@ -50,10 +50,13 @@ void Charge_detect_init(void)
 ChargeStateType Get_Charge_plug(void)
 {
     if(GET_PLUG_IN_STATUS()){
+#ifndef BOARD_S6_6
         if(GET_CHARGE_STATUS()){
             return(CHARGE_FULL);
         }
-        else{
+        else
+#endif // S6_6
+        {
             return(CHARGEING);
         }
     }

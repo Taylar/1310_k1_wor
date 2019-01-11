@@ -29,6 +29,11 @@ typedef enum {
     SENSOR_LIS2D12_AMP= 0x80,
 } SENSOR_FUNCTION;
 
+#ifdef SUPPORT_SENSOR_ADJUST
+#define SENSOR_ADJUST_BUF_MAX           6
+#define SENSOR_ADJUST_UPDATA_TIME       10
+#endif //SUPPORT_SENSOR_ADJUST
+
 typedef enum {
     SENSOR_DATA_NONE = 0x00,
 	SENSOR_DATA_TEMP,   //ÎÂ¶È
@@ -149,5 +154,6 @@ extern bool get_next_sensor_memory(sensordata_mem *pSensor);
 extern uint32_t Sensor_get_function_by_type(uint8_t type);
 extern void Sensor_store_null_package(uint8_t *buff);
 
+extern void Sensor_process(void);
 #endif	/* __ZKSIOT_SENSOR_H__ */
 

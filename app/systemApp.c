@@ -448,7 +448,11 @@ void SystemAppTaskFxn(void)
 
 #ifdef SUPPORT_SENSOR
         if (eventId & SYS_EVT_SENSOR) {
+#ifdef SUPPORT_SENSOR_ADJUST
+            Sensor_process();
+#else
             Sensor_measure(1);
+#endif
             Battery_porcess();
 
 #ifdef      SUPPORT_UPLOADTIME_LIMIT

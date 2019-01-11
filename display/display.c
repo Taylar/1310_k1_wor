@@ -921,6 +921,13 @@ static void Disp_status_bar(void)
 
 #ifdef SUPPORT_BATTERY
 //Display battery
+#ifdef SUPPORT_CHARGE_DECT
+    if(Get_Charge_plug() == CHARGEING)
+     {
+        Disp_icon(col, row, ICON_16X16_BATCHRG, 1);
+     }else
+#endif
+    {
     value = Battery_get_voltage();
     if (value >= BAT_VOLTAGE_L3)
         Disp_icon(col, row, ICON_16X16_BATTERY3, 1);
@@ -930,6 +937,7 @@ static void Disp_status_bar(void)
         Disp_icon(col, row, ICON_16X16_BATTERY1, 1);
     else
         Disp_icon(col, row, ICON_16X16_BATTERY0, 1);
+    }
 #endif
 }
 //***********************************************************************************
@@ -1053,7 +1061,20 @@ static void Disp_info(void)
             sprintf((char *)buff, "FW:  %x.%x.%x", FW_VERSION >> 12, (FW_VERSION >> 8) & 0x0f, FW_VERSION & 0xff);
 #endif  // SUPPORT_STRATEGY_SORT
             Disp_msg(0, 0, buff, FONT_8X16);
-           
+
+#ifdef  S_G//网关
+                if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+                {
+                    sprintf((char *)buff, "F&N:%ldK-%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
+                                                        (g_rSysConfigInfo.rfBW >> 4));
+                }
+                else
+                {
+                    sprintf((char *)buff, "F&N:%ldK-%d-F", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
+                                                        (g_rSysConfigInfo.rfBW >> 4));
+                }
+                Disp_msg(0, 2, buff, FONT_8X16);
+#endif
 
             for(i =0; i< MODULE_SENSOR_MAX; ++i){
                 if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
@@ -1079,7 +1100,7 @@ static void Disp_info(void)
                     
                     Disp_msg(0, 2*3, buff, FONT_8X16);                    
 
-                    break;//ֻ��ʾ��һ��ͨ���ı�����Ԥ����Ϣ
+                    break;//Ö»ÏÔÊ¾µÚÒ»¸öÍ¨µÀµÄ±¨¾¯ºÍÔ¤¾¯ÐÅÏ¢
                 }                
             }
             

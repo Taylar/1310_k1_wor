@@ -1261,6 +1261,9 @@ static void Nwk_taskFxn(void)
 
         if (eventId & NWK_EVT_POWERON) {
             if (g_rSysConfigInfo.module & MODULE_GSM) {
+#ifdef BOARD_B2S
+                Task_sleep(400 * CLOCK_UNIT_MS);
+#endif // BOARD_B2S
 
 #ifdef SUPPORT_NB
                 rNwkObject.moduleIndex = NWK_MODULE_NB;

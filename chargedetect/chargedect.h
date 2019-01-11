@@ -13,8 +13,17 @@
 
 #ifdef SUPPORT_CHARGE_DECT
 
+#ifdef  BOARD_S6_6
+
+#define CHARGE_DETECT_PIN             IOID_11
+#define CHARGE_STATUS_PIN             
+
+#else
+
 #define CHARGE_DETECT_PIN             IOID_29
 #define CHARGE_STATUS_PIN             IOID_7
+
+#endif // S6_6
 
 #define GET_PLUG_IN_STATUS()          PIN_getInputValue(CHARGE_DETECT_PIN)
 #define GET_CHARGE_STATUS()           PIN_getInputValue(CHARGE_STATUS_PIN)

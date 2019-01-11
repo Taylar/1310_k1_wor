@@ -109,6 +109,7 @@ extern uint8_t GsmUploadTimeoutStateRead(void);
 extern void Nwk_poweroffEventSet(void);
 extern void Nwk_send_upload_event(void);
 extern uint8_t Nwk_Is_Ntp();
+extern char Nwk_is_Active(void);
 
 #define     GSM_UPLOAD_WAIT_2_MIN    1
 #define     GSM_UPLOAD_WAIT_3_MIN    2

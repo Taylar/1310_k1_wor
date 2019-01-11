@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-18 14:45:24
+* @Last Modified time: 2019-01-04 11:13:38
 */
 #include "../general.h"
 
@@ -487,7 +487,10 @@ void UsbIntProcess(void)
 #ifdef  SUPPORT_NETWORK
             Nwk_poweroff();
             while(Nwk_is_Active())
+            {
+                WdtClear();
                 Task_sleep(100 * CLOCK_UNIT_MS);
+            }
 #endif
 
             InterfaceEnable();
@@ -589,10 +592,15 @@ void S6Sleep(void)
     Flash_log("POF\n");
     Flash_store_devices_state(TYPE_POWER_DOWN);
     // wait the nwk disable the uart
+    Disp_clear_all();
+    Disp_msg(2, 3, "Power Off...", FONT_8X16);//display
 #ifdef  SUPPORT_NETWORK
     Nwk_poweroff();
     while(Nwk_is_Active())
+    {
+        WdtClear();
         Task_sleep(100 * CLOCK_UNIT_MS);
+    }
 #endif
 
 #ifndef S_A

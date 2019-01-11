@@ -15,6 +15,9 @@ typedef struct {
     uint8_t sensorInit;
     uint16_t serialNum;
     uint32_t collectTime;
+#ifdef SUPPORT_SENSOR_ADJUST
+    uint32_t updataTime;
+#endif //SUPPORT_SENSOR_ADJUST
 } SensorObject_t;
 
 /*
@@ -29,7 +32,12 @@ typedef struct {
 */
 SensorData_t rSensorData[MODULE_SENSOR_MAX];
 SensorObject_t rSensorObject;
-
+#ifdef SUPPORT_SENSOR_ADJUST
+SensorData_t rSensorDataBuf[1][SENSOR_ADJUST_BUF_MAX];
+uint8_t      rSensorUpdataNum, rSensorUpdataFull;
+static Event_Struct sensorEvtStruct;
+static Event_Handle sensorEvtHandle;
+#endif //SUPPORT_SENSOR_ADJUST
 
 
 
@@ -132,6 +140,12 @@ static const Sensor_FxnTable *Sensor_FxnTablePtr[]={
     &LIS2D12_FxnTable,
 };
 
+#ifdef SUPPORT_SENSOR_ADJUST
+#define SENSOR_EVT_NONE             Event_Id_NONE
+#define SENSOR_EVT_UPDATA           Event_Id_00
+#define SENSOR_EVT_STORE            Event_Id_01
+#define SENSOR_EVT_ALL              0xffff
+#endif //SUPPORT_SENSOR_ADJUST
 
 void RtcAddMinutes(Calendar *calendar, uint16_t minutes)
 {
@@ -307,14 +321,14 @@ static void Sensor_store_package(void)
         rSensorObject.serialNum = 0;
     }
     rSensorObject.serialNum++;
-    //采集时间      
+    //采集时间
 
 	buff[length++] = TransHexToBcd(lastcalendar.Year - 2000);
 	buff[length++] = TransHexToBcd(lastcalendar.Month);
 	buff[length++] = TransHexToBcd(lastcalendar.DayOfMonth);
 	buff[length++] = TransHexToBcd(lastcalendar.Hours);	 
 	buff[length++] = TransHexToBcd(lastcalendar.Minutes);
-    if(collectPeriod % 60 == 0){//只对采集周期为整分钟的情况进行计数器调整。  
+    if(collectPeriod % 60 == 0){//只对采集周期为整分钟的情况进行计数器调整。
         buff[length++] = 0x30;
     }
     else{
@@ -471,6 +485,13 @@ void Sensor_init(void)
 {
     uint8_t i;
 
+#ifdef SUPPORT_SENSOR_ADJUST
+    /* Construct key process Event */
+    Event_construct(&sensorEvtStruct, NULL);
+    /* Obtain event instance handle */
+    sensorEvtHandle = Event_handle(&sensorEvtStruct);
+#endif //SUPPORT_SENSOR_ADJUST
+
     rSensorObject.sensorInit = 0;
     rSensorObject.serialNum = 0;
 //    rSensorObject.collectTime = 0;//have init by rtc call Sensor_set_collect_time
@@ -525,6 +546,138 @@ void Sensor_measure(uint8_t store)
         Sensor_store_package();
     }
 }
+
+#ifdef SUPPORT_SENSOR_ADJUST
+//***********************************************************************************
+//
+// Sensor measure updata.
+//
+//***********************************************************************************
+void Sensor_data_adujst(void)
+{
+    uint8_t i, j, validCnt;
+    int32_t  tempSum, tempMin, tempMax;
+
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        if ((g_rSysConfigInfo.sensorModule[i] > SEN_TYPE_NONE) &&
+            (g_rSysConfigInfo.sensorModule[i] < SEN_TYPE_MAX) &&
+            (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]] != NULL) &&
+            (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn != NULL) &&
+            (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP))) {
+
+            tempSum = 0;
+            validCnt = 0;
+
+            tempMin = DEEP_TEMP_OVERLOAD;
+            tempMax = - DEEP_TEMP_OVERLOAD;
+
+            for(j = 0; j < SENSOR_ADJUST_BUF_MAX; j++){
+
+                if(rSensorDataBuf[0][j].tempdeep != DEEP_TEMP_OVERLOAD){
+                    tempSum += rSensorDataBuf[0][j].tempdeep;
+
+                    if(rSensorDataBuf[0][j].tempdeep > tempMax)
+                        tempMax = rSensorDataBuf[0][j].tempdeep;
+
+                    if(rSensorDataBuf[0][j].tempdeep < tempMin)
+                        tempMin = rSensorDataBuf[0][j].tempdeep;
+
+                    validCnt++;
+                }
+
+            }
+            if(validCnt >= 3){
+                if(Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP)){
+                    rSensorData[i].tempdeep = (((tempSum - tempMax - tempMin) / (validCnt - 2)) & 0xFFFFFFF0) + (rSensorData[i].tempdeep & 0xf);
+                }
+
+            }
+        }
+    }
+}
+
+
+//***********************************************************************************
+//
+// Sensor measure updata.
+//
+//***********************************************************************************
+void Sensor_measure_updata(void)
+{
+    uint8_t i;
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        if ((g_rSysConfigInfo.sensorModule[i] > SEN_TYPE_NONE) &&
+            (g_rSysConfigInfo.sensorModule[i] < SEN_TYPE_MAX) &&
+            (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]] != NULL) &&
+            (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn != NULL)) {
+
+            if((Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function & (SENSOR_TEMP | SENSOR_HUMI | SENSOR_DEEP_TEMP)) == 0){
+                Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn(i);
+
+            }
+        }
+    }
+}
+
+//***********************************************************************************
+//
+// Sensor measure updata.
+//
+//***********************************************************************************
+void Sensor_measure_temp_updata(void)
+{
+    uint8_t i, sensor = 0;
+
+    if(rSensorUpdataNum == SENSOR_ADJUST_BUF_MAX)
+        rSensorUpdataNum = 0;
+
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        if ((g_rSysConfigInfo.sensorModule[i] > SEN_TYPE_NONE) &&
+            (g_rSysConfigInfo.sensorModule[i] < SEN_TYPE_MAX) &&
+            (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]] != NULL) &&
+            (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn != NULL)) {
+
+            if(Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_TEMP | SENSOR_HUMI)){
+                Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn(i);
+
+            }
+            else if(Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP)){
+                Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn(i);
+                rSensorDataBuf[0][rSensorUpdataNum].tempdeep = rSensorData[i].tempdeep;
+                sensor++;
+            }
+            else if(Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_TEMP)){
+                Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->measureFxn(i);
+            }
+        }
+    }
+
+    if(sensor){
+        rSensorUpdataNum++;
+        if(rSensorUpdataNum >= SENSOR_ADJUST_BUF_MAX)
+            rSensorUpdataFull = 1;
+
+        if(rSensorUpdataFull){
+            Sensor_data_adujst();
+        }
+    }
+}
+
+void Sensor_process(void)
+{
+    uint32_t eventId;
+    eventId = Event_pend(sensorEvtHandle, 0, SENSOR_EVT_ALL, BIOS_NO_WAIT);
+
+    if(eventId & SENSOR_EVT_UPDATA){
+        Sensor_measure_temp_updata();
+    }
+
+    if(eventId & SENSOR_EVT_STORE){
+        Sensor_measure_updata();
+        Sensor_store_package();
+    }
+}
+#endif //SUPPORT_SENSOR_ADJUST;
 
 //***********************************************************************************
 //
@@ -620,9 +773,21 @@ void Sensor_collect_time_isr(void)
 	}
 #endif // SUPPORT_ALARM_SWITCH_PERIOD
 	
+#ifdef SUPPORT_SENSOR_ADJUST
+    rSensorObject.updataTime ++;
+    if(rSensorObject.updataTime >= SENSOR_ADJUST_UPDATA_TIME){
+        rSensorObject.updataTime = 0;
+        Event_post(sensorEvtHandle, SENSOR_EVT_UPDATA);
+        Sys_event_post(SYS_EVT_SENSOR);
+    }
+#endif //SUPPORT_SENSOR_ADJUST
+
     if (rSensorObject.collectTime >= collectPeriod) {
         //在时间同步时可能将采集时间点改变，重新调整到30S.
         rSensorObject.collectTime = (rSensorObject.collectTime - collectPeriod) % collectPeriod;
+#ifdef SUPPORT_SENSOR_ADJUST
+        Event_post(sensorEvtHandle, SENSOR_EVT_STORE);
+#endif //SUPPORT_SENSOR_ADJUST
         Sys_event_post(SYS_EVT_SENSOR);
     }
 }
@@ -886,7 +1051,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 						#ifdef SUPPORT_ALARM_RECORD_QURERY							  
                             Sys_event_post(SYS_EVT_ALARM_SAVE);
                         #endif                            
-                            //设定报警        
+                            //设定报警
                             Sys_event_post(SYS_EVT_ALARM);
                             g_bAlarmSensorFlag |= 0x100;                        
                         }

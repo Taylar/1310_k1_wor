@@ -37,7 +37,7 @@ const PIN_Config lcdPinTable[] = {
 
 #define Lcd_power_ctrl(on)          (!on) ? (PIN_setOutputValue(lcdPinHandle, LCD_POWER_PIN, 1)) : (PIN_setOutputValue(lcdPinHandle, LCD_POWER_PIN, 0))
 
-#ifdef LCD_ST7567A
+#if  defined(LCD_ST7567A) || defined(OLED_LX12864K1)
 //Use software spi
 #define Lcd_spiDatCtrl(on)          (on) ? (PIN_setOutputValue(lcdPinHandle, LCD_DATA_PIN, 1)) : (PIN_setOutputValue(lcdPinHandle, LCD_DATA_PIN, 0))
 #define Lcd_spiClkCtrl(on)          (on) ? (PIN_setOutputValue(lcdPinHandle, LCD_CLK_PIN, 1)) : (PIN_setOutputValue(lcdPinHandle, LCD_CLK_PIN, 0))
@@ -50,15 +50,18 @@ const PIN_Config lcdPinTable[] = {
 static PIN_State   lcdPinState;
 static PIN_Handle  lcdPinHandle = NULL;
 
-#endif
+#endif  // defined(LCD_ST7567A) || defined(OLED_LX12864K1)
 
 
 static uint8_t fgLcdFontInverse;
 static uint8_t bLcdFontPages;       // Font Pages = Rows / 8
 static uint8_t bLcdFontCols;        // Font Cols
 
+const uint8_t oledComTable[] = {
+    0,1,2,3,4,5,6,7,
+};
 
-#ifdef LCD_ST7567A
+#if defined(LCD_ST7567A) || defined(OLED_LX12864K1)
 
 //***********************************************************************************
 //
@@ -147,10 +150,12 @@ void Lcd_send_data(uint8_t value)
 //***********************************************************************************
 static void Lcd_reset(void)
 {
-    Lcd_reset_ctrl(1);
-    Task_sleep(1 * CLOCK_UNIT_MS);
     Lcd_reset_ctrl(0);
-    Task_sleep(1 * CLOCK_UNIT_MS);
+    Task_sleep(50 * CLOCK_UNIT_MS);
+    Lcd_reset_ctrl(1);
+    Task_sleep(200 * CLOCK_UNIT_MS);
+    Lcd_reset_ctrl(0);
+    Task_sleep(50 * CLOCK_UNIT_MS);
 }
 
 #endif
@@ -217,6 +222,31 @@ void Lcd_init(void)
     Delay_ms(300);*/
 #endif
 
+#ifdef OLED_LX12864K1
+    Task_sleep(1 * CLOCK_UNIT_MS);
+    Lcd_reset();
+
+    Lcd_send_cmd(0xE3);
+    Lcd_send_cmd(0xA3);
+    Lcd_send_cmd(0xA0);
+    Lcd_send_cmd(0xC8);
+    Lcd_send_cmd(0x2f);
+    Lcd_send_cmd(0x24);
+    Lcd_send_cmd(0x81);
+    Lcd_send_cmd(75);
+    Lcd_send_cmd(0xf8);
+    Lcd_send_cmd(0x08);
+    Lcd_send_cmd(0xb0);
+    Lcd_send_cmd(0x10);
+    Lcd_send_cmd(0x00);
+
+    Lcd_clear_screen();
+
+    Lcd_send_cmd(0xAF);
+    //Task_sleep(200 * CLOCK_UNIT_MS);
+
+
+#endif // OLED_LX12864K1
 }
 
 //***********************************************************************************
@@ -257,6 +287,34 @@ void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
 #ifdef EPD_GDE0213B1
     EPD_writeCharacter(yStart, yStart + bLcdFontPages, xStart, xStart + bLcdFontCols, pChar);
 #endif
+
+#ifdef OLED_LX12864K1
+    uint8_t bLowCol, bHiCol;
+    uint8_t page, col;
+
+    // Offset from left edge of display.
+    xStart += LCD_START_COL;
+
+    // Add the command to page address.
+    bLowCol = xStart & 0x0f;
+    bHiCol = (xStart >> 4) & 0x0f;
+
+    for (page = 0; page < bLcdFontPages; page++) {
+        Lcd_send_cmd(LCD_CMD_PSA + oledComTable[yStart & 0x07]);         // set the page start address
+        Lcd_send_cmd(0x01 + bLowCol);      // set the lower start column address
+        Lcd_send_cmd(LCD_CMD_UPPER_SCA + bHiCol);       // set the upper start column address
+
+        for (col = 0; col < bLcdFontCols; col++) {
+            // check inverse flag bit.
+            if (fgLcdFontInverse)
+                Lcd_send_data(*pChar ^ 0xff);
+            else
+                Lcd_send_data(*pChar);
+            pChar++;
+        }
+        yStart++;
+    }
+#endif
 }
 
 //***********************************************************************************
@@ -295,6 +353,33 @@ void Lcd_clear_area(uint8_t xStart, uint8_t yStart)
 
 #ifdef EPD_GDE0213B1
     EPD_clearArea(yStart, yStart + bLcdFontPages, xStart, xStart + bLcdFontCols);
+#endif
+
+#ifdef OLED_LX12864K1
+    uint8_t bLowCol, bHiCol;
+    uint8_t page, col;
+
+    // Offset from left edge of display.
+    xStart += LCD_START_COL;
+
+    // Add the command to page address.
+    bLowCol = xStart & 0x0f;
+    bHiCol = (xStart >> 4) & 0x0f;
+
+    for (page = 0; page < bLcdFontPages; page++) {
+        Lcd_send_cmd(LCD_CMD_PSA + oledComTable[yStart & 0x07]);         // set the page start address
+        Lcd_send_cmd(LCD_CMD_LOWER_SCA + bLowCol);      // set the lower start column address
+        Lcd_send_cmd(LCD_CMD_UPPER_SCA + bHiCol);       // set the upper start column address
+
+        for (col = 0; col < bLcdFontCols; col++) {
+            // check inverse flag bit.
+            if (fgLcdFontInverse)
+                Lcd_send_data(0xff);
+            else
+                Lcd_send_data(0);
+        }
+        yStart++;
+    }
 #endif
 }
 
@@ -336,6 +421,18 @@ void Lcd_clear_screen(void)
 #ifdef EPD_GDE0213B1
     EPD_clearScreen();
 #endif
+
+#ifdef OLED_LX12864K1
+    uint8_t page, col;
+
+    for(page = 0; page < LCD_MAX_PAGE; page++) {
+        Lcd_send_cmd(LCD_CMD_PSA + oledComTable[page& 0x07]);                   // set the page start address
+        Lcd_send_cmd(LCD_CMD_LOWER_SCA + LCD_START_COL);    // set the lower start column address
+        Lcd_send_cmd(LCD_CMD_UPPER_SCA);                    // set the upper start column address
+        for(col = 0; col < LCD_TOTAL_COL; col++)
+            Lcd_send_data(0x00);
+    }
+#endif  // OLED_LX12864K1
 }
 
 //***********************************************************************************

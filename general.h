@@ -304,7 +304,8 @@ error type define
 #define SUPPORT_START_LOGO
 
 //#define EPD_GDE0213B1
-#define LCD_ST7567A
+// #define LCD_ST7567A
+#define OLED_LX12864K1
 #define SUPPORT_MENU
 
 #define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
@@ -466,10 +467,12 @@ error
 // S2_2 board define
 //***********************************************************************************
 #ifdef BOARD_B2S
-#define SUPPORT_SENSOR
+#ifdef S_C
+#define SUPPORT_SENSOR_ADJUST //传感器数据采集的调整,10S更新一次数据
 #undef  SUPPORT_SHT2X
 #define SUPPORT_SHT3X
 #define SUPPORT_DEEPTEMP_PT100
+#endif
 
 #define SUPPORT_REMOTE_UPGRADE
 #define SUPPORT_USB_UPGRADE
@@ -589,6 +592,9 @@ error
 
 #undef SUPPORT_DOUBLE_PRESS
 
+#define FLASH_SENSOR_DATA_32BYTE
+
+#define SUPPORT_CHARGE_DECT
 #define SUPPORT_USB
 #define SUPPORT_RARIO_SPEED_SET
 // #define SUPPORT_STRATEGY_SORT
@@ -608,7 +614,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0062
+#define FW_VERSION              0x0064
 
 #elif defined(S_C)
 
@@ -639,12 +645,12 @@ error
     #define FW_VERSION              0x0040
     #elif defined(S_G)
     #undef  SUPPORT_RSSI_CHECK
-    #define FW_VERSION              0x0045
+    #define FW_VERSION              0x0046
     #elif defined(S_C)
     #undef  BOARD_NAME
     #define  BOARD_NAME              "_S2S"
-    #undef SUPPORT_CHARGE_DECT
-    #define FW_VERSION              0x0044
+    ///#undef SUPPORT_CHARGE_DECT
+    #define FW_VERSION              0x0045
     #endif
 
 #undef  PROJECT_NAME

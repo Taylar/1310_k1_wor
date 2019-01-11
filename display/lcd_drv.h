@@ -44,6 +44,21 @@
 
 #endif
 
+#ifdef OLED_LX12864K1
+#define LCD_START_COL				0
+#define LCD_START_ROW				0
+
+#define LCD_MAX_PAGE				8
+#define LCD_PAGE_SIZE				8
+#define LCD_TOTAL_PAGE				8
+#define LCD_TOTAL_COL				128
+
+#define LCD_CMD_PSA                 0xb0
+#define LCD_CMD_LOWER_SCA           0x00
+#define LCD_CMD_UPPER_SCA           0x10
+
+#endif
+
 #define LCD_FONT12X24_START_COL		4
 #define LCD_FONT5X8_START_COL		4
 #define LCD_FONT8X16_START_COL		0
