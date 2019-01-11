@@ -227,16 +227,29 @@ void EngMode()
 		//Display signal	
 		Lcd_set_font(16, 16, 0);
 		value = Nwk_get_rssi();
+#ifdef S_G
 		if (value < 2 || value == 99)
-			Disp_icon(col, row, ICON_16X16_SIGNAL0, 0);
+			Disp_icon(col, row, ICON_13X8_SIGNAL_0, 0);
 		else if (value >= 12)
-			Disp_icon(col, row, ICON_16X16_SIGNAL3, 1);
+			Disp_icon(col, row, ICON_13X8_SIGNAL_3, 1);
 		else if (value >= 8)
-			Disp_icon(col, row, ICON_16X16_SIGNAL2, 1);
+			Disp_icon(col, row, ICON_13X8_SIGNAL_2, 1);
 		else if (value >= 5)
-			Disp_icon(col, row, ICON_16X16_SIGNAL1, 1);
+			Disp_icon(col, row, ICON_13X8_SIGNAL_1, 1);
 		else
-			Disp_icon(col, row, ICON_16X16_SIGNAL0, 1);
+			Disp_icon(col, row, ICON_13X8_SIGNAL_0, 1);
+#else
+        if (value < 2 || value == 99)
+            Disp_icon(col, row, ICON_16X16_SIGNAL0, 0);
+        else if (value >= 12)
+            Disp_icon(col, row, ICON_16X16_SIGNAL3, 1);
+        else if (value >= 8)
+            Disp_icon(col, row, ICON_16X16_SIGNAL2, 1);
+        else if (value >= 5)
+            Disp_icon(col, row, ICON_16X16_SIGNAL1, 1);
+        else
+            Disp_icon(col, row, ICON_16X16_SIGNAL0, 1);
+#endif
 
 		event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
 		if (event) {

@@ -22,6 +22,12 @@
 #define FONT_14X32_OFS              56
 #define FONT_16X32_OFS              64
 
+#ifdef S_G
+#define FONT_13X8_OFS               13
+#define FONT_14X24_OFS              42
+#define FONT_7X24_OFS               21
+#endif
+
 #ifdef SUPPORT_SFKJ_UI
 #define FONT_23X24_OFS              69
 #define FONT_13X8_OFS               13
@@ -65,6 +71,7 @@ typedef enum {
     ICON_16X16_ALARM,
     ICON_16X16_BLUETOOTH,
     ICON_16X16_UPLOAD,
+#ifndef S_G
     ICON_16X16_SIGNAL0,
     ICON_16X16_SIGNAL1,
     ICON_16X16_SIGNAL2,
@@ -75,6 +82,7 @@ typedef enum {
     ICON_16X16_BATTERY3,
     ICON_16X16_BATCHRG,
     ICON_16X16_FLIGHT,
+#endif
 
     ICON_9X24_DIGIT_0,
     ICON_9X24_DIGIT_1,
@@ -102,8 +110,9 @@ typedef enum {
     ICON_12X24_PERCENT,
 
     ICON_7X32_DOT,
-
+    ICON_7X24_DOT,
     ICON_14X32_TC,
+    ICON_14X24_TC,
 
     ICON_16X32_DIGIT_0,
     ICON_16X32_DIGIT_1,
@@ -116,6 +125,20 @@ typedef enum {
     ICON_16X32_DIGIT_8,
     ICON_16X32_DIGIT_9,
     ICON_16X32_SUB,
+
+#ifdef S_G
+    ICON_13X8_SIGNAL_0,
+    ICON_13X8_SIGNAL_1,
+    ICON_13X8_SIGNAL_2,
+    ICON_13X8_SIGNAL_3,
+    ICOM_13X8_CHAGER_STATE,
+    ICOM_13X8_BAT_FULL,
+    ICOM_13X8_BAT_70,
+    ICOM_13X8_BAT_40,
+    ICOM_13X8_BAT_10,
+    ICOM_13X8_BAT_FLIGHT,
+#endif
+
 #ifdef  SUPPORT_SFKJ_UI
     ICON_13X8_SIGNAL_0,
     ICON_13X8_SIGNAL_1,

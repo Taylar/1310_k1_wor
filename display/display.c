@@ -8,7 +8,6 @@
 // Description: Display API function process routine.
 //***********************************************************************************
 #include "../general.h"
-#ifndef SUPPORT_SFKJ_UI
 #ifdef SUPPORT_DISP_SCREEN
 // const uint8_t font5x8[]= {
 //     #include "font\font5x8.txt"
@@ -49,6 +48,18 @@ const uint8_t icon14x32[]= {
 const uint8_t icon16x32[]= {
     #include "font\icon16x32.txt"
 };
+
+#ifdef S_G
+const uint8_t icon13x8[]= {
+    #include "font\icon13x8.txt"
+};
+const uint8_t icon14x24[]= {
+    #include "font\icon14x24.txt"
+};
+const uint8_t icon7x24[]= {
+    #include "font\icon7x24.txt"
+};
+#endif
 //Calendar icon gap
 #define CAICON_GAP              1
 //Calendar icon digit wide and high
@@ -60,7 +71,7 @@ const uint8_t icon16x32[]= {
 #define CAICON_DIGIT            ICON_5X8_DIGIT_0
 //Calendar icon column index
 #define CAICON_COL              ICON_5X8_COL
-
+#ifndef S_G
 //Temperature icon gap
 #define TPICON_GAP              0
 //Temperature icon digit wide and high
@@ -80,7 +91,25 @@ const uint8_t icon16x32[]= {
 #define TPICON_DOT              ICON_7X32_DOT
 //Temperature icon degree Celsius index
 #define TPICON_DC               ICON_14X32_TC
+#else
+#define TPICON_GAP              0
+#define TPICON_W                12
+#define TPICON_H                24
+//Temperature icon dot wide and high
+#define TPICON_DOT_W            7
+#define TPICON_DOT_H            24
+//Temperature icon degree Celsius wide and high
+#define TPICON_DC_W             14
+#define TPICON_DC_H             24
 
+#define TPICON_SUB              ICON_12X24_SUB
+//Temperature icon digit index
+#define TPICON_DIGIT            ICON_12X24_DIGIT_0
+//Temperature icon dot index
+#define TPICON_DOT              ICON_7X24_DOT
+//Temperature icon degree Celsius index
+#define TPICON_DC               ICON_14X24_TC
+#endif
 //Humidty icon gap
 #define HUICON_GAP              0
 //Humidty icon digit wide and high
@@ -116,9 +145,13 @@ const uint8_t icon16x32[]= {
 #define STATUSB_ROW_POS         6
 
 //icon start col and row pos
+#ifdef S_G
+#define CALD_COL_POS            2
+#define CALD_ROW_POS            0
+#else
 #define CALD_COL_POS            14
 #define CALD_ROW_POS            0
-
+#endif
 #define DISP_INTERVAL_TIME      2000
 
 typedef struct {
@@ -222,7 +255,15 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
-
+#ifdef S_G
+        case ICON_16X16_EXTERNAL ... ICON_16X16_UPLOAD://ICON_16X16_BATTERY3:
+            if (light) {
+                Lcd_write_character(col, row, &icon16x16[(icon - ICON_16X16_EXTERNAL) * FONT_16X16_OFS]);
+            } else {
+                Lcd_clear_area(col, row);
+            }
+            break;
+#else
         case ICON_16X16_EXTERNAL ... ICON_16X16_FLIGHT://ICON_16X16_BATTERY3:
             if (light) {
                 Lcd_write_character(col, row, &icon16x16[(icon - ICON_16X16_EXTERNAL) * FONT_16X16_OFS]);
@@ -230,7 +271,7 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
-
+#endif
         case ICON_9X24_DIGIT_0 ... ICON_9X24_SUB:
             if (light) {
                 Lcd_write_character(col, row, &icon9x24[(icon - ICON_9X24_DIGIT_0) * FONT_9X24_OFS]);
@@ -270,6 +311,30 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
+#ifdef S_G
+        case ICON_13X8_SIGNAL_0 ... ICOM_13X8_BAT_FLIGHT:
+            if (light) {
+                Lcd_write_character(col, row, &icon13x8[(icon - ICON_13X8_SIGNAL_0) * FONT_13X8_OFS]);
+            } else {
+                Lcd_clear_area(col, row);
+            }
+            break;
+        case ICON_14X24_TC:
+            if (light) {
+                Lcd_write_character(col, row, &icon14x24[(icon - ICON_14X24_TC) * FONT_14X24_OFS]);
+            } else {
+                Lcd_clear_area(col, row);
+            }
+             break;
+        case ICON_7X24_DOT:
+            if (light) {
+                Lcd_write_character(col, row, &icon7x24[(icon - ICON_7X24_DOT) * FONT_7X24_OFS]);
+            } else {
+                Lcd_clear_area(col, row);
+            }
+             break;
+
+#endif
     }
 
     rDispObject.refresh = 1;
@@ -363,7 +428,7 @@ void Disp_refresh(void)
 static void Disp_calendar(void)
 {
     Calendar calendar;
-    uint8_t value;
+    uint16_t value;
     uint8_t col = CALD_COL_POS, row = CALD_ROW_POS;
 
     calendar = Rtc_get_calendar();
@@ -408,7 +473,11 @@ static void Disp_calendar(void)
     Disp_icon(col, row, CAICON_DIGIT + value, 1);
 
     value = (calendar.Hours >> 4) & 0x0f;
+#ifdef S_G
+    col += 5;
+#else
     col += 10;
+#endif
     col += CAICON_W + CAICON_GAP;
     Disp_icon(col, row, CAICON_DIGIT + value, 1);
     value = calendar.Hours & 0x0f;
@@ -424,9 +493,53 @@ static void Disp_calendar(void)
     value = calendar.Minutes & 0x0f;
     col += CAICON_W + CAICON_GAP;
     Disp_icon(col, row, CAICON_DIGIT + value, 1);
+#if defined(S_G)
+    Lcd_set_font(SIGNAL_W, SIGNAL_H, 0);
+    col += CAICON_W + 2*CAICON_GAP;
+#ifdef SUPPORT_FLIGHT_MODE
+    if(Flight_mode_isFlightMode() && (!Nwk_is_Active())){
+        Disp_icon(col, row, ICOM_13X8_BAT_FLIGHT, 1);
+    }else
+#endif
+    {
+    value = Nwk_get_rssi();
+    if (value < 2 || value == 99)
+        Disp_icon(col, row, ICON_13X8_SIGNAL_0, 0);
+    else if (value >= 12)
+        Disp_icon(col, row, ICON_13X8_SIGNAL_3, 1);
+    else if (value >= 8)
+        Disp_icon(col, row, ICON_13X8_SIGNAL_2, 1);
+    else if (value >= 5)
+        Disp_icon(col, row, ICON_13X8_SIGNAL_1, 1);
+    else
+        Disp_icon(col, row, ICON_13X8_SIGNAL_0, 1);
+    }
+    col += SBICON_W;
+#endif
+#if defined(SUPPORT_BATTERY) && defined(S_G)
+//Display battery
+
+#ifdef SUPPORT_CHARGE_DECT
+    if(Get_Charge_plug() == CHARGEING)
+     {
+        Disp_icon(col, row, ICOM_13X8_CHAGER_STATE, 1);
+     }else
+#endif
+     {
+    value = Battery_get_voltage();
+    if (value >= BAT_VOLTAGE_L3)
+        Disp_icon(col, row, ICOM_13X8_BAT_FULL, 1);
+    else if (value >= BAT_VOLTAGE_L2)
+        Disp_icon(col, row, ICOM_13X8_BAT_70, 1);
+    else if (value >= BAT_VOLTAGE_L1)
+        Disp_icon(col, row, ICOM_13X8_BAT_40, 1);
+    else
+        Disp_icon(col, row, ICOM_13X8_BAT_10, 1);
+     }
+#endif
 }
 
-#ifdef SUPPORT_SENSOR
+#if 1
 //***********************************************************************************
 //
 // Display temperature.
@@ -435,11 +548,18 @@ static void Disp_calendar(void)
 static void Disp_temperature(uint8_t col, uint8_t row, int32_t value, bool deep)
 {
     uint8_t thousand,hundreds,integer, decimal;
+
+#ifdef S_G
+    Lcd_set_font(132, 32, 0);
+    Lcd_clear_area(0, 2);
+
+#else
     Lcd_set_font(128, 8, 0);
     Lcd_clear_area(0,2);
     Lcd_clear_area(0,3);
     Lcd_clear_area(0,4);
     Lcd_clear_area(0,5);
+#endif
 	Lcd_set_font(TPICON_W, TPICON_H, 0);
     
     if ((deep == false && value == TEMPERATURE_OVERLOAD) ||
@@ -558,9 +678,17 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 {
 
     uint8_t thousand,hundreds,integer, decimal,flag = 0;
+#ifdef S_G
+    Lcd_set_font(128, 8, 0);
+    Lcd_clear_area(0,2);
+    Lcd_clear_area(0,3);
+#else
+    Lcd_set_font(128, 32, 0);
+    Lcd_clear_area(0, 2);
+#endif
     Lcd_set_font(132, 32, 0);
     Lcd_clear_area(0, 2);
-        if(value == 0x00ffffff){
+        if(value == LIGHT_OVERLOAD){
 
             Lcd_set_font(TPICON_W, TPICON_H, 0);
             Disp_icon(col, row, TPICON_SUB, 0);
@@ -632,7 +760,11 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
             sprintf((char *)buff, "Klx");
         }else
         sprintf((char *)buff, "Lx");
+#ifdef S_G
+        Disp_msg(col, row+1, buff, FONT_8X16);
+#else
         Disp_msg(col, row+2, buff, FONT_8X16);
+#endif
 /*    uint8_t buff[21];
 
     sprintf((char *)buff, "%ld.%dLx", (uint32_t)(value/100), (uint16_t)round(((value%100))/10));
@@ -648,6 +780,35 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 // Display sensor data.
 //
 //***********************************************************************************
+#ifdef SUPPORT_NETGATE_DISP_NODE
+#define  DEVIDCOL               55
+#define  DEVIDROW               5
+#define  SBDEVI_W               9
+#define  SBDEVI_H               24
+static void Disp_bar_sensor_id(uint32_t DeviceId){
+    if(DeviceId != 0){
+            uint8_t col = DEVIDCOL,row = DEVIDROW;
+            Lcd_set_font(SBDEVI_W, SBDEVI_H, 0);
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0xf0000000)>>28), 1);
+            col = col + SBDEVI_W;
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x0f000000)>>24), 1);
+            col = col + SBDEVI_W;
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x00f00000)>>20), 1);
+            col = col + SBDEVI_W;
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x000f0000)>>16), 1);
+            col = col + SBDEVI_W;
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x0000f000)>>12), 1);
+            col = col + SBDEVI_W;
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x00000f00)>>8), 1);
+            col = col + SBDEVI_W;
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x000000f0)>>4), 1);
+            col = col + SBDEVI_W;
+            Disp_icon(col, row, ICON_9X24_DIGIT_0 + (DeviceId&0x0000000f), 1);
+        }
+}
+static uint32_t starBarDeviceid = 0x00;
+#endif
+
 void Disp_sensor_data(void)
 {
 #ifdef SUPPORT_SENSOR
@@ -659,7 +820,7 @@ void Disp_sensor_data(void)
     if (rDispObject.init == 0)
         return;
 
-    if (g_bAlarmSensorFlag) {//œ‘ æ–Ë“™±®æØµƒsenso
+    if (g_bAlarmSensorFlag&&(Alarm_ffs(g_bAlarmSensorFlag) < MODULE_SENSOR_MAX)) {//ÈèÑÂâß„ÅöÈóáÔøΩÁëï‰ΩπÂß§ÁíÄÔ∏æÊÆësenso
         rDispObject.sensorIndex = Alarm_ffs(g_bAlarmSensorFlag);
     }
     
@@ -693,12 +854,17 @@ void Disp_sensor_data(void)
 
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor
-            
-        if (g_bAlarmSensorFlag) {
+
+#ifndef SUPPORT_CHARGE_DECT_ALARM
+        if (g_bAlarmSensorFlag)
+#else
+         if (g_bAlarmSensorFlag&&(!(g_bAlarmSensorFlag&ALARM_CHARGE_DECT_ALARM)))
+#endif
+        {
 
             if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
                 cursensorno = Flash_load_sensor_codec(g_AlarmSensor.DeviceId); //find sensor no in sensor codec table           
-
+#if 0
             if (cursensorno){
                 sprintf((char*)buff, "%02d#", cursensorno);
                 Disp_msg(4, 2, buff, FONT_8X16);
@@ -723,8 +889,24 @@ void Disp_sensor_data(void)
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);    
             }
-            
+#else
+            if (cursensorno){
+                starBarDeviceid =cursensorno;
+            }
+            else {
+                starBarDeviceid = g_AlarmSensor.DeviceId;
 
+            }
+            //all  data  saved to tempdeep
+            if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {
+
+                Disp_temperature(20, TEMP0_ROW_POS, g_AlarmSensor.value.tempdeep ,false);
+            }
+            else if (g_AlarmSensor.type == SENSOR_DATA_HUMI) {
+
+                Disp_humidty(20,TEMP0_ROW_POS,g_AlarmSensor.value.tempdeep);
+            }
+#endif
             return;
         }
 
@@ -733,7 +915,7 @@ void Disp_sensor_data(void)
 
             if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
                 cursensorno = Flash_load_sensor_codec(Sensor.DeviceId); //find sensor no in sensor codec table             
-            
+#if 0
             if (cursensorno){
                 sprintf((char*)buff, "%02d#", cursensorno);
                 Disp_msg(4, 2, buff, FONT_8X16);
@@ -772,7 +954,7 @@ void Disp_sensor_data(void)
             } else if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_DEEP_TEMP){
                 if (Sensor.value.tempdeep != DEEP_TEMP_OVERLOAD){
 
-                    TempToDisplayBuff(Sensor.value.tempdeep,buff,Sensor.index);
+                    TempToDisplayBuff(Sensor.value.tempdeep>>4,buff,Sensor.index);
                 }
                 else
                     sprintf((char*)buff, "--c");
@@ -781,8 +963,8 @@ void Disp_sensor_data(void)
                 Disp_msg(2, 4, buff, FONT_8X16);
             } else if(Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_LIGHT){
 
-                if (Sensor.value.lux != DEEP_TEMP_OVERLOAD){
-                    sprintf((char *)buff,  "%ld.%dLx", (uint32_t)((Sensor.value.lux&0x00ffffff)/100),(uint16_t)(LOWORD_ZKS(Sensor.value.lux)%100/10.0));
+                if (Sensor.value.lux != LIGHT_OVERLOAD){
+                    sprintf((char *)buff,  "%ld.%dLx", (uint32_t)((Sensor.value.lux&0x00ffffff)/100),(uint16_t)(LOWORD(Sensor.value.lux)%100/10.0));
                 }
                 else
                     sprintf((char*)buff, "--c");
@@ -796,6 +978,40 @@ void Disp_sensor_data(void)
                 Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 4, buff, FONT_8X16);
+            }
+#endif // SUPPORT_UPLOAD_ASSET_INFO
+
+#else
+            if (cursensorno){
+                starBarDeviceid =cursensorno;
+            }
+            else {
+                starBarDeviceid = Sensor.DeviceId;
+
+            }
+            
+            if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)(SENSOR_TEMP | SENSOR_HUMI)) {
+
+                    Disp_temperature(2, TEMP0_ROW_POS, Sensor.value.temp ,false);
+                    Disp_humidty(71,TEMP0_ROW_POS,Sensor.value.humi);
+
+            } else if (Sensor_get_function_by_type(Sensor.type) == SENSOR_TEMP) {   
+            
+                    Disp_temperature(20, TEMP0_ROW_POS, Sensor.value.temp ,false);
+
+            } else if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_DEEP_TEMP){
+
+                  Disp_temperature(20, TEMP0_ROW_POS, Sensor.value.temp >> 4 ,true);
+
+            } else if(Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_LIGHT){
+
+                     Disp_Lux(LUX_COL_POS, TEMP1_ROW_POS,Sensor.value.lux&0x00ffffff);
+#ifdef SUPPORT_UPLOAD_ASSET_INFO
+            } else if(Sensor.type == SEN_TYPE_ASSET){
+                sprintf((char*)buff, "%02x-%02x %02x:%02x", Sensor.value.month, Sensor.value.day, Sensor.value.hour, Sensor.value.minutes);
+                Lcd_set_font(132, 16, 0);
+                Lcd_clear_area(2, 4);
+                Disp_msg(2, 2, buff, FONT_8X16);
             }
 #endif // SUPPORT_UPLOAD_ASSET_INFO
         }
@@ -856,7 +1072,10 @@ void Disp_sensor_switch(void)
 
 }
 
-
+void Disp_sensor_set(uint8_t index)
+{
+	rDispObject.sensorIndex = index;
+}
 //***********************************************************************************
 //
 // Display status bar.
@@ -865,11 +1084,14 @@ void Disp_sensor_switch(void)
 static void Disp_status_bar(void)
 {
     uint8_t col = STATUSB_COL_POS, row = STATUSB_ROW_POS;
+#ifndef S_G
     uint16_t value;
+#endif
+    Lcd_clear_area(0, 4);
 
 	Lcd_set_font(SBICON_W, SBICON_H, 0);
 
-#if 0//def SUPPORT_SENSOR
+#if 1//def SUPPORT_SENSOR
 //Display external sensor flag
     if ( (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
         (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_NONE) ||
@@ -898,6 +1120,7 @@ static void Disp_status_bar(void)
         Disp_icon(col, row, ICON_16X16_ALARM, 0);
     col += SBICON_W * 4;
 
+#ifndef S_G
 //Display signal    or flight
 #ifdef SUPPORT_FLIGHT_MODE
     if(Flight_mode_isFlightMode() && (!Nwk_is_Active())){
@@ -939,7 +1162,33 @@ static void Disp_status_bar(void)
         Disp_icon(col, row, ICON_16X16_BATTERY0, 1);
     }
 #endif
+#else
+    col += SBICON_W + 2;
+
+    Disp_bar_sensor_id(starBarDeviceid);
+#endif
 }
+
+
+#ifdef RECORD_DISPLAY
+#define DISPLAY_PAGE_MAX_INDEX 5
+#define DISPLAY_PAGE_RECORD_INFO_INDEX 1
+#define DISPLAY_PAGE_ID_INFO_INDEX 2
+#define DISPLAY_PAGE_PERIOD_INDEX 3
+#define DISPLAY_PAGE_SOFTVERSION_INDEX 4
+#define DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE 5 ... 8
+
+#else
+
+#define DISPLAY_PAGE_MAX_INDEX 4
+//#define DISPLAY_PAGE_RECORD_INFO_INDEX 1
+#define DISPLAY_PAGE_ID_INFO_INDEX 1
+#define DISPLAY_PAGE_PERIOD_INDEX 2
+#define DISPLAY_PAGE_SOFTVERSION_INDEX 3
+#define DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE 4 ... 7
+
+#endif
+
 //***********************************************************************************
 //
 // Display info switch.
@@ -947,7 +1196,9 @@ static void Disp_status_bar(void)
 //***********************************************************************************
 void Disp_info_switch(void)
 {
-    uint8_t info_num = 4, sensor_num = 0, i;
+    uint8_t info_num = DISPLAY_PAGE_MAX_INDEX; //4;
+    uint8_t sensor_num = 0;
+    uint8_t i;
 
     if (rDispObject.init == 0)
         return;
@@ -1062,7 +1313,7 @@ static void Disp_info(void)
 #endif  // SUPPORT_STRATEGY_SORT
             Disp_msg(0, 0, buff, FONT_8X16);
 
-#ifdef  S_G//ÁΩëÂÖ≥
+#ifdef  S_G//ÁºÉÊàùÂèß
                 if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                 {
                     sprintf((char *)buff, "F&N:%ldK-%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
@@ -1100,7 +1351,7 @@ static void Disp_info(void)
                     
                     Disp_msg(0, 2*3, buff, FONT_8X16);                    
 
-                    break;//√ñ¬ª√è√î√ä¬æ¬µ√ö√í¬ª¬∏√∂√ç¬®¬µ√Ä¬µ√Ñ¬±¬®¬æ¬Ø¬∫√ç√î¬§¬æ¬Ø√ê√Ö√è¬¢
+                    break;//????????????????
                 }                
             }
             
@@ -1113,9 +1364,9 @@ static void Disp_info(void)
             for(i =0; i< MODULE_SENSOR_MAX; ++i){
                 if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
 
-                    if(j++ <= ((rDispObject.infoIndex-4)*2))continue;//Ã¯π˝µ⁄“ª∏ˆÕ®µ¿µƒ±®æØ∫Õ‘§æØ–≈œ¢
+                    if(j++ <= ((rDispObject.infoIndex-4)*2))continue;//????????ÈÄö???Ë∞ã?????????ÊÅØ
 
-                    if (j > ((rDispObject.infoIndex-4)*2 + 3))break;//÷ªœ‘ æµ⁄ 2 / 3 ∏ˆÕ®µ¿µƒ±®æØ∫Õ‘§æØ–≈œ¢
+                    if (j > ((rDispObject.infoIndex-4)*2 + 3))break;//Âè™?Á§∫??2 / 3 ??ÈÄö???Ë∞ã?????????ÊÅØ
                     
                     if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
                         sprintf((char *)buff, "TA%02d:    ", i);
@@ -1186,7 +1437,7 @@ void Disp_proc(void)
         return;
 
 #ifdef SUPPORT_LORA
-    //‘ˆº”≤…ºØ∆˜/Õ¯πÿœ‘ æ◊¢≤·–≈œ¢
+    //??Á°¨Êùâ??/?????Ê≥®????
    if( g_rSysConfigInfo.module & MODULE_RADIO ) {
        if(Lora_get_ntp()!= 0)
            Disp_msg(0, 6, "              ", FONT_8X16);//clear 
@@ -1215,21 +1466,11 @@ void Disp_proc(void)
            {
                 Disp_msg(3, 6, "Register", FONT_8X16);//display
            }
-           else
-           {
-                sprintf((char *)buff, "ch:%d", (g_rSysConfigInfo.rfBW >> 4));
-                Disp_msg(3, 6, "         ", FONT_8X16);
-                Disp_msg(3, 6, buff, FONT_8X16);//display
-           }
-       }
-       else{
-            sprintf((char *)buff, "Fix ch:%d", (g_rSysConfigInfo.rfBW >> 4));
-            Disp_msg(3, 6, buff, FONT_8X16);//display
        }
     }
 
 #ifdef SUPPORT_LORA
-    //‘ˆº”≤…ºØ∆˜/Õ¯πÿœ‘ æ◊¢≤·–≈œ¢
+    //??Á°¨Êùâ??/?????Ê≥®????
    if( g_rSysConfigInfo.module & MODULE_RADIO ) {
       if(Lora_get_ntp()== 0){
           if(*(uint32_t*)g_rSysConfigInfo.DeviceId != 0)
@@ -1239,8 +1480,6 @@ void Disp_proc(void)
       }
    }
 #endif
-
-
 
 }
 
@@ -1275,18 +1514,21 @@ bool Disp_poweron(void)
 #ifdef SUPPORT_SENSOR
         uint8_t i;
         for (i = 0; i < MODULE_SENSOR_MAX; i++) {
-            if (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
+            if ((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) && 
+			   (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)) {
                 if((g_rSysConfigInfo.status & STATUS_HIDE_SHT_SENSOR) && (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X)){
                     continue;//hide sht20 sensor
-                }
-                break;
-            }
-        }
-        rDispObject.sensorIndex = i;
+                }								
+				rDispObject.sensorIndex = i;//remember the current sensor index.				
+				if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_SHT2X )				
+	                break;//remember the first sensor index,whitch is not sht20
+		    }
+        }        
+        
 #endif
 
 #ifdef SUPPORT_NETGATE_DISP_NODE    
-        if(g_rSysConfigInfo.module & MODULE_NWK && g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor£¨don't display local sensor data
+        if(g_rSysConfigInfo.module & MODULE_NWK && g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor??don't display local sensor data
             rDispObject.sensorIndex = MODULE_SENSOR_MAX;
         }
 #endif

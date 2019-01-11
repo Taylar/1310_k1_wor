@@ -561,7 +561,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-// #define SUPPORT_BOARD_Z4
+#define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -614,7 +614,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0064
+#define FW_VERSION              0x0065
 
 #elif defined(S_C)
 
