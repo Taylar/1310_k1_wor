@@ -432,6 +432,8 @@ typedef struct {
 #define NWK_EVT_UPGRADE             Event_Id_06
 #define NWK_EVT_POWERSLEEP          Event_Id_07
 #define NWK_EVT_SEVER_ACK           Event_Id_08
+#define NWK_EVT_DATA_CONTINUE 		Event_Id_09
+
 #define NWK_EVT_ALL                 0xffff
 
 
@@ -1037,10 +1039,9 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
     uint16_t package_length;
     bool     congfig = false;
     //uint32_t deviceid;
-    
 #ifdef SUPPORT_FLIGHT_MODE
 	uint16_t minutes_flight = 0;
-#endif
+#endif //SUPPORT_FLIGHT_MODE
 
     //pBuff maybe include more one data package
     ptrstart = pBuff;
@@ -1239,7 +1240,7 @@ static void Nwk_init(void)
 //***********************************************************************************
 static void Nwk_taskFxn(void)
 {
-    UInt eventId, eventIdTemp = 0;
+    UInt eventId;
     bool bsensordata;
     uint8_t  package_count;
     uint8_t* pbuff;
@@ -1332,9 +1333,9 @@ static void Nwk_taskFxn(void)
 #endif
 
 		//wakeup first.
-            if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
-                continue;
-            }
+        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_WAKEUP, NULL) == FALSE) {
+            continue;
+        }
 
         Led_ctrl(LED_B, 1, 0, 0);
 		
@@ -1413,11 +1414,71 @@ static void Nwk_taskFxn(void)
             continue;
         }
 
-        if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
+        if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE| NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
+			
 #ifdef      SUPPORT_UPLOADTIME_LIMIT
-            uploadContinueTime = 0;
+			uint16_t txTimeOut;
+
+			if((eventId & NWK_EVT_DATA_CONTINUE) == 0)
+	            uploadContinueTime = 0;
+			
 #endif      // SUPPORT_UPLOADTIME_LIMIT
-            
+
+			if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT )){
+				//update rssi
+				if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_QUERY, NULL) == FALSE) {
+					continue;
+	            }
+
+				
+#ifdef	SUPPORT_UPLOADTIME_LIMIT
+	            
+	            if(Nwk_get_rssi() < 3){  // 3:-103dbm
+	                GsmUploadTimeoutSet(GSM_UPLOAD_WAIT_5_MIN);
+	                Nwk_poweroffEventSet();
+	                continue;
+	            }
+	            else if(Nwk_get_rssi() <= 26)  // 26:-59dbm
+	                txTimeOut = 5;
+	            else
+	                txTimeOut = 15;
+				
+				if(uploadContinueTime >= txTimeOut){
+					Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE | NWK_EVT_HEARTBEAT, BIOS_NO_WAIT);
+					rNwkObject.uploadTime = 0;
+					rNwkObject.hbTime = 0;
+					continue;
+				}
+
+#endif	  // SUPPORT_UPLOADTIME_LIMIT
+
+#ifdef SUPPORT_LBS
+				//send lbs data first
+				//query lbs.
+				if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_LBS_QUERY, &rNwkObject.location) == FALSE) {
+					continue;
+				}
+#ifdef USE_QUECTEL_API_FOR_LBS
+				Nwk_group_package(NMI_TX_LBS, &rNwkMsgPacket);
+#elif defined(USE_ENGINEERING_MODE_FOR_LBS)
+				Nwk_group_package(NMI_TX_CELL_INFO, &rNwkMsgPacket);
+#endif
+				if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+					continue;
+				}
+
+#ifdef	SUPPORT_UPLOADTIME_LIMIT
+				if(uploadContinueTime >= txTimeOut){
+					Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE |  NWK_EVT_HEARTBEAT, BIOS_NO_WAIT);
+					rNwkObject.uploadTime = 0;
+					rNwkObject.hbTime = 0;
+					continue;
+				}
+#endif	  // SUPPORT_UPLOADTIME_LIMIT
+				
+#endif
+			}
+
             if (eventId & NWK_EVT_HEARTBEAT) {
                 //send heartbeat data.
                 #ifndef   SUPPORT_NB
@@ -1427,57 +1488,27 @@ static void Nwk_taskFxn(void)
                 }
                 #endif
 
-            } else if (eventId & NWK_EVT_ACK) {
+            } 
+			if (eventId & NWK_EVT_ACK) {
                 //send ack data.
                 Nwk_group_package(NMI_TX_COM_ACK, &rNwkMsgPacket);
                 if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
                     continue;
                 }
-            } else {
-                //NWK_EVT_DATA_UPLOAD
-                if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_QUERY, NULL) == FALSE) {
-                    continue;
-                }
+            } 
 
-#ifdef SUPPORT_LBS
-            //send lbs data first
-                //query lbs.
-                if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_LBS_QUERY, &rNwkObject.location) == FALSE) {
-                    continue;
-                }
-#ifdef USE_QUECTEL_API_FOR_LBS
-                Nwk_group_package(NMI_TX_LBS, &rNwkMsgPacket);
-#elif defined(USE_ENGINEERING_MODE_FOR_LBS)
-                Nwk_group_package(NMI_TX_CELL_INFO, &rNwkMsgPacket);
-#endif
-                if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
-                    continue;
-                }           
-#endif
-                
+			if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE)) {                
 #ifdef FLASH_EXTERNAL
                 //send data second.
                 bsensordata = 0;
-                while(Flash_get_unupload_items()> 0){
-            #ifdef      SUPPORT_UPLOADTIME_LIMIT
-                    uint16_t txTimeOut;
-                    if(Nwk_get_rssi() < 3){  // 3:-103dbm
-                        GsmUploadTimeoutSet(GSM_UPLOAD_WAIT_5_MIN);
-                        Nwk_poweroffEventSet();
-                        break;
-                    }
-                    else if(Nwk_get_rssi() <= 26)  // 26:-59dbm
-                        txTimeOut = 5;
-                    else
-                        txTimeOut = 15;
-            #endif    // SUPPORT_UPLOADTIME_LIMIT
+                if(Flash_get_unupload_items()> 0){
 
-            #ifdef SUPPORT_FLIGHT_MODE
+            	#ifdef SUPPORT_FLIGHT_MODE
                     // When Get Flight Mode, terminate UPLOAD data
                     if(Flight_mode_isFlightMode()){
-                        break;
+                        continue;
                     }
-            #endif
+            	#endif
 
                      package_count = 0;
                      memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
@@ -1498,25 +1529,17 @@ static void Nwk_taskFxn(void)
 
                         }else{
                             break;
-                         }
+                        }
                     }
 
                     if(bsensordata == 1){
                         Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
                         if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
-                            break;
+                            continue;
                         }
                         else{
 #ifdef SUPPORT_GSM
                             Flash_moveto_offset_sensor_data(package_count);
-#ifdef      SUPPORT_UPLOADTIME_LIMIT
-                              if(uploadContinueTime >= txTimeOut){
-                                  Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD | NWK_EVT_HEARTBEAT, BIOS_NO_WAIT);
-                                  rNwkObject.uploadTime = 0;
-                                  rNwkObject.hbTime = 0;
-                                  break;
-                              }
-#endif      // SUPPORT_UPLOADTIME_LIMIT
 
 #else/*SUPPORT_NB*/
                             eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_SEVER_ACK, 2000*CLOCK_UNIT_MS);
@@ -1525,21 +1548,27 @@ static void Nwk_taskFxn(void)
                             }
 						   else
                             {
-                               break;
+                               continue;
                             }
-
-
 #endif
                         }
                     }
-                    eventIdTemp = Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD, BIOS_NO_WAIT);
-                    if(eventIdTemp & NWK_EVT_DATA_UPLOAD)
-                    {
-                        Nwk_event_post(NWK_EVT_DATA_UPLOAD);
-                        break;
+					
+                    if(Flash_get_unupload_items()> 0){
+                        Nwk_event_post(NWK_EVT_DATA_CONTINUE);
                     }
-                }
 
+					
+				#ifdef	SUPPORT_UPLOADTIME_LIMIT
+					if(uploadContinueTime >= txTimeOut){
+						Event_pend(nwkEvtHandle, 0, NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE | NWK_EVT_HEARTBEAT, BIOS_NO_WAIT);
+						rNwkObject.uploadTime = 0;
+						rNwkObject.hbTime = 0;
+						continue;
+					}
+				#endif	  // SUPPORT_UPLOADTIME_LIMIT
+
+                }
 
                 //当网关没有sensor数据时上传一个无效sensor数据以避免网关信息失联。
                 if(!bsensordata){
@@ -1551,54 +1580,42 @@ static void Nwk_taskFxn(void)
                 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
                 //系统状态信息
-
-                    while(Flash_get_deviced_state_items() > 0 )
-                    {
-                        memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
-                        pbuff = rNwkMsgPacket.buff;
-                        if(Flash_load_deviced_state_data(pbuff, FLASH_DEVICED_STATE_DATA_SIZE) == ES_SUCCESS){
-                            Nwk_group_package(NMI_TX_SYS_STATE, &rNwkMsgPacket);
+                if(Flash_get_deviced_state_items() > 0 )
+                {
+                    memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
+                    pbuff = rNwkMsgPacket.buff;
+                    if(Flash_load_deviced_state_data(pbuff, FLASH_DEVICED_STATE_DATA_SIZE) == ES_SUCCESS){
+                        Nwk_group_package(NMI_TX_SYS_STATE, &rNwkMsgPacket);
+                   
+                        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+                            continue;
                         }
                         else{
-                            break;
-                        }
-
-
-                        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
-                            break;
-                        }
-                        else
-                        {
-#ifndef SUPPORT_NB
                             Flash_moveto_next_deviced_state_data();
-#else
-                            eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_SEVER_ACK, 2000*CLOCK_UNIT_MS);
-                            if(eventId&NWK_EVT_SEVER_ACK){
-                              Flash_moveto_offset_sensor_data(package_count);
-                            }
-                           else
-                            {
-                               break;
-                            }
-#endif
                         }
                     }
-
-//                    if(rSysTask.state == SYS_STATE_STANDBY && rSysTask.stateStep == 0){
-//                        Sys_event_post(SYS_EVT_SHUTDODN);//notify systask it's time to shutdown
-//                        continue;
-//                    }
+					
+					if(Flash_get_deviced_state_items() > 0 ){
+						Nwk_event_post(NWK_EVT_DATA_CONTINUE);
+					}
+                }
+				
 
 #endif
 #ifdef SUPPORT_GSENSOR
                 //send g_sensor data second.
-                while (Flash_load_g_sensor_data(rNwkMsgPacket.buff, FLASH_G_SENSOR_DATA_SIZE) == ES_SUCCESS) {
-                    Nwk_group_package(NMI_TX_G_SENSOR, &rNwkMsgPacket);
-                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
-                        Flash_recovery_last_g_sensor_data();
-                        //ret = FALSE;
-                        break;
+                if(Flash_get_g_sensor_data_items()> 0){
+                	if (Flash_load_g_sensor_data(rNwkMsgPacket.buff, FLASH_G_SENSOR_DATA_SIZE) == ES_SUCCESS) {
+	                    Nwk_group_package(NMI_TX_G_SENSOR, &rNwkMsgPacket);
+    	                if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
+        	                Flash_recovery_last_g_sensor_data();            
+							continue;
+						}
                     }
+
+					if(Flash_get_g_sensor_data_items()> 0){
+						Nwk_event_post(NWK_EVT_DATA_CONTINUE);
+					}
                 }
 #endif
 
@@ -1609,15 +1626,18 @@ static void Nwk_taskFxn(void)
                     if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
                         Flash_recovery_last_gps_data();
                         //ret = FALSE;
+                        System_printf("GPS is no!");
+                        System_flush();
                         break;
+                    }else{
+                        System_printf("GPS is 0k!");
+                        System_flush();
                     }
                 }
 #endif
 #endif             
 
             }
-            if(eventIdTemp & NWK_EVT_DATA_UPLOAD)
-                continue;
             
 #ifdef SUPPORT_GSM_SHORT_CONNECT
             uint32_t temp;

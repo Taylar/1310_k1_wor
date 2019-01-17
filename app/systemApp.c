@@ -81,15 +81,15 @@ void SystemUsbIntEventPostIsr(void)
 
 void WdtResetCb(uintptr_t handle)
 {
-	UInt hwiKey;
-	// hwiKey = Hwi_disable();	
+	// UInt hwiKey;
+	// // hwiKey = Hwi_disable();	
 
-    hwiKey = Hwi_enable();
-    Flash_log("WDT\n");
-	// call this function will reset immediately, otherwise will waite another wdt timeout to reset
-	g_rSysConfigInfo.sysState.err_restarts ++;
-    Flash_store_config();
-    Hwi_restore(hwiKey);
+ //    hwiKey = Hwi_enable();
+ //    Flash_log("WDT\n");
+	// // call this function will reset immediately, otherwise will waite another wdt timeout to reset
+	// g_rSysConfigInfo.sysState.err_restarts ++;
+ //    Flash_store_config();
+ //    Hwi_restore(hwiKey);
     while(1)
         HWREGBITW( PRCM_BASE + PRCM_O_WARMRESET, PRCM_WARMRESET_WR_TO_PINRESET_BITN ) = 1;
 }

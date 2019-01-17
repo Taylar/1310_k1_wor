@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-01-04 11:13:38
+* @Last Modified time: 2019-01-11 13:44:41
 */
 #include "../general.h"
 
@@ -238,6 +238,10 @@ void S6HwInit(void)
     Sys_buzzer_init();
 
     UsbIntInit(SystemUsbIntEventPostIsr);
+
+#ifdef SUPPORT_CHARGE_DECT
+    Charge_detect_init();
+#endif
 
     Battery_init();
     Battery_voltage_measure();

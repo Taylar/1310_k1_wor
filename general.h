@@ -73,9 +73,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-// #define BOARD_S3
+#define BOARD_S3
 // #define BOARD_B2S
-#define BOARD_S6_6
+// #define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -102,8 +102,8 @@
 //
 //***********************************************************************************
 // #define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+// #define S_G//网关
+#define S_C//采集器
 
 //***********************************************************************************
 //
@@ -304,8 +304,8 @@ error type define
 #define SUPPORT_START_LOGO
 
 //#define EPD_GDE0213B1
-// #define LCD_ST7567A
-#define OLED_LX12864K1
+#define LCD_ST7567A
+// #define OLED_LX12864K1
 #define SUPPORT_MENU
 
 #define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
@@ -561,7 +561,7 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
-#define SUPPORT_BOARD_Z4
+// #define SUPPORT_BOARD_Z4
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -632,8 +632,14 @@ error
 #define         STRATEG_NAME               ""
 #endif  // SUPPORT_STRATEGY_SORT
 
+#ifdef SUPPORT_CHARGE_DECT
+#define         CHARGE_FUNC                 "_CHR"
+#else
+#define         CHARGE_FUNC                 ""
+#endif //  SUPPORT_CHARGE_DECT
+
 #undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""CHARGE_FUNC)
 #endif // BOARD_S6_6
 
 #ifdef BOARD_B2S
@@ -1069,6 +1075,7 @@ EXTERN_ATTR bool g_alarmFlag;
 #endif //SUPPORT_ALARM_SWITCH_PERIOD
 
 EXTERN_ATTR uint8_t radioError;
+
 
 extern uint8_t deviceMode;
 
