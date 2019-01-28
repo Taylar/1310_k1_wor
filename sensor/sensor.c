@@ -473,6 +473,12 @@ static void Sensor_store_package(void)
 #endif  // G7_PROJECT
 
 #endif  /* FLASH_EXTERNAL */
+#ifdef  SUPPORT_DEVICED_STATE_UPLOAD
+    if(g_bNeedUploadRecord){
+        Flash_store_devices_state(TYPE_RECORD_START);
+        g_bNeedUploadRecord = 0;
+    }       
+#endif
 }
 
 
@@ -777,7 +783,8 @@ void Sensor_collect_time_isr(void)
     rSensorObject.updataTime ++;
     if(rSensorObject.updataTime >= SENSOR_ADJUST_UPDATA_TIME){
         rSensorObject.updataTime = 0;
-        Event_post(sensorEvtHandle, SENSOR_EVT_UPDATA);
+        if(sensorEvtHandle)
+            Event_post(sensorEvtHandle, SENSOR_EVT_UPDATA);
         Sys_event_post(SYS_EVT_SENSOR);
     }
 #endif //SUPPORT_SENSOR_ADJUST
@@ -786,7 +793,8 @@ void Sensor_collect_time_isr(void)
         //在时间同步时可能将采集时间点改变，重新调整到30S.
         rSensorObject.collectTime = (rSensorObject.collectTime - collectPeriod) % collectPeriod;
 #ifdef SUPPORT_SENSOR_ADJUST
-        Event_post(sensorEvtHandle, SENSOR_EVT_STORE);
+        if(sensorEvtHandle)
+            Event_post(sensorEvtHandle, SENSOR_EVT_STORE);
 #endif //SUPPORT_SENSOR_ADJUST
         Sys_event_post(SYS_EVT_SENSOR);
     }
@@ -960,7 +968,8 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
     uint16_t Index;    
 	sensordata_mem cursensor;
 #ifdef SUPPORT_NETGATE_BIND_NODE
-    bool isbind = false;
+    int8_t isbindNum = - 1;
+	uint32_t temp;
 #endif
     
 	Index = 2;//DeviceId  start
@@ -971,9 +980,9 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
     LOBYTE_ZKS(LOWORD_ZKS(cursensor.DeviceId)) = pData[Index++];  
 
 #ifdef SUPPORT_NETGATE_BIND_NODE
-    isbind = IsBindNode(cursensor.DeviceId);
+    isbindNum = IsBindNode(cursensor.DeviceId);
 
-    if(((g_rSysConfigInfo.status & STATUS_DISP_BIND_ONLY)) && !isbind){  //如果支持绑定节点，默认显示所有节点信息,除非设置STATUS_DISP_BIND_ONLY
+    if(((g_rSysConfigInfo.status & STATUS_DISP_BIND_ONLY)) && (isbindNum == -1)){  //如果支持绑定节点，默认显示所有节点信息,除非设置STATUS_DISP_BIND_ONLY
         return;
     }
 #endif
@@ -1025,21 +1034,29 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 		}  
 
 #ifdef SUPPORT_NETGATE_BIND_NODE
-        if(isbind){
-            if (Sensor_get_function_by_type(cursensor.type) & SENSOR_TEMP ) {
+        if( isbindNum != -1 ){
 
-                //判断接收的数据是否已绑定设备，是则需要判断是否超温
-                for( i = 0; i < NETGATE_BIND_NODE_MAX; ++i){
-                    if ( (cursensor.DeviceId == g_rSysConfigInfo.bindnode[i].Deviceid) && 
-                        ((g_rSysConfigInfo.bindnode[i].ChNo == 0xff) || cursensor.index  == g_rSysConfigInfo.bindnode[i].ChNo) ){
-                        if((g_rSysConfigInfo.bindnode[i].AlarmInfo.high != ALARM_TEMP_HIGH && cursensor.value.temp >= g_rSysConfigInfo.bindnode[i].AlarmInfo.high) ||
-                           (g_rSysConfigInfo.bindnode[i].AlarmInfo.low != ALARM_TEMP_LOW && cursensor.value.temp <= g_rSysConfigInfo.bindnode[i].AlarmInfo.low)) {                       
+                    //judge is bound and judge the value is over setting alarm threshold
+            if ( (g_rSysConfigInfo.bindnode[isbindNum].ChNo == 0xff) || (cursensor.index  == g_rSysConfigInfo.bindnode[isbindNum].ChNo) ){
+
+                // temp alrm
+				if( Sensor_get_function_by_type(cursensor.type) & (SENSOR_TEMP | SENSOR_DEEP_TEMP)){
+
+					if(Sensor_get_function_by_type(cursensor.type)&SENSOR_DEEP_TEMP){
+						temp = cursensor.value.tempdeep>>4;
+					}
+					else{
+						temp = cursensor.value.temp;
+					}
+
+					if( (g_rSysConfigInfo.bindnode[isbindNum].AlarmInfo.high != ALARM_TEMP_HIGH && temp >= g_rSysConfigInfo.bindnode[isbindNum].AlarmInfo.high) ||
+						(g_rSysConfigInfo.bindnode[isbindNum].AlarmInfo.low != ALARM_TEMP_LOW && temp <= g_rSysConfigInfo.bindnode[isbindNum].AlarmInfo.low))  {
 
                             g_AlarmSensor.DeviceId = cursensor.DeviceId;                                    
                             g_AlarmSensor.index      = cursensor.index;
                             g_AlarmSensor.type       = SENSOR_DATA_TEMP;
                             //all  data  saved to tempdeep
-                            g_AlarmSensor.value.tempdeep = cursensor.value.temp;                                                                                       
+						    g_AlarmSensor.value.tempdeep = temp;
                         
                             g_AlarmSensor.time[0]    = pData[8];
                             g_AlarmSensor.time[1]    = pData[9];
@@ -1049,25 +1066,23 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
                             g_AlarmSensor.time[5]    = pData[13];
 
 						#ifdef SUPPORT_ALARM_RECORD_QURERY							  
-                            Sys_event_post(SYS_EVT_ALARM_SAVE);
+						    Flash_store_alarm_record((uint8_t*)(&g_AlarmSensor),sizeof(Alarmdata_t));
                         #endif                            
-                            //设定报警
+                            //设定报警        
                             Sys_event_post(SYS_EVT_ALARM);
-                            g_bAlarmSensorFlag |= 0x100;                        
-                        }
-                        else                   
-                        {   
-                             //取消报警
-                             if(g_bAlarmSensorFlag & (0x100)){
-                                g_bAlarmSensorFlag ^= (0x100);
-                             }                         
-                        }
-
-                        break;
+                            g_bAlarmSensorFlag |= ALARM_RX_EXTERNAL_ALARM;                        
                     }
-                }
-            }
-        }
+#if 0
+					else {
+                         //取消报警
+                         if(g_bAlarmSensorFlag & (ALARM_RX_EXTERNAL_ALARM)){
+                            g_bAlarmSensorFlag ^= (ALARM_RX_EXTERNAL_ALARM);
+                         }                         
+                    }
+#endif
+            	}
+        	}
+		}        
 #endif
 
         //save to mem
@@ -1090,10 +1105,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 
             MemSensorIndex = (MemSensorIndex + 1) % MEMSENSOR_NUM;
         }
-        
-        
 	}
-
 }
 
 bool get_next_sensor_memory(sensordata_mem *pSensor)

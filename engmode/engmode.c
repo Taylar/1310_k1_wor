@@ -66,11 +66,6 @@ bool GetEngModeFlag()
 		return 0;
 }
 
-void SetEngModeConfig()
-{
-	g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;//
-	g_rSysConfigInfo.module   &= ~MODULE_RADIO;
-}
 
 extern int8_t RadioCheckRssi(void);
 
@@ -225,9 +220,9 @@ void EngMode()
 
 
 		//Display signal	
-		Lcd_set_font(16, 16, 0);
 		value = Nwk_get_rssi();
 #ifdef S_G
+		Lcd_set_font(13, 8, 0);
 		if (value < 2 || value == 99)
 			Disp_icon(col, row, ICON_13X8_SIGNAL_0, 0);
 		else if (value >= 12)
@@ -239,6 +234,7 @@ void EngMode()
 		else
 			Disp_icon(col, row, ICON_13X8_SIGNAL_0, 1);
 #else
+		Lcd_set_font(16, 16, 0);
         if (value < 2 || value == 99)
             Disp_icon(col, row, ICON_16X16_SIGNAL0, 0);
         else if (value >= 12)
@@ -277,12 +273,9 @@ void EngMode()
             rssi = RadioCheckRssi();
     		if (rssi < 0) {
     	        rssi = -rssi;
-    	        Disp_icon(0, 2, ICON_16X32_SUB, 1);
-    	    } else {
-    	        Disp_icon(0, 2, ICON_16X32_SUB, 0);
     	    }
-
     	   	Disp_number(3,2,rssi,3,FONT_8X16);
+    	   	Task_sleep(500 * CLOCK_UNIT_MS);
     	   	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_NO_WAIT);
             if(event !=0)
                 break;
@@ -325,14 +318,7 @@ void EngMode()
 		Btp_poweroff();
 
 		event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
-		keyCode = Key_get();
-		if (keyCode == _VK_SELECT) {
-			Eng_Result.bt = true;
-		}
-		else {
-		
-			Eng_Result.bt = false;	
-		}
+
     }
 #endif
 

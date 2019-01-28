@@ -494,7 +494,13 @@ typedef enum{
 }UPGRADE_STATE_E;
 
 
-
+void Nwk_upload_set(void)
+{
+    rNwkObject.uploadTime = 0;
+    rNwkObject.hbTime = 0;
+    if(nwkEvtHandle)
+        Event_post(nwkEvtHandle, NWK_EVT_DATA_UPLOAD);
+}
 
 #ifdef SUPPORT_UPLOADTIME_LIMIT
 uint8_t  gsmTransTimeout;
@@ -547,13 +553,7 @@ uint8_t GsmUploadTimeoutStateRead(void)
 
 #define     UPLOAD_MAX_CONTINUE_TIME    15
 
-void Nwk_upload_set(void)
-{
-    rNwkObject.uploadTime = 0;
-    rNwkObject.hbTime = 0;
-	if(nwkEvtHandle)
-    	Event_post(nwkEvtHandle, NWK_EVT_DATA_UPLOAD);
-}
+
 
 void Nwk_upload_clear(void)
 {
@@ -1123,7 +1123,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 #ifdef SUPPORT_ALARM_RECORD_QURERY					
                     Sys_event_post(SYS_EVT_ALARM_SAVE);
 #endif
-                    g_bAlarmSensorFlag = ALARM_NMI_RX_ALARM;
+                    g_bAlarmSensorFlag = ALARM_RX_EXTERNAL_ALARM;
 
                     Sys_event_post(SYS_EVT_ALARM);
 

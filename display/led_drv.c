@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-11 11:34:38
+* @Last Modified time: 2019-01-19 14:05:31
 */
 #include "../general.h"
 
@@ -40,7 +40,9 @@ static const uint8_t LED_ID_CONST[LED_MAX] =
 
 const PIN_Config ledPinTable[] = {
     LED_R_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+#ifndef SUPPORT_BLUETOOTH_PRINT
     LED_G_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
+#endif // SUPPORT_BLUETOOTH_PRINT
     LED_B_PIN_NODE | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     PIN_TERMINATE
 };
@@ -82,6 +84,10 @@ void LedIoInit(void)
 //***********************************************************************************
 void Led_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times)
 {
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(ledId == LED_G)
+        return;
+#endif // SUPPORT_BLUETOOTH_PRINT
     Led_ctrl2(ledId, state, period, period, times);
 }
 
@@ -99,6 +105,11 @@ void Led_ctrl2(uint8_t ledId, uint8_t state, uint32_t period, uint32_t period2, 
 {
     uint8_t i;
     /* Get access to resource */
+
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(ledId == LED_G)
+        return;
+#endif // SUPPORT_BLUETOOTH_PRINT
 
     period  /= CLOCK_UNIT_MS; 
     period2 /= CLOCK_UNIT_MS;

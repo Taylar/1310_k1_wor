@@ -17,9 +17,9 @@ const uint8_t font8x16[]= {
     #include "font\font8x16.txt"
 };
 
-const uint8_t font12x24[]= {
-    #include "font\font12x24.txt"
-};
+// const uint8_t font12x24[]= {
+//     #include "font\font12x24.txt"
+// };
 
 const uint8_t icon5x8[]= {
     #include "font\icon5x8.txt"
@@ -53,12 +53,12 @@ const uint8_t icon16x32[]= {
 const uint8_t icon13x8[]= {
     #include "font\icon13x8.txt"
 };
-const uint8_t icon14x24[]= {
-    #include "font\icon14x24.txt"
-};
-const uint8_t icon7x24[]= {
-    #include "font\icon7x24.txt"
-};
+// const uint8_t icon14x24[]= {
+//     #include "font\icon14x24.txt"
+// };
+// const uint8_t icon7x24[]= {
+//     #include "font\icon7x24.txt"
+// };
 #endif
 //Calendar icon gap
 #define CAICON_GAP              1
@@ -71,7 +71,7 @@ const uint8_t icon7x24[]= {
 #define CAICON_DIGIT            ICON_5X8_DIGIT_0
 //Calendar icon column index
 #define CAICON_COL              ICON_5X8_COL
-#ifndef S_G
+
 //Temperature icon gap
 #define TPICON_GAP              0
 //Temperature icon digit wide and high
@@ -91,25 +91,7 @@ const uint8_t icon7x24[]= {
 #define TPICON_DOT              ICON_7X32_DOT
 //Temperature icon degree Celsius index
 #define TPICON_DC               ICON_14X32_TC
-#else
-#define TPICON_GAP              0
-#define TPICON_W                12
-#define TPICON_H                24
-//Temperature icon dot wide and high
-#define TPICON_DOT_W            7
-#define TPICON_DOT_H            24
-//Temperature icon degree Celsius wide and high
-#define TPICON_DC_W             14
-#define TPICON_DC_H             24
 
-#define TPICON_SUB              ICON_12X24_SUB
-//Temperature icon digit index
-#define TPICON_DIGIT            ICON_12X24_DIGIT_0
-//Temperature icon dot index
-#define TPICON_DOT              ICON_7X24_DOT
-//Temperature icon degree Celsius index
-#define TPICON_DC               ICON_14X24_TC
-#endif
 //Humidty icon gap
 #define HUICON_GAP              0
 //Humidty icon digit wide and high
@@ -154,16 +136,7 @@ const uint8_t icon7x24[]= {
 #endif
 #define DISP_INTERVAL_TIME      2000
 
-typedef struct {
-    //Display init flag.
-    uint8_t init;
-    //Display refresh flag.
-    uint8_t refresh;
-    //Display sensor module number index.
-    uint8_t sensorIndex;
-    //Display info index.
-    uint8_t infoIndex;
-} DispObject_t;
+
 typedef struct {
     uint8_t     flag;
     int32_t    valueHH;
@@ -319,20 +292,20 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
-        case ICON_14X24_TC:
-            if (light) {
-                Lcd_write_character(col, row, &icon14x24[(icon - ICON_14X24_TC) * FONT_14X24_OFS]);
-            } else {
-                Lcd_clear_area(col, row);
-            }
-             break;
-        case ICON_7X24_DOT:
-            if (light) {
-                Lcd_write_character(col, row, &icon7x24[(icon - ICON_7X24_DOT) * FONT_7X24_OFS]);
-            } else {
-                Lcd_clear_area(col, row);
-            }
-             break;
+        // case ICON_14X24_TC:
+        //     if (light) {
+        //         Lcd_write_character(col, row, &icon14x24[(icon - ICON_14X24_TC) * FONT_14X24_OFS]);
+        //     } else {
+        //         Lcd_clear_area(col, row);
+        //     }
+        //      break;
+        // case ICON_7X24_DOT:
+        //     if (light) {
+        //         Lcd_write_character(col, row, &icon7x24[(icon - ICON_7X24_DOT) * FONT_7X24_OFS]);
+        //     } else {
+        //         Lcd_clear_area(col, row);
+        //     }
+        //      break;
 
 #endif
     }
@@ -345,7 +318,7 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
 // Display string message.
 //
 //***********************************************************************************
-void Disp_msg(uint8_t col, uint8_t row, const uint8_t *pChar, E_FONT_TYPE eFont)
+void Disp_msg(uint16_t col, uint16_t row, const uint8_t *pChar, E_FONT_TYPE eFont)
 {
     if (rDispObject.init == 0)
         return;
@@ -549,17 +522,13 @@ static void Disp_temperature(uint8_t col, uint8_t row, int32_t value, bool deep)
 {
     uint8_t thousand,hundreds,integer, decimal;
 
-#ifdef S_G
-    Lcd_set_font(132, 32, 0);
-    Lcd_clear_area(0, 2);
 
-#else
     Lcd_set_font(128, 8, 0);
     Lcd_clear_area(0,2);
     Lcd_clear_area(0,3);
     Lcd_clear_area(0,4);
     Lcd_clear_area(0,5);
-#endif
+
 	Lcd_set_font(TPICON_W, TPICON_H, 0);
     
     if ((deep == false && value == TEMPERATURE_OVERLOAD) ||
@@ -688,7 +657,7 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 #endif
     Lcd_set_font(132, 32, 0);
     Lcd_clear_area(0, 2);
-        if(value == LIGHT_OVERLOAD){
+        if(value == (LIGHT_OVERLOAD & 0x00ffffff)){
 
             Lcd_set_font(TPICON_W, TPICON_H, 0);
             Disp_icon(col, row, TPICON_SUB, 0);
@@ -781,31 +750,9 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 //
 //***********************************************************************************
 #ifdef SUPPORT_NETGATE_DISP_NODE
-#define  DEVIDCOL               55
-#define  DEVIDROW               5
-#define  SBDEVI_W               9
-#define  SBDEVI_H               24
-static void Disp_bar_sensor_id(uint32_t DeviceId){
-    if(DeviceId != 0){
-            uint8_t col = DEVIDCOL,row = DEVIDROW;
-            Lcd_set_font(SBDEVI_W, SBDEVI_H, 0);
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0xf0000000)>>28), 1);
-            col = col + SBDEVI_W;
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x0f000000)>>24), 1);
-            col = col + SBDEVI_W;
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x00f00000)>>20), 1);
-            col = col + SBDEVI_W;
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x000f0000)>>16), 1);
-            col = col + SBDEVI_W;
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x0000f000)>>12), 1);
-            col = col + SBDEVI_W;
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x00000f00)>>8), 1);
-            col = col + SBDEVI_W;
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + ((DeviceId&0x000000f0)>>4), 1);
-            col = col + SBDEVI_W;
-            Disp_icon(col, row, ICON_9X24_DIGIT_0 + (DeviceId&0x0000000f), 1);
-        }
-}
+
+#define  DEVIDCOL               8
+#define  DEVIDROW               6
 static uint32_t starBarDeviceid = 0x00;
 #endif
 
@@ -820,7 +767,7 @@ void Disp_sensor_data(void)
     if (rDispObject.init == 0)
         return;
 
-    if (g_bAlarmSensorFlag&&(Alarm_ffs(g_bAlarmSensorFlag) < MODULE_SENSOR_MAX)) {//鏄剧ず闇�瑕佹姤璀︾殑senso
+    if (g_bAlarmSensorFlag&&(Alarm_ffs(g_bAlarmSensorFlag) < MODULE_SENSOR_MAX)) {//显示需要报警的senso
         rDispObject.sensorIndex = Alarm_ffs(g_bAlarmSensorFlag);
     }
     
@@ -840,7 +787,7 @@ void Disp_sensor_data(void)
             Disp_temperature(TEMP1_COL_POS, TEMP1_ROW_POS, valueT>>4, true);
         }else if(Sensor_get_function(rDispObject.sensorIndex) == SENSOR_LIGHT){
             valueL = Sensor_get_lux(rDispObject.sensorIndex);
-            Disp_Lux(LUX_COL_POS, TEMP1_ROW_POS,valueL);
+            Disp_Lux(LUX_COL_POS, TEMP1_ROW_POS,valueL & 0x00ffffff);
         }
         return;
     }
@@ -849,7 +796,7 @@ void Disp_sensor_data(void)
     
 #ifdef SUPPORT_NETGATE_DISP_NODE
     sensordata_mem Sensor = {0,0,0,0};
-    uint8_t buff[32];
+    //uint8_t buff[32];
     uint16_t  cursensorno = 0;
 
     if(g_rSysConfigInfo.module & MODULE_NWK && 
@@ -900,11 +847,11 @@ void Disp_sensor_data(void)
             //all  data  saved to tempdeep
             if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {
 
-                Disp_temperature(20, TEMP0_ROW_POS, g_AlarmSensor.value.tempdeep ,false);
+                Disp_temperature(TEMP1_ROW_POS, TEMP1_ROW_POS, g_AlarmSensor.value.tempdeep ,false);
             }
             else if (g_AlarmSensor.type == SENSOR_DATA_HUMI) {
 
-                Disp_humidty(20,TEMP0_ROW_POS,g_AlarmSensor.value.tempdeep);
+                Disp_humidty(TEMP1_ROW_POS,HUMI_ROW_POS,g_AlarmSensor.value.tempdeep);
             }
 #endif
             return;
@@ -992,28 +939,30 @@ void Disp_sensor_data(void)
             
             if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)(SENSOR_TEMP | SENSOR_HUMI)) {
 
-                    Disp_temperature(2, TEMP0_ROW_POS, Sensor.value.temp ,false);
-                    Disp_humidty(71,TEMP0_ROW_POS,Sensor.value.humi);
+                    Disp_temperature(TEMP0_COL_POS, TEMP0_ROW_POS, Sensor.value.temp ,false);
+                    Disp_humidty(HUMI_COL_POS,HUMI_ROW_POS,Sensor.value.humi);
 
             } else if (Sensor_get_function_by_type(Sensor.type) == SENSOR_TEMP) {   
             
-                    Disp_temperature(20, TEMP0_ROW_POS, Sensor.value.temp ,false);
+                    Disp_temperature(TEMP1_COL_POS, TEMP1_ROW_POS, Sensor.value.temp ,false);
 
             } else if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_DEEP_TEMP){
 
-                  Disp_temperature(20, TEMP0_ROW_POS, Sensor.value.temp >> 4 ,true);
+                  Disp_temperature(TEMP1_COL_POS, TEMP1_ROW_POS, (Sensor.value.tempdeep>>4),true);
 
             } else if(Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_LIGHT){
 
                      Disp_Lux(LUX_COL_POS, TEMP1_ROW_POS,Sensor.value.lux&0x00ffffff);
 #ifdef SUPPORT_UPLOAD_ASSET_INFO
             } else if(Sensor.type == SEN_TYPE_ASSET){
+                uint8_t buff[32];
                 sprintf((char*)buff, "%02x-%02x %02x:%02x", Sensor.value.month, Sensor.value.day, Sensor.value.hour, Sensor.value.minutes);
                 Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 2, buff, FONT_8X16);
             }
 #endif // SUPPORT_UPLOAD_ASSET_INFO
+#endif
         }
     }
         
@@ -1091,7 +1040,7 @@ static void Disp_status_bar(void)
 
 	Lcd_set_font(SBICON_W, SBICON_H, 0);
 
-#if 1//def SUPPORT_SENSOR
+#ifdef SUPPORT_SENSOR
 //Display external sensor flag
     if ( (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
         (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_NONE) ||
@@ -1100,6 +1049,25 @@ static void Disp_status_bar(void)
     } else {
         Disp_icon(col, row, ICON_16X16_EXTERNAL, 1);
     }
+#else
+
+#ifdef SUPPORT_GPS
+    if(g_rSysConfigInfo.module & MODULE_GPS){
+
+        Lcd_set_font(SBICON_W*2, SBICON_H, 0);
+        if(GPS_get_setting_state())
+          {
+             if(GPS_get_location_state())
+               Disp_msg(STATUSB_COL_POS, row, "GL", FONT_8X16);
+             else
+               Disp_msg(STATUSB_COL_POS, row, "G", FONT_8X16);
+          }else
+          {
+               Disp_msg(STATUSB_COL_POS, row, "NG", FONT_8X16);
+          }
+    }
+#endif	/*SUPPORT_GPS*/
+
 #endif
     col += SBICON_W;
 
@@ -1163,9 +1131,14 @@ static void Disp_status_bar(void)
     }
 #endif
 #else
-    col += SBICON_W + 2;
+    uint8_t buff[9] = {0};
+    Lcd_set_font(132, 16, 0);
 
-    Disp_bar_sensor_id(starBarDeviceid);
+    if(starBarDeviceid!=0x00){
+
+    sprintf((char*)buff, "%08lx", starBarDeviceid);
+    Disp_msg(8, 6, buff, FONT_8X16);
+    }
 #endif
 }
 
@@ -1185,7 +1158,12 @@ static void Disp_status_bar(void)
 #define DISPLAY_PAGE_ID_INFO_INDEX 1
 #define DISPLAY_PAGE_PERIOD_INDEX 2
 #define DISPLAY_PAGE_SOFTVERSION_INDEX 3
+#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
+/*add display net work state */
+#define DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE 4 ... 8
+#else
 #define DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE 4 ... 7
+#endif
 
 #endif
 
@@ -1219,6 +1197,17 @@ void Disp_info_switch(void)
     Disp_clear_all();
 }
 
+void Disp_info_reset(void)
+{
+    rDispObject.infoIndex = 1;
+}
+
+void Disp_info_exit(void)
+{
+    rDispObject.infoIndex = 0;
+}
+
+
 void Disp_info_close(void)
 {    
     if (rDispObject.init == 0)
@@ -1235,15 +1224,30 @@ void Disp_info_close(void)
 // Display info.
 //
 //***********************************************************************************
-static void Disp_info(void)
+#ifdef RECORD_DISPLAY
+extern void Disp_info_record(void);
+#endif
+
+void Disp_info(void)
 {
     uint8_t temp, buff[21],i,j;
 #ifdef SUPPORT_LORA
     uint8_t *gateid;
 #endif
 
+#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
+    uint8_t  temp_wan;
+#endif
     switch (rDispObject.infoIndex) {
-        case 1:
+
+#ifdef RECORD_DISPLAY
+    case DISPLAY_PAGE_RECORD_INFO_INDEX:
+        Disp_info_record();
+        break;
+#endif
+
+        case DISPLAY_PAGE_ID_INFO_INDEX: //1:
+#if 1
             //MAC ID
             sprintf((char *)buff, "DEID: %02x%02x%02x%02x", g_rSysConfigInfo.DeviceId[0], g_rSysConfigInfo.DeviceId[1],
                                                             g_rSysConfigInfo.DeviceId[2], g_rSysConfigInfo.DeviceId[3]);
@@ -1253,7 +1257,7 @@ static void Disp_info(void)
             sprintf((char *)buff, "CUID: %02x%02x", g_rSysConfigInfo.customId[0], g_rSysConfigInfo.customId[1]);
             Disp_msg(0, 2, buff, FONT_8X16);
 
-			if (g_rSysConfigInfo.module & MODULE_GSM) {
+			if (g_rSysConfigInfo.module & MODULE_NWK) {
                 //SIM CCID
                 Disp_msg(0, 4, "CCID: ", FONT_8X16);
                 memset(buff, 0 ,21);
@@ -1266,7 +1270,7 @@ static void Disp_info(void)
                 Disp_msg(6, 6, &buff[10], FONT_8X16);
 			}
 
-			
+
 #ifdef S_C
 			
 			if (*(uint32_t*)g_rSysConfigInfo.BindGateway  != 0 ){
@@ -1279,14 +1283,20 @@ static void Disp_info(void)
 				memset(buff, 0 ,21);
 			}
 #endif
+
+#else
+
+			Disp_info_record();
+#endif
             break;
 
-        case 2:
+        case DISPLAY_PAGE_PERIOD_INDEX: //2:
             //Collect period.
             sprintf((char *)buff, "CLPD: %lds", g_rSysConfigInfo.collectPeriod);
             Disp_msg(0, 0, buff, FONT_8X16);
             //upload period.
             sprintf((char *)buff, "ULPD: %lds", g_rSysConfigInfo.uploadPeriod);
+
             Disp_msg(0, 2, buff, FONT_8X16);
 #ifdef FLASH_EXTERNAL
             //Collect period.
@@ -1295,6 +1305,7 @@ static void Disp_info(void)
             Lcd_set_font(132, 16, 0);
             Lcd_clear_area(0,4);
             Disp_msg(0, 4, buff, FONT_8X16);
+
             //upload period.
             memset(buff, 0 ,21);
             sprintf((char *)buff, "RCIT: %ld", Flash_get_record_items());
@@ -1304,7 +1315,7 @@ static void Disp_info(void)
 #endif
             break;
 
-        case 3:
+        case DISPLAY_PAGE_SOFTVERSION_INDEX://3:
             //Software version.
 #ifdef SUPPORT_STRATEGY_SORT
             sprintf((char *)buff, "FW:  %x.%x.%x(R)", FW_VERSION >> 12, (FW_VERSION >> 8) & 0x0f, FW_VERSION & 0xff);
@@ -1313,7 +1324,7 @@ static void Disp_info(void)
 #endif  // SUPPORT_STRATEGY_SORT
             Disp_msg(0, 0, buff, FONT_8X16);
 
-#ifdef  S_G//缃戝叧
+#ifdef  S_G//缃戝?
                 if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                 {
                     sprintf((char *)buff, "F&N:%ldK-%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
@@ -1324,11 +1335,33 @@ static void Disp_info(void)
                     sprintf((char *)buff, "F&N:%ldK-%d-F", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
                                                         (g_rSysConfigInfo.rfBW >> 4));
                 }
-                Disp_msg(0, 2, buff, FONT_8X16);
-#endif
+#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
+		#ifdef SUPPORT_NETWORK
+        if(g_rSysConfigInfo.module & MODULE_NWK){
+			temp_wan = Nwk_get_wan();
+
+            if(temp_wan == 7 || temp_wan == 100 ){
+
+               sprintf((char *)buff, "WAN:4G");
+                          Disp_msg(0, 2, buff, FONT_8X16);
+                          }else if(temp_wan != 0 ){
+
+                            sprintf((char *)buff, "WAN:2/3G");
+                            Disp_msg(0, 2, buff, FONT_8X16);
+                          }else{
+
+                            sprintf((char *)buff, "WAN:unknow");
+                            Disp_msg(0, 2, buff, FONT_8X16);
+                          }
+                  }
+		#endif
+#else
 
             for(i =0; i< MODULE_SENSOR_MAX; ++i){
-                if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
+                if((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) &&
+					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)&&
+					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_OPT3001)) {
+					
                     if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
                         sprintf((char *)buff, "TA%02d:    ", i);
                     else if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH)
@@ -1351,23 +1384,32 @@ static void Disp_info(void)
                     
                     Disp_msg(0, 2*3, buff, FONT_8X16);                    
 
-                    break;//????????????????
+                    break;//只显示第一个通道的报警和预警信息
                 }                
             }
-            
+#endif
             break;
             
-        case 4 ... 7:
+        case DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE : // 4 ... 7:
             
             j= 0;
             
             for(i =0; i< MODULE_SENSOR_MAX; ++i){
-                if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {
+                if((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE)&&
+					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)&&
+					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_OPT3001)){
 
-                    if(j++ <= ((rDispObject.infoIndex-4)*2))continue;//????????通???谋?????????息
+#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
+                    //if(j++ <= ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2))continue;//跳过第一个通道的报警和预警信息
 
-                    if (j > ((rDispObject.infoIndex-4)*2 + 3))break;//只?示??2 / 3 ??通???谋?????????息
-                    
+                    if (j++ > ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2 + 2))break;//从第一个通道开始显示报警和预警信息
+ #else
+ 
+                    if(j++ <= ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2))continue;//跳过第一个通道的报警和预警信息
+
+                    if (j > ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2 + 3))break;//只显示第 2 / 3 个通道的报警和预警信息
+ #endif  
+                  
                     if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
                         sprintf((char *)buff, "TA%02d:    ", i);
                     else if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH)
@@ -1376,9 +1418,12 @@ static void Disp_info(void)
                         sprintf((char *)buff, "TA%02d: ~%d", i,g_rSysConfigInfo.alarmTemp[i].high/100);
                     else                        
                         sprintf((char *)buff, "TA%02d:%d~%d", i, g_rSysConfigInfo.alarmTemp[i].low/100,g_rSysConfigInfo.alarmTemp[i].high/100);
-                    
-                    Disp_msg(0, 4*((((j-1)%2)?1:2)-1), buff, FONT_8X16);                    
 
+#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE                    
+                    Disp_msg(0, 4*((((j)%2)?1:2)-1), buff, FONT_8X16);
+#else
+                     Disp_msg(0, 4*((((j-1)%2)?1:2)-1), buff, FONT_8X16);
+#endif
                     if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.WarningTemp[i].low == ALARM_TEMP_LOW)
                         sprintf((char *)buff, "PA%02d:    ", i);
                     else if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH)
@@ -1387,9 +1432,12 @@ static void Disp_info(void)
                         sprintf((char *)buff, "PA%02d: ~%d", i,g_rSysConfigInfo.WarningTemp[i].high/100);
                     else                        
                         sprintf((char *)buff, "PA%02d:%d~%d", i, g_rSysConfigInfo.WarningTemp[i].low/100,g_rSysConfigInfo.WarningTemp[i].high/100);
-                    
-                    Disp_msg(0, 4*((((j-1)%2)?1:2)-1)+2, buff, FONT_8X16);   
 
+#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE                   
+                    Disp_msg(0, 4*((((j)%2)?1:2)-1)+2, buff, FONT_8X16);
+#else
+                    Disp_msg(0, 4*((((j-1)%2)?1:2)-1)+2, buff, FONT_8X16);
+#endif
                 }
                 
             }
@@ -1437,7 +1485,7 @@ void Disp_proc(void)
         return;
 
 #ifdef SUPPORT_LORA
-    //??硬杉??/?????注????
+    //增加采集?网关显示注册信息
    if( g_rSysConfigInfo.module & MODULE_RADIO ) {
        if(Lora_get_ntp()!= 0)
            Disp_msg(0, 6, "              ", FONT_8X16);//clear 
@@ -1459,7 +1507,7 @@ void Disp_proc(void)
 #endif
         Disp_status_bar();
 
-       uint8_t buff[8];
+
        if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
        {
            if(AutoFreqStateRead() == false)
@@ -1470,7 +1518,7 @@ void Disp_proc(void)
     }
 
 #ifdef SUPPORT_LORA
-    //??硬杉??/?????注????
+    //增加采集?网关显示注册信息
    if( g_rSysConfigInfo.module & MODULE_RADIO ) {
       if(Lora_get_ntp()== 0){
           if(*(uint32_t*)g_rSysConfigInfo.DeviceId != 0)

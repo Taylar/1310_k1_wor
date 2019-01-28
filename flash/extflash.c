@@ -743,7 +743,7 @@ ErrorStatus Flash_load_sensor_data(uint8_t *pData, uint16_t length)
 // Flash load sensor data by offset.
 //
 //***********************************************************************************
-ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, uint8_t offset)
+ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, uint32_t offset)
 {
     uint32_t LoadAddr;
 
@@ -877,7 +877,7 @@ void Flash_store_record_addr(uint8_t startOrEnd)
             sysInfo.printRecordAddr.end   = 0xffffffff;
         }
     }
-    Flash_external_erase(FLASH_SYS_POS, FLASH_EXT_SECTOR_ERASE);
+    Flash_external_erase(FLASH_SYS_POS-FLASH_SYS_POS_OFFSET, FLASH_EXT_SECTOR_ERASE);
     Flash_external_write(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
 	Semaphore_post(spiSemHandle);
 }
@@ -898,8 +898,19 @@ FlashPrintRecordAddr_t Flash_get_record_addr(void)
     return sysInfo.printRecordAddr;
 }
 
-//***********************************************************************************
-//
+FlashPrintRecordAddr_t Flash_get_current_record_addr(void)
+{
+    FlashSysInfo_t sysInfo;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
+    Semaphore_post(spiSemHandle);
+
+    sysInfo.printRecordAddr.end = rFlashSensorData.ptrData.rearAddr;
+
+    return sysInfo.printRecordAddr;
+}
+
 //***********************************************************************************
 //
 // Flash get System run state data and set alarm recode.
@@ -1024,26 +1035,45 @@ void Flash_store_devices_state(uint8_t StateType){
     Calendar calendar;
     uint8_t  index = 1;
     uint8_t buff[FLASH_DEVICED_STATE_DATA_SIZE];
-
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    uint32_t num;
+#endif
+    FlashPrintRecordAddr_t recordAddr;
+	uint8_t sensordata[FLASH_SENSOR_DATA_SIZE];
         
-    buff[index ++] = StateType;
-    calendar       = Rtc_get_calendar();
-    buff[index ++] = 0x20;
+    buff[index ++]  = StateType;
+    buff[index ++]  = 0x20;
+	
+	if(StateType == TYPE_RECORD_START){
+		recordAddr = Flash_get_record_addr();
+		Flash_get_record(recordAddr.start, sensordata, FLASH_SENSOR_DATA_SIZE);
+		memcpy(buff + index, sensordata + 8, 6);
+		index += 6;	
+	}
+	else if(StateType == TYPE_RECORD_STOP){
+		recordAddr = Flash_get_record_addr();
+		Flash_get_record(((FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER) + recordAddr.end - FLASH_SENSOR_DATA_SIZE) % (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER),
+						sensordata, FLASH_SENSOR_DATA_SIZE);
+		memcpy(buff + index, sensordata + 8, 6);
+		index += 6;	
+	}
+	else{
+	    calendar = Rtc_get_calendar();
     buff[index ++] = TransHexToBcd(calendar.Year - CALENDAR_BASE_YEAR);
     buff[index ++] = TransHexToBcd(calendar.Month);
     buff[index ++] = TransHexToBcd(calendar.DayOfMonth);
     buff[index ++] = TransHexToBcd(calendar.Hours);
     buff[index ++] = TransHexToBcd(calendar.Minutes);
     buff[index ++] = TransHexToBcd(calendar.Seconds);
+	}
 
 #ifdef SUPPORT_BLUETOOTH_PRINT
-    uint32_t num;
     if(StateType == TYPE_BT_PRINT_END){
         num = Btp_GetPrintNum();
-        buff[index ++]  =  HIBYTE(HIWORD(num));
-        buff[index ++]  =  LOBYTE(HIWORD(num));
-        buff[index ++]  =  HIBYTE(LOWORD(num));
-        buff[index ++]  =  LOBYTE(LOWORD(num));
+        buff[index ++]  =  HIBYTE_ZKS(HIWORD_ZKS(num));
+        buff[index ++]  =  LOBYTE_ZKS(HIWORD_ZKS(num));
+        buff[index ++]  =  HIBYTE_ZKS(LOWORD_ZKS(num));
+        buff[index ++]  =  LOBYTE_ZKS(LOWORD_ZKS(num));
     }
 #endif
     buff[index]     =  0;
@@ -1192,9 +1222,10 @@ uint32_t Flash_get_record_items(void)
 //***********************************************************************************
 uint16_t Flash_load_sensor_codec( uint32_t deviceid)
 {
+#if 0  //Î´ÊµÏÖ
     uint32_t id;
     uint16_t i;
-    
+
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     
     for (i = 0; i < FLASH_SENSOR_CODEC_NUM; ++i) {
@@ -1207,6 +1238,7 @@ uint16_t Flash_load_sensor_codec( uint32_t deviceid)
     }    
 
     Semaphore_post(spiSemHandle);
+#endif	
     return 0;
 }
 
@@ -1217,7 +1249,7 @@ uint16_t Flash_load_sensor_codec( uint32_t deviceid)
 //***********************************************************************************
 void Flash_store_sensor_codec(uint16_t no, uint32_t deviceid)
 {
-#if 0//脦麓脢碌脧脰
+#if 0//Î´ÊµÏÖ
     uint8_t tmp[FLASH_SECTOR_SIZE];
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 
@@ -1247,7 +1279,7 @@ void Flash_log(uint8_t *log)
     
     #define TIME_LEN  16
 
-    if(!flash_inited)return;
+    //if(!flash_inited)return;
 
     
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
@@ -1381,7 +1413,7 @@ void Flash_store_alarm_record(uint8_t *buff, uint8_t len)
 
     uint8_t temp[16] ={0};
     uint8_t index ;
-    if(!flash_inited)return;
+    //if(!flash_inited)return;
 
     if(len > FLASH_ALARM_RECODRD_SIZE)
         len = FLASH_ALARM_RECODRD_SIZE;
@@ -1398,7 +1430,7 @@ void Flash_store_alarm_record(uint8_t *buff, uint8_t len)
            Flash_external_write(FLASH_ALARM_RECODRD_POS + (index -1)*FLASH_ALARM_RECODRD_SIZE,temp,FLASH_ALARM_RECODRD_SIZE);
 
         }
-        Flash_external_erase(FLASH_ALARM_RECODRD_POS + FLASH_EXT_SECTOR_ERASE, FLASH_EXT_SECTOR_ERASE);
+        Flash_external_erase(FLASH_ALARM_RECODRD_POS + FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
 
         alarm_pos = FLASH_ALARM_RECODRD_POS + FLASH_ALARM_RECODRD_SIZE*(ALARM_RECORD_QURERY_MAX_ITEM - 1);
     }

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-27 15:21:13
+* @Last Modified time: 2019-01-21 16:09:06
 */
 #include "../general.h"
 
@@ -43,6 +43,13 @@
 #define UART_TX_GSM                     IOID_4          /* TXD */
 #endif // BOARD_B2S
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+#define UART_RX_BLUE                     IOID_19          /* RXD */
+#define UART_TX_BLUE                     IOID_18          /* TXD */
+#else
+#define UART_RX_BLUE                     NULL          /* RXD */
+#define UART_TX_BLUE                     NULL          /* TXD */
+#endif // SUPPORT_BLUETOOTH_PRINT
 
 /*
  *  =============================== UART ===============================
@@ -81,12 +88,35 @@ const UARTCC26XX_HWAttrsV2 uartCC26XXHWAttrs_Interface[CC1310_LAUNCHXL_UARTCOUNT
     }
 };
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+const UARTCC26XX_HWAttrsV2 uartCC26XXHWAttrs_Blue[CC1310_LAUNCHXL_UARTCOUNT] = {
+    {
+        .baseAddr       = UART0_BASE,
+        .powerMngrId    = PowerCC26XX_PERIPH_UART0,
+        .intNum         = INT_UART0_COMB,
+        .intPriority    = ~0,
+        .swiPriority    = 0,
+        .txPin          = UART_TX_BLUE,
+        .rxPin          = UART_RX_BLUE,
+        .ctsPin         = PIN_UNASSIGNED,
+        .rtsPin         = PIN_UNASSIGNED
+    }
+};
+#endif // SUPPORT_BLUETOOTH_PRINT
+
 const PIN_Config uart_pin_interface[] = {
     UART_TX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
     UART_RX_INTERFACE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
     PIN_TERMINATE
 };
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+const PIN_Config uart_pin_blue[] = {
+    UART_TX_BLUE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
+    UART_RX_BLUE | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* interface uart set as input          */
+    PIN_TERMINATE
+};
+#endif // SUPPORT_BLUETOOTH_PRINT
 
 UART_Config UART_config[CC1310_LAUNCHXL_UARTCOUNT] = {
     {
@@ -119,6 +149,10 @@ const PIN_Config uart_pin_gsm[] = {
 static PIN_State   interfacePortState, gsmPortState;
 static PIN_Handle  interfacePortHandle, gsmPortHandle;
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+static PIN_State   bluePortState;
+static PIN_Handle  bluePortHandle;
+#endif // 
 /***************************************************************************/
 
 
@@ -168,7 +202,6 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t typ
         return;
     }
 
-
     if(type == UART_INTERFACE)
     {
         if(interfacePortHandle)
@@ -177,6 +210,7 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t typ
             interfacePortHandle = NULL;
         }
         UartPortDisable(UART_GSM);
+        UartPortDisable(UART_BLUE);
 
     }
 
@@ -188,7 +222,21 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t typ
             gsmPortHandle = NULL;
         }
         UartPortDisable(UART_INTERFACE);
+        UartPortDisable(UART_BLUE);
     }
+
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(type == UART_BLUE)
+    {
+        if(bluePortHandle)
+        {
+            PIN_close(bluePortHandle);
+            bluePortHandle = NULL;
+        }
+        UartPortDisable(UART_INTERFACE);
+        UartPortDisable(UART_GSM);
+    }
+#endif // SUPPORT_BLUETOOTH_PRINT
 
     UartClose(uartPort);
 
@@ -204,6 +252,12 @@ void UartHwInit(UART_PORT uartPort, uint32_t baudrate, UART_CB_T Cb, uint8_t typ
         UART_config[uartPort].hwAttrs     = &uartCC26XXHWAttrs_Interface[uartPort];
     }
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(type == UART_BLUE)
+    {
+        UART_config[uartPort].hwAttrs     = &uartCC26XXHWAttrs_Blue[uartPort];
+    }
+#endif // SUPPORT_BLUETOOTH_PRINT
     UART_init();
 
     UART_Params uartParams;
@@ -354,6 +408,13 @@ void UartPortDisable(uint8_t type)
         if(gsmPortHandle == NULL)
             gsmPortHandle = PIN_open(&gsmPortState, uart_pin_gsm);
     }
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(type == UART_BLUE)
+    {
+        if(bluePortHandle == NULL)
+            bluePortHandle = PIN_open(&bluePortState, uart_pin_blue);
+    }
+#endif // SUPPORT_BLUETOOTH_PRINT
 }
 
 
@@ -377,5 +438,14 @@ void UartPortEnable(uint8_t type)
         gsmPortHandle       = NULL;
     }
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(type == UART_BLUE)
+    {
+        if(bluePortHandle)
+            PIN_close(bluePortHandle);
+     
+        bluePortHandle       = NULL;
+    }
+#endif // SUPPORT_BLUETOOTH_PRINT
 }
 

@@ -6,8 +6,8 @@ static const PIN_Config chargeDectPinConfig[] = {
     CHARGE_DETECT_PIN  | PIN_INPUT_EN | PIN_NOPULL,
     PIN_TERMINATE
 };
-static PIN_State   chargeDectPinState;
-static PIN_Handle  chargeDectPinHandle = NULL;
+PIN_State   chargeDectPinState;
+PIN_Handle  chargeDectPinHandle = NULL;
 
 #if 0
 static const PIN_Config chargeRegPinConfig[] = {

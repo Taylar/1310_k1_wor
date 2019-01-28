@@ -5,7 +5,7 @@
 #include DeviceFamily_constructPath(driverlib/trng.h)
 
 /***** Defines *****/
-#define         SYSTEM_APP_STACK_SIZE        1024
+#define         SYSTEM_APP_STACK_SIZE        1500
 
 // **************************************************************************
 /***** Variable declarations *****/
@@ -74,6 +74,11 @@ void SystemLongKey1EventPostIsr(void)
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY1_LONG);
 }
 
+void SystemLongKey0EventPostIsr(void)
+{
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_LONG);
+}
+
 void SystemUsbIntEventPostIsr(void)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_USBINT);
@@ -118,6 +123,10 @@ void RtcEventSet(void)
 #ifdef S_G//网关
 	ConcenterRtcProcess();
 #endif // S_G//网关
+
+#ifdef  SUPPORT_CHARGE_DECT_ALARM
+    Sys_chagre_alarm_timer_isr();
+#endif
 }
 
 
@@ -182,7 +191,9 @@ uint32_t RandomDataGenerate_Software(void)
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
+#ifdef SUPPORT_ENGMODE
     uint8_t     engmodeFlag = 0;
+#endif // SUPPORT_ENGMODE
     // uint32_t	voltageTemp;
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);
@@ -238,7 +249,6 @@ void SystemAppTaskFxn(void)
 #ifdef SUPPORT_ENGMODE
     if (GetEngModeFlag())
     {
-        SetEngModeConfig();
  		EngMode();
  		engmodeFlag = 1;
     }
@@ -368,6 +378,11 @@ void SystemAppTaskFxn(void)
 		{
 			S6LongKey1App();
 		}
+
+		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
+		{
+			S6LongKey0App();
+		}
 #endif
 
 #endif
@@ -472,6 +487,14 @@ void SystemAppTaskFxn(void)
 
         }
 #endif // SUPPORT_SENSOR
+
+
+         //=======================================
+#ifdef SUPPORT_BLUETOOTH_PRINT
+        if (eventId & SYS_EVT_PRINT_CONTINU){
+            Btp_print_record();
+        }
+#endif
 
 #ifdef SUPPORT_DISP_SCREEN
 		if(eventId & SYSTEMAPP_EVT_DISP)

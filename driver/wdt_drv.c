@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-27 11:44:25
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-09 16:45:22
+* @Last Modified time: 2019-01-24 16:28:20
 */
 #include "../general.h"
 
@@ -77,5 +77,6 @@ void WdtInit(Watchdog_Callback cb)
 
 void WdtClear(void)
 {
-	Watchdog_clear(watchdogHandle);
+    if(watchdogHandle)
+    	Watchdog_clear(watchdogHandle);
 }

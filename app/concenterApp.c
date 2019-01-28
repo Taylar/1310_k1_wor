@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-27 17:14:24
+* @Last Modified time: 2019-01-25 11:18:02
 */
 #include "../general.h"
 
@@ -169,6 +169,12 @@ void ConcenterSensorDataSave(void)
         Flash_store_sensor_data(dataP, FLASH_SENSOR_DATA_SIZE);
         Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_STORE_CONCENTER);
     }
+#ifdef  SUPPORT_DEVICED_STATE_UPLOAD
+    if(g_bNeedUploadRecord){
+        Flash_store_devices_state(TYPE_RECORD_START);
+        g_bNeedUploadRecord = 0;
+    }       
+#endif
 }
 
 

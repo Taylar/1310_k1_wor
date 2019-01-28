@@ -10,7 +10,7 @@
 //***********************************************************************************
 #include "../general.h"
 
-
+#define USB_TXRX_TIMEROUT           (100L * 1000 / Clock_tickPeriod)
 uint8_t bUsbBuff[USB_BUFF_LENGTH];
 
 //***********************************************************************************
@@ -471,7 +471,8 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             } else {
                 len = Usb_group_package(AC_Send_Bluetooth_Name, pData, strlen((char *)pData));
             }
-            USBCDCD_sendData(pData, len, USB_TXRX_TIMEROUT);
+            InterfaceEnable();
+            InterfaceSendImmediately(pData, len);
 #endif
             break;
 
@@ -485,7 +486,8 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
                 pData[0] = 0;
             Btp_poweroff();
             len = Usb_group_package(AC_Ack, pData, 1);
-            USBCDCD_sendData(pData, len, USB_TXRX_TIMEROUT);
+            InterfaceEnable();
+            InterfaceSendImmediately(pData, len);
 #endif
             break;
 

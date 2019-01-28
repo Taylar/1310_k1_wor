@@ -15,8 +15,37 @@
 
 #define TEMPERATURE_OVERLOAD        0x7fff
 #define HUMIDTY_OVERLOAD            0xffff
-#define DEEP_TEMP_OVERLOAD          0x7fffffff
-#define LIGHT_OVERLOAD              0x3fffffff
+#define DEEP_TEMP_OVERLOAD          0x007fffff
+#define LIGHT_OVERLOAD              0xffffffff
+
+//define alarm value of sensor, must be same with tools 
+#define ALARM_TEMP_HIGH         0x7fff
+#define ALARM_TEMP_LOW          (-0x7fff)
+#define ALARM_HUMI_HIGH         0x7fff
+#define ALARM_HUMI_LOW          (-0x7fff)
+//#define DEEP_TEMP_H              0x007fffff
+//#define DEEP_TEMP_L             (-0x007fffff)
+
+#define SENSOR_ADJUST_BUF_MAX           6
+#define SENSOR_ADJUST_UPDATA_TIME       10
+typedef enum {
+    SEN_TYPE_NONE = 0,
+    SEN_TYPE_SHT2X,
+    SEN_TYPE_NTC,
+    SEN_TYPE_OPT3001,
+    SEN_TYPE_DEEPTEMP,
+    SEN_TYPE_HCHO,
+    SEN_TYPE_PM25,
+    SEN_TYPE_CO2,
+    SEN_TYPE_GSENSOR,
+    SEN_TYPE_ORGPOLL,
+    SEN_TYPE_HLW8012,
+    SEN_TYPE_IM33XX,
+    SEN_TYPE_INFRARED,
+    SEN_TYPE_ASSET,
+    SEN_TYPE_MAX
+} SENSOR_TYPE;
+
 typedef enum {
     SENSOR_NONE = 0x00,
 	SENSOR_TEMP = 0x01,
@@ -106,7 +135,7 @@ typedef struct Sensor_FxnTable {
 	Sensor_getValueFxn getValueFxn;
 } Sensor_FxnTable;
 
-#ifdef SUPPORT_NETGATE_DISP_NODE
+#if 1
 
 extern uint8_t bUsbBuff[];
 
@@ -120,7 +149,7 @@ typedef struct {
 
 #endif
 
-
+#pragma pack (1)
 typedef struct {
     uint32_t DeviceId;
     uint8_t index;
@@ -128,7 +157,7 @@ typedef struct {
     SensorData_t value;
     uint8_t time[6];
 }Alarmdata_t;
-
+#pragma pack ()
 
 #ifdef SUPPORT_SENSOR
 extern SensorData_t rSensorData[MODULE_SENSOR_MAX];
@@ -144,7 +173,6 @@ extern uint32_t Sensor_get_lux(uint8_t chNum);
 extern void Sensor_collect_time_isr(void);
 extern void Sensor_set_collect_time(uint32_t  collectTime);
 extern void Sensor_collect_time_Adjust(uint8_t  Localtime, uint8_t  Nettime);
-
 #endif  /* SUPPORT_SENSOR */
 
 extern void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);

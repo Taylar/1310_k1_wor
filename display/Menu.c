@@ -25,9 +25,9 @@ typedef enum {
 
 #define MENU_128X32_OFS             512
 
-const uint8_t menu128x32[]= {
-    #include "font\menu128x32.txt"
-};
+// const uint8_t menu128x32[]= {
+// //    #include "font\menu128x32.txt"
+    // };
 
 const uint8_t menu128x64[]= {
 #ifdef SUPPORT_FLIGHT_MODE
@@ -54,8 +54,10 @@ void Menu_flight_mode_exit(void);
 void Menu_alrm_query_proc(void);
 void Menu_alarm_recode_proc(void);
 extern SysTask_t rSysTask;
-
-
+#ifdef SUPPORT_BLUETOOTH_PRINT
+extern uint8_t PrintProStep;
+#endif //#ifdef SUPPORT_BLUETOOTH_PRINT
+#include "../bluetooth/print_list.h"
 
 
 #ifdef SUPPORT_BLE_PRINT_LIST_MODE
@@ -72,12 +74,11 @@ static void PrintList_Cancel_sign_show(uint8_t index);
 void Menu_printList_proc(void);
 #define PRINT_LIST_PAGE_MAX 4 // Each page ECHO max line data
 MenuItem_t rPrintMenu[] = {
-    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
-    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
-    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
-    {PRINT_LIST_PAGE_MAX, &menu128x32[MENU_128X32_BT_PRINT * MENU_128X32_OFS], Menu_printList_proc,    NULL,   NULL},
+    {PRINT_LIST_PAGE_MAX, NULL, Menu_printList_proc,    NULL,   NULL},
+    {PRINT_LIST_PAGE_MAX, NULL, Menu_printList_proc,    NULL,   NULL},
+    {PRINT_LIST_PAGE_MAX, NULL, Menu_printList_proc,    NULL,   NULL},
+    {PRINT_LIST_PAGE_MAX, NULL, Menu_printList_proc,    NULL,   NULL},
 };
-
 static void PrintList_init_Page(void);
 static void PrintList_getNext_Page(void);
 #define R_PRINT_MENU_CHILDRED rPrintMenu
@@ -176,14 +177,9 @@ const MenuItem_t PoweroffMenu[] = {
     {5, &menu128x64[4*POWEROFF_OFFSET],                         Menu_flight_mode_exit,      NULL,   NULL},
     {5, &menu128x64[2*POWEROFF_OFFSET],                         Menu_exit,                  NULL,   NULL},
 #else
-#ifdef SUPPORT_G7_PROTOCOL
-    {2, menu128x64 + 16*24,     Menu_restart,        NULL,   NULL},
-    {2, menu128x64 + 16*24,     Menu_exit,           NULL,   NULL},
-#else
     {3, menu128x64,             Menu_power_off,      NULL,   NULL},
     {3, menu128x64,             Menu_restart,        NULL,   NULL},
     {3, menu128x64,             Menu_exit,           NULL,   NULL},
-#endif
 #endif
 };
 
@@ -209,6 +205,10 @@ const MenuItem_t PoweroffMenu[] = {
 
 static MenuObject_t rMenuObject;
 
+int Record_get_status(void)
+{
+    return rMenuObject.startRecord;
+}
 
 void PoweroffMenu_init(void)
 {
@@ -226,6 +226,9 @@ void Menu_power_off(void)
 #ifdef BOARD_S6_6
     S6Sleep();
 #endif
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    Menu_stop_record();
+#endif // SUPPORT_BLUETOOTH_PRINT
     Menu_exit();
     Disp_poweroff();
     deviceMode = DEVICES_OFF_MODE;
@@ -252,6 +255,9 @@ void Menu_init_byflash(void)
     if ((recordAddr.start == recordAddr.end) &&
 		recordAddr.start != 0xffffffff){//start record
             rMenuObject.startRecord = 1;
+#ifdef  SUPPORT_DEVICED_STATE_UPLOAD
+			g_bNeedUploadRecord = 1;//device restart in recording state, maybe startrecord  not uplaoded , upload again.
+#endif
     }    
 }
 
@@ -410,6 +416,7 @@ void Menu_action_proc(MENU_ACTION action)
 void Flight_Mode_Menu_show(void)
 {
     Disp_clear_all();
+    uint8_t COL_TEMP = 0;
 #if 1
     //if(rMenuObject.index == 0)
     {
@@ -417,6 +424,7 @@ void Flight_Mode_Menu_show(void)
         if(g_rSysConfigInfo.status & STATUS_HIDE_PWOF_MENU){
             if(rMenuObject.index == 0)
                 rMenuObject.index = 1;
+            COL_TEMP = 1;
         }else
             Disp_picture(0, 0, 128, 16, rMenuObject.menu[0].string);
     }
@@ -427,14 +435,14 @@ void Flight_Mode_Menu_show(void)
 
     //if(rMenuObject.index == 1)
     // Restart
-    Disp_picture(0, 2, 128, 16, rMenuObject.menu[1].string);
+    Disp_picture(0, 2-COL_TEMP, 128, 16, rMenuObject.menu[1].string);
 
     // Entry Flight/Exit Flight
     if(Flight_mode_isFlightMode()){
-        Disp_picture(0, 4, 128, 16, rMenuObject.menu[3].string);
+        Disp_picture(0, 4-COL_TEMP, 128, 16, rMenuObject.menu[3].string);
     }
     else{
-        Disp_picture(0, 4, 128, 16, rMenuObject.menu[2].string);
+        Disp_picture(0, 4-COL_TEMP, 128, 16, rMenuObject.menu[2].string);
     }
 
     if(rMenuObject.index == 2){
@@ -444,17 +452,16 @@ void Flight_Mode_Menu_show(void)
         }
     }
     // Cancel
-    Disp_picture(0, 6, 128, 16, rMenuObject.menu[4].string);
+    Disp_picture(0, 6-COL_TEMP, 128, 16, rMenuObject.menu[4].string);
 
     if(rMenuObject.index == 0)
         Disp_msg(3, 0, "*", FONT_8X16);
     else if(rMenuObject.index == 1)
-            Disp_msg(3, 2, "*", FONT_8X16);
+            Disp_msg(3, 2-COL_TEMP, "*", FONT_8X16);
     else if(rMenuObject.index == 2 || rMenuObject.index == 3)
-        Disp_msg(2, 4, "*", FONT_8X16);
+        Disp_msg(2, 4-COL_TEMP, "*", FONT_8X16);
     else
-        Disp_msg(3, 6, "*", FONT_8X16);
-
+        Disp_msg(3, 6-COL_TEMP, "*", FONT_8X16);
 }
 
 // english Mode// Page-turning function
@@ -661,14 +668,24 @@ static void PrintList_Page_ClearAll(void)
 
 static void PrintList_getNext_Page(void);
 // Fist time Into Print Mode
+#ifdef SUPPORT_BLUETOOTH_PRINT
 static void PrintList_init_Page(void)
 {
+    if(1 == PrintProStep)
+    {
+        Disp_clear_all();
+        Disp_msg(2, 2, "IN PRINTING", FONT_8X16);
+        Task_sleep(2* CLOCK_UNIT_S);
+        Menu_exit();
+        return;
+    }
     PrintListIndex = 0;
     //PrintList_Select_ClearAll();
     PrintList_Page_ClearAll();
 
     PrintList_getNext_Page();
 }
+#endif //SUPPORT_BLUETOOTH_PRINT
 
 uint32_t System_get_bindnode_DID_index(uint8_t index)
 {
@@ -774,7 +791,10 @@ void PrintList_Menu_show(void)
     char strBuffer[30];
 
     uint8_t currIndex = rMenuObject.index;
-
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    if(1 == PrintProStep)
+        return;
+#endif
     // Clear display
     Disp_clear_all();
 
@@ -852,8 +872,8 @@ static void PrintList_Cancel_sign_show(uint8_t index)
 //***********************************************************************************
 void Alarm_record_Menu_show(void)
 {
-    char strBuffer[30];
-    uint8_t buff[16]={0};
+    uint8_t strBuffer[30];
+    uint8_t buff[FLASH_ALARM_RECODRD_SIZE]={0};
     int32_t value;
 
     // Clear display
@@ -879,7 +899,7 @@ void Alarm_record_Menu_show(void)
        switch(buff[5]){
 
        case SENSOR_DATA_TEMP:
-           TempToDisplayBuff(value,(uint8_t*)strBuffer,buff[4]);
+           TempToDisplayBuff(value,strBuffer,buff[4]);
            Disp_msg(3, 4, (uint8_t*)strBuffer, FONT_8X16);
            break;
        case SENSOR_DATA_HUMI:
@@ -949,13 +969,8 @@ void Menu_show(void)
     #ifdef SUPPORT_FLIGHT_MODE
         Flight_Mode_Menu_show();
     #else
-        #ifdef  SUPPORT_G7_PROTOCOL
-        Disp_picture(0, 1, 128, 40, rMenuObject.menu[rMenuObject.index].string);
-        Disp_msg(3, rMenuObject.index*2+1, "*", FONT_8X16);
-        #else
         Disp_picture(0, 0, 128, 64, rMenuObject.menu[rMenuObject.index].string);
         Disp_msg(3, rMenuObject.index*2+1, "*", FONT_8X16);
-        #endif
     #endif
 #else
     #ifndef SUPPORT_FLIGHT_MODE
@@ -992,16 +1007,17 @@ void Menu_start_record(void)
     rMenuObject.startRecord = 1;
     g_bAlarmSensorFlag = 0;
 
-#ifdef SUPPORT_G7_PROTOCOL
-    BlePrintRecordStartNotify();
-#endif  // SUPPORT_G7_PROTOCOL
-
 #ifdef FLASH_EXTERNAL
     Flash_store_record_addr(1);
 #endif
 
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
-    Flash_store_devices_state(TYPE_RECORD_START);
+	g_bNeedUploadRecord = 1;
+	/*
+	modify by younger@20181113: start record time must be same with first data's time,
+	move this code to Sensor_store_package for A and  Flash_store_sensor_data_sync for G 
+	*/
+    //Flash_store_devices_state(TYPE_RECORD_START);    
 #endif
     Menu_exit();
 }
@@ -1017,9 +1033,6 @@ void Menu_stop_record(void)
     if(rMenuObject.startRecord)
     {
         rMenuObject.startRecord = 0;
-#ifdef SUPPORT_G7_PROTOCOL
-        BlePrintRecordStopNotify();
-#endif  // SUPPORT_G7_PROTOCOL
 
 #ifdef FLASH_EXTERNAL
         Flash_store_record_addr(0);
@@ -1027,6 +1040,8 @@ void Menu_stop_record(void)
 #endif
 
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
+		g_bNeedUploadRecord = 0;
+		if(Flash_get_record_items())
         Flash_store_devices_state(TYPE_RECORD_STOP);
 #endif
     }
@@ -1063,26 +1078,43 @@ void Menu_alarm_recode_proc(void)
 void Menu_print_proc(void)
 {
 #ifdef SUPPORT_BLUETOOTH_PRINT
-    uint8_t timeout;
 
     Sys_lcd_stop_timing();
-    Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECTING * MENU_128X32_OFS]);
+    Disp_msg(0, 2, "CONNECTING", FONT_8X16);
+
     Btp_poweron();   
 
+    PrintProStep = 0;
+
     if (Btp_is_connect()) {
-        //Bluetooth connect success
+
+#ifndef USE_ENGLISH_MENU
         Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_PRINTING * MENU_128X32_OFS]);
+#else
+        Disp_clear_all();
+        Disp_msg(0, 2, "Connect success", FONT_8X16);
+#endif
+
         Task_sleep(3 * CLOCK_UNIT_S);
         Btp_print_record();
     } else {
+
         //Bluetooth connect fail
+#ifndef USE_ENGLISH_MENU
         Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
+#else
+        Disp_clear_all();
+        Disp_msg(2, 2, "Connect fail", FONT_8X16);
+#endif
+
     }
 
-    Task_sleep(3 * CLOCK_UNIT_S);
-    Btp_poweroff();
-    Menu_exit();
-    Sys_lcd_start_timing();
+	if(0 == PrintProStep ){ //
+		Task_sleep(3 * CLOCK_UNIT_S);
+		Btp_poweroff();
+		Menu_exit();
+		Sys_lcd_start_timing();
+	}
 #endif
 }
 
@@ -1123,42 +1155,27 @@ static Menu_bluetooth_printList_proc(void)
 {
 #ifdef SUPPORT_BLUETOOTH_PRINT
     Btp_poweron();
-#ifdef SUPPORT_G7_PROTOCOL
-    if(Btp_scan_device_name() == ES_SUCCESS)
-    {
-        if (Btp_is_connect()) {
-            //Bluetooth connect success
-            Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_PRINTING * MENU_128X32_OFS]);
-            Task_sleep(3 * CLOCK_UNIT_S);
-            Btp_printList_record_bind_node();
-        } else {
-            //Bluetooth connect fail
-            Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
-        }
-    }
-    else
-    {
-        //Bluetooth connect fail
-        Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
-    }
-#else
-
     if (Btp_is_connect()) {
         //Bluetooth connect success
-        Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_PRINTING * MENU_128X32_OFS]);
+        Disp_clear_all();
+        Disp_msg(0, 6, "PRINTING", FONT_8X16);
         Task_sleep(3 * CLOCK_UNIT_S);
         Btp_printList_record_bind_node();
     } else {
         //Bluetooth connect fail
-        Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
+        Disp_msg(0, 6, "CONNECT_FAIL", FONT_8X16);
     }
-#endif
 
-    Task_sleep(3 * CLOCK_UNIT_S);
-    Btp_poweroff();
 #endif
 }
 
+void Display_print_current(void)
+{
+    Disp_clear_all();
+    //Bluetooth connect success
+    Disp_msg(0, 6, "PRINTING", FONT_8X16);
+    Task_sleep(3 * CLOCK_UNIT_S);
+}
 //***********************************************************************************
 //
 // Menu print List process function.
@@ -1168,9 +1185,8 @@ void Menu_printList_proc(void)
 {
 #ifdef SUPPORT_BLUETOOTH_PRINT
 
-#ifdef SUPPORT_G7_PROTOCOL
-    BlePrintingRecordNotify();
-#endif  // SUPPORT_G7_PROTOCOL
+    if(1 == PrintProStep)
+       return;
 
     Sys_lcd_stop_timing();
     // Clear display
@@ -1186,24 +1202,27 @@ void Menu_printList_proc(void)
     }
     Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECTING * MENU_128X32_OFS]);
 #else
-    Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECTING * MENU_128X32_OFS]);
     // No Select special // Print all
     if(0 == PrintList_getSelectedNum()){
         //Disp_msg(1, 6, "All Print", FONT_8X16);
         Disp_msg(1, 6, "No Select", FONT_8X16);
+        Task_sleep(1 * CLOCK_UNIT_S);
         goto ExitPrint;
     }
-    else
-        Disp_msg(1, 6, "Select Print", FONT_8X16);
+    else{
+        Disp_msg(1, 6, "Connect ...", FONT_8X16);
+    }
 
 #endif
 
     // print
     Menu_bluetooth_printList_proc();
+    Task_sleep(1 * CLOCK_UNIT_S);
 
 ExitPrint:
     Menu_exit();
     Sys_lcd_start_timing();
+
 #endif
 }
 #endif //SUPPORT_BLE_PRINT_LIST_MODE
@@ -1221,6 +1240,12 @@ void Menu_exit(void)
     Disp_clear_all();
 }
 
+void Menu_exit_noclear(void)
+{
+    rMenuObject.menu = NULL;
+    rMenuObject.index = 0;
+    rMenuObject.startItem = 0;
+}
 //***********************************************************************************
 //
 // Menu get menu process flag.

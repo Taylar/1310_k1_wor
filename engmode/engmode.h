@@ -4,7 +4,6 @@
 #ifdef SUPPORT_ENGMODE
 
 extern bool GetEngModeFlag();
-extern void SetEngModeConfig();
 extern void EngMode();
 
 #endif

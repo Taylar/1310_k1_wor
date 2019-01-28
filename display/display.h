@@ -21,12 +21,10 @@
 #define FONT_7X32_OFS               28
 #define FONT_14X32_OFS              56
 #define FONT_16X32_OFS              64
-
-#ifdef S_G
 #define FONT_13X8_OFS               13
+#define FONT_8X8_OFS                8
 #define FONT_14X24_OFS              42
 #define FONT_7X24_OFS               21
-#endif
 
 #ifdef SUPPORT_SFKJ_UI
 #define FONT_23X24_OFS              69
@@ -71,7 +69,7 @@ typedef enum {
     ICON_16X16_ALARM,
     ICON_16X16_BLUETOOTH,
     ICON_16X16_UPLOAD,
-#ifndef S_G
+
     ICON_16X16_SIGNAL0,
     ICON_16X16_SIGNAL1,
     ICON_16X16_SIGNAL2,
@@ -82,7 +80,7 @@ typedef enum {
     ICON_16X16_BATTERY3,
     ICON_16X16_BATCHRG,
     ICON_16X16_FLIGHT,
-#endif
+
 
     ICON_9X24_DIGIT_0,
     ICON_9X24_DIGIT_1,
@@ -181,7 +179,7 @@ typedef enum {
 
 
 //extern void Disp_icon(uint8_t icon, uint8_t lite);
-extern void Disp_msg(uint8_t x, uint8_t y, const uint8_t *pChar, E_FONT_TYPE eFont);
+extern void Disp_msg(uint16_t x, uint16_t y, const uint8_t *pChar, E_FONT_TYPE eFont);
 extern void Disp_number(uint8_t x, uint8_t y, uint16_t value, uint8_t length, E_FONT_TYPE eFont);
 extern void Disp_clear_all(void);
 extern void Disp_refresh(void);
@@ -195,6 +193,25 @@ extern bool Disp_poweron(void);
 extern void Disp_poweroff(void);
 extern void TempToDisplayBuff(int32_t value,uint8_t *buff,uint8_t ch);
 #endif  /* SUPPORT_DISP_SCREEN */
+
+typedef struct {
+    //Display init flag.
+    uint8_t init;
+    //Display refresh flag.
+    uint8_t refresh;
+    //Display sensor module number index.
+    uint8_t sensorIndex;
+    //Display info index.
+    uint8_t infoIndex;
+
+    uint8_t infoIndexdisplayflag;
+} DispObject_t;
+
+extern DispObject_t rDispObject;
+
+extern void Disp_proc_powerOn_logo(void);
+extern void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light);
+
 
 #endif	/* __ZKSIOT_DISPLAY_H__ */
 

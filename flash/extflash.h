@@ -80,6 +80,7 @@
 
 /*---    MISC   ----------512KB ---*/
 //External flash system info store position
+#define FLASH_SYS_POS_OFFSET            0x0
 #define FLASH_SYS_POS                   0   
 //External flash system info length
 #define FLASH_SYS_LENGTH                sizeof(FlashSysInfo_t)
@@ -229,7 +230,7 @@
 #define FLASH_DEVICED_STATE_PTR_AREA_SIZE      (FLASH_DEVICED_STATE_PTR_SIZE * FLASH_DEVICED_STATE_PTR_NUMBER)
 
 #define FLASH_DEVICED_STATE_DATA_POS           (FLASH_DEVICED_STATE_PTR_POS + FLASH_DEVICED_STATE_PTR_AREA_SIZE)
-#define FLASH_DEVICED_STATE_DATA_SIZE          8
+#define FLASH_DEVICED_STATE_DATA_SIZE          16
 #define FLASH_DEVICED_STATE_DATA_NUMBER        (1024L)  //2MB
 #define FLASH_DEVICED_STATE_DATA_AREA_SIZE     (FLASH_DEVICED_STATE_DATA_SIZE * FLASH_DEVICED_STATE_DATA_NUMBER)
 #else
@@ -258,6 +259,7 @@
 // ************upgrade data ***********************
 /*---    MISC   ----------512KB ---*/
 //External flash system info store position
+#define FLASH_SYS_POS_OFFSET            0x0
 #define FLASH_SYS_POS                   0   
 //External flash system info length
 #define FLASH_SYS_LENGTH                sizeof(FlashSysInfo_t)
@@ -375,6 +377,8 @@ typedef enum {
    TYPE_FLIGHT_MODE_START,
    TYPE_FLIGHT_MODE_STOP,
    TYPE_POWER_RESTART,
+   TYPE_BT_PRINT_START,
+   TYPE_BT_PRINT_END,
 }DevicesSysStateType;
 #endif
 extern void Flash_init(void);
@@ -387,10 +391,11 @@ extern ErrorStatus Flash_load_sensor_data_history(uint8_t *pData, uint16_t lengt
 extern void Flash_store_sensor_data(uint8_t *pData, uint16_t length);
 extern void Flash_recovery_last_sensor_data(void);
 extern void Flash_moveto_next_sensor_data(void);
-extern ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, uint8_t offset);
+extern ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, uint32_t offset);
 extern void Flash_moveto_offset_sensor_data(uint8_t offset);
 extern void Flash_store_record_addr(uint8_t startOrEnd);
 extern FlashPrintRecordAddr_t Flash_get_record_addr(void);
+FlashPrintRecordAddr_t Flash_get_current_record_addr(void);
 extern void Flash_get_record(uint32_t addr, uint8_t *pData, uint16_t length);
 extern uint32_t Flash_get_unupload_items(void);
 extern uint32_t Flash_get_record_items(void);

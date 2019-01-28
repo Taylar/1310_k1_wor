@@ -24,6 +24,7 @@
 #define         SYS_EVT_USB_CHARGE                      Event_Id_17
 #define         SYS_EVT_CONFIG_MODE_EXIT                Event_Id_18
 #define         SYS_EVT_S1_SENSOR                       Event_Id_19
+#define         SYS_EVT_PRINT_CONTINU                   Event_Id_20
 
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 
@@ -55,6 +56,8 @@ void SystemDoubleKeyEventPostIsr(void);
 void SystemKey1EventPostIsr(void);
 
 void SystemLongKey1EventPostIsr(void);
+
+void SystemLongKey0EventPostIsr(void);
 
 void SystemUsbIntEventPostIsr(void);
 

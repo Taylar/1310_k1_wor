@@ -63,6 +63,9 @@
 #endif
 
 #define PLATFORM_NAME   "_1310"
+
+
+#define JSLL_PROJECT
 //***********************************************************************************
 //
 // HW version define.
@@ -73,9 +76,9 @@
 //#define BOARD_S6_3
 //#define BOARD_S6_4
 
-#define BOARD_S3
+// #define BOARD_S3
 // #define BOARD_B2S
-// #define BOARD_S6_6
+#define BOARD_S6_6
 // #define BOARD_CONFIG_DECEIVE
 
 
@@ -101,9 +104,9 @@
 //Device type define.
 //
 //***********************************************************************************
-// #define S_A//一体机
-// #define S_G//网关
-#define S_C//采集器
+//#define S_A//一体机
+#define S_G//网关
+// #define S_C//采集器
 
 //***********************************************************************************
 //
@@ -304,8 +307,8 @@ error type define
 #define SUPPORT_START_LOGO
 
 //#define EPD_GDE0213B1
-#define LCD_ST7567A
-// #define OLED_LX12864K1
+// #define LCD_ST7567A
+#define OLED_LX12864K1
 #define SUPPORT_MENU
 
 #define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
@@ -590,11 +593,15 @@ error
 //***********************************************************************************
 #ifdef BOARD_S6_6
 
+// #define SUPPORT_BLUETOOTH_PRINT
+#define USE_ENGLISH_MENU
+
 #undef SUPPORT_DOUBLE_PRESS
 
 #define FLASH_SENSOR_DATA_32BYTE
 
 #define SUPPORT_CHARGE_DECT
+#define SUPPORT_CHARGE_DECT_ALARM
 #define SUPPORT_USB
 #define SUPPORT_RARIO_SPEED_SET
 // #define SUPPORT_STRATEGY_SORT
@@ -614,7 +621,7 @@ error
 #elif defined(S_G)
 
 #define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0065
+#define FW_VERSION              0x0068
 
 #elif defined(S_C)
 
@@ -638,8 +645,14 @@ error
 #define         CHARGE_FUNC                 ""
 #endif //  SUPPORT_CHARGE_DECT
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+#define         BT_FUNC                 "_BT"
+#else
+#define         BT_FUNC                 ""
+#endif //  SUPPORT_BLUETOOTH_PRINT
+
 #undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""CHARGE_FUNC)
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""CHARGE_FUNC""BT_FUNC)
 #endif // BOARD_S6_6
 
 #ifdef BOARD_B2S
@@ -648,7 +661,7 @@ error
 #define SUPPORT_RARIO_SPEED_SET
 #undef  FW_VERSION
     #ifdef S_A
-    #define FW_VERSION              0x0040
+    #define FW_VERSION              0x0041
     #elif defined(S_G)
     #undef  SUPPORT_RSSI_CHECK
     #define FW_VERSION              0x0046
@@ -656,7 +669,7 @@ error
     #undef  BOARD_NAME
     #define  BOARD_NAME              "_S2S"
     ///#undef SUPPORT_CHARGE_DECT
-    #define FW_VERSION              0x0045
+    #define FW_VERSION              0x0046
     #endif
 
 #undef  PROJECT_NAME
@@ -745,23 +758,6 @@ error
 
 
 #define MODULE_SENSOR_MAX       8
-typedef enum {
-    SEN_TYPE_NONE = 0,
-    SEN_TYPE_SHT2X,
-    SEN_TYPE_NTC,
-    SEN_TYPE_OPT3001,
-    SEN_TYPE_DEEPTEMP,
-    SEN_TYPE_HCHO,
-    SEN_TYPE_PM25,
-    SEN_TYPE_CO2,
-    SEN_TYPE_GSENSOR,
-    SEN_TYPE_ORGPOLL,
-    SEN_TYPE_HLW8012,
-    SEN_TYPE_IM33XX,
-    SEN_TYPE_INFRARED,
-    SEN_TYPE_ASSET,
-    SEN_TYPE_MAX
-} SENSOR_TYPE;
 #define ALARM_TEMP_HIGH         0x7fff
 #define ALARM_TEMP_LOW          (-0x7fff)
 
@@ -779,6 +775,7 @@ typedef enum {
 #define STATUS_HIDE_PWOF_MENU       0x0040//hide power off menu 
 #define STATUS_HIDE_SHT_SENSOR      0x0080//dont display sht20 sensor
 #define STATUS_ALARM_SWITCH_ON      0x0100//alarm upload period switch on
+#define STATUS_CHAGE_ALARM_SWITCH_ON    0x0200//charge check alarm switch on
 
 #define STATUS_LORA_MASTER      0x0001//lora做master或slaver
 #define STATUS_LORA_TEST      	0x0002//LORA 测试模式
@@ -788,9 +785,8 @@ typedef enum {
 #define STATUS_1310_MASTER      0x0020//1310做master或slaver
 
 
-#define ALARM_NMI_RX_ALARM      0x100  //网络下发报警
-#define ALARM_CHARGE_DECT_ALARM 0x200 //断电报警
-
+#define ALARM_RX_EXTERNAL_ALARM      0x100  //接收到外部报警
+#define ALARM_CHARGE_DECT_ALARM      0x200 //断电报警
 //***********************************************************************************
 //
 //system event define.
@@ -841,7 +837,8 @@ typedef enum {
 #define         DEVICES_MENU_MODE              2    // in the menu display
 #define         DEVICES_CONFIG_MODE            3    // 
 #define         DEVICES_SLEEP_MODE             4
-#define         DEVICES_TEST_MODE              5
+#define         DEVICES_BLUE_PRINT             5
+#define         DEVICES_TEST_MODE              6
 
 #ifdef SUPPORT_BOARD_OLD_S1
 #define        OLD_S1_DEVICES_RADIO_UPGRADE    6
@@ -1025,6 +1022,11 @@ typedef struct {
 #include "radio_app/node_strategy.h"
 #include "network/network.h"
 #include "network/upgrade.h"
+
+#ifdef SUPPORT_BLUETOOTH_PRINT
+#include "bluetooth/bluetooth_print.h"
+#endif // SUPPORT_BLUETOOTH_PRINT
+
 #include "interface_app/interface.h"
 #include "usb/usb_proc.h"
 #include "app/concenterApp.h"
@@ -1075,7 +1077,13 @@ EXTERN_ATTR bool g_alarmFlag;
 #endif //SUPPORT_ALARM_SWITCH_PERIOD
 
 EXTERN_ATTR uint8_t radioError;
+EXTERN_ATTR bool g_bNeedUploadRecord;
+EXTERN_ATTR uint8_t deviceModeTemp;
 
+#ifdef  SUPPORT_CHARGE_DECT_ALARM
+EXTERN_ATTR uint8_t g_ChagerAlarmCnt;
+extern void Sys_chagre_alarm_timer_isr(void);
+#endif
 
 extern uint8_t deviceMode;
 

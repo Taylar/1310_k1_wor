@@ -58,6 +58,7 @@ extern uint8_t Menu_is_process(void);
 extern uint8_t Menu_is_record(void);
 extern void Menu_set_record(uint8_t flag);
 extern void PoweroffMenu_init(void);
+extern int Record_get_status(void);
 
 
 #endif  /* SUPPORT_MENU */

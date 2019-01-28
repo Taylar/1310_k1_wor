@@ -35,6 +35,8 @@ void S6ConcenterLongKeyApp(void);
 
 void S6ShortKey1App(void);
 
+void S6LongKey0App(void);
+
 void S6LongKey1App(void);
 
 void S6AppBatProcess(void);

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-01-11 13:44:41
+* @Last Modified time: 2019-01-25 14:41:05
 */
 #include "../general.h"
 
@@ -128,6 +128,27 @@ void Bat_alarmFxn(UArg arg0)
 }
 
 
+#ifdef  SUPPORT_CHARGE_DECT_ALARM
+void Sys_chagre_alarm_timer_isr(void)
+{
+    g_ChagerAlarmCnt ++;
+    if(g_ChagerAlarmCnt > 20)
+      {
+        g_ChagerAlarmCnt = 0;
+        if((Get_Charge_plug() == NO_CHARGE)&&
+           ((STATUS_CHAGE_ALARM_SWITCH_ON&g_rSysConfigInfo.status)&&
+           ( !(STATUS_ALARM_OFF&g_rSysConfigInfo.status))))
+          {
+            g_bAlarmSensorFlag |= ALARM_CHARGE_DECT_ALARM;
+            Sys_event_post(SYS_EVT_ALARM);
+          }
+          else if(g_bAlarmSensorFlag & ALARM_CHARGE_DECT_ALARM){
+
+                g_bAlarmSensorFlag ^= ALARM_CHARGE_DECT_ALARM;
+          }
+      }
+}
+#endif
 
 //***********************************************************************************
 //
@@ -218,6 +239,7 @@ void S6HwInit(void)
 
     KeyRegister(SystemKey1EventPostIsr, KEY_1_SHORT_PRESS);
     KeyRegister(SystemLongKey1EventPostIsr, KEY_1_LONG_PRESS);
+    KeyRegister(SystemLongKey0EventPostIsr, KEY_0_LONG_PRESS);
 
 	AdcDriverInit();
 
@@ -229,11 +251,16 @@ void S6HwInit(void)
     //SHT3X Reset Pin initial
     SHT3x_ResetIoInitial();
 #endif
-
+#ifdef S_A
     I2c_init();
-    
-    Flash_init();
+#endif //S_A
 
+#ifdef SUPPORT_BLUETOOTH_PRINT
+    Btp_init();
+#endif // SUPPORT_BLUETOOTH_PRINT
+
+    Flash_init();
+    Menu_init_byflash();
     PwmDriverInit();
     Sys_buzzer_init();
 
@@ -246,7 +273,7 @@ void S6HwInit(void)
     Battery_init();
     Battery_voltage_measure();
 
-
+    g_rSysConfigInfo.module |= MODULE_RADIO;
 
     if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
         Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);
@@ -446,6 +473,23 @@ void S6LongKey1App(void)
     }
 }
 
+//***********************************************************************************
+// brief:the Concenter long key application : printf menu
+// 
+// parameter: 
+//***********************************************************************************
+void S6LongKey0App(void)
+{
+    if(!(g_rSysConfigInfo.module & MODULE_BTP))
+        return;
+    if (Menu_is_process()) {
+        Menu_exit();
+    } else {
+        Menu_init();
+    }
+    Sys_event_post(SYSTEMAPP_EVT_DISP);
+}
+
 
 //***********************************************************************************
 // brief:S6 measure the bat
@@ -455,7 +499,7 @@ void S6LongKey1App(void)
 void S6AppBatProcess(void)
 {
     Battery_porcess();
-    //电量低至一格,每5秒闪红灯一次     
+    //鐢甸噺浣庤嚦涓�鏍�,姣�5绉掗棯绾㈢伅涓�娆�
     if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE) && (deviceMode != DEVICES_OFF_MODE)) {
         Clock_start(BatAlarmClkHandle);
     }
@@ -474,8 +518,6 @@ void S6AppBatProcess(void)
 //***********************************************************************************
 void UsbIntProcess(void)
 {
-    static uint8_t deviceModeTemp = DEVICES_SLEEP_MODE;
-
     if(GetUsbState() == USB_LINK_STATE)
     {
         switch(deviceMode)
@@ -493,6 +535,7 @@ void UsbIntProcess(void)
             while(Nwk_is_Active())
             {
                 WdtClear();
+                Nwk_poweroff();
                 Task_sleep(100 * CLOCK_UNIT_MS);
             }
 #endif
@@ -570,17 +613,17 @@ void S6Wakeup(void)
 #endif
     }
 
-#ifdef S_G//网关
+#ifdef S_G//缃戝叧
     ConcenterWakeup();
     
     if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
     AutoFreqInit();
 
-#endif // S_G//网关
+#endif // S_G//缃戝叧
 
-#ifdef S_C //节点
+#ifdef S_C //鑺傜偣
     NodeWakeup();
-#endif // S_C //节点
+#endif // S_C //鑺傜偣
 }
 
 
@@ -599,6 +642,8 @@ void S6Sleep(void)
     Disp_clear_all();
     Disp_msg(2, 3, "Power Off...", FONT_8X16);//display
 #ifdef  SUPPORT_NETWORK
+    Nwk_upload_set();
+    Task_sleep(3 * CLOCK_UNIT_S);
     Nwk_poweroff();
     while(Nwk_is_Active())
     {

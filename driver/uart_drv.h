@@ -26,6 +26,7 @@ typedef enum CC1310_LAUNCHXL_UARTName {
 
 #define 	UART_GSM				0
 #define 	UART_INTERFACE			1
+#define 	UART_BLUE				2
 
 
 
