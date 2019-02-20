@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-02-20 10:20:52
+* @Last Modified time: 2018-11-20 18:12:56
 */
 #include "../general.h"
 
@@ -50,7 +50,7 @@ void S1HwInit(void)
 
     I2c_init();
 
-    // Flash_init();
+    Flash_init();
 
     configModeTimeCnt = 0;
 #ifdef SUPPORT_UPLOAD_ASSET_INFO

@@ -110,7 +110,7 @@ void NodeUploadProcess(void)
     uint8_t     data[32];
     uint32_t    dataItems;
     uint16_t serialNumber;
-    return;
+
     // reverse the buf to other command
     Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
 

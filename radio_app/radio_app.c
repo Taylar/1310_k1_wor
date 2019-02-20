@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-02-20 11:11:56
+* @Last Modified time: 2018-12-06 14:36:25
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -420,8 +420,7 @@ void RadioAppTaskFxn(void)
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
     }
-    // EasyLink_setRfPower(SET_RADIO_POWER);
-    EasyLink_setRfPower(10);
+    EasyLink_setRfPower(SET_RADIO_POWER);
 #ifndef BOARD_CONFIG_DECEIVE
 #ifndef BOARD_S3
     Radio_setRxModeRfFrequency();
@@ -748,7 +747,7 @@ void RadioAppTaskFxn(void)
 
         if (events & RADIO_EVT_TOUT)
         {
-#ifdef S_C//閲囬泦鍣�
+#ifdef S_C//閲囬泦鍣�?
             if(radioMode == RADIOMODE_SENDPORT)
             {
 #if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
@@ -757,7 +756,7 @@ void RadioAppTaskFxn(void)
 #endif
 
             }
-#endif  // S_C//閲囬泦鍣�
+#endif  // S_C//閲囬泦鍣�?
 
 #ifdef S_G
             if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
@@ -1218,16 +1217,16 @@ void Radio_setRxModeRfFrequency(void)
 #ifndef BOARD_CONFIG_DECEIVE
 
     if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
-#ifdef  S_C//閲囬泦鍣�
+#ifdef  S_C//閲囬泦鍣�?
         dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_C//閲囬泦鍣�
+#endif  // S_C//閲囬泦鍣�?
 
-#ifdef  S_G//缃戝叧
+#ifdef  S_G//缃戝�?
         if((AutoFreqStateRead() == false) && (!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)))
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         else
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_G//缃戝叧
+#endif  // S_G//缃戝�?
 
         if (freq < dstFreq) {
             diffFreq = dstFreq - freq;
@@ -1257,16 +1256,16 @@ void Radio_setTxModeRfFrequency(void)
 #ifndef BOARD_CONFIG_DECEIVE
     if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
         
-#ifdef  S_C//閲囬泦鍣�
+#ifdef  S_C//閲囬泦鍣�?
         dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_C//閲囬泦鍣�
+#endif  // S_C//閲囬泦鍣�?
 
-#ifdef  S_G//缃戝叧
+#ifdef  S_G//缃戝�?
         if((AutoFreqStateRead() == false) && (!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)))
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         else
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ +  ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_G//缃戝叧
+#endif  // S_G//缃戝�?
 
         if (freq < dstFreq) {
             diffFreq = dstFreq - freq;

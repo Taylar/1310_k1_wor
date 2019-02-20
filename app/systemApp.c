@@ -240,7 +240,7 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef SUPPORT_SENSOR
-	// Sensor_measure(0);
+	Sensor_measure(0);
 #endif
 
 
@@ -436,7 +436,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_STORE_SYS_CONFIG)
 		{
-			// Flash_store_config();
+			Flash_store_config();
 		}
 
 
@@ -475,22 +475,22 @@ void SystemAppTaskFxn(void)
             Sensor_process();
 #else
 #ifdef 	BOARD_S3
-      //       if(radioAccessSemHandle)
-      //       {
-	     //        if(Semaphore_pend(radioAccessSemHandle, 4000 * CLOCK_UNIT_MS) == FALSE)
-	     //        {
-		    //         Sys_event_post(SYS_EVT_SENSOR);
-	     //        }
-	     //        else
-	     //        {
-	     //        	Sensor_measure(1);
-	     //        	Semaphore_post(radioAccessSemHandle);
-	     //        }
-      //       }
-	    	// else
-	    	// {
-	     //        Sensor_measure(1);
-	    	// }
+            if(radioAccessSemHandle)
+            {
+	            if(Semaphore_pend(radioAccessSemHandle, 4000 * CLOCK_UNIT_MS) == FALSE)
+	            {
+		            Sys_event_post(SYS_EVT_SENSOR);
+	            }
+	            else
+	            {
+	            	Sensor_measure(1);
+	            	Semaphore_post(radioAccessSemHandle);
+	            }
+            }
+	    	else
+	    	{
+	            Sensor_measure(1);
+	    	}
 #else    
             Sensor_measure(1);
 #endif  //BOARD_S3
