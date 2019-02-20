@@ -432,7 +432,8 @@ typedef struct {
 #define NWK_EVT_UPGRADE             Event_Id_06
 #define NWK_EVT_POWERSLEEP          Event_Id_07
 #define NWK_EVT_SEVER_ACK           Event_Id_08
-#define NWK_EVT_DATA_CONTINUE 		Event_Id_09
+#define NWK_EVT_DATA_CONTINUE       Event_Id_09
+#define NWK_EVT_DATA_ACK_JSLL 		Event_Id_10
 
 #define NWK_EVT_ALL                 0xffff
 
@@ -480,18 +481,178 @@ static const Nwk_FxnTable *Nwk_FxnTablePtr[NWK_MODULE_MAX] = {
 
 };
 
-#ifdef  SUPPORT_REMOTE_UPGRADE
+#ifdef  JSLL_PROJECT
 
-extern Watchdog_Handle watchdogHandle;
+#define SENSOR_DATA_LEN_OFFSET  0
+#define SENSOR_DATA_RSSI_OFFSET 1
+#define SENSOR_DATA_DVID_OFFSET 2
+#define SENSOR_DATA_SENO_OFFSET 6
+#define SENSOR_DATA_TIME_OFFSET 8
+#define SENSOR_DATA_BAT_OFFSET  14
+#define SENSOR_DATA_IDX0_OFFSET 16
+#define SENSOR_DATA_TYP0_OFFSET 17
+#define SENSOR_DATA_DAT0_OFFSET 18
+
+#define S3_BAT_VOLTAGE_LOW             2500
+#define S3_BAT_VOLTAGE_FULL            3000
+
+void Nwk_group_package_JSLL(NwkMsgPacket_t *pPackets)
+{
+    uint8_t i ,rssi;
+    uint16_t crc, bat;
+    uint32_t utcTemp;
+    NwkMsgPacket_t packet;
+    NwkMsgPacket_t *pPacket = pPackets;
+
+    packet.length = 0;
+    //消息头
+    packet.buff[packet.length++] = 0xAA;
+    packet.buff[packet.length++] = 0x75;
+    //消息体长度
+    packet.buff[packet.length++] = 0;
+    // device length
+    packet.buff[packet.length++] = 8;
+
+    for (i = 0; i < 4; i++) {
+        packet.buff[packet.length++] = ((pPacket->buff[SENSOR_DATA_DVID_OFFSET+i] & 0xf0)>>4) + '0';
+        packet.buff[packet.length++] = (pPacket->buff[SENSOR_DATA_DVID_OFFSET+i] & 0x0f)+ '0';
+    }
+
+    // utc time
+    TimeTransformUtc(&pPacket->buff[SENSOR_DATA_TIME_OFFSET], &utcTemp);
+    packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(utcTemp));
+    packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(utcTemp));
+    packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(utcTemp));
+    packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(utcTemp));
+
+    // channel num 
+    packet.buff[packet.length++] = 2;
+
+    // only Sht2x  and sht3x data 
+    // temperature
+    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET+1];
+    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET];
+    // humi
+    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET+3];
+    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET+2];
+
+    // run state
+    packet.buff[packet.length++] = 0xFD;
+    packet.buff[packet.length++] = 0;
+
+    // bat state
+    packet.buff[packet.length++] = 0xFC;
+
+    bat = ((uint16_t)(pPacket->buff[SENSOR_DATA_BAT_OFFSET]) << 8) + pPacket->buff[SENSOR_DATA_BAT_OFFSET+1];
+    if(bat <= S3_BAT_VOLTAGE_LOW)
+        packet.buff[packet.length++] = 0;
+    else if(bat >= S3_BAT_VOLTAGE_FULL)
+        packet.buff[packet.length++] = 100;
+    else
+        packet.buff[packet.length++] = (uint8_t)(((bat - S3_BAT_VOLTAGE_LOW) * 100)/(S3_BAT_VOLTAGE_FULL - S3_BAT_VOLTAGE_LOW));
+
+    // rssi 
+    packet.buff[packet.length++] = 0xFB;
+    rssi = pPacket->buff[SENSOR_DATA_RSSI_OFFSET] + 128;
+    if(rssi > 100)
+        packet.buff[packet.length++] = 100;
+    packet.buff[packet.length++] = rssi;
+
+    packet.buff[2] = packet.length;
+    crc = docrc16(packet.buff, packet.length);
+
+    packet.buff[packet.length++] = LOBYTE_ZKS(crc);
+    packet.buff[packet.length++] = HIBYTE_ZKS(crc);
+
+    memcpy(pPacket->buff, packet.buff, packet.length);
+    pPacket->length = packet.length;
+}
+
+
+void Nwk_gatewayInfo_group_package_JSLL(NwkMsgPacket_t *pPackets)
+{
+    uint8_t i, rssi;
+    uint16_t crc;
+    uint32_t utcTemp;
+    uint16_t bat;
+    Calendar calendar;
+    NwkMsgPacket_t packet;
+    NwkMsgPacket_t *pPacket = pPackets;
+
+    packet.length = 0;
+    //消息头
+    packet.buff[packet.length++] = 0xAA;
+    packet.buff[packet.length++] = 0x75;
+    //消息体长度
+    packet.buff[packet.length++] = 0;
+    // device length
+    packet.buff[packet.length++] = 8;
+
+    for (i = 0; i < 4; i++) {
+        packet.buff[packet.length++] = ((g_rSysConfigInfo.DeviceId[i] & 0xf0)>>4) + '0';
+        packet.buff[packet.length++] = (g_rSysConfigInfo.DeviceId[i] & 0x0f)+ '0';
+    }
+
+    // utc time
+    calendar = Rtc_get_calendar();
+    pPacket->buff[0] = TransHexToBcd((uint8_t)(calendar.Year - 2000));
+    pPacket->buff[1] = TransHexToBcd(calendar.Month);
+    pPacket->buff[2] = TransHexToBcd(calendar.DayOfMonth);
+    pPacket->buff[3] = TransHexToBcd(calendar.Hours);
+    pPacket->buff[4] = TransHexToBcd(calendar.Minutes);
+    pPacket->buff[5] = TransHexToBcd(calendar.Seconds);
+
+    TimeTransformUtc(pPacket->buff, &utcTemp);
+    packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(utcTemp));
+    packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(utcTemp));
+    packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(utcTemp));
+    packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(utcTemp));
+
+    // channel num 
+    packet.buff[packet.length++] = 0;
+
+    // run state
+    packet.buff[packet.length++] = 0xFD;
+    packet.buff[packet.length++] = 0;
+
+    // bat state
+    packet.buff[packet.length++] = 0xFC;
+    bat = Battery_get_voltage();
+    if(bat <= BAT_VOLTAGE_LOW)
+        packet.buff[packet.length++] = 0;
+    else if(bat >= BAT_VOLTAGE_FULL)
+        packet.buff[packet.length++] = 100;
+    else
+        packet.buff[packet.length++] = (uint8_t)(((bat - BAT_VOLTAGE_LOW)*100)/(BAT_VOLTAGE_FULL - BAT_VOLTAGE_LOW));
+
+    // rssi 
+    Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &rssi);
+    
+    packet.buff[packet.length++] = 0xFB;
+    packet.buff[packet.length++] = rssi * 100 / 31;
+
+    packet.buff[2] = packet.length;
+    crc = docrc16(packet.buff, packet.length);
+
+
+    packet.buff[packet.length++] = LOBYTE_ZKS(crc);
+    packet.buff[packet.length++] = HIBYTE_ZKS(crc);
+
+    memcpy(pPacket->buff, packet.buff, packet.length);
+    pPacket->length = packet.length;
+}
 static void Nwk_event_post(UInt event);
-static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets);
-typedef enum{
-    UPGRADE_STATE_OFF = 0,
-    UPGRADE_STATE_CHANGE_SEVER,
-    UPGRADE_STATE_START,    
-    UPGRADE_STATE_WAIT_INFO,
-    UPGRADE_STATE_LOADING,
-}UPGRADE_STATE_E;
+
+void Nwk_data_proc_callback_JSLL(uint8_t *pBuff, uint16_t length)
+{
+    char *ptr;
+    ptr = strstr((char *)pBuff, "\x55\x7a\x04\x85\x00\x00");
+    if(ptr != NULL)
+        Nwk_event_post(NWK_EVT_DATA_ACK_JSLL);
+}
+
+#endif // JSLL_PROJECT
+
 
 
 void Nwk_upload_set(void)
@@ -501,6 +662,22 @@ void Nwk_upload_set(void)
     if(nwkEvtHandle)
         Event_post(nwkEvtHandle, NWK_EVT_DATA_UPLOAD);
 }
+
+#ifdef  SUPPORT_REMOTE_UPGRADE
+
+extern Watchdog_Handle watchdogHandle;
+
+static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets);
+void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets);
+typedef enum{
+    UPGRADE_STATE_OFF = 0,
+    UPGRADE_STATE_CHANGE_SEVER,
+    UPGRADE_STATE_START,    
+    UPGRADE_STATE_WAIT_INFO,
+    UPGRADE_STATE_LOADING,
+}UPGRADE_STATE_E;
+
+
 
 #ifdef SUPPORT_UPLOADTIME_LIMIT
 uint8_t  gsmTransTimeout;
@@ -1405,17 +1582,22 @@ static void Nwk_taskFxn(void)
 #endif
 
         if (rNwkObject.ntp == 0) {
+#if defined(JSLL_PROJECT) && !defined(SUPPORT_TCP_MULTIL_LINK)
+            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_SYC_RTC, &rNwkMsgPacket);
+#else
             Task_sleep(3 * CLOCK_UNIT_S);
             Nwk_group_package(NMI_TX_NTP, &rNwkMsgPacket);
-            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
+            if(Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE)
+                continue;
 
             Nwk_group_package(NMI_TX_SETTING, &rNwkMsgPacket);
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
             continue;
+#endif //JSLL_PROJECT
         }
 
         if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE| NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
-			
+#if defined(JSLL_PROJECT) && defined(SUPPORT_TCP_MULTIL_LINK) || !defined(JSLL_PROJECT)
 #ifdef      SUPPORT_UPLOADTIME_LIMIT
 			uint16_t txTimeOut;
 
@@ -1478,7 +1660,6 @@ static void Nwk_taskFxn(void)
 				
 #endif
 			}
-
             if (eventId & NWK_EVT_HEARTBEAT) {
                 //send heartbeat data.
                 #ifndef   SUPPORT_NB
@@ -1496,7 +1677,7 @@ static void Nwk_taskFxn(void)
                     continue;
                 }
             } 
-
+            
 			if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE)) {                
 #ifdef FLASH_EXTERNAL
                 //send data second.
@@ -1550,7 +1731,7 @@ static void Nwk_taskFxn(void)
                             {
                                continue;
                             }
-#endif
+#endif //SUPPORT_GSM
                         }
                     }
 					
@@ -1601,7 +1782,7 @@ static void Nwk_taskFxn(void)
                 }
 				
 
-#endif
+#endif  //SUPPORT_DEVICED_STATE_UPLOAD
 #ifdef SUPPORT_GSENSOR
                 //send g_sensor data second.
                 if(Flash_get_g_sensor_data_items()> 0){
@@ -1617,7 +1798,7 @@ static void Nwk_taskFxn(void)
 						Nwk_event_post(NWK_EVT_DATA_CONTINUE);
 					}
                 }
-#endif
+#endif  //SUPPORT_GSENSOR
 
 #ifdef SUPPORT_GPS
                 //send gps data second.
@@ -1634,10 +1815,33 @@ static void Nwk_taskFxn(void)
                         System_flush();
                     }
                 }
-#endif
-#endif             
+#endif  //SUPPORT_GPS
+#endif  //FLASH_EXTERNAL
 
+#endif //defined(JSLL_PROJECT) && defined(SUPPORT_TCP_MULTIL_LINK)
+
+#ifdef JSLL_PROJECT
+                if(eventId & NWK_EVT_DATA_UPLOAD){
+                    Nwk_gatewayInfo_group_package_JSLL(&rNwkMsgPacket);
+                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT_LINK1, &rNwkMsgPacket) == FALSE) {
+                        continue;
+                    }
+                }
+
+                while(Flash_get_unupload_link2_items()> 0){
+                    if(Flash_load_sensor_link2_data_by_offset(rNwkMsgPacket.buff, FLASH_SENSOR_DATA_SIZE, 0) == ES_SUCCESS){
+                        Nwk_group_package_JSLL(&rNwkMsgPacket);
+                        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT_LINK1, &rNwkMsgPacket) == FALSE) {
+                            continue;
+                        }
+                        eventId = Event_pend(nwkEvtHandle, 0,NWK_EVT_DATA_ACK_JSLL, 5000*CLOCK_UNIT_MS);
+                        if(eventId & NWK_EVT_DATA_ACK_JSLL)
+                            Flash_moveto_offset_sensor_link2_data(1);
+                    }
+                }
+#endif // JSLL_PROJECT
             }
+
             
 #ifdef SUPPORT_GSM_SHORT_CONNECT
             uint32_t temp;
@@ -1832,6 +2036,12 @@ uint8_t Nwk_Is_Ntp()
 {
 	return rNwkObject.ntp;
 }
+
+void Nwk_Ntp_Set(void)
+{
+    rNwkObject.ntp = 1;
+}
+
 
 #else
 void Nwk_task_create(void)

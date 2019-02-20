@@ -960,8 +960,8 @@ void Disp_sensor_data(void)
                 Lcd_set_font(132, 16, 0);
                 Lcd_clear_area(2, 4);
                 Disp_msg(2, 2, buff, FONT_8X16);
-            }
 #endif // SUPPORT_UPLOAD_ASSET_INFO
+            }
 #endif
         }
     }
@@ -1301,7 +1301,11 @@ void Disp_info(void)
 #ifdef FLASH_EXTERNAL
             //Collect period.
             memset(buff, 0 ,21);
+#ifdef  SUPPORT_TCP_MULTIL_LINK
+            sprintf((char *)buff, "RMIT: %ld", Flash_get_unupload_link2_items());
+#else
             sprintf((char *)buff, "RMIT: %ld", Flash_get_unupload_items());
+#endif
             Lcd_set_font(132, 16, 0);
             Lcd_clear_area(0,4);
             Disp_msg(0, 4, buff, FONT_8X16);
@@ -1335,6 +1339,7 @@ void Disp_info(void)
                     sprintf((char *)buff, "F&N:%ldK-%d-F", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
                                                         (g_rSysConfigInfo.rfBW >> 4));
                 }
+                Disp_msg(0, 2, buff, FONT_8X16);
 #ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
 		#ifdef SUPPORT_NETWORK
         if(g_rSysConfigInfo.module & MODULE_NWK){

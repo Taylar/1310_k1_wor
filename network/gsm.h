@@ -63,14 +63,18 @@
 //Start Up TCP or UDP Connection
 #define ATCMD_START_CONNECT         "AT+QIOPEN=\"TCP\","
 
+#define ATCMD_START_MUL_CONNECT     "AT+QIOPEN=%d,\"TCP\","
 //Send Data Through TCP or UDP Connection
 #define ATCMD_SEND_DATA             "AT+QISEND="
 
 //Query Previous Connection Data Transmitting State
 #define ATCMD_ACK_QUERY             "AT+QISACK\r\n"
 
+#define ATCMD_ACK_QUERY_MULTIL      "AT+QISACK=%d\r\n"
+
 //Close TCP or UDP Connection
 #define ATCMD_CLOSE_CONNECT         "AT+QICLOSE\r\n"
+#define ATCMD_CLOSE_CONNECT_MULTIL  "AT+QICLOSE=%d\r\n"
 
 //De-activity mobile scene
 #define ATCMD_DEACT_MS              "AT+QIDEACT\r\n"
@@ -100,6 +104,17 @@
 //Get IMEI
 #define ATCMD_IMEI_QUERY            "AT+GSN\r\n"
 
+// Enable Syc network time
+#define ATCMD_ENABLE_SYC_TIME       "AT+QNITZ=1\r\n"
+#define ATCMD_DISABLE_SYC_TIME      "AT+QNITZ=0\r\n"
+
+#define ATCMD_RTC_QUERY              "AT+QLTS\r\n"
+
+#define ATCMD_ENABLE_MULTIL_LINK       "AT+QIMUX=1\r\n"
+#define ATCMD_DISABLE_MULTIL_LINK      "AT+QIMUX=0\r\n"
+
+#define MULTIL_TCP_LINK0_ADDR           "\"139.224.14.215\",\"12200\"\r\n"
+
 typedef enum {
     AT_CMD_NULL = 0,
     AT_CMD_COMMON,
@@ -117,6 +132,9 @@ typedef enum {
     AT_CMD_GET_LOCATION,
     AT_CMD_ENG_MODE_QUERY,
     AT_CMD_IMEI_QUERY,
+    AT_CMD_ENABLE_SYC_RTC,
+    AT_CMD_DISABLE_SYC_RTC,
+    AT_CMD_RTC_QUERY,
     AT_CMD_MAX
 } GSM_AT_CMD_TYPE;
 
@@ -205,6 +223,10 @@ typedef struct {
 	GSM_AT_CMD_TYPE cmdType;
 //module state
     uint8_t state;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+//module linkState
+    uint8_t linkState;      //bit 0--bit5   0:unlink, 1:link
+#endif //SUPPORT_TCP_MULTIL_LINK
 //module open flag
     uint8_t isOpen;
 //module sleep flag

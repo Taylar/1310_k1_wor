@@ -73,6 +73,7 @@ typedef enum
 }t_FreqCenter;      //定义带宽枚举
 
 
+extern Semaphore_Handle radioAccessSemHandle;
 
 // radioRxPacket
 extern EasyLink_RxPacket radioRxPacket;

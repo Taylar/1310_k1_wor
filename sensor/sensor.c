@@ -364,9 +364,6 @@ static void Sensor_store_package(void)
                 buff[length++] = HIBYTE_ZKS(rSensorData[i].humi);
                 buff[length++] = LOBYTE_ZKS(rSensorData[i].humi);
 
-#ifdef SUPPORT_G7_PROTOCOL
-                SurroundingMonitor(rSensorData[i].temp);
-#endif  // SUPPORT_G7_PROTOCOL
 
             } else if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP)) {
                 value_32 = rSensorData[i].tempdeep;
@@ -453,11 +450,6 @@ static void Sensor_store_package(void)
 		g_alarmFlag = 0;		
 	#endif //SUPPORT_ALARM_SWITCH_PERIOD
 
-#ifdef      G7_PROJECT
-    memcpy(&buff[length], (uint8_t *)G7GetLbs(), sizeof(NwkLocation_t));
-    buff[0] = length - 1;
-    Flash_store_sensor_data(buff, length + sizeof(NwkLocation_t));
-#else
 
 #ifdef BOARD_S3
 #ifdef SUPPORT_UPLOAD_ASSET_INFO
@@ -470,7 +462,6 @@ static void Sensor_store_package(void)
     Flash_store_sensor_data(buff, length);
 #endif // BOARD_S3
 
-#endif  // G7_PROJECT
 
 #endif  /* FLASH_EXTERNAL */
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
@@ -747,7 +738,7 @@ uint32_t Sensor_get_deepTemperatureC(uint8_t chNum)
 //***********************************************************************************
 uint32_t Sensor_get_lux(uint8_t chNum)
 {
-    uint32_t lux = DEEP_TEMP_OVERLOAD;
+    uint32_t lux = LIGHT_OVERLOAD;
 
     if ((g_rSysConfigInfo.sensorModule[chNum] > SEN_TYPE_NONE) &&
         (g_rSysConfigInfo.sensorModule[chNum]  < SEN_TYPE_MAX) &&
@@ -945,15 +936,16 @@ sensordata_mem pMemSensor[100];//use independent memory on MSP432P401R
 uint8_t MemSensorIndex = 0;
 
 #ifdef SUPPORT_NETGATE_BIND_NODE
-static bool IsBindNode(uint32_t DeviceId)
+static int8_t IsBindNode(uint32_t DeviceId)
 {
     uint8_t i; 
 
     for(i = 0; i < NETGATE_BIND_NODE_MAX; ++i){
-        if(g_rSysConfigInfo.bindnode[i].Deviceid == DeviceId)
-            return true;
+        if(g_rSysConfigInfo.bindnode[i].Deviceid == DeviceId){
+            return i;
     }
-    return false;
+    }
+    return -1;
 }
 #endif
 //***********************************************************************************

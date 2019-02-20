@@ -39,6 +39,7 @@ uint8_t RtcGetSec(void);
 
 uint8_t MonthMaxDay(uint16_t year_1, uint8_t month_1);
 
+void RtcAdjust(Calendar *calendar);
 #endif    // __RTC_DRV_H__
 
 

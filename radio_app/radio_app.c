@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-06 14:36:25
+* @Last Modified time: 2019-02-20 11:11:56
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -420,7 +420,8 @@ void RadioAppTaskFxn(void)
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
     }
-    EasyLink_setRfPower(SET_RADIO_POWER);
+    // EasyLink_setRfPower(SET_RADIO_POWER);
+    EasyLink_setRfPower(10);
 #ifndef BOARD_CONFIG_DECEIVE
 #ifndef BOARD_S3
     Radio_setRxModeRfFrequency();

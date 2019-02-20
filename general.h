@@ -65,25 +65,40 @@
 #define PLATFORM_NAME   "_1310"
 
 
-#define JSLL_PROJECT
+// #define JSLL_S6_6_G
+// #define GZJK_S6_6_G
+// #define ZKS_S6_6_G
+// #define ZKS_S6_6_CONFIG
+// #define ZKS_S3_C_SHT2X
+#define ZKS_S3_C_SHT3X
+// #define ZKS_S3_1_C
+// #define ZKS_Z4_C
+// #define ZKS_B2S_C
+// #define ZKS_B2S_A
+// #define ZKS_B2S_G
 //***********************************************************************************
 //
 // HW version define.
 //
 //***********************************************************************************
-// #define BOARD_S6_1
-//#define BOARD_S6_2
-//#define BOARD_S6_3
-//#define BOARD_S6_4
-
-// #define BOARD_S3
-// #define BOARD_B2S
+#if defined(JSLL_S6_6_G) || defined(GZJK_S6_6_G) || defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG)
 #define BOARD_S6_6
-// #define BOARD_CONFIG_DECEIVE
+#endif
 
+#if defined(ZKS_S3_C_SHT2X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_1_C) || defined(ZKS_Z4_C)
+#define BOARD_S3
+#endif
+
+#if defined(ZKS_B2S_C) || defined(ZKS_B2S_A) || defined(ZKS_B2S_A)
+#define BOARD_B2S
+#endif 
+
+#if defined(ZKS_S6_6_CONFIG)
+#define BOARD_CONFIG_DECEIVE
+#endif 
 
 //#define FACTOR_RADIO_TEST
-// #define RADIO_1310_50K_GPSK
+//#define RADIO_1310_50K_GPSK
 
 //***********************************************************************************
 //
@@ -104,9 +119,18 @@
 //Device type define.
 //
 //***********************************************************************************
-//#define S_A//一体机
-#define S_G//网关
-// #define S_C//采集器
+
+#if defined(JSLL_S6_6_G) || defined(GZJK_S6_6_G) || defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_B2S_G)
+#define S_G //网关
+#endif
+
+#if defined(ZKS_S3_C_SHT2X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_1_C) || defined(ZKS_Z4_C) || defined(ZKS_B2S_C)
+#define S_C //采集器
+#endif
+
+#if defined(ZKS_B2S_A)
+#define S_A //一体机
+#endif 
 
 //***********************************************************************************
 //
@@ -114,7 +138,9 @@
 //
 //***********************************************************************************
 //#define USE_ENGLISH_MENU
-
+#ifdef GZJK_S6_6_G
+#define USE_ENGLISH_MENU
+#endif
 
 //***********************************************************************************
 //
@@ -122,26 +148,31 @@
 //
 //pls define one project following，otherwise use zks  default.
 /****************************************************************************/
+#ifdef   JSLL_S6_6_G
+#define  JSLL_PROJECT              //jiangsu lenglian 
+#elif defined(GZJK_S6_6_G)
+#define  GZJK_PROJECT              // guizhou jikong
+#else
 #define  ZKS_PROJECT              //ZKS 项目
-
+#endif
 
 #ifdef ZKS_PROJECT
 #define         COMPANY_NAME                "ZKS"
+#elif defined(JSLL_S6_6_G)
+#define         COMPANY_NAME                "JSLL"
+#elif defined(GZJK_S6_6_G)
+#define         COMPANY_NAME                "GZJK"
 #else
 error project name
 #endif
-#ifdef BOARD_S6_1
-#define         BOARD_NAME              "_S6_1"
-#elif defined( BOARD_S6_2)
-#define         BOARD_NAME              "_S6_2"
-#elif defined( BOARD_S6_6)
+
+
+#ifdef BOARD_S6_6
 #define         BOARD_NAME              "_S6_6"
 #elif defined( BOARD_B2S)
 #define         BOARD_NAME              "_B2S"
 #elif defined( BOARD_S3)
 #define         BOARD_NAME              "_S3"
-#elif defined( BOARD_S3_1)
-#define         BOARD_NAME              "_S3_1"
 #else
 error borad name
 #endif
@@ -226,27 +257,6 @@ error type define
 
 #define SUPPORT_NTC
 
-#ifdef BOARD_S6_2
-#define SUPPORT_LIGHT
-#define SUPPORT_GSENSOR
-
-#if 0
-#define SUPPORT_DEEPTEMP
-#else
-#define SUPPORT_PT100
-#endif
-
-#endif
-
-#ifdef BOARD_S6_3
-#define SUPPORT_DEEPTEMP
-//#define SUPPORT_GPS
-#endif
-
-#ifdef BOARD_S6_4
-#define SUPPORT_LIGHT
-#define SUPPORT_GSENSOR
-#endif
 
 #ifdef BOARD_S6_6
 #undef SUPPORT_NTC
@@ -283,18 +293,6 @@ error type define
 #endif
 #endif
 
-//Radio define
-// #define SUPPORT_LORA
-// #define SUPPORT_LORA_APC  //LORA Auto Power Control
-// #define SUPPORT_LORA_CHN_FLASH  //将设备通道号保存在flash
-//#define LORA_FREQ  433800000 //中心频点433.8/433MHz
-//#define LORA_OOK_TEST
-// #ifdef LORA_OOK_TEST
-//#define  OOK_TEST_AUTHENTICATION //天线认证
-// #define  OOK_TEST_ANTENNA  //天线匹配调试
-// #endif
-//#define SUPROT_GATE_SET
-
 
 //I2C define
 #define SOFT_I2C_BUS
@@ -307,14 +305,14 @@ error type define
 #define SUPPORT_START_LOGO
 
 //#define EPD_GDE0213B1
-// #define LCD_ST7567A
-#define OLED_LX12864K1
+
+#define LCD_ST7567A
+// #define OLED_LX12864K1
 #define SUPPORT_MENU
 
 #define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
 #define SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
 #define NETGATE_BIND_NODE_MAX       2 //5529上只能支持2个，USB内存不够
-
 #endif
 
 //Led define
@@ -335,7 +333,7 @@ error type define
 #ifdef SUPPORT_LBS
 //#define USE_QUECTEL_API_FOR_LBS
 #define USE_ENGINEERING_MODE_FOR_LBS
-//#define SUPPOERT_LBS_NEARBY_CELL
+// #define SUPPOERT_LBS_NEARBY_CELL
 #endif
 //#define SUPPORT_IMEI
 
@@ -374,7 +372,7 @@ error type define
 #undef  SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
 #undef  SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
 //#undef  SUPPORT_ENGMODE //for  more flash space
-#define SUPPORT_UPLOADTIME_LIMIT
+// #define SUPPORT_UPLOADTIME_LIMIT
 
 #elif defined(S_G)//gateway
 
@@ -415,56 +413,12 @@ error
 
 
 /****************************************************************************/
-/*
- * ZKML ZKMeiLing
- *  M-COOL Cloud Platform Management System, API v1.0
- * */
-
-#ifdef      ZKML_PROJECT
-
-#undef      FW_VERSION
-#define     FW_VERSION          0x0066
-
-#define SUPPORT_MCOOL_PROTOCOL
-#define SUPPOERT_LBS_NEARBY_CELL
-#define SUPPORT_IMEI
-#endif
-
-/****************************************************************************/
-#ifdef  G7_PROJECT
-
-#undef  FW_VERSION
-#define FW_VERSION          0x0080
-
-#undef  SUPPORT_ZKS_PROTOCOL
-#define SUPPORT_G7_PROTOCOL
-#define SUPPOERT_LBS_NEARBY_CELL
-#define SUPPORT_IMEI
-#define CRC16_LSB
-#undef  CRC16_HW_MODULE
-
-#undef SUPPORT_FLIGHT_MODE  // no flight mode
-#endif
-/****************************************************************************/
-#ifdef SFKJ_PROJECT
-
-#define SUPPORT_SFKJ_UI                 //顺丰UI
-
-#define FLASH_SENSOR_DATA_32BYTE        //数据记录32BYTE
-
-#define SUPPORT_CHARGE_CHECK
-
-#undef  SUPPORT_ALARM_RECORD_QURERY
-
-#endif
-/****************************************************************************/
 #ifdef ZKS_PROJECT
 
 #define SUPPORT_SENSOR_TRANSMIT_TIME
 
 #endif
 /****************************************************************************/
-
 
 //***********************************************************************************
 // S2_2 board define
@@ -499,13 +453,18 @@ error
 //***********************************************************************************
 #ifdef BOARD_S3
 #define SUPPORT_SENSOR
-#define SUPPORT_SHT2X
-// #undef SUPPORT_SHT2X
-// #define SUPPORT_SHT3X
 
+#ifdef ZKS_S3_C_SHT2X
+#undef  SUPPORT_SHT3X
+#define SUPPORT_SHT2X
+#endif // ZKS_S3_C_SHT2X
+
+#ifdef ZKS_S3_C_SHT3X
+#undef SUPPORT_SHT2X
+#define SUPPORT_SHT3X
+#endif //ZKS_S3_C_SHT3X
 
 #define SUPPORT_RADIO_UPGRADE
-
 #define SUPPORT_DOUBLE_PRESS
 
 //LCD undefine
@@ -528,7 +487,6 @@ error
 #undef SUPPORT_ENGMODE
 // #undef SUPPORT_FLASH_LOG
 
-#define SUPPORT_RARIO_WOR
 #define SUPPORT_RARIO_SPEED_SET
 #define SUPPORT_RSSI_CHECK
 // #define SUPPORT_STRATEGY_SORT
@@ -551,7 +509,10 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""SENSOR_TYPE_NAME)
 
 /* old S1*/
-// #define SUPPORT_BOARD_OLD_S1
+#ifdef ZKS_S3_1_C
+#define SUPPORT_BOARD_OLD_S1
+#endif // ZKS_S3_1_C
+
 #ifdef SUPPORT_BOARD_OLD_S1
 #undef  SUPPORT_SHT2X
 #define SUPPORT_SHT3X
@@ -564,7 +525,10 @@ error
 #endif //SUPPORT_BOARD_OLD_S1
 
 /* Z4 */
+#ifdef ZKS_Z4_C
 // #define SUPPORT_BOARD_Z4
+#endif //ZKS_Z4_C
+
 #ifdef SUPPORT_BOARD_Z4
 
 #undef SUPPORT_SHT2X
@@ -576,30 +540,27 @@ error
 #undef  PROJECT_NAME
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 #endif //SUPPORT_BOARD_Z4
-
 #undef  FW_VERSION
-#ifndef SUPPORT_BOARD_OLD_S1
-#define FW_VERSION              0x0062
-#else
+#define FW_VERSION              0x0063
+
+#ifdef SUPPORT_BOARD_OLD_S1
+#undef  FW_VERSION
 #define FW_VERSION              0x0012
-#endif
-#endif
+#endif // SUPPORT_BOARD_OLD_S1
+
+#endif // BOARD_S3
+
 
 
 //***********************************************************************************
 //
-// FW version define.
+// BOARD_S6_6 define.
 //
 //***********************************************************************************
 #ifdef BOARD_S6_6
 
-// #define SUPPORT_BLUETOOTH_PRINT
-#define USE_ENGLISH_MENU
-
 #undef SUPPORT_DOUBLE_PRESS
-
 #define FLASH_SENSOR_DATA_32BYTE
-
 #define SUPPORT_CHARGE_DECT
 #define SUPPORT_CHARGE_DECT_ALARM
 #define SUPPORT_USB
@@ -612,26 +573,50 @@ error
 #endif //S_G
 #endif  //SUPPORT_STRATEGY_SORT
 
+#ifdef GZJK_S6_6_G
+#undef  LCD_ST7567A
+#define OLED_LX12864K1
+#define SUPPORT_BLUETOOTH_PRINT
+#endif
+
+#ifdef JSLL_S6_6_G
+#undef  SUPPORT_BLUETOOTH_PRINT
+// #undef  SUPPORT_LBS
+// #undef  USE_ENGINEERING_MODE_FOR_LBS
+#define SUPPOERT_LBS_NEARBY_CELL
+#undef  SUPPORT_REMOTE_UPGRADE
+
+// #undef SUPPORT_CHARGE_DECT
+// #undef SUPPORT_CHARGE_DECT_ALARM
+
+#undef  SUPPORT_DEVICED_STATE_UPLOAD
+#define SUPPORT_TCP_MULTIL_LINK
+
+#ifndef SUPPORT_TCP_MULTIL_LINK
+#undef  SUPPORT_REMOTE_UPGRADE
+#define SUPPORT_NETWORK_SYC_RTC
+#endif //SUPPORT_TCP_MULTIL_LINK
+
+#endif //JSLL_S6_6_G
+
+#ifdef ZKS_S6_6_G
+#define SUPPORT_UPLOAD_ASSET_INFO
+#endif // ZKS_S6_6_G
+
 #undef  FW_VERSION
 
 #ifdef S_A
-
 #define FW_VERSION              0x0036
-
 #elif defined(S_G)
-
-#define SUPPORT_UPLOAD_ASSET_INFO
-#define FW_VERSION              0x0068
-
+#define FW_VERSION              0x0070
 #elif defined(S_C)
-
 #define FW_VERSION              0x0036
 #endif //S_A
 
-#ifdef BOARD_CONFIG_DECEIVE
+#ifdef ZKS_S6_6_CONFIG
 #undef  SUPPORT_RSSI_CHECK
 #undef  SUPPORT_STRATEGY_SORT
-#endif // BOARD_CONFIG_DECEIVE
+#endif // ZKS_S6_6_CONFIG
 
 #ifdef SUPPORT_STRATEGY_SORT
 #define         STRATEG_NAME               "_SORT"
@@ -655,6 +640,11 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""CHARGE_FUNC""BT_FUNC)
 #endif // BOARD_S6_6
 
+//***********************************************************************************
+//
+// BOARD_B2S define.
+//
+//***********************************************************************************
 #ifdef BOARD_B2S
 #define SUPPORT_RSSI_CHECK
 #define CONCENTER_MAX_CHANNEL       100
@@ -696,8 +686,6 @@ error
 
 #undef SUPPORT_RARIO_SPEED_SET
 #undef SUPPORT_STRATEGY_SORT
-// #undef SUPPORT_SHT2X
-// #undef SUPPORT_MENU
 #undef  BOARD_NAME
 #define BOARD_NAME              "_S3_CONFIG"
 #undef  PROJECT_NAME

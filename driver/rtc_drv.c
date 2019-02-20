@@ -110,6 +110,32 @@ void RtcSecondsIsrCb(UArg arg0)
 }
 
 
+void RtcAdjust(Calendar *calendar)
+{
+    while(calendar->Seconds >= 60)
+    {
+        calendar->Seconds -= 60;
+        calendar->Minutes++;
+    }
+    while(calendar->Minutes >= 60)
+    {
+        calendar->Minutes -= 60;
+        calendar->Hours++;
+    }
+    while(calendar->Hours>=24)
+    {
+        calendar->Hours -= 24;
+        rtc.DayOfMonth++;
+    }
+    while(rtc.DayOfMonth > MonthMaxDay(rtc.Year, rtc.Month))
+    {
+        rtc.DayOfMonth -= MonthMaxDay(rtc.Year, rtc.Month);
+        rtc.Month++;
+        if(rtc.Month > 12)
+            rtc.Month = 1;
+            rtc.Year ++;
+    }
+}
 
 
 //***********************************************************************************

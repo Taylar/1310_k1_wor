@@ -240,7 +240,7 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef SUPPORT_SENSOR
-	Sensor_measure(0);
+	// Sensor_measure(0);
 #endif
 
 
@@ -436,7 +436,7 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_STORE_SYS_CONFIG)
 		{
-			Flash_store_config();
+			// Flash_store_config();
 		}
 
 
@@ -457,8 +457,16 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYSTEMAPP_EVT_RADIO_ABORT) 
 		{
-			Flash_log("TX Tout R\n");
-	        SystemResetAndSaveRtc();
+			if(ExtflashRingQueueIsEmpty((&extflashWriteQ)))
+			{
+				Flash_log("TX Tout R\n");
+		        SystemResetAndSaveRtc();
+			}
+			else
+			{
+				Sys_event_post(SYSTEMAPP_EVT_RADIO_ABORT);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_CONCENTER);
+			}
 		}
 
 #ifdef SUPPORT_SENSOR
@@ -466,7 +474,27 @@ void SystemAppTaskFxn(void)
 #ifdef SUPPORT_SENSOR_ADJUST
             Sensor_process();
 #else
+#ifdef 	BOARD_S3
+      //       if(radioAccessSemHandle)
+      //       {
+	     //        if(Semaphore_pend(radioAccessSemHandle, 4000 * CLOCK_UNIT_MS) == FALSE)
+	     //        {
+		    //         Sys_event_post(SYS_EVT_SENSOR);
+	     //        }
+	     //        else
+	     //        {
+	     //        	Sensor_measure(1);
+	     //        	Semaphore_post(radioAccessSemHandle);
+	     //        }
+      //       }
+	    	// else
+	    	// {
+	     //        Sensor_measure(1);
+	    	// }
+#else    
             Sensor_measure(1);
+#endif  //BOARD_S3
+
 #endif
             Battery_porcess();
 

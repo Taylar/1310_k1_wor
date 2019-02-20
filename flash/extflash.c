@@ -125,7 +125,9 @@ static PIN_Handle  extFlashPinHandle;
 
 //QueueDef rFlashGnssQueue;
 static FlashSensorData_t rFlashSensorData;
-
+#ifdef SUPPORT_TCP_MULTIL_LINK
+static FlashSensorData_t rFlashSensorData_Link2;
+#endif //SUPPORT_TCP_MULTIL_LINK
 
 //***********************************************************************************
 #ifdef SUPPORT_ALARM_RECORD_QURERY
@@ -375,6 +377,7 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
 
 
 static void Flash_load_sensor_ptr(void);
+static void Flash_load_sensor_link2_ptr(void);
 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
 static void Flash_load_deviced_state_ptr(void);
@@ -398,7 +401,9 @@ static void Flash_reset_data(void)
     Flash_external_erase(FLASH_SENSOR_DATA_POS, FLASH_EXT_SECTOR_ERASE);
     Flash_external_erase(FLASH_SENSOR_DATA_POS + FLASH_SENSOR_DATA_AREA_SIZE - FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
 
-
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    Flash_external_erase(FLASH_SENSOR_LINK2_PTR_POS, FLASH_EXT_SECTOR_ERASE);
+#endif //SUPPORT_TCP_MULTIL_LINK
 
 #ifdef SUPPORT_FLASH_LOG    
     Flash_external_erase(FLASH_LOG_POS, FLASH_EXT_SECTOR_ERASE);
@@ -414,6 +419,10 @@ static void Flash_reset_data(void)
     rFlashSensorData.ptrData.frontAddr = 0;
     rFlashSensorData.ptrData.rearAddr = 0;
     Flash_external_write(FLASH_SENSOR_PTR_POS, (uint8_t *)&rFlashSensorData.ptrData, sizeof(FlashPointerData_t));
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    rFlashSensorData_Link2 = rFlashSensorData;
+    Flash_external_write(FLASH_SENSOR_LINK2_PTR_POS, (uint8_t *)&rFlashSensorData_Link2.ptrData, sizeof(FlashPointerData_t));
+#endif // SUPPORT_TCP_MULTIL_LINK
 
 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
@@ -487,6 +496,11 @@ void Flash_init(void)
 
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     Flash_load_sensor_ptr();
+
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    Flash_load_sensor_link2_ptr();
+#endif //SUPPORT_TCP_MULTIL_LINK
+
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
     Flash_load_deviced_state_ptr();
 #endif
@@ -591,7 +605,32 @@ static void Flash_store_sensor_ptr(void)
     Flash_external_write(rFlashSensorData.ptrDataAddr + FLASH_SENSOR_PTR_POS, (uint8_t *)&rFlashSensorData.ptrData, sizeof(FlashPointerData_t));
 }
 
+#ifdef SUPPORT_TCP_MULTIL_LINK
+//***********************************************************************************
+//
+// Flash store sensor data pointer.
+//
+//***********************************************************************************
+static void Flash_store_sensor_link2_ptr(void)
+{
+    //Abolish current ptrData in flash.
+    rFlashSensorData_Link2.ptrData.head = FLASH_PTRDATA_INVALID;
+    Flash_external_write(rFlashSensorData_Link2.ptrDataAddr + FLASH_SENSOR_LINK2_PTR_POS, (uint8_t *)&rFlashSensorData_Link2.ptrData.head, sizeof(rFlashSensorData_Link2.ptrData.head));
 
+    //Go to next ptrData position.
+    rFlashSensorData_Link2.ptrDataAddr += FLASH_SENSOR_LINK2_PTR_SIZE;
+    rFlashSensorData_Link2.ptrDataAddr %= (FLASH_SENSOR_LINK2_PTR_SIZE * FLASH_SENSOR_LINK2_PTR_NUMBER);
+
+    //If the position is the first byte of a sector, clear the sector.
+    if ((rFlashSensorData_Link2.ptrDataAddr % (FLASH_SECTOR_SIZE)) == 0) {
+        Flash_external_erase(rFlashSensorData_Link2.ptrDataAddr + FLASH_SENSOR_LINK2_PTR_POS, FLASH_EXT_SECTOR_ERASE);
+    }
+
+    //Store new ptrData to flash.
+    rFlashSensorData_Link2.ptrData.head = FLASH_PTRDATA_VALID;
+    Flash_external_write(rFlashSensorData_Link2.ptrDataAddr + FLASH_SENSOR_LINK2_PTR_POS, (uint8_t *)&rFlashSensorData_Link2.ptrData, sizeof(FlashPointerData_t));
+}
+#endif //SUPPORT_TCP_MULTIL_LINK
 //***********************************************************************************
 //
 // Flash load sensor data pointer.
@@ -641,6 +680,56 @@ static void Flash_load_sensor_ptr(void)
     }
 }
 
+#ifdef SUPPORT_TCP_MULTIL_LINK
+//***********************************************************************************
+//
+// Flash load sensor data pointer.
+//
+//***********************************************************************************
+static void Flash_load_sensor_link2_ptr(void)
+{
+    uint8_t ret;
+    uint32_t i;
+
+    ret = ES_ERROR;
+    rFlashSensorData_Link2.ptrDataAddr = 0;
+    for (i = 0; i < FLASH_SENSOR_PTR_NUMBER; i++) {
+        Flash_external_read(rFlashSensorData_Link2.ptrDataAddr + FLASH_SENSOR_LINK2_PTR_POS, (uint8_t *)&rFlashSensorData_Link2.ptrData, sizeof(FlashPointerData_t));
+        if (rFlashSensorData_Link2.ptrData.head == FLASH_PTRDATA_VALID) {
+            ret = ES_SUCCESS;
+            break;
+        }        
+        rFlashSensorData_Link2.ptrDataAddr += FLASH_SENSOR_LINK2_PTR_SIZE;
+
+        
+    #ifdef SUPPORT_START_LOGO
+        if( i% 100 == 0){
+            Lcd_clear_area(logo_x++, 4);        
+            logo_x = logo_x % LOGO_X_MAX;
+            if(logo_x == 0) {
+                Lcd_set_font(128, 32, 0);
+                Lcd_clear_area(0, 2);
+                Lcd_set_font(1, 8, 1);
+            }
+        }
+    #endif
+
+    }
+
+    if (ret == ES_ERROR) {
+        i = 0;
+        while (i < FLASH_SENSOR_LINK2_PTR_SIZE * FLASH_SENSOR_LINK2_PTR_NUMBER) {
+            Flash_external_erase(FLASH_SENSOR_LINK2_PTR_POS + i, FLASH_EXT_SECTOR_ERASE);
+            i += FLASH_SECTOR_SIZE;
+        }
+        rFlashSensorData_Link2.ptrDataAddr = 0;
+        rFlashSensorData_Link2.ptrData.head = FLASH_PTRDATA_VALID;
+        rFlashSensorData_Link2.ptrData.frontAddr = 0;
+        rFlashSensorData_Link2.ptrData.rearAddr = 0;
+        Flash_external_write(FLASH_SENSOR_LINK2_PTR_POS, (uint8_t *)&rFlashSensorData_Link2.ptrData, sizeof(FlashPointerData_t));
+    }
+}
+#endif //SUPPORT_TCP_MULTIL_LINK
 uint32_t Flash_get_sensor_writeaddr(void)
 {
     uint32_t addr;
@@ -676,10 +765,17 @@ void Flash_store_sensor_data(uint8_t *pData, uint16_t length)
 	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     addr = (rFlashSensorData.ptrData.rearAddr + FLASH_SENSOR_DATA_SIZE) % (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
     if (addr == rFlashSensorData.ptrData.frontAddr) {
-        //Data queue full, drop one object data, Data queue frontAddr increase.
+        //Data queue full, drop one block data, Data queue frontAddr increase.
         rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
         rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
     }
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    if (addr == rFlashSensorData_Link2.ptrData.frontAddr) {
+        //Data queue full, drop one block data, Data queue frontAddr increase.
+        rFlashSensorData_Link2.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
+        rFlashSensorData_Link2.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+    }
+#endif //SUPPORT_TCP_MULTIL_LINK
 
     //If the position is the first byte of a sector, clear the sector.
     if ((rFlashSensorData.ptrData.rearAddr % (FLASH_SECTOR_SIZE)) == 0) {
@@ -691,6 +787,17 @@ void Flash_store_sensor_data(uint8_t *pData, uint16_t length)
             rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
         }
         Flash_external_erase(rFlashSensorData.ptrData.rearAddr + FLASH_SENSOR_DATA_POS, FLASH_EXT_SECTOR_ERASE);
+
+#ifdef SUPPORT_TCP_MULTIL_LINK
+        //If frontAddr in the sector which need clear.
+        if ((rFlashSensorData_Link2.ptrData.frontAddr > rFlashSensorData_Link2.ptrData.rearAddr)
+            && (rFlashSensorData_Link2.ptrData.frontAddr < rFlashSensorData_Link2.ptrData.rearAddr + FLASH_SECTOR_SIZE)) {
+            //Data queue frontAddr point to next sector first byte.
+            rFlashSensorData_Link2.ptrData.frontAddr = rFlashSensorData_Link2.ptrData.rearAddr + FLASH_SECTOR_SIZE;
+            rFlashSensorData_Link2.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+        }
+#endif //SUPPORT_TCP_MULTIL_LINK
+
     }
 
 
@@ -700,6 +807,10 @@ void Flash_store_sensor_data(uint8_t *pData, uint16_t length)
     rFlashSensorData.ptrData.rearAddr += FLASH_SENSOR_DATA_SIZE;
     rFlashSensorData.ptrData.rearAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
 
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    rFlashSensorData_Link2.ptrData.rearAddr = rFlashSensorData.ptrData.rearAddr;
+    Flash_store_sensor_link2_ptr();
+#endif //SUPPORT_TCP_MULTIL_LINK
     //Store sensor ptrData.
     Flash_store_sensor_ptr();
 	Semaphore_post(spiSemHandle);
@@ -790,43 +901,92 @@ void Flash_moveto_offset_sensor_data(uint8_t offset)
 	Semaphore_post(spiSemHandle);
 }
 
+#ifdef SUPPORT_TCP_MULTIL_LINK
+
 //***********************************************************************************
 //
-// Flash moveto next last sensor data.
+// Flash load sensor data.
 //
 //***********************************************************************************
-void Flash_moveto_next_sensor_data(void)
+ErrorStatus Flash_load_sensor_link2_data(uint8_t *pData, uint16_t length)
 {
-	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    if (length > FLASH_SENSOR_DATA_SIZE)
+        return ES_ERROR;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    if (rFlashSensorData_Link2.ptrData.rearAddr == rFlashSensorData_Link2.ptrData.frontAddr) {
+        //Data queue empty.
+        Semaphore_post(spiSemHandle);
+        return ES_ERROR;
+    }
+
+    //Data queue not empty, dequeue data.
+    Flash_external_read(rFlashSensorData_Link2.ptrData.frontAddr + FLASH_SENSOR_DATA_POS, pData, length);
+    //Data queue front pointer increase.
+    //rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
+    //rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+    //Store sensor ptrData.
+    //Flash_store_sensor_ptr();
+    Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+
+
+
+//***********************************************************************************
+//
+// Flash load sensor data by offset.
+//
+//***********************************************************************************
+ErrorStatus Flash_load_sensor_link2_data_by_offset(uint8_t *pData, uint16_t length, uint32_t offset)
+{
+    uint32_t LoadAddr;
+
+    if (length > FLASH_SENSOR_DATA_SIZE)
+        return ES_ERROR;
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    LoadAddr = rFlashSensorData_Link2.ptrData.frontAddr + offset*FLASH_SENSOR_DATA_SIZE;
+    LoadAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+    if (rFlashSensorData_Link2.ptrData.rearAddr == LoadAddr) {
+        //Data queue empty.
+        Semaphore_post(spiSemHandle);
+        return ES_ERROR;
+    }
+
+
+    
+    //Data queue not empty, dequeue data.
+    Flash_external_read(LoadAddr + FLASH_SENSOR_DATA_POS, pData, length);
+    
+    Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+
+
+//***********************************************************************************
+//
+// Flash moveto offset  sensor data.
+//
+//***********************************************************************************
+void Flash_moveto_offset_sensor_link2_data(uint8_t offset)
+{
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 
     //Data queue front pointer increase.
-    rFlashSensorData.ptrData.frontAddr += FLASH_SENSOR_DATA_SIZE;
-    rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+    rFlashSensorData_Link2.ptrData.frontAddr += offset*FLASH_SENSOR_DATA_SIZE;
+    rFlashSensorData_Link2.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
 
     //Store sensor ptrData.
-    Flash_store_sensor_ptr();
-	Semaphore_post(spiSemHandle);
+    Flash_store_sensor_link2_ptr();
+    Semaphore_post(spiSemHandle);
 }
-
-
-//***********************************************************************************
-//
-// Flash recovery last sensor data.
-//
-//***********************************************************************************
-void Flash_recovery_last_sensor_data(void)
-{
-	Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-    //Data queue front pointer decrease.
-    rFlashSensorData.ptrData.frontAddr += (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
-    rFlashSensorData.ptrData.frontAddr -= FLASH_SENSOR_DATA_SIZE;
-    rFlashSensorData.ptrData.frontAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
-
-    //Store sensor ptrData.
-    Flash_store_sensor_ptr();
-	Semaphore_post(spiSemHandle);
-
-}
+#endif //SUPPORT_TCP_MULTIL_LINK
 
 //***********************************************************************************
 //
@@ -1188,7 +1348,28 @@ uint32_t Flash_get_unupload_items(void)
 
     return num;
 }
+#ifdef SUPPORT_TCP_MULTIL_LINK
+//***********************************************************************************
+//
+// Flash get un-upload items.
+//
+//***********************************************************************************
+uint32_t Flash_get_unupload_link2_items(void)
+{
+    uint32_t  num;
+    
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 
+    if (rFlashSensorData_Link2.ptrData.frontAddr > rFlashSensorData_Link2.ptrData.rearAddr)
+        num =  FLASH_SENSOR_DATA_NUMBER - (rFlashSensorData_Link2.ptrData.frontAddr - rFlashSensorData_Link2.ptrData.rearAddr) / FLASH_SENSOR_DATA_SIZE;
+    else
+        num =  (rFlashSensorData_Link2.ptrData.rearAddr - rFlashSensorData_Link2.ptrData.frontAddr) / FLASH_SENSOR_DATA_SIZE;
+    
+    Semaphore_post(spiSemHandle);
+
+    return num;
+}
+#endif //SUPPORT_TCP_MULTIL_LINK
 //***********************************************************************************
 //
 // Flash get record item numbers.
@@ -1753,7 +1934,7 @@ void Sys_config_reset(void)
 #ifdef      BOARD_S3
 
     g_rSysConfigInfo.module          = MODULE_RADIO;
-    g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
+    g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_L1;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 #endif

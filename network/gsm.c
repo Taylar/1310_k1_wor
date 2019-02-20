@@ -63,6 +63,10 @@ Clock_Handle gsmTimeOutClockHandle;
 uint8_t gsmBusyFlag = 0;
 uint8_t gsmTimerFlag = 0;
 uint16_t gsmRxLength;
+
+#ifdef SUPPORT_NETWORK_SYC_RTC
+Calendar networkCalendar;
+#endif //SUPPORT_NETWORK_SYC_RTC
 //***********************************************************************************
 //
 // Gsm module io init.
@@ -295,6 +299,17 @@ static void AT_get_local_ip(void)
     AT_send_cmd(ATCMD_GET_LOCAL_IP);
 }
 #endif
+static void AT_set_multil_tcp_link(void)
+{
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    rGsmObject.cmdType = AT_CMD_COMMON;
+    AT_send_cmd(ATCMD_ENABLE_MULTIL_LINK);
+#else
+    rGsmObject.cmdType = AT_CMD_COMMON;
+    AT_send_cmd(ATCMD_DISABLE_MULTIL_LINK);
+#endif //SUPPORT_TCP_MULTIL_LINK
+
+}
 
 //***********************************************************************************
 //
@@ -305,7 +320,7 @@ static void AT_set_connect_domain(void)
 {
     uint8_t buff[20];
     
-    if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//名称优先
+    if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//鍚嶇О浼樺�
         sprintf((char *)buff, ATCMD_SET_DOMAINORIP, 1);
     }
     else{
@@ -317,6 +332,45 @@ static void AT_set_connect_domain(void)
     AT_send_cmd(buff);
 }
 
+//***********************************************************************************
+//
+// Send ATCMD_START_MUL_CONNECT.
+//
+//***********************************************************************************
+static void AT_start_multil_connect(uint8_t linkIndex)
+{
+    uint8_t buff[64+20], index, length;
+
+    index = sprintf((char *)buff, ATCMD_START_MUL_CONNECT, linkIndex);
+
+    if(linkIndex == 1){
+        if(strlen((const char *)upgradeSeverIp) > 0){
+            length = sprintf((char *)(buff + index), "\"%s\",\"%d\"\r\n", upgradeSeverIp, upgradeSeverPort);
+        }
+        else if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//鍚嶇О浼樺�
+            length = sprintf((char *)(buff + index), "\"%s\",\"%d\"\r\n", g_rSysConfigInfo.serverAddr, g_rSysConfigInfo.serverIpPort);
+        
+        }
+        else{
+            length = sprintf((char *)(buff + index), "\"%d.%d.%d.%d\",\"%d\"\r\n", g_rSysConfigInfo.serverIpAddr[0],
+                                g_rSysConfigInfo.serverIpAddr[1], g_rSysConfigInfo.serverIpAddr[2],
+                                g_rSysConfigInfo.serverIpAddr[3], g_rSysConfigInfo.serverIpPort);
+        }
+        index += length;
+        buff[index] = '\0';
+
+        rGsmObject.cmdType = AT_CMD_CONNECT;
+        AT_send_cmd(buff);
+    }
+    else if(linkIndex == 0 ){
+        length = sprintf((char *)(buff + index), MULTIL_TCP_LINK0_ADDR);
+        index += length;
+        buff[index] = '\0';
+
+        rGsmObject.cmdType = AT_CMD_CONNECT;
+        AT_send_cmd(buff);
+    }
+}
 
 //***********************************************************************************
 //
@@ -333,7 +387,7 @@ static void AT_start_connect(void)
     if(strlen((const char *)upgradeSeverIp) > 0){
         length = sprintf((char *)(buff + index), "\"%s\",\"%d\"\r\n", upgradeSeverIp, upgradeSeverPort);
     }
-    else if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//名称优先
+    else if(strlen((const char *)g_rSysConfigInfo.serverAddr)> 0) {//鍚嶇О浼樺�
         length = sprintf((char *)(buff + index), "\"%s\",\"%d\"\r\n", g_rSysConfigInfo.serverAddr, g_rSysConfigInfo.serverIpPort);
     
     }
@@ -344,6 +398,7 @@ static void AT_start_connect(void)
     }
     index += length;
     buff[index] = '\0';
+
     rGsmObject.cmdType = AT_CMD_CONNECT;
     AT_send_cmd(buff);
 }
@@ -353,13 +408,21 @@ static void AT_start_connect(void)
 // Send ATCMD_START_CONNECT.
 //
 //***********************************************************************************
+#ifdef SUPPORT_TCP_MULTIL_LINK
+static void AT_tcp_start_send_data(uint16_t length, uint8_t linkIndex)
+#else
 static void AT_tcp_start_send_data(uint16_t length)
+#endif //SUPPORT_TCP_MULTIL_LINK
 {
-    uint8_t buff[16], index, len;
+    uint8_t buff[20], index, len;
 
     strcpy((char *)buff, ATCMD_SEND_DATA);
     index = sizeof(ATCMD_SEND_DATA) - 1;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    len = sprintf((char *)(buff + index), "%d,%d\r", linkIndex, length);
+#else
     len = sprintf((char *)(buff + index), "%d\r", length);
+#endif //SUPPORT_TCP_MULTIL_LINK
     index += len;
     buff[index] = '\0';
     rGsmObject.cmdType = AT_CMD_START_SEND_DATA;
@@ -382,22 +445,45 @@ static void AT_tcp_send_data(uint8_t *pBuff, uint16_t length)
 // Send ATCMD_ACK_QUERY.
 //
 //***********************************************************************************
+#ifdef SUPPORT_TCP_MULTIL_LINK
+static void AT_ack_query(uint8_t linkIndex)
+{
+    uint8_t buff[20];
+    
+    sprintf((char *)buff, ATCMD_ACK_QUERY_MULTIL, linkIndex);
+    rGsmObject.cmdType = AT_CMD_ACK_QUERY;
+    AT_send_cmd(buff);
+}
+
+#else
 static void AT_ack_query(void)
 {
     rGsmObject.cmdType = AT_CMD_ACK_QUERY;
     AT_send_cmd(ATCMD_ACK_QUERY);
 }
-
+#endif //SUPPORT_TCP_MULTIL_LINK
 //***********************************************************************************
 //
 // Send ATCMD_CLOSE_CONNECT.
 //
 //***********************************************************************************
+#ifdef SUPPORT_TCP_MULTIL_LINK
+static void AT_close_connect(uint8_t linkIndex)
+{
+    uint8_t buff[20];
+    
+    sprintf((char *)buff, ATCMD_CLOSE_CONNECT_MULTIL, linkIndex);
+    rGsmObject.cmdType = AT_CMD_CLOSE_CONNECT;
+    AT_send_cmd(buff);
+}
+
+#else
 static void AT_close_connect(void)
 {
     rGsmObject.cmdType = AT_CMD_CLOSE_CONNECT;
     AT_send_cmd(ATCMD_CLOSE_CONNECT);
 }
+#endif //SUPPORT_TCP_MULTIL_LINK
 
 //***********************************************************************************
 //
@@ -501,6 +587,72 @@ static void AT_imei_query(void)
 }
 #endif
 
+#ifdef SUPPORT_NETWORK_SYC_RTC
+//***********************************************************************************
+//
+// Send ATCMD_ENABLE_SYC_TIME.
+//
+//***********************************************************************************
+static void AT_syc_rtc_enable(void)
+{
+    rGsmObject.cmdType = AT_CMD_ENABLE_SYC_RTC;
+    AT_send_cmd(ATCMD_ENABLE_SYC_TIME);
+}
+
+//***********************************************************************************
+//
+// Send ATCMD_DISABLE_SYC_RTC.
+//
+//***********************************************************************************
+static void AT_syc_rtc_disable(void)
+{
+    rGsmObject.cmdType = AT_CMD_DISABLE_SYC_RTC;
+    AT_send_cmd(ATCMD_DISABLE_SYC_TIME);
+}
+static UInt Gsm_wait_ack(uint32_t timeout);
+//***********************************************************************************
+//
+// Send ATCMD_RTC_QUERY.
+//
+//***********************************************************************************
+static void AT_rtc_query(void)
+{
+    rGsmObject.cmdType = AT_CMD_RTC_QUERY;
+    AT_send_cmd(ATCMD_RTC_QUERY);
+}
+
+static GSM_RESULT Gsm_enable_syn_rtc(void)
+{
+    UInt eventId;
+    GSM_RESULT result = RESULT_ERROR;
+
+    AT_syc_rtc_enable();
+    eventId = Gsm_wait_ack(6000);
+    if(eventId & GSM_EVT_CMD_OK)
+        result = RESULT_OK;
+    
+    return result;
+}
+
+
+GSM_RESULT Gsm_get_rtc(void)
+{
+    UInt eventId;
+    GSM_RESULT result = RESULT_ERROR;
+
+    AT_syc_rtc_enable();
+    eventId = Gsm_wait_ack(6000);
+    Task_sleep(2000 * CLOCK_UNIT_MS);
+    AT_rtc_query();
+    eventId = Gsm_wait_ack(10000);
+    if(eventId & GSM_EVT_CMD_OK)
+        result = RESULT_OK;
+    // AT_syc_rtc_disable();
+    // Gsm_wait_ack(6000);
+    return result;
+}
+#endif // SUPPORT_NETWORK_SYC_RTC
+
 //***********************************************************************************
 //
 // Gsm module wait cmd ack.
@@ -597,7 +749,7 @@ static void Gsm_reset(void)
         rGsmObject.resetCnt++;
 
     if (rGsmObject.resetCnt >= 3) {
-        eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN, 10 * 60 * CLOCK_UNIT_S);//修改GSM复位时间为10min和5min
+        eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN, 10 * 60 * CLOCK_UNIT_S);//淇敼GSM澶嶄綅鏃堕棿涓�10min鍜�5min
     } else if (rGsmObject.resetCnt >= 2) {
         eventId = Event_pend(gsmEvtHandle, 0, GSM_EVT_SHUTDOWN, 5 * 60 * CLOCK_UNIT_S);
     }
@@ -711,6 +863,21 @@ static GSM_RESULT Gsm_gprs_query(void)
 
     rGsmObject.error = GSM_NO_ERR;
 
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    for (i = 30; i > 0; i--) {
+        AT_set_multil_tcp_link();
+        eventId = Gsm_wait_ack(1000);
+        if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN))
+            break;
+    }
+    if (eventId & GSM_EVT_SHUTDOWN) {
+        return RESULT_SHUTDOWN;
+    } else if (i == 0) {
+        rGsmObject.error = GSM_ERR_SIM_QUERY;
+        return RESULT_RESET;
+    }
+#endif //SUPPORT_TCP_MULTIL_LINK
+
     //sim card query
     for (i = 30; i > 0; i--) {
         AT_sim_query();
@@ -785,7 +952,7 @@ static GSM_RESULT Gsm_active_PDP(void)
 
     rGsmObject.error = GSM_NO_ERR;
 
-    //设置接入点 APN、用户名和密码
+    //璁剧疆鎺ュ叆鐐� APN銆佺敤鎴峰悕鍜屽瘑鐮�
     if (g_rSysConfigInfo.apnuserpwd[0]){
         AT_set_apn();
         eventId = Gsm_wait_ack(500);
@@ -794,14 +961,14 @@ static GSM_RESULT Gsm_active_PDP(void)
         }
     }
     
-    //启动任务
+    //鍚姩浠诲姟
     AT_start_task();
     eventId = Gsm_wait_ack(500);
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
     }
 
-    //激活移动场景（或发起 GPRS/CSD 无线连接）
+    //婵�娲荤Щ鍔ㄥ�鏅紙鎴栧彂璧� GPRS/CSD 鏃犵嚎杩炴帴锛�
     AT_active_ms();
     eventId = Gsm_wait_ack(150000);
     if (eventId & GSM_EVT_SHUTDOWN) {
@@ -811,7 +978,7 @@ static GSM_RESULT Gsm_active_PDP(void)
         rGsmObject.error = GSM_ERR_ACT;
         return RESULT_RESET;
     } else if (eventId & GSM_EVT_CMD_ERROR) {
-        //去激活场景
+        //鍘绘縺娲诲満鏅�
         AT_deactive_ms();
         eventId = Gsm_wait_ack(90000);
         if (eventId & GSM_EVT_SHUTDOWN) {
@@ -837,22 +1004,24 @@ static GSM_RESULT Gsm_active_PDP(void)
 //          RESULT_GPRS_QUERY -- need goto gprs query
 //
 //***********************************************************************************
-static GSM_RESULT Gsm_tcp_connect(void)
+static GSM_RESULT Gsm_tcp_connect(uint8_t linkIndex)
 {
     uint8_t i;
     UInt eventId;
 
     rGsmObject.error = GSM_NO_ERR;
 
-    //建立 TCP 连接或注册 UDP 端口号
+    //寤虹� TCP 杩炴帴鎴栨敞鍐� UDP 绔彛鍙�
     for (i = 5; i > 0; i--) {
-        
         AT_set_connect_domain();
         eventId = Gsm_wait_ack(500);
         if (!(eventId & GSM_EVT_CMD_OK))
             continue;            
-        
+#ifdef SUPPORT_TCP_MULTIL_LINK
+        AT_start_multil_connect(linkIndex);
+#else
         AT_start_connect();
+#endif //SUPPORT_TCP_MULTIL_LINK
         eventId = Gsm_wait_ack(90000);
         if (!(eventId & GSM_EVT_CMD_ERROR))
             break;
@@ -860,7 +1029,7 @@ static GSM_RESULT Gsm_tcp_connect(void)
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
     } else if (i == 0 || eventId == 0) {
-        //去激活场景
+        //鍘绘縺娲诲満鏅�
         AT_deactive_ms();
         eventId = Gsm_wait_ack(90000);
         if (eventId & GSM_EVT_SHUTDOWN) {
@@ -887,7 +1056,11 @@ static GSM_RESULT Gsm_tcp_connect(void)
 //          RESULT_CONNECT -- need goto tcp connect
 //
 //***********************************************************************************
+#ifdef SUPPORT_TCP_MULTIL_LINK
+static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length, uint8_t linkIndex)
+#else
 static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
+#endif //SUPPORT_TCP_MULTIL_LINK
 {
     uint16_t i;
     UInt eventId;
@@ -907,7 +1080,11 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
 
     //tcp send data
     Event_pend(gsmEvtHandle, 0, GSM_EVT_ALL, BIOS_NO_WAIT);
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    AT_tcp_start_send_data(length, linkIndex);
+#else
     AT_tcp_start_send_data(length);
+#endif //SUPPORT_TCP_MULTIL_LINK
     eventId = Gsm_wait_ack(500);
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
@@ -926,7 +1103,11 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
 
     //tcp send data ack query
     for (i = 300; i > 0; i--) {
+#ifdef SUPPORT_TCP_MULTIL_LINK
+        AT_ack_query(linkIndex);
+#else
         AT_ack_query();
+#endif //SUPPORT_TCP_MULTIL_LINK
         eventId = Gsm_wait_ack(30);
         Task_sleep(270 * CLOCK_UNIT_MS);
         if (eventId & (GSM_EVT_CMD_OK | GSM_EVT_SHUTDOWN | GSM_EVT_CMD_RECONNECT))
@@ -942,7 +1123,11 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
     return RESULT_OK;
 
 LAB_UPLOAD_CLOSE_CONNECT:
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    AT_close_connect(linkIndex);
+#else
     AT_close_connect();
+#endif //SUPPORT_TCP_MULTIL_LINK
     eventId = Gsm_wait_ack(60000);
     if (eventId & GSM_EVT_SHUTDOWN) {
         return RESULT_SHUTDOWN;
@@ -1187,7 +1372,7 @@ static GSM_RESULT Gsm_test(void)
 // Gsm module transmit process.
 //
 //***********************************************************************************
-static GSM_RESULT Gsm_transmit_process(uint8_t *pBuff, uint16_t length)
+static GSM_RESULT Gsm_transmit_process(uint8_t *pBuff, uint16_t length, uint8_t linkIndex)
 {
     GSM_RESULT result;
 
@@ -1227,20 +1412,34 @@ LAB_GPRS_QUERY:
         }
         rGsmObject.state = GSM_STATE_TCP_CONNECT;
         rGsmObject.actPDPCnt = 0;
+#ifdef SUPPORT_UPLOADTIME_LIMIT
+        rGsmObject.linkState = 0;
+#endif //SUPPORT_UPLOADTIME_LIMIT
     }
 
 LAB_CONNECT:
 //Gsm connect server
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    if (rGsmObject.state == GSM_STATE_TCP_CONNECT || (!(rGsmObject.linkState & (0x01 << linkIndex)))) {
+        result = Gsm_tcp_connect(linkIndex);
+#else
     if (rGsmObject.state == GSM_STATE_TCP_CONNECT) {
-        result = Gsm_tcp_connect();
+        result = Gsm_tcp_connect(NULL);
+#endif
         if (result == RESULT_SHUTDOWN || result == RESULT_RESET) {
             return result;
         } else if (result == RESULT_GPRS_QUERY) {
             //Active PDP fail
             rGsmObject.state = GSM_STATE_GPRS_QUERY;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+            rGsmObject.linkState = 0;
+#endif  //SUPPORT_TCP_MULTIL_LINK
             goto LAB_GPRS_QUERY;
         }
         rGsmObject.state = GSM_STATE_TCP_UPLOAD;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+            rGsmObject.linkState |= 0x01 << linkIndex;
+#endif  //SUPPORT_TCP_MULTIL_LINK
     }
 
     if (pBuff != NULL && length != 0) {
@@ -1248,17 +1447,26 @@ LAB_CONNECT:
             rGsmObject.error = GSM_ERR_UPLOAD;
             return RESULT_RESET;
         }
-
+#ifdef SUPPORT_TCP_MULTIL_LINK
+        result = Gsm_tcp_upload(pBuff, length, linkIndex);
+#else
         result = Gsm_tcp_upload(pBuff, length);
+#endif  //SUPPORT_TCP_MULTIL_LINK
         if (result == RESULT_SHUTDOWN || result == RESULT_RESET) {
             return result;
         } else if (result == RESULT_GPRS_QUERY) {
             rGsmObject.state = GSM_STATE_GPRS_QUERY;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+            rGsmObject.linkState = 0;
+#endif  //SUPPORT_TCP_MULTIL_LINK
             goto LAB_GPRS_QUERY;
         } else if (result == RESULT_CONNECT) {
             //Active PDP fail
 
             rGsmObject.state = GSM_STATE_TCP_CONNECT;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+            rGsmObject.linkState &= ~(0x01 << linkIndex);
+#endif  //SUPPORT_TCP_MULTIL_LINK
             goto LAB_CONNECT;
         }
 
@@ -1269,6 +1477,7 @@ LAB_CONNECT:
     return RESULT_OK;
 }
 
+extern void Nwk_data_proc_callback_JSLL(uint8_t *pBuff, uint16_t length);
 //***********************************************************************************
 //
 // Gsm AT command respond monitor.
@@ -1289,6 +1498,10 @@ static void Gsm_rxSwiFxn(void)
     char *ptr1;
     uint8_t i;
 #endif
+#ifdef SUPPORT_TCP_MULTIL_LINK
+    uint8_t linkIndex;
+#endif //SUPPORT_TCP_MULTIL_LINK
+
 
     /* Disable preemption. */
     key = Hwi_disable();
@@ -1309,13 +1522,26 @@ static void Gsm_rxSwiFxn(void)
     ptr2  = (char *)tempRx.buff;
     if (ptr != NULL) {
 redispath:
+#ifdef SUPPORT_TCP_MULTIL_LINK
+        linkIndex = atoi(ptr-6);
+#endif //SUPPORT_TCP_MULTIL_LINK
         index = ptr - ptr2;
         rxLen = atoi(ptr + 3);
         if ((value - index) > rxLen && rxLen < UART_BUFF_SIZE) {
             //Second 0x7e
             g_rUart1RxData.length = index;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+            ptr = strstr((char *)ptr, ":");
+            if(linkIndex == 0){
+                rGsmObject.dataProcCallbackFxn((uint8_t *)ptr+1, rxLen);
+            }
+            else if(linkIndex == 1){
+                Nwk_data_proc_callback_JSLL((uint8_t *)ptr+1, rxLen);
+            }
+#else
             ptr = strstr((char *)ptr, "\x7e");
             rGsmObject.dataProcCallbackFxn((uint8_t *)ptr, rxLen);
+#endif //SUPPORT_TCP_MULTIL_LINK
             value -= rxLen;
             if(value > 3)
             {
@@ -1332,6 +1558,46 @@ redispath:
         }
         return;
     }
+
+#ifdef SUPPORT_NETWORK_SYC_RTC
+    ptr =  strstr((char *)tempRx.buff, "+QNITZ:");
+    if (ptr != NULL)
+    {
+        ptr2 = ptr + 9;
+        networkCalendar.Year       = atoi(ptr2) + CALENDAR_BASE_YEAR;
+        ptr =  strstr(ptr2, "/");
+        if (ptr == NULL)
+            goto CmdProcess;
+        ptr2 = ptr + 1;
+        networkCalendar.Month      = atoi(ptr2);
+        ptr =  strstr(ptr2, "/");
+        if (ptr == NULL)
+            goto CmdProcess;
+        ptr2 = ptr + 1;
+        networkCalendar.DayOfMonth = atoi(ptr2);
+        ptr =  strstr(ptr2, ",");
+        if (ptr == NULL)
+            goto CmdProcess;
+        ptr2 = ptr + 1;
+        networkCalendar.Hours      = atoi(ptr2);
+        ptr =  strstr(ptr2, ":");
+        if (ptr == NULL)
+            goto CmdProcess;
+        ptr2 = ptr + 1;
+        networkCalendar.Minutes    = atoi(ptr2);
+        ptr =  strstr(ptr2, ":");
+        if (ptr == NULL)
+            goto CmdProcess;
+        ptr2 = ptr + 1;
+        networkCalendar.Seconds    = atoi(ptr2);
+        index = atoi(ptr2+2);
+        networkCalendar.Hours += index/4;   // if the timezone less 0, it will wrong
+        networkCalendar.Minutes += index%4;
+        Rtc_set_calendar(&networkCalendar);
+        Nwk_Ntp_Set();
+    }
+CmdProcess:
+#endif //SUPPORT_NETWORK_SYC_RTC
 
     switch (rGsmObject.cmdType) {
         case AT_CMD_COMMON:
@@ -1374,7 +1640,7 @@ redispath:
                 if (ptr != NULL) {
                     rGsmObject.rssi = (uint8_t)atoi(ptr + 5);
                     if (rGsmObject.rssi != 99) {
-                        if(rGsmObject.rssi > 31)rGsmObject.rssi = 31;//处理出现大于31的异常
+                        if(rGsmObject.rssi > 31)rGsmObject.rssi = 31;//澶勭悊鍑虹幇澶т簬31鐨勫紓甯�
                         Gsm_event_post(GSM_EVT_CMD_OK);
                     }
                 }
@@ -1624,6 +1890,55 @@ redispath:
             break;
 #endif
 
+#ifdef  SUPPORT_NETWORK_SYC_RTC
+        case AT_CMD_ENABLE_SYC_RTC:
+        case AT_CMD_DISABLE_SYC_RTC:
+            ptr =  strstr((char *)tempRx.buff, "OK\r\n");
+            if (ptr == NULL)
+                break;
+            Gsm_event_post(GSM_EVT_CMD_OK);
+
+        case AT_CMD_RTC_QUERY:
+            ptr =  strstr((char *)tempRx.buff, "+QLTS:");
+            if (ptr == NULL)
+                break;
+            ptr2 = ptr + 8;
+            networkCalendar.Year       = atoi(ptr2)+CALENDAR_BASE_YEAR;
+            ptr =  strstr(ptr2, "/");
+            if (ptr == NULL)
+                break;
+            ptr2 = ptr + 1;
+            networkCalendar.Month      = atoi(ptr2);
+            ptr =  strstr(ptr2, "/");
+            if (ptr == NULL)
+                break;
+            ptr2 = ptr + 1;
+            networkCalendar.DayOfMonth = atoi(ptr2);
+            ptr =  strstr(ptr2, ",");
+            if (ptr == NULL)
+                break;
+            ptr2 = ptr + 1;
+            networkCalendar.Hours      = atoi(ptr2);
+            ptr =  strstr(ptr2, ":");
+            if (ptr == NULL)
+                break;
+            ptr2 = ptr + 1;
+            networkCalendar.Minutes    = atoi(ptr2);
+            ptr =  strstr(ptr2, ":");
+            if (ptr == NULL)
+                break;
+            ptr2 = ptr + 1;
+            networkCalendar.Seconds    = atoi(ptr2);
+            index = atoi(ptr2+2);
+            networkCalendar.Hours += index/4;   // if the timezone less 0, it will wrong
+            networkCalendar.Minutes += index%4;
+            Gsm_event_post(GSM_EVT_CMD_OK);
+            Rtc_set_calendar(&networkCalendar);
+            Nwk_Ntp_Set();
+            break;
+
+#endif // SUPPORT_NETWORK_SYC_RTC
+
         default:
             g_rUart1RxData.length = 0;
             ptr = strstr((char *)tempRx.buff, "CLOSE");
@@ -1845,7 +2160,7 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
 
 #ifdef SUPPORT_LBS
         case NWK_CONTROL_LBS_QUERY:
-            result = Gsm_transmit_process(NULL, 0);
+            result = Gsm_transmit_process(NULL, 0, NULL);
             if(result == RESULT_SHUTDOWN || result == RESULT_RESET)
             {
                 memset((char *)&rGsmObject.location, 0, sizeof(rGsmObject.location));
@@ -1879,7 +2194,7 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
 #endif
 
         case NWK_CONTROL_TRANSMIT:
-            result = Gsm_transmit_process(((NwkMsgPacket_t *)arg)->buff, ((NwkMsgPacket_t *)arg)->length);
+            result = Gsm_transmit_process(((NwkMsgPacket_t *)arg)->buff, ((NwkMsgPacket_t *)arg)->length, 0);
             if (result == RESULT_SHUTDOWN) {
                 return FALSE;
             } else if (result == RESULT_RESET) {
@@ -1887,6 +2202,17 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
                 return FALSE;
             }
             break;
+#ifdef SUPPORT_TCP_MULTIL_LINK
+        case NWK_CONTROL_TRANSMIT_LINK1:
+            result = Gsm_transmit_process(((NwkMsgPacket_t *)arg)->buff, ((NwkMsgPacket_t *)arg)->length, 1);
+            if (result == RESULT_SHUTDOWN) {
+                return FALSE;
+            } else if (result == RESULT_RESET) {
+                Gsm_reset();
+                return FALSE;
+            }
+            break;
+#endif  //SUPPORT_TCP_MULTIL_LINK
 
         case NWK_CONTROL_SHUTDOWN_MSG:
             Gsm_event_post(GSM_EVT_SHUTDOWN);
@@ -1907,7 +2233,19 @@ static uint8_t Gsm_control(uint8_t cmd, void *arg)
                 return FALSE;
             }
             break;
+#ifdef SUPPORT_NETWORK_SYC_RTC
+        case NWK_CONTROL_SYC_RTC:
+            result = Gsm_transmit_process(NULL, 0, NULL);
+            if (rGsmObject.state == GSM_STATE_TCP_UPLOAD){
+                // result = Gsm_enable_syn_rtc();
+                result = Gsm_get_rtc();
+                if(result == RESULT_OK)
+                    return TRUE;
+                return FALSE;
+            }
+#endif //SUPPORT_NETWORK_SYC_RTC
     }
+
 
     return TRUE;
 }

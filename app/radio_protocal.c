@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-04 17:23:23
+* @Last Modified time: 2019-02-14 12:00:12
 */
 #include "../general.h"
 
@@ -455,7 +455,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 #ifdef SUPPORT_STRATEGY_SORT
 				ConcenterSetNodeChannel(bufTemp->srcAddr, (((uint32_t)(bufTemp->load[0]))<<8) + (uint32_t)(bufTemp->load[1]));
 #endif // SUPPORT_STRATEGY_SORT				
-				ConcenterRadioSendSynTime(bufTemp->dstAddr, bufTemp->srcAddr);
+				// ConcenterRadioSendSynTime(bufTemp->dstAddr, bufTemp->srcAddr);
 			}
 
 			break;
@@ -647,6 +647,7 @@ ConcenterConfigRespondEnd:
 	if (RadioModeGet() != RADIOMODE_UPGRADE)
 	{
 		Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
+		ConcenterRadioSendSynTime(((radio_protocal_t *)protocalRxPacket->payload)->dstAddr, ((radio_protocal_t *)protocalRxPacket->payload)->srcAddr);
 	    RadioSend();
 	}
     Sys_event_post(SYSTEMAPP_EVT_DISP);

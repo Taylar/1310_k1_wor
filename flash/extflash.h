@@ -163,6 +163,8 @@
 //External flash sensor data pointer position offset
 #define FLASH_SENSOR_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)  //512 KB
 
+
+
 /*---    SENSORDATA  -----XMB---*/
 //External flash sensor data store position
 #define FLASH_SENSOR_DATA_POS           (1*1024*1024L)// 1MB
@@ -184,6 +186,16 @@
 
 //External flash sensor data position offset
 #define FLASH_SENSOR_DATA_AREA_SIZE     (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER)
+
+//External flash sensor data pointer store position
+#define FLASH_SENSOR_LINK2_PTR_POS            (FLASH_SENSOR_DATA_POS + FLASH_SENSOR_DATA_AREA_SIZE)
+//External flash sensor data pointer size
+#define FLASH_SENSOR_LINK2_PTR_SIZE           16
+//External flash sensor data pointer number
+#define FLASH_SENSOR_LINK2_PTR_NUMBER         32*1024L  // 1分钟1条 60*24*365*500(台) =262800000 = 2628*10万次/年  12年寿命=32*1024  6年寿命 16*1024， 
+//External flash sensor data pointer position offset
+#define FLASH_SENSOR_LINK2_PTR_AREA_SIZE      (FLASH_SENSOR_PTR_SIZE * FLASH_SENSOR_PTR_NUMBER)  //512 KB
+
 
 
 /*---    OTHER ------------XMB---*/
@@ -323,8 +335,6 @@
 #define FLASH_SENSOR_DATA_NUMBER        (11520L)         // the max store data   //180 *1024
 //External flash sensor data position offset
 #define FLASH_SENSOR_DATA_AREA_SIZE     (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER)
-
-
 #endif
 
 
@@ -392,12 +402,16 @@ extern void Flash_store_sensor_data(uint8_t *pData, uint16_t length);
 extern void Flash_recovery_last_sensor_data(void);
 extern void Flash_moveto_next_sensor_data(void);
 extern ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, uint32_t offset);
+extern ErrorStatus Flash_load_sensor_link2_data_by_offset(uint8_t *pData, uint16_t length, uint32_t offset);
 extern void Flash_moveto_offset_sensor_data(uint8_t offset);
+extern void Flash_moveto_offset_sensor_link2_data(uint8_t offset);
+
 extern void Flash_store_record_addr(uint8_t startOrEnd);
 extern FlashPrintRecordAddr_t Flash_get_record_addr(void);
 FlashPrintRecordAddr_t Flash_get_current_record_addr(void);
 extern void Flash_get_record(uint32_t addr, uint8_t *pData, uint16_t length);
 extern uint32_t Flash_get_unupload_items(void);
+extern uint32_t Flash_get_unupload_link2_items(void);
 extern uint32_t Flash_get_record_items(void);
 
 

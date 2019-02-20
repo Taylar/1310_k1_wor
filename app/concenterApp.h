@@ -14,7 +14,7 @@
 
 
 /***** Variable declarations *****/
-
+extern extflash_queue_s extflashWriteQ;
 
 
 

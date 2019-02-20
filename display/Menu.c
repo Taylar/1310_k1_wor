@@ -25,9 +25,9 @@ typedef enum {
 
 #define MENU_128X32_OFS             512
 
-// const uint8_t menu128x32[]= {
-// //    #include "font\menu128x32.txt"
-    // };
+const uint8_t menu128x32[]= {
+    #include "font\menu128x32.txt"
+};
 
 const uint8_t menu128x64[]= {
 #ifdef SUPPORT_FLIGHT_MODE
@@ -240,7 +240,9 @@ void Menu_restart(void)
     g_rSysConfigInfo.rtc =Rtc_get_calendar();
     Flash_store_config();
     Flash_log("RST\n");
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
     Flash_store_devices_state(TYPE_POWER_RESTART);
+#endif// SUPPORT_DEVICED_STATE_UPLOAD
     while(1)
         SysCtrlSystemReset();
    // Menu_exit();

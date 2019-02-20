@@ -110,7 +110,7 @@ void NodeUploadProcess(void)
     uint8_t     data[32];
     uint32_t    dataItems;
     uint16_t serialNumber;
-
+    return;
     // reverse the buf to other command
     Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
 
@@ -178,7 +178,7 @@ uint8_t NodeUploadSucessProcess(TxFrameRecord_t *temp)
 //    if(offsetUnit)
 //    {
 //        offsetUnit--;
-//        Flash_moveto_next_sensor_data();
+//        Flash_moveto_offset_sensor_data(1);
 //    }
     Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
     if ((temp->Cnt != 0) && (lastTxSensorDataRecord.Cnt != 0) \
@@ -195,7 +195,7 @@ uint8_t NodeUploadSucessProcess(TxFrameRecord_t *temp)
 
     if (flag) {
         for (i= 0; i < temp->Cnt; i++) {
-            Flash_moveto_next_sensor_data();
+            Flash_moveto_offset_sensor_data(1);
         }
         memset(&lastTxSensorDataRecord, 0, sizeof(lastTxSensorDataRecord));
     }

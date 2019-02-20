@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-01-25 14:41:05
+* @Last Modified time: 2019-02-13 16:21:40
 */
 #include "../general.h"
 
@@ -518,6 +518,7 @@ void S6AppBatProcess(void)
 //***********************************************************************************
 void UsbIntProcess(void)
 {
+    uint8_t limitTime;
     if(GetUsbState() == USB_LINK_STATE)
     {
         switch(deviceMode)
@@ -532,12 +533,16 @@ void UsbIntProcess(void)
             // wait for the gsm uart close
 #ifdef  SUPPORT_NETWORK
             Nwk_poweroff();
-            while(Nwk_is_Active())
+            limitTime = 0;
+            while(Nwk_is_Active() && limitTime < 10)
             {
                 WdtClear();
                 Nwk_poweroff();
-                Task_sleep(100 * CLOCK_UNIT_MS);
+                limitTime++;
+                Task_sleep(1000 * CLOCK_UNIT_MS);
             }
+            if(limitTime >= 10)
+                SystemResetAndSaveRtc();
 #endif
 
             InterfaceEnable();
@@ -605,7 +610,9 @@ void S6Wakeup(void)
     deviceMode = DEVICES_ON_MODE;
     RtcStart();
     Flash_log("PON\n");
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
     Flash_store_devices_state(TYPE_POWER_ON);
+#endif //SUPPORT_DEVICED_STATE_UPLOAD
     if(GetUsbState() == USB_UNLINK_STATE)
     {
 #ifdef  SUPPORT_NETWORK
@@ -637,7 +644,9 @@ void S6Sleep(void)
 {
     RtcStop();
     Flash_log("POF\n");
+#ifdef SUPPORT_DEVICED_STATE_UPLOAD
     Flash_store_devices_state(TYPE_POWER_DOWN);
+#endif //SUPPORT_DEVICED_STATE_UPLOAD
     // wait the nwk disable the uart
     Disp_clear_all();
     Disp_msg(2, 3, "Power Off...", FONT_8X16);//display
@@ -645,11 +654,11 @@ void S6Sleep(void)
     Nwk_upload_set();
     Task_sleep(3 * CLOCK_UNIT_S);
     Nwk_poweroff();
-    while(Nwk_is_Active())
-    {
-        WdtClear();
-        Task_sleep(100 * CLOCK_UNIT_MS);
-    }
+    // while(Nwk_is_Active())
+    // {
+    //     WdtClear();
+    //     Task_sleep(100 * CLOCK_UNIT_MS);
+    // }
 #endif
 
 #ifndef S_A

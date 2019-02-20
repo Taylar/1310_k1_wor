@@ -275,7 +275,7 @@ void OldS1NodeApp_protocolProcessing(uint8_t *pData, uint8_t len)
         txResendCntClear();
         if (id > 0) {
            mode2TxFrameSerialNum = 0xffff;
-           Flash_moveto_next_sensor_data();
+           Flash_moveto_offset_sensor_data(1);
        }
     }
 

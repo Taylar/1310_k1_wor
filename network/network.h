@@ -85,9 +85,11 @@ typedef enum {
     NWK_CONTROL_NEARBY_LOCATION,
     NWK_CONTROL_NEARBY_LOCATION_OFF,
     NWK_CONTROL_TRANSMIT,
+    NWK_CONTROL_TRANSMIT_LINK1,
     NWK_CONTROL_NB_UPDATA_TIME,
     NWK_CONTROL_SHUTDOWN_MSG,
     NWK_CONTROL_IMEI_GET,
+    NWK_CONTROL_SYC_RTC,
     NWK_CONTROL_TEST
 } NWK_CONTROL;
 
@@ -109,6 +111,7 @@ extern uint8_t GsmUploadTimeoutStateRead(void);
 extern void Nwk_poweroffEventSet(void);
 extern void Nwk_send_upload_event(void);
 extern uint8_t Nwk_Is_Ntp();
+extern void Nwk_Ntp_Set(void);
 extern char Nwk_is_Active(void);
 
 #define     GSM_UPLOAD_WAIT_2_MIN    1

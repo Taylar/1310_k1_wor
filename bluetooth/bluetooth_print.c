@@ -190,17 +190,22 @@ void Btp_init(void)
 //***********************************************************************************
 void Btp_poweron(void)
 {
+    uint16_t limitTime;
     PIN_setOutputValue(blueControlPinHandle, BT_POWER_PIN, 1);
     Task_sleep(1000 * CLOCK_UNIT_MS);
 
 #ifdef  SUPPORT_NETWORK
     Nwk_poweroff();
-    while(Nwk_is_Active())
+    limitTime = 0;
+    while(Nwk_is_Active() && limitTime < 10)
     {
+        limitTime++;
         Nwk_poweroff();
         WdtClear();
-        Task_sleep(100 * CLOCK_UNIT_MS);
+        Task_sleep(1000 * CLOCK_UNIT_MS);
     }
+    if(limitTime >= 10)
+        SystemResetAndSaveRtc();
 #endif
 
      //Init UART.
@@ -1931,7 +1936,11 @@ if(0 == PrintProStep){
 
         // judgement if all find to end position
         for(i =0 ; i < DID_num; i++){
-            if (pPrintRecordAddr[i] >= recordAddr.end)
+            if(recordAddr.end >= recordAddr.start){
+                if(pPrintRecordAddr[i] >= recordAddr.end)
+                    br_flag++;
+            }
+            else if(pPrintRecordAddr[i] <= recordAddr.start && pPrintRecordAddr[i] >= recordAddr.end)
                 br_flag++;
         }
 
