@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-01-25 11:18:02
+* @Last Modified time: 2019-02-25 10:06:46
 */
 #include "../general.h"
 
@@ -21,7 +21,8 @@
 typedef struct 
 {
     uint32_t channelDispath;
-    uint8_t  monitorCnt;
+    uint32_t monitorCnt;
+    uint32_t noRecCnt;
     bool     synTimeFlag;    // 0: unsyntime; 1: synchron time
 }concenter_para_t;
 
@@ -54,8 +55,9 @@ extflash_queue_s extflashWriteQ;
 void ConcenterAppInit(void)
 {
 
-    concenterParameter.channelDispath  = 0;
-    concenterParameter.monitorCnt      = 0;
+    concenterParameter.channelDispath = 0;
+    concenterParameter.monitorCnt     = 0;
+    concenterParameter.noRecCnt       = 0;
 
     concenterParameter.synTimeFlag     = false;
 
@@ -322,6 +324,7 @@ uint8_t ConcenterReadSynTimeFlag(void)
 void ConcenterRadioMonitorClear(void)
 {
     concenterParameter.monitorCnt = 0;
+    concenterParameter.noRecCnt   = 0;
 }
 
 
@@ -333,7 +336,7 @@ void ConcenterRadioMonitorClear(void)
 void ConcenterRtcProcess(void)
 {
     concenterParameter.monitorCnt++;
-    if(concenterParameter.monitorCnt >= CONCENTER_RADIO_MONITOR_CNT_MAX)
+    if(concenterParameter.monitorCnt >= g_rSysConfigInfo.uploadPeriod+10)
     {
         Sys_event_post(SYSTEMAPP_EVT_CONCENTER_MONITER);
     }
@@ -346,7 +349,13 @@ void ConcenterRtcProcess(void)
 //***********************************************************************************
 void ConcenterResetRadioState(void)
 {
+    concenterParameter.noRecCnt++;
     Flash_log("NoRec\n");
+    if(concenterParameter.noRecCnt > 3){
+        SystemResetAndSaveRtc();
+        concenterParameter.noRecCnt = 0;
+    }
+
     ConcenterRadioMonitorClear();
     RadioAbort();
     // RadioSetRxMode();

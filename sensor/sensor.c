@@ -265,7 +265,14 @@ static void Sensor_store_package(void)
             
 			if(Minutes < 0){ //the time become slow  more then last, maybe error time sync, go on and for next time sync
 				//RtcAddMinutes(&lastcalendar, (collectPeriod / 60));//this will make lastcalendar > calendar forever.
-				rSensorObject.collectTime = 0;
+                Minutes =  RtcMinutesPassed(&calendar, &lastcalendar);
+                if(Minutes > 2*(collectPeriod / 60)) {
+                    lastcalendar = calendar;
+                }
+                else {
+                    rSensorObject.collectTime = 0;
+                    return;
+                }
 			}
             else if(Minutes  ==  (collectPeriod / 60)){//its the right time, go on ...
                 lastcalendar = calendar;
@@ -455,8 +462,11 @@ static void Sensor_store_package(void)
 #ifdef SUPPORT_UPLOAD_ASSET_INFO
     buff[length++] = 0;
     buff[length++] = SEN_TYPE_ASSET;
-#endif 
+    assetInfoValid = 1;
+    memcpy(assetInfo, buff, 16);
+#else
     Flash_store_sensor_data(buff, 16);
+#endif 
 #else
     buff[0] = length - 1;
     Flash_store_sensor_data(buff, length);
@@ -905,12 +915,12 @@ void Sensor_store_null_package(uint8_t *buff)
     //rSensorObject.serialNum++;
     //采集时间
     calendar = Rtc_get_calendar();
-    buff[length++] = calendar.Year - CALENDAR_BASE_YEAR;
-    buff[length++] = calendar.Month;
-    buff[length++] = calendar.DayOfMonth;
-    buff[length++] = calendar.Hours;
-    buff[length++] = calendar.Minutes;
-    buff[length++] = calendar.Seconds;
+    buff[length++] = TransHexToBcd(calendar.Year - CALENDAR_BASE_YEAR);
+    buff[length++] = TransHexToBcd(calendar.Month);
+    buff[length++] = TransHexToBcd(calendar.DayOfMonth);
+    buff[length++] = TransHexToBcd(calendar.Hours);
+    buff[length++] = TransHexToBcd(calendar.Minutes);
+    buff[length++] = TransHexToBcd(calendar.Seconds);
     //Sensor电压
 #ifdef SUPPORT_BATTERY
     value =  Battery_get_voltage();
@@ -961,7 +971,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 	sensordata_mem cursensor;
 #ifdef SUPPORT_NETGATE_BIND_NODE
     int8_t isbindNum = - 1;
-	uint32_t temp;
+    int32_t temp;
 #endif
     
 	Index = 2;//DeviceId  start
@@ -1060,7 +1070,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 						#ifdef SUPPORT_ALARM_RECORD_QURERY							  
 						    Flash_store_alarm_record((uint8_t*)(&g_AlarmSensor),sizeof(Alarmdata_t));
                         #endif                            
-                            //设定报警        
+                            //设定报警
                             Sys_event_post(SYS_EVT_ALARM);
                             g_bAlarmSensorFlag |= ALARM_RX_EXTERNAL_ALARM;                        
                     }
@@ -1096,6 +1106,8 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
             memcpy(pMemSensor + MemSensorIndex, &cursensor, sizeof(sensordata_mem));
 
             MemSensorIndex = (MemSensorIndex + 1) % MEMSENSOR_NUM;
+            if(LinkNum < MemSensorIndex)
+                LinkNum = MemSensorIndex;
         }
 	}
 }

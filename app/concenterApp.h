@@ -70,6 +70,8 @@ uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr);
 
 uint16_t ConcenterReadResentNodeChannel(void);
 
+void ConcenterClearSynNode(void);
+
 #endif // SUPPORT_STRATEGY_SORT
 
 #endif			// _CONCENTERAPP_H__

@@ -1332,12 +1332,12 @@ void Disp_info(void)
                 if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                 {
                     sprintf((char *)buff, "F&N:%ldK-%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
-                                                        (g_rSysConfigInfo.rfBW >> 4));
+                                                        LinkNum);
                 }
                 else
                 {
-                    sprintf((char *)buff, "F&N:%ldK-%d-F", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
-                                                        (g_rSysConfigInfo.rfBW >> 4));
+                    sprintf((char *)buff, "F&N:%ldK-F%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
+                                                        LinkNum);
                 }
                 Disp_msg(0, 2, buff, FONT_8X16);
 #ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE

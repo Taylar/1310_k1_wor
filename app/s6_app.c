@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-02-13 16:21:40
+* @Last Modified time: 2019-02-22 14:44:16
 */
 #include "../general.h"
 
@@ -273,7 +273,7 @@ void S6HwInit(void)
     Battery_init();
     Battery_voltage_measure();
 
-    g_rSysConfigInfo.module |= MODULE_RADIO;
+    g_rSysConfigInfo.module |= MODULE_CC1310;
 
     if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
         Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);

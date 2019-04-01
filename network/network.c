@@ -481,6 +481,8 @@ static const Nwk_FxnTable *Nwk_FxnTablePtr[NWK_MODULE_MAX] = {
 
 };
 
+static void Nwk_event_post(UInt event);
+
 #ifdef  JSLL_PROJECT
 
 #define SENSOR_DATA_LEN_OFFSET  0
@@ -613,7 +615,19 @@ void Nwk_gatewayInfo_group_package_JSLL(NwkMsgPacket_t *pPackets)
 
     // run state
     packet.buff[packet.length++] = 0xFD;
-    packet.buff[packet.length++] = 0;
+#ifdef SUPPORT_SOFT_CHARGE_DECT
+    if(chargeState) {
+        packet.buff[packet.length++] = 0;
+    }else{
+        packet.buff[packet.length++] = 1;
+    }
+#else
+    if(Get_Charge_plug() == NO_CHARGE){
+        packet.buff[packet.length++] = 1;
+    }else{
+        packet.buff[packet.length++] = 0;
+    }
+#endif // SUPPORT_SOFT_CHARGE_DECT
 
     // bat state
     packet.buff[packet.length++] = 0xFC;
@@ -641,7 +655,7 @@ void Nwk_gatewayInfo_group_package_JSLL(NwkMsgPacket_t *pPackets)
     memcpy(pPacket->buff, packet.buff, packet.length);
     pPacket->length = packet.length;
 }
-static void Nwk_event_post(UInt event);
+
 
 void Nwk_data_proc_callback_JSLL(uint8_t *pBuff, uint16_t length)
 {
@@ -1591,9 +1605,9 @@ static void Nwk_taskFxn(void)
                 continue;
 
             Nwk_group_package(NMI_TX_SETTING, &rNwkMsgPacket);
-            Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket);
-            continue;
-#endif //JSLL_PROJECT
+            if(Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE)
+                continue;
+#endif //defined(JSLL_PROJECT) && !defined(SUPPORT_TCP_MULTIL_LINK)
         }
 
         if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE| NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
@@ -1841,7 +1855,8 @@ static void Nwk_taskFxn(void)
                 }
 #endif // JSLL_PROJECT
             }
-
+            if(rNwkObject.ntp == 0)
+                continue;
             
 #ifdef SUPPORT_GSM_SHORT_CONNECT
             uint32_t temp;
@@ -1850,6 +1865,7 @@ static void Nwk_taskFxn(void)
             if(g_alarmFlag)
                 temp = g_rSysConfigInfo.alarmuploadPeriod;
 #endif // SUPPORT_ALARM_SWITCH_PERIOD
+
 
 #ifdef SUPPORT_UPLOADTIME_LIMIT
             if(((g_rSysConfigInfo.uploadPeriod/g_rSysConfigInfo.collectPeriod) < Flash_get_unupload_items()))
@@ -1923,6 +1939,7 @@ void Nwk_upload_time_isr(void)
         if (rNwkObject.uploadTime >= temp) {
             rNwkObject.uploadTime = 0;
             rNwkObject.hbTime = 0;
+            ConcenterClearSynNode();
             Nwk_event_post(NWK_EVT_DATA_UPLOAD);
         }
         else

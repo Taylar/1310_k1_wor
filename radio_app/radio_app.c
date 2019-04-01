@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-06 14:36:25
+* @Last Modified time: 2019-04-01 10:42:08
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -28,7 +28,7 @@
 #if (defined(BOARD_S6_6) || defined(BOARD_B2S))
 #define RADIO_RSSI_FLITER               -40
 #else
-#define RADIO_RSSI_FLITER               -95
+#define RADIO_RSSI_FLITER               -80
 #endif
 
 
@@ -814,17 +814,17 @@ void RadioAppTaskFxn(void)
             RadioSwitchingUserRate();
         }
 
-        if (events & (RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL))
-        {
-            radioStatus = RADIOSTATUS_IDLE;
-            if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
-            {
-                RadioAbort();
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-                RadioReceiveData();
-            }
+        // if (events & (RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL))
+        // {
+        //     radioStatus = RADIOSTATUS_IDLE;
+        //     if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
+        //     {
+        //         RadioAbort();
+        //         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+        //         RadioReceiveData();
+        //     }
 
-        }
+        // }
 
         if(events & RADIO_EVT_RADIO_REPAIL) 
         {
@@ -835,7 +835,7 @@ void RadioAppTaskFxn(void)
             }
         }
 
-        if(events & RADIO_EVT_SEND_CONFIG) 
+        if(events & (RADIO_EVT_SEND_CONFIG | RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL)) 
         {
 #ifdef   BOARD_S3
             RadioAbort();

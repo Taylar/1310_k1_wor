@@ -299,7 +299,7 @@ static void AT_get_local_ip(void)
     AT_send_cmd(ATCMD_GET_LOCAL_IP);
 }
 #endif
-static void AT_set_multil_tcp_link(void)
+void AT_set_multil_tcp_link(void)
 {
 #ifdef SUPPORT_TCP_MULTIL_LINK
     rGsmObject.cmdType = AT_CMD_COMMON;
@@ -337,7 +337,7 @@ static void AT_set_connect_domain(void)
 // Send ATCMD_START_MUL_CONNECT.
 //
 //***********************************************************************************
-static void AT_start_multil_connect(uint8_t linkIndex)
+void AT_start_multil_connect(uint8_t linkIndex)
 {
     uint8_t buff[64+20], index, length;
 
@@ -377,7 +377,7 @@ static void AT_start_multil_connect(uint8_t linkIndex)
 // Send ATCMD_START_CONNECT.
 //
 //***********************************************************************************
-static void AT_start_connect(void)
+void AT_start_connect(void)
 {
     uint8_t buff[64+20], index, length;
 
@@ -1125,6 +1125,7 @@ static GSM_RESULT Gsm_tcp_upload(uint8_t *pBuff, uint16_t length)
 LAB_UPLOAD_CLOSE_CONNECT:
 #ifdef SUPPORT_TCP_MULTIL_LINK
     AT_close_connect(linkIndex);
+    rGsmObject.linkState &= ~(0x01 << linkIndex);
 #else
     AT_close_connect();
 #endif //SUPPORT_TCP_MULTIL_LINK

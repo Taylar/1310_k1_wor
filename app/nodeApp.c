@@ -117,6 +117,29 @@ void NodeUploadProcess(void)
     NodeStrategyBuffClear();
     offsetUnit = 0;
     memset(&lastTxSensorDataRecord, 0, sizeof(lastTxSensorDataRecord));
+#ifdef SUPPORT_UPLOAD_ASSET_INFO
+    if(assetInfoValid)
+    {
+        memcpy(data+6, assetInfo, 16);
+        data[0] = 17;
+        data[1] = 0;
+        data[2] = g_rSysConfigInfo.DeviceId[0];
+        data[3] = g_rSysConfigInfo.DeviceId[1];
+        data[4] = g_rSysConfigInfo.DeviceId[2];
+        data[5] = g_rSysConfigInfo.DeviceId[3];
+
+        serialNumber = ((data[6] << 8) | data[7]);
+        // the radio buf is full 
+        if(NodeRadioSendSensorData(data, data[0] + 1) == false)
+        {
+            Semaphore_post(uploadSemHandle);
+            return;
+        }
+        lastTxSensorDataRecord.lastFrameSerial[lastTxSensorDataRecord.Cnt] = serialNumber;
+        lastTxSensorDataRecord.Cnt++;
+        offsetUnit++;
+    }
+#else
     dataItems  = Flash_get_unupload_items();
 
     if(dataItems >= offsetUnit)
@@ -126,21 +149,18 @@ void NodeUploadProcess(void)
 
     while(dataItems)
     {
-#ifdef BOARD_S3
+    #ifdef BOARD_S3
         Flash_load_sensor_data_by_offset(data+6, 16, offsetUnit);
-#ifdef SUPPORT_UPLOAD_ASSET_INFO
-        data[0] = 17;
-#else
         data[0] = 21;
-#endif  //SUPPORT_UPLOAD_ASSET_INFO
         data[1] = 0;
         data[2] = g_rSysConfigInfo.DeviceId[0];
         data[3] = g_rSysConfigInfo.DeviceId[1];
         data[4] = g_rSysConfigInfo.DeviceId[2];
         data[5] = g_rSysConfigInfo.DeviceId[3];
-#else
+    #else
         Flash_load_sensor_data_by_offset(data, 32, offsetUnit);
-#endif  // BOARD_S3
+    #endif  // BOARD_S3
+
         serialNumber = ((data[6] << 8) | data[7]);
         // the radio buf is full 
         if(NodeRadioSendSensorData(data, data[0] + 1) == false)
@@ -153,6 +173,7 @@ void NodeUploadProcess(void)
         dataItems--;
         offsetUnit++;
     }
+#endif //SUPPORT_UPLOAD_ASSET_INFO
     Semaphore_post(uploadSemHandle);
 }
 //***********************************************************************************
@@ -172,6 +193,7 @@ void NodeUploadOffectClear(void)
 //***********************************************************************************
 uint8_t NodeUploadSucessProcess(TxFrameRecord_t *temp)
 {
+
     uint8_t flag = 1;
     uint8_t i = 0;
 
@@ -194,9 +216,13 @@ uint8_t NodeUploadSucessProcess(TxFrameRecord_t *temp)
     }
 
     if (flag) {
+#ifdef SUPPORT_UPLOAD_ASSET_INFO
+        assetInfoValid = 0;
+#else
         for (i= 0; i < temp->Cnt; i++) {
             Flash_moveto_offset_sensor_data(1);
         }
+#endif //SUPPORT_UPLOAD_ASSET_INFO
         memset(&lastTxSensorDataRecord, 0, sizeof(lastTxSensorDataRecord));
     }
 

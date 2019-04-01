@@ -549,7 +549,6 @@ void SystemAppTaskFxn(void)
 //***********************************************************************************
 void SystemResetAndSaveRtc(void)
 {
-	g_rSysConfigInfo.rtc = Rtc_get_calendar();
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
     Flash_store_devices_state(TYPE_POWER_RESTART);
 #endif

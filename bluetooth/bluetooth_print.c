@@ -1761,6 +1761,7 @@ void Btp_printList_PrintLayout(const uint32_t * DID, const uint8_t DID_num_2)
     static int pos[3] = {0};
 
     uint8_t DID_print_num = DID_num_2;
+    uint8_t validCnt;
     static uint8_t DID_num;
 
     DID_num = DID_num_2;
@@ -1897,7 +1898,7 @@ if(0 == PrintProStep){
         // 0X20 (space)
         memset(print_buff, 0x20 , sizeof(print_buff));
         length = Btp_printList_print_HMS_pos( print_buff, &maxRecord_time, 0);
-
+        validCnt = 0;
         for(i=0; i < DID_print_num /*DID_num*/; i++) {
 
 #define USE_DATE_MODE 1
@@ -1912,14 +1913,16 @@ if(0 == PrintProStep){
             if(0 == ret){
                 //Btp_printList_print_DATA(print_buff,buff);
                 length += Btp_printList_print_DATA_pos( print_buff, type_list[i],  buff, pos[i]);
+                validCnt++;
             }else{
                 length += Btp_printList_print_sign(print_buff, "--", pos[i]);
 
             }
        }
-
-        Btp_send_data((uint8_t*)print_buff, MAX_PRINT_LINE_CHAR_LEN );
-        Btp_send_cmd("\n");
+        if(validCnt) {
+            Btp_send_data((uint8_t*)print_buff, MAX_PRINT_LINE_CHAR_LEN );
+            Btp_send_cmd("\n");
+        }
 
         // update HMS
         // 没有更新日期，就只更新时分

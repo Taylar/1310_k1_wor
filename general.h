@@ -67,10 +67,10 @@
 
 // #define JSLL_S6_6_G
 // #define GZJK_S6_6_G
-// #define ZKS_S6_6_G
+#define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
 // #define ZKS_S3_C_SHT2X
-#define ZKS_S3_C_SHT3X
+// #define ZKS_S3_C_SHT3X
 // #define ZKS_S3_1_C
 // #define ZKS_Z4_C
 // #define ZKS_B2S_C
@@ -105,7 +105,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0082
+#define FW_VERSION              0x0077
 
 //***********************************************************************************
 //
@@ -526,7 +526,7 @@ error
 
 /* Z4 */
 #ifdef ZKS_Z4_C
-// #define SUPPORT_BOARD_Z4
+#define SUPPORT_BOARD_Z4
 #endif //ZKS_Z4_C
 
 #ifdef SUPPORT_BOARD_Z4
@@ -540,8 +540,7 @@ error
 #undef  PROJECT_NAME
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 #endif //SUPPORT_BOARD_Z4
-#undef  FW_VERSION
-#define FW_VERSION              0x0063
+
 
 #ifdef SUPPORT_BOARD_OLD_S1
 #undef  FW_VERSION
@@ -561,8 +560,8 @@ error
 
 #undef SUPPORT_DOUBLE_PRESS
 #define FLASH_SENSOR_DATA_32BYTE
-#define SUPPORT_CHARGE_DECT
-#define SUPPORT_CHARGE_DECT_ALARM
+// #define SUPPORT_CHARGE_DECT
+// #define SUPPORT_CHARGE_DECT_ALARM
 #define SUPPORT_USB
 #define SUPPORT_RARIO_SPEED_SET
 // #define SUPPORT_STRATEGY_SORT
@@ -588,6 +587,9 @@ error
 
 // #undef SUPPORT_CHARGE_DECT
 // #undef SUPPORT_CHARGE_DECT_ALARM
+#ifndef SUPPORT_CHARGE_DECT
+#define SUPPORT_SOFT_CHARGE_DECT
+#endif //SUPPORT_CHARGE_DECT
 
 #undef  SUPPORT_DEVICED_STATE_UPLOAD
 #define SUPPORT_TCP_MULTIL_LINK
@@ -603,15 +605,9 @@ error
 #define SUPPORT_UPLOAD_ASSET_INFO
 #endif // ZKS_S6_6_G
 
-#undef  FW_VERSION
 
-#ifdef S_A
-#define FW_VERSION              0x0036
-#elif defined(S_G)
-#define FW_VERSION              0x0070
-#elif defined(S_C)
-#define FW_VERSION              0x0036
-#endif //S_A
+
+
 
 #ifdef ZKS_S6_6_CONFIG
 #undef  SUPPORT_RSSI_CHECK
@@ -1072,6 +1068,17 @@ EXTERN_ATTR uint8_t deviceModeTemp;
 EXTERN_ATTR uint8_t g_ChagerAlarmCnt;
 extern void Sys_chagre_alarm_timer_isr(void);
 #endif
+
+#ifdef SUPPORT_SOFT_CHARGE_DECT
+EXTERN_ATTR uint32_t minBat, maxBat;
+EXTERN_ATTR uint8_t  chargeState;
+#endif //SUPPORT_SOFT_CHARGE_DECT
+
+EXTERN_ATTR uint8_t LinkNum;
+
+EXTERN_ATTR uint8_t assetInfo[16];
+EXTERN_ATTR uint8_t assetInfoValid;
+
 
 extern uint8_t deviceMode;
 

@@ -46,6 +46,12 @@
  *        made to this file will be applied to all projects.  This file must
  *        remain unmodified.
  */
+#include "general.h"
+#ifdef S_G
+#define SET_CCFG_MODE_CONF_DCDC_RECHARGE 0x1 // Do not use the DC/DC during recharge in powerdown
+
+#define SET_CCFG_MODE_CONF_DCDC_ACTIVE 0x1 // Do not use the DC/DC during active mode
+#endif
 
 #include <ti/devices/DeviceFamily.h>
 #include DeviceFamily_constructPath(startup_files/ccfg.c)

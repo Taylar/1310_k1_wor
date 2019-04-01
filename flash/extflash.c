@@ -377,7 +377,7 @@ static void Flash_external_read(uint32_t flashAddr, uint8_t *pData, uint16_t len
 
 
 static void Flash_load_sensor_ptr(void);
-static void Flash_load_sensor_link2_ptr(void);
+void Flash_load_sensor_link2_ptr(void);
 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
 static void Flash_load_deviced_state_ptr(void);
@@ -1821,6 +1821,7 @@ const uint8_t configFlag[12] = CONFIG_VALID_FLAG;
 //***********************************************************************************
 void Flash_store_config(void)
 {
+    g_rSysConfigInfo.rtc = Rtc_get_calendar();
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
 
     Flash_external_erase2(FLASH_SYS_CONFIG_DATA_POS, FLASH_EXT_SECTOR_ERASE);
@@ -1893,7 +1894,7 @@ void Sys_config_reset(void)
 
 #ifdef      BOARD_B2S
 
-    g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO;
+    g_rSysConfigInfo.module          = MODULE_GSM | MODULE_CC1310;
     g_rSysConfigInfo.serverIpAddr[0] = 114;
     g_rSysConfigInfo.serverIpAddr[1] = 215;
     g_rSysConfigInfo.serverIpAddr[2] = 122;
@@ -1909,7 +1910,7 @@ void Sys_config_reset(void)
 
 #ifdef      BOARD_S6_6
     #ifdef S_G //缃戝叧
-    g_rSysConfigInfo.module          = MODULE_NWK | MODULE_RADIO | MODULE_LCD;
+    g_rSysConfigInfo.module          = MODULE_GSM | MODULE_CC1310 | MODULE_LCD;
     g_rSysConfigInfo.serverIpAddr[0] = 114;
     g_rSysConfigInfo.serverIpAddr[1] = 215;
     g_rSysConfigInfo.serverIpAddr[2] = 122;
@@ -1933,7 +1934,7 @@ void Sys_config_reset(void)
 
 #ifdef      BOARD_S3
 
-    g_rSysConfigInfo.module          = MODULE_RADIO;
+    g_rSysConfigInfo.module          = MODULE_CC1310;
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_L1;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;

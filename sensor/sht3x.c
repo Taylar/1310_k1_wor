@@ -326,7 +326,6 @@ static void SHT3x_measure(uint8_t chNum)
    // uint8_t i;
     //int16_t tempT[5], humiT[5], delt;
     uint8_t retrys = 0;//3?¡ä¨ª¨º¡À??¨º?3¡ä?
-    error = 0;
    // i = 0;
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X){
         //&& rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
@@ -337,9 +336,10 @@ static void SHT3x_measure(uint8_t chNum)
              retrys = 0;
              SHT3x_init(chNum);
 err_retrys:
-             command_word = CMD_READ_STATUS;
-             error |= SHT3x_ReadUserRegister(&command_word);
-             error |= SHT3x_MeasurePoll(0, buff);
+            error = 0;
+            command_word = CMD_READ_STATUS;
+            error |= SHT3x_ReadUserRegister(&command_word);
+            error |= SHT3x_MeasurePoll(0, buff);
             if (error == 0) {
                   HIBYTE_ZKS(rSensorData[chNum].temp) = buff[0];  // temperature
                   LOBYTE_ZKS(rSensorData[chNum].temp) = buff[1];

@@ -247,7 +247,6 @@ static void SHT2x_measure(uint8_t chNum)
     uint8_t buff[3];
     uint8_t retrys = 0;//?????3?
 
-    error = 0;
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
 
         if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X) {
@@ -255,6 +254,7 @@ static void SHT2x_measure(uint8_t chNum)
             retrys = 0;
             // Task_sleep(300 * CLOCK_UNIT_MS);
 err_retrys:
+            error = 0;
             
             error |= SHT2x_ReadUserRegister(&userRegister); //get actual user reg
             userRegister = (userRegister & ~SHT2x_RES_MASK) | SHT2x_RES_8_12BIT;

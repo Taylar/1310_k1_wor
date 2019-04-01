@@ -23,15 +23,15 @@ typedef enum {
 	EV_Get_Bluetooth_Name = 0x08,
 	EV_Set_Bluetooth_Name,
 	EV_Usb_Upgrade,	
-	EV_Get_History_Data   = 0x0B,  //¸ù¾İ±àºÅ»ñÈ¡ÀúÊ·Êı¾İ
-    EV_Reset_Data         = 0x0C,  //Çå³ıËùÓĞÊı¾İ
+	EV_Get_History_Data   = 0x0B,  //æ ¹æ®ç¼–å·è·å–å†å²æ•°æ®
+    EV_Reset_Data         = 0x0C,  //æ¸…é™¤æ‰€æœ‰æ•°æ®
     
-    EV_Get_DevicePara    = 0x0F, //²éÑ¯Éè±¸²ÎÊı
-    EV_Set_DevicePara    = 0x10, //ÉèÖÃÉè±¸²ÎÊı
-    EV_Get_Device_Data   = 0x11, //»ñÈ¡Ö¸¶¨Ê±¼ä¶ÎÊı¾İ
-    EV_Get_Unupload_Data = 0x12,//»ñÈ¡Î´ÉÏ´«Êı¾İ
-    EV_Get_Record_Data   = 0x13,//»ñÈ¡¿ªÊ¼¼ÇÂ¼µÄÊı¾İ
-    EV_Verify_Code       = 0x14,//ÑéÖ¤Éè±¸ÃÜÂë
+    EV_Get_DevicePara    = 0x0F, //æŸ¥è¯¢è®¾å¤‡å‚æ•°
+    EV_Set_DevicePara    = 0x10, //è®¾ç½®è®¾å¤‡å‚æ•°
+    EV_Get_Device_Data   = 0x11, //è·å–æŒ‡å®šæ—¶é—´æ®µæ•°æ®
+    EV_Get_Unupload_Data = 0x12,//è·å–æœªä¸Šä¼ æ•°æ®
+    EV_Get_Record_Data   = 0x13,//è·å–å¼€å§‹è®°å½•çš„æ•°æ®
+    EV_Verify_Code       = 0x14,//éªŒè¯è®¾å¤‡å¯†ç 
 	EV_Get_SIM_CCID		 = 0x15,//get sim ccid
 
     EV_Upgrade_BSL = 0x20,  // Upgrade BSL
@@ -51,13 +51,13 @@ typedef enum {
 	AC_Send_Calendar    = 0x86,
 	AC_Send_Bluetooth_Name = 0x88,
 	
-	AC_Send_History_Data  = 0x8B,// ¸ù¾İ±àºÅ»ñÈ¡ÀúÊ·Êı¾İ,0.0.48°æ±¾Ö®Ç°ÎóĞ´³ÉÁË8A,ĞèÒª¹¤¾ß¼æÈİ
+	AC_Send_History_Data  = 0x8B,// æ ¹æ®ç¼–å·è·å–å†å²æ•°æ®,0.0.48ç‰ˆæœ¬ä¹‹å‰è¯¯å†™æˆäº†8A,éœ€è¦å·¥å…·å…¼å®¹
 	
-    AC_Send_DevicePara    = 0x8F, //·µ»ØÉè±¸²ÎÊı
+    AC_Send_DevicePara    = 0x8F, //è¿”å›è®¾å¤‡å‚æ•°
 
-    AC_Send_Device_Data  = 0x91,//»ñÈ¡Ö¸¶¨Ê±¼ä¶ÎÊı¾İ
-    AC_Send_Unupload_Data = 0x92,//»ñÈ¡Î´ÉÏ´«Êı¾İ
-    AC_Send_Record_Data   = 0x93,//»ñÈ¡¿ªÊ¼¼ÇÂ¼µÄÊı¾İ
+    AC_Send_Device_Data  = 0x91,//è·å–æŒ‡å®šæ—¶é—´æ®µæ•°æ®
+    AC_Send_Unupload_Data = 0x92,//è·å–æœªä¸Šä¼ æ•°æ®
+    AC_Send_Record_Data   = 0x93,//è·å–å¼€å§‹è®°å½•çš„æ•°æ®
 
     AC_Send_Upgrade_Success = 0x94,
 
@@ -79,7 +79,11 @@ typedef struct {
     uint8_t cdcDataReceivedFlag;
 } UsbEvent_t;
 
+#ifdef GZJK_PROJECT
 #define USB_BUFF_LENGTH           (256+64)
+#else
+#define USB_BUFF_LENGTH           (436+64)
+#endif // GZJK_PROJECT
 // Old protocol defined by DouQian. 
 #define USB_PACKAGE_HEAD          0xcb
 #define USB_PACKAGE_TAIL          0xbc

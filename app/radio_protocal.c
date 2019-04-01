@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-02-14 12:00:12
+* @Last Modified time: 2019-04-01 10:40:44
 */
 #include "../general.h"
 
@@ -350,6 +350,7 @@ NodeDispath:
         if (1 == flag) {
             flag = NodeUploadSucessProcess(&rxSensorDataAckRecord);
         }
+#ifndef SUPPORT_UPLOAD_ASSET_INFO
 	    if((Flash_get_unupload_items() > 0) && sendContinue)
 	    {
 	    	NodeContinueFlagSet();
@@ -358,6 +359,7 @@ NodeDispath:
 		    // waiting the gateway to change to receive
 		    RadioSend();
 	    }
+#endif //SUPPORT_UPLOAD_ASSET_INFO
 	    NodeBroadcasting();
     }
 }
@@ -365,6 +367,12 @@ NodeDispath:
 
 #endif // S_C
 
+uint32_t lastNodeAddr = 0;
+
+void ConcenterClearSynNode(void)
+{
+	lastNodeAddr = 0;
+}
 
 //***********************************************************************************
 // brief:   analysis the concenter protocal
@@ -378,6 +386,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	radio_protocal_t	*bufTemp;
 	Calendar    calendarTemp;
 	uint16_t serialNum;
+	uint8_t syncTime;
 
 #ifdef BOARD_CONFIG_DECEIVE
 	int8_t i8Rssi;
@@ -404,6 +413,11 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	
 	ClearRadioSendBuf();
 	
+	if(bufTemp->srcAddr != lastNodeAddr)
+		syncTime = 1;
+	else
+		syncTime = 0;
+	lastNodeAddr = bufTemp->srcAddr;
 	SetRadioDstAddr(bufTemp->srcAddr);
 
 
@@ -647,7 +661,8 @@ ConcenterConfigRespondEnd:
 	if (RadioModeGet() != RADIOMODE_UPGRADE)
 	{
 		Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
-		ConcenterRadioSendSynTime(((radio_protocal_t *)protocalRxPacket->payload)->dstAddr, ((radio_protocal_t *)protocalRxPacket->payload)->srcAddr);
+		if(syncTime)
+			ConcenterRadioSendSynTime(((radio_protocal_t *)protocalRxPacket->payload)->dstAddr, ((radio_protocal_t *)protocalRxPacket->payload)->srcAddr);
 	    RadioSend();
 	}
     Sys_event_post(SYSTEMAPP_EVT_DISP);
@@ -956,7 +971,7 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 	protocalTxBuf.load[4]	= calendarTemp.Minutes;
 	protocalTxBuf.load[5]	= calendarTemp.Seconds;
 
-	temp 					= g_rSysConfigInfo.uploadPeriod;
+	temp 					= g_rSysConfigInfo.collectPeriod;
 
 	protocalTxBuf.load[6]	= (uint8_t)(temp >> 24);
 	protocalTxBuf.load[7]	= (uint8_t)(temp >> 16);
@@ -1083,6 +1098,6 @@ void ConcenterRadioSendParaSet(uint32_t srcAddr, uint32_t dstAddr)
     protocalTxBuf.load[temp++]      = rtc.Seconds;
 
 	protocalTxBuf.len = 10 + temp;
-
+	ClearRadioSendBuf();
 	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
 }
