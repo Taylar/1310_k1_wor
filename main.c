@@ -74,8 +74,9 @@ int main(void)
     RadioAppTaskCreate();
 #endif //S_A
     // test for 32K s
-    // IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);
-    // AONIOC32kHzOutputEnable();
+    IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);
+    AONIOC32kHzOutputEnable();
+    while(1);
 
     /* Start BIOS */
     BIOS_start();

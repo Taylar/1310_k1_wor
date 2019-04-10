@@ -1021,7 +1021,7 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
             LOBYTE_ZKS(HIWORD_ZKS(cursensor.value.tempdeep)) = pData[Index++];
 			HIBYTE_ZKS(LOWORD_ZKS(cursensor.value.tempdeep)) = pData[Index++];
 			LOBYTE_ZKS(LOWORD_ZKS(cursensor.value.tempdeep)) = 0;			
-            cursensor.value.tempdeep >>= 12;			
+            cursensor.value.tempdeep >>= 8;			
         }
         else if (Sensor_get_function_by_type(cursensor.type) == (SENSOR_LIGHT)) {
 
