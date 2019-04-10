@@ -97,7 +97,8 @@
 #define BOARD_CONFIG_DECEIVE
 #endif 
 
-//#define FACTOR_RADIO_TEST
+// #define FACTOR_RADIO_TEST
+// #define FACTOR_RADIO_32K_TEST
 //#define RADIO_1310_50K_GPSK
 
 //***********************************************************************************

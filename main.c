@@ -74,10 +74,11 @@ int main(void)
     RadioAppTaskCreate();
 #endif //S_A
     // test for 32K s
+#ifdef FACTOR_RADIO_32K_TEST
     IOCPortConfigureSet(IOID_26, IOC_PORT_AON_CLK32K, IOC_STD_OUTPUT);
     AONIOC32kHzOutputEnable();
     while(1);
-
+#endif //FACTOR_RADIO_32K_TEST
     /* Start BIOS */
     BIOS_start();
 
