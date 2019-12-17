@@ -58,7 +58,6 @@ void NodeAppInit(void)
     nodeParameter.uploadTimeCnt  = 0;
     nodeParameter.collectTimeCnt = 0;
     nodeParameter.monitorCnt     = 0;
-    nodeParameter.monitorCnt     = 0;
     
     
     offsetUnit                   = 0;
@@ -77,6 +76,13 @@ void NodeAppInit(void)
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
                      g_rSysConfigInfo.DeviceId[3]);
+
+    if(!(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER)){
+        SetRadioSubSrcAddr(nodeParameter.customId );
+        SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
+    }
+
+
     SetRadioDstAddr(nodeParameter.customId);
 
     NodeStrategyInit(NodeStrategyTimeoutProcess);
@@ -120,8 +126,15 @@ void NodeUploadProcess(void)
 #ifdef SUPPORT_UPLOAD_ASSET_INFO
     if(assetInfoValid)
     {
-        memcpy(data+6, assetInfo, 16);
+
+#ifdef  HAIER_Z1_C
+        memcpy(data+6, assetInfo, 24);
+        data[0] = 23;
+#else
+        memcpy(data+6, assetInfo, 24);
         data[0] = 17;
+#endif  //HAIER_Z1_C
+
         data[1] = 0;
         data[2] = g_rSysConfigInfo.DeviceId[0];
         data[3] = g_rSysConfigInfo.DeviceId[1];
@@ -318,6 +331,10 @@ void NodeStopBroadcast(void)
     nodeParameter.broadcasting      = false;
 }
 
+bool NodeIsBroadcast(void)
+{
+    return nodeParameter.broadcasting;
+}
 
 //***********************************************************************************
 // brief:   make the node board into sleep mode
@@ -341,7 +358,14 @@ void NodeWakeup(void)
     NodeStrategyReset();
     NodeStartBroadcast();
     NodeBroadcasting();
-    NodeStrategyStart();
+    if(deviceMode != DEVICES_WAKEUP_MODE){
+       NodeStrategyStart();
+    }
+#ifdef ZKS_S3_WOR
+    RadioEventPost(RADIO_EVT_START_SNIFF);
+#else
+    RadioSend();
+#endif //ZKS_S3_WOR
 }
 
 

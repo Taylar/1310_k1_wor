@@ -753,7 +753,8 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 
 #define  DEVIDCOL               8
 #define  DEVIDROW               6
-static uint32_t starBarDeviceid = 0x00;
+uint32_t starBarDeviceid = 0x00;
+static uint8_t  starBarRssi = 0;
 #endif
 
 void Disp_sensor_data(void)
@@ -763,6 +764,15 @@ void Disp_sensor_data(void)
     uint32_t valueL;
     uint16_t valueH;
 #endif
+
+#ifdef  SURPORT_RADIO_RSSI_SCAN
+    uint32_t FreTemp1;
+    uint8_t Len;
+    uint8_t Temp;
+    uint8_t i;
+    uint8_t buff[20];
+#endif
+
 
     if (rDispObject.init == 0)
         return;
@@ -794,6 +804,54 @@ void Disp_sensor_data(void)
 #endif
 
     
+#ifdef SURPORT_RADIO_RSSI_SCAN
+      Lcd_clear_area(0,2);
+      Lcd_clear_area(0,4);
+      Lcd_clear_area(0,6);
+#ifdef ONE_CHANNEL_SCAN
+
+      memset(buff,0x00,sizeof(buff));
+
+       FreTemp1 = RADIO_SCAN_START_FREQ + (GetScanIndex)*RADIO_SCAN_STEP_FREQ;
+       Len = sprintf((char *)buff, "%03d.%03d:", FreTemp1/1000000,(FreTemp1/1000)%1000);
+       if (ScanRssiBuffer[GetScanIndex] < 0) {
+              Temp = -ScanRssiBuffer[GetScanIndex];
+              buff[Len] = '-';
+       }
+       else {
+              Temp = ScanRssiBuffer[GetScanIndex];
+              buff[Len] = ' ';
+       }
+       Len++;
+       sprintf((char *)&buff[Len], "%03d", Temp);
+       Disp_msg(0, 4, buff, FONT_8X16);
+
+#else
+     for(i=0;i<3;i++){
+
+         memset(buff,0x00,sizeof(buff));
+
+         FreTemp1 = RADIO_SCAN_START_FREQ + (GetScanIndex+i)*RADIO_SCAN_STEP_FREQ;
+         Len = sprintf((char *)buff, "%03d.%03d:", FreTemp1/1000000,(FreTemp1/1000)%1000);
+         if (ScanRssiBuffer[GetScanIndex+i] < 0) {
+             Temp = -ScanRssiBuffer[GetScanIndex+i];
+             buff[Len] = '-';
+         }
+         else {
+             Temp = ScanRssiBuffer[GetScanIndex+i];
+             buff[Len] = ' ';
+         }
+         Len++;
+         sprintf((char *)&buff[Len], "%03d", Temp);
+
+         Disp_msg(0, i*2+2, buff, FONT_8X16);
+
+     }
+#endif
+
+     return;
+#endif
+
 #ifdef SUPPORT_NETGATE_DISP_NODE
     sensordata_mem Sensor = {0,0,0,0};
     //uint8_t buff[32];
@@ -802,11 +860,7 @@ void Disp_sensor_data(void)
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor
 
-#ifndef SUPPORT_CHARGE_DECT_ALARM
-        if (g_bAlarmSensorFlag)
-#else
-         if (g_bAlarmSensorFlag&&(!(g_bAlarmSensorFlag&ALARM_CHARGE_DECT_ALARM)))
-#endif
+        if (g_bAlarmSensorFlag & (ALARM_RX_EXTERNAL_ALARM | ALARM_NODE_LOSE_ALARM))
         {
 
             if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
@@ -852,6 +906,14 @@ void Disp_sensor_data(void)
             else if (g_AlarmSensor.type == SENSOR_DATA_HUMI) {
 
                 Disp_humidty(TEMP1_ROW_POS,HUMI_ROW_POS,g_AlarmSensor.value.tempdeep);
+            }
+            else if(g_AlarmSensor.type == SEN_TYPE_ASSET){
+                uint8_t buff[32];
+                sprintf((char*)buff, "%02x-%02x %02x:%02x", g_AlarmSensor.time[1], g_AlarmSensor.time[2], g_AlarmSensor.time[3], g_AlarmSensor.time[4]);
+                Lcd_set_font(132, 16, 0);
+                Lcd_clear_area(2, 4);
+                Disp_msg(2, 2, buff, FONT_8X16);
+
             }
 #endif
             return;
@@ -934,7 +996,7 @@ void Disp_sensor_data(void)
             }
             else {
                 starBarDeviceid = Sensor.DeviceId;
-
+                starBarRssi = (uint8_t)(-Sensor.rssi);
             }
             
             if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)(SENSOR_TEMP | SENSOR_HUMI)) {
@@ -957,13 +1019,14 @@ void Disp_sensor_data(void)
             } else if(Sensor.type == SEN_TYPE_ASSET){
                 uint8_t buff[32];
                 sprintf((char*)buff, "%02x-%02x %02x:%02x", Sensor.value.month, Sensor.value.day, Sensor.value.hour, Sensor.value.minutes);
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
+                Lcd_set_font(128, 32, 0);
+                Lcd_clear_area(0, 2);
                 Disp_msg(2, 2, buff, FONT_8X16);
 #endif // SUPPORT_UPLOAD_ASSET_INFO
             }
 #endif
         }
+
     }
         
 #endif
@@ -988,6 +1051,19 @@ void Disp_sensor_switch(void)
         return;
     }
 
+#ifdef   SURPORT_RADIO_RSSI_SCAN
+   //
+#ifdef ONE_CHANNEL_SCAN
+    GetScanIndex ++;
+#else
+    GetScanIndex += 3;
+#endif
+    if(GetScanIndex >= RADIO_MAX_SCAN_CHANNL_NUM){
+        GetScanIndex = 0;
+    }
+    return;
+
+#endif
 #ifdef SUPPORT_NETGATE_DISP_NODE    
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, only display  node  sensor
@@ -1073,6 +1149,7 @@ static void Disp_status_bar(void)
 
 #ifdef SUPPORT_MENU
 //Display record flag
+    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST))
     if (Menu_is_record()) {
         Disp_icon(col, row, ICON_16X16_RECORD, 1);
     } else {
@@ -1131,13 +1208,33 @@ static void Disp_status_bar(void)
     }
 #endif
 #else
-    uint8_t buff[9] = {0};
+    uint8_t buff[13] = {0};
     Lcd_set_font(132, 16, 0);
 
     if(starBarDeviceid!=0x00){
 
-    sprintf((char*)buff, "%08lx", starBarDeviceid);
-    Disp_msg(8, 6, buff, FONT_8X16);
+        Lcd_set_font(CAICON_W, CAICON_H, 0);
+        col  = SBICON_W*2;
+        row  = 7;
+        Disp_icon(col, row, ICON_5X8_SUB, 1);
+        col += CAICON_W + CAICON_GAP;
+        if(starBarRssi/100 != 0)
+        {
+            Disp_icon(col, row, CAICON_DIGIT + (starBarRssi/100), 1);
+            col += CAICON_W + CAICON_GAP;
+        }
+        else
+        {
+            Lcd_set_font((CAICON_W+CAICON_GAP)*3, CAICON_H, 0);
+            Lcd_clear_area(col,row);
+            Lcd_set_font(CAICON_W, CAICON_H, 0);
+        }
+        Disp_icon(col, row, CAICON_DIGIT + (starBarRssi/10%10), 1);
+        col += CAICON_W + CAICON_GAP;
+        Disp_icon(col, row, CAICON_DIGIT + (starBarRssi%10), 1);
+
+        sprintf((char*)buff, "%08lx", starBarDeviceid);
+        Disp_msg(8, 6, buff, FONT_8X16);
     }
 #endif
 }
@@ -1328,7 +1425,6 @@ void Disp_info(void)
 #endif  // SUPPORT_STRATEGY_SORT
             Disp_msg(0, 0, buff, FONT_8X16);
 
-#ifdef  S_G//缃戝?
                 if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                 {
                     sprintf((char *)buff, "F&N:%ldK-%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
@@ -1340,6 +1436,31 @@ void Disp_info(void)
                                                         LinkNum);
                 }
                 Disp_msg(0, 2, buff, FONT_8X16);
+                sprintf((char *)buff, "RATE: ");
+                switch(g_rSysConfigInfo.rfSF >> 4)
+                {
+                    case EasyLink_Phy_Custom:
+                    sprintf((char *)buff+6, "5K Bps");
+                    break;
+
+                    case EasyLink_Phy_50K_GPSK:
+                    sprintf((char *)buff+6, "50K Bps");
+                    break;
+
+                    case EasyLink_Phy_625bpsLrm:
+                    sprintf((char *)buff+6, "625 Bps");
+                    break;
+
+                    case EasyLink_Phy_2_4_200kbps2gfsk:
+                    sprintf((char *)buff+6, "2.4K Bps");
+                    break;
+
+                    case EasyLink_Phy_Custom_s1_old:
+                    sprintf((char *)buff+6, "38.4K Bps");
+                    break;
+                }
+                Disp_msg(0, 4, buff, FONT_8X16);
+
 #ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
 		#ifdef SUPPORT_NETWORK
         if(g_rSysConfigInfo.module & MODULE_NWK){
@@ -1361,7 +1482,7 @@ void Disp_info(void)
                   }
 		#endif
 #else
-
+/*
             for(i =0; i< MODULE_SENSOR_MAX; ++i){
                 if((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) &&
 					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)&&
@@ -1390,8 +1511,10 @@ void Disp_info(void)
                     Disp_msg(0, 2*3, buff, FONT_8X16);                    
 
                     break;//只显示第一个通道的报警和预警信息
-                }                
+                }
+
             }
+            */
 #endif
             break;
             
@@ -1414,7 +1537,7 @@ void Disp_info(void)
 
                     if (j > ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2 + 3))break;//只显示第 2 / 3 个通道的报警和预警信息
  #endif  
-                  
+                  /*
                     if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
                         sprintf((char *)buff, "TA%02d:    ", i);
                     else if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH)
@@ -1423,7 +1546,7 @@ void Disp_info(void)
                         sprintf((char *)buff, "TA%02d: ~%d", i,g_rSysConfigInfo.alarmTemp[i].high/100);
                     else                        
                         sprintf((char *)buff, "TA%02d:%d~%d", i, g_rSysConfigInfo.alarmTemp[i].low/100,g_rSysConfigInfo.alarmTemp[i].high/100);
-
+*/
 #ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE                    
                     Disp_msg(0, 4*((((j)%2)?1:2)-1), buff, FONT_8X16);
 #else
@@ -1489,6 +1612,13 @@ void Disp_proc(void)
     if (rDispObject.init == 0)
         return;
 
+    if(gatewayConfigTime)
+    {
+        Disp_clear_all();
+        Disp_msg(2, 3, "Pair Mode", FONT_8X16);//display
+        return;
+    }
+
 #ifdef SUPPORT_LORA
     //增加采集?网关显示注册信息
    if( g_rSysConfigInfo.module & MODULE_RADIO ) {
@@ -1510,6 +1640,7 @@ void Disp_proc(void)
 #if 1//def SUPPORT_SENSOR
         Disp_sensor_data();
 #endif
+#ifndef SURPORT_RADIO_RSSI_SCAN
         Disp_status_bar();
 
 
@@ -1520,6 +1651,8 @@ void Disp_proc(void)
                 Disp_msg(3, 6, "Register", FONT_8X16);//display
            }
        }
+#endif
+
     }
 
 #ifdef SUPPORT_LORA
@@ -1616,4 +1749,3 @@ void Disp_poweroff(void)
 }
 
 #endif  /* SUPPORT_DISP_SCREEN */
-#endif

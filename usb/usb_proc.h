@@ -33,6 +33,8 @@ typedef enum {
     EV_Get_Record_Data   = 0x13,//获取开始记录的数据
     EV_Verify_Code       = 0x14,//验证设备密码
 	EV_Get_SIM_CCID		 = 0x15,//get sim ccid
+	EV_Get_Cur_Vol		 = 0x16,//get current volatge
+	EV_Get_SensorData		 = 0x18,//get sendor data
 
     EV_Upgrade_BSL = 0x20,  // Upgrade BSL
 	
@@ -60,6 +62,9 @@ typedef enum {
     AC_Send_Record_Data   = 0x93,//获取开始记录的数据
 
     AC_Send_Upgrade_Success = 0x94,
+    AC_Send_Voltage = 0x95,//上发当前电压
+
+    AC_Send_SensorData = 0x98,//上发sensor 数据
 
     
     EV_Send_ReadFlash = 0xF1,
@@ -79,11 +84,7 @@ typedef struct {
     uint8_t cdcDataReceivedFlag;
 } UsbEvent_t;
 
-#ifdef GZJK_PROJECT
-#define USB_BUFF_LENGTH           (256+64)
-#else
 #define USB_BUFF_LENGTH           (436+64)
-#endif // GZJK_PROJECT
 // Old protocol defined by DouQian. 
 #define USB_PACKAGE_HEAD          0xcb
 #define USB_PACKAGE_TAIL          0xbc
@@ -106,6 +107,7 @@ typedef struct {
 int Usb_data_parse(uint8_t *pData, uint16_t length);
 
 void UsbSend(USB_TX_MSG_ID msgId);
+void UsbSend_NodeConfig(USB_TX_MSG_ID msgId, uint8_t* buff, uint8_t bufLen);
 
 
 

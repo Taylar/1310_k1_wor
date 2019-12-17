@@ -330,7 +330,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 #ifdef SUPPORT_BLUETOOTH_PRINT
     ErrorStatus ret;
 #endif
-    uint16_t len, size;
+    uint16_t len, size, vol;
     Calendar calendar;
     uint32_t  addr,  datasize;
     uint8_t  tmpData[16],transmode;
@@ -503,12 +503,17 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 #endif
         case EV_Reset_Data:
+#ifdef  BOARD_CONFIG_DECEIVE
+            RadioUpgrade_stop();
+            ConcenterRadioSendCmd(GetRadioSrcAddr(), GetRadioDstAddr(), CONFIG_CONTROL_CLEAR_DATA);
+#else
             Flash_reset_all();
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
             InterfaceSendImmediately(pData, len);
             __delay_cycles(60000);
             SysCtrlSystemReset();//閲嶅惎
+#endif //BOARD_CONFIG_DECEIVE
             break;
             
 		case EV_Get_History_Data://len(2B) cmd(1B)  no(2B or 4B)
@@ -850,6 +855,32 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             InterfaceSendImmediately(pData, len);
             break;
 
+        case EV_Get_Cur_Vol:
+#ifdef  BOARD_CONFIG_DECEIVE
+            RadioUpgrade_stop();
+            ConcenterRadioSendCmd(GetRadioSrcAddr(), GetRadioDstAddr(), CONFIG_CONTROL_GET_VOLTAGE);
+#else
+            vol = Battery_get_voltage();
+            pData[0] = (uint8_t)(vol>>8);
+            pData[1] = (uint8_t)(vol);
+            len = Usb_group_package(AC_Send_Voltage, pData, 2);
+            InterfaceSendImmediately(pData, len);
+#endif  //BOARD_CONFIG_DECEIVE
+            break;
+
+        case EV_Get_SensorData:
+#ifdef  BOARD_CONFIG_DECEIVE
+            RadioUpgrade_stop();
+            ConcenterRadioSendCmd(GetRadioSrcAddr(), GetRadioDstAddr(), CONFIG_CONTROL_GET_SENSORDATA);
+#else
+#ifdef SUPPORT_SENSOR
+            len = Sensor_data_pack(pData);
+            len = Usb_group_package(AC_Send_SensorData, pData, len);
+            InterfaceSendImmediately(pData, len);
+#endif //SUPPORT_SENSOR
+#endif  //BOARD_CONFIG_DECEIVE
+            break;            
+
         default:
             pData[0] = 2;
             len = Usb_group_package(AC_Ack, pData, 1);
@@ -905,4 +936,23 @@ void UsbSend(USB_TX_MSG_ID msgId)
 
     }
 }
+
+void UsbSend_NodeConfig(USB_TX_MSG_ID msgId, uint8_t* buff, uint8_t bufLen)
+{
+    uint16_t len;
+    switch(msgId)
+    {
+        case AC_Send_Voltage:
+        memcpy((char *)bUsbBuff, buff, bufLen);
+        len = Usb_group_package(AC_Send_Voltage, bUsbBuff, bufLen);
+        InterfaceSendImmediately(bUsbBuff, len);
+        break;
+
+        case AC_Send_SensorData:
+        memcpy((char *)bUsbBuff, buff, bufLen);
+        len = Usb_group_package(AC_Send_SensorData, bUsbBuff, bufLen);
+        InterfaceSendImmediately(bUsbBuff, len);
+    }
+}
+
 #endif //SUPPORT_USB

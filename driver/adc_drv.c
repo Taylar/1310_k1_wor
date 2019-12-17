@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-27 15:49:40
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-02-20 18:09:15
+* @Last Modified time: 2019-07-04 17:21:50
 */
 #include "../general.h"
 
@@ -32,15 +32,15 @@ const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[ZKS_MAX_ADC] = {
         .returnAdjustedVal   = false
     },
 
-#ifdef BOARD_S6_6
+#ifdef BOARD_B2S
     {
         .adcDIO              = NTC_DETECT_PIN,
         .adcCompBInput       = ADC_COMPB_IN_AUXIO7,
-#ifdef      BATTERY_REF_FIX
-        .refSource           = ADCCC26XX_FIXED_REFERENCE,
-#else
+// #ifdef      BATTERY_REF_FIX
+//         .refSource           = ADCCC26XX_FIXED_REFERENCE,
+// #else
         .refSource           = ADCCC26XX_VDDS_REFERENCE,
-#endif
+// #endif
         .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_5P46_MS,
         .inputScalingEnabled = true,
         .triggerSource       = ADCCC26XX_TRIGGER_MANUAL,
@@ -53,7 +53,7 @@ const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[ZKS_MAX_ADC] = {
 const ADC_Config ADC_config[ZKS_MAX_ADC] = {
     {&ADCCC26XX_fxnTable, &adcCC26xxObjects[ZKS_BATTERY_ADC], &adcCC26xxHWAttrs[ZKS_BATTERY_ADC]},
 
-#ifdef BOARD_S6_6
+#if defined(BOARD_B2S)
     {&ADCCC26XX_fxnTable, &adcCC26xxObjects[ZKS_NTC_ADC], &adcCC26xxHWAttrs[ZKS_NTC_ADC]},
 #endif
 };

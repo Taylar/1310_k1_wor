@@ -13,16 +13,20 @@
 #include "ntc.h"
 
 /***** Defines *****/
-#define         NTC_PARTIAL_TEMP1_PIN       IOID_11
-#define         NTC_PARTIAL_TEMP2_PIN       IOID_12
-#define         NTC_PARTIAL_TEMP3_PIN       IOID_19
+#define         NTC_VDD                     IOID_8
+#define         NTC_PARTIAL_TEMP1_PIN       IOID_9
+#define         NTC_PARTIAL_TEMP2_PIN       IOID_18
+#define         NTC_PARTIAL_TEMP3_PIN       IOID_20
+#define         NTC_PARTIAL_TEMP4_PIN       IOID_21
 
 
 
 const PIN_Config partialPinTable[] = {
-    NTC_PARTIAL_TEMP1_PIN | PIN_INPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*           */
-    NTC_PARTIAL_TEMP2_PIN | PIN_INPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*           */
-    NTC_PARTIAL_TEMP3_PIN | PIN_INPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*           */
+    NTC_VDD | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_DRVSTR_MAX,       /* LED initially off          */
+    NTC_PARTIAL_TEMP1_PIN | PIN_INPUT_EN | PIN_DRVSTR_MAX,       /*           */
+    NTC_PARTIAL_TEMP2_PIN | PIN_INPUT_EN | PIN_DRVSTR_MAX,       /*           */
+    NTC_PARTIAL_TEMP3_PIN | PIN_INPUT_EN | PIN_DRVSTR_MAX,       /*           */
+    NTC_PARTIAL_TEMP4_PIN | PIN_INPUT_EN | PIN_DRVSTR_MAX,       /*           */
     PIN_TERMINATE
 };
 
@@ -33,18 +37,18 @@ static const ResHWAtts_t ResHWAtts[][CTRL_RES_NUM] = {
 #else
     {
     #ifdef NTC_KEMIT_100K
-        // {GPIO_PORT_P7, GPIO_PIN4, 15.80},
+        {NTC_PARTIAL_TEMP4_PIN, 15.80},
         {NTC_PARTIAL_TEMP3_PIN, 35.70},
         {NTC_PARTIAL_TEMP2_PIN, 187.00},
         {NTC_PARTIAL_TEMP1_PIN, 1000.0}
     #elif  defined(NTC_XINXIANG_10K) || defined(NTC_TIANYOU_10K)
-        // {GPIO_PORT_P7, GPIO_PIN4, 9.09},
-        {NTC_PARTIAL_TEMP3_PIN, 35.70}, //{NTC_PARTIAL_TEMP3_PIN, 15.80},
+        {NTC_PARTIAL_TEMP4_PIN, 9.09},
+        {NTC_PARTIAL_TEMP3_PIN, 15.80}, //{NTC_PARTIAL_TEMP3_PIN, 15.80},
         {NTC_PARTIAL_TEMP2_PIN, 35.70},
         {NTC_PARTIAL_TEMP1_PIN, 88.70}
 
 	#else
-        // {GPIO_PORT_P7, GPIO_PIN4, 0.909},
+        {NTC_PARTIAL_TEMP4_PIN, 0.909},
         {NTC_PARTIAL_TEMP3_PIN, 1.580},
         {NTC_PARTIAL_TEMP2_PIN, 3.570},
         {NTC_PARTIAL_TEMP1_PIN, 8.870}
@@ -133,7 +137,7 @@ static const float NtcResTab[] = {
     1.196,   1.143,  1.093,  1.045,  1.000, 0.957, 0.916, 0.877, 0.840, 0.804,
     0.771,   0.739,  0.708,  0.680,  0.651, 0.625, 0.600, 0.576, 0.553, 0.531,
 #elif defined(NTC_KEMIT_PT1000)
-    //-50 ~ +70, start +50
+    //+ 70~ -50 , start +70
     12.708, 12.669, 12.631, 12.593, 12.554, 12.516, 12.478, 12.439, 12.401, 12.363,
     12.324, 12.286, 12.247, 12.209, 12.171, 12.132, 12.094, 12.055, 12.017, 11.978,
     11.940, 11.901, 11.863, 11.824, 11.786, 11.747, 11.708, 11.670, 11.631, 11.593,
@@ -214,6 +218,11 @@ static float  Ntc_get_adc_value(uint8_t chNum)
     float res;
 	uint16_t diff2048 =0xffff;
 
+#ifdef ADC_BASEON_ADC            
+    uint16_t adc100;
+    float res1k;
+#endif
+
     ch = 0;
 
     //Set control gpio without pull-up/down resistor.
@@ -229,13 +238,18 @@ static float  Ntc_get_adc_value(uint8_t chNum)
             continue;
         //Enable Ntc resistor.
         PIN_setConfig(partialPinHandle, PIN_BM_INPUT_MODE | PIN_BM_OUTPUT_MODE,
-                        ResHWAtts[ch][i].pin | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW);
+                                ResHWAtts[ch][i].pin | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW);
+        Task_sleep(10*CLOCK_UNIT_MS);
+    #ifdef ADC_BASEON_ADC
 
-        //Set Ntc value.
-        ADC_convert(ntcHandle, (value + i));
-		value[i] -= ADC_COMPENSATION;
         
-		#if 0
+    #else
+        //Set Ntc value.
+        ADC_convert(ntcHandle, value+i);
+		value[i] -= ADC_COMPENSATION;
+    #endif
+
+        #if 0
         if (value[0] < ResHWAtts[ch][i].level)
             resCh = i;
 		#else
@@ -259,11 +273,15 @@ static float  Ntc_get_adc_value(uint8_t chNum)
                         ResHWAtts[ch][i].pin | PIN_INPUT_EN | PIN_PULLUP);
     }
 
+
+#ifdef ADC_BASEON_ADC
+    res = (res1k * (float)value[resCh])/((float)4095 - value[resCh]);
+#else
     if (value[resCh] != 0)
         res = ResHWAtts[ch][resCh].res * ((float)4095 / (float)value[resCh] - 1);
     else
         res = 0;
-
+#endif
     return (float)res;
 }
 
@@ -340,9 +358,11 @@ static void Ntc_init(uint8_t chNum)
 
     ADC_Params_init(&params);
 
-    ntcHandle = ADC_open(ZKS_NTC_ADC, &params);
+    if(ntcHandle == NULL)
+        ntcHandle = ADC_open(ZKS_NTC_ADC, &params);
 
-    partialPinHandle = PIN_open(&partialPinState, partialPinTable);
+    if(partialPinHandle == NULL)
+        partialPinHandle = PIN_open(&partialPinState, partialPinTable);
 }
 
 //***********************************************************************************
@@ -356,10 +376,14 @@ void Ntc_measure(uint8_t chNum)
 
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_NTC) {
        
+        if(ntcHandle == NULL || partialPinHandle == NULL)
+            return;
         temp = Ntc_get_adc_value(chNum);
 
         //convert rawdata to temperature
         rSensorData[chNum].temp = Ntc_calc_temperatureC(temp);
+        if(rSensorData[chNum].temp != TEMPERATURE_OVERLOAD)
+            rSensorData[chNum].temp = rSensorData[chNum].temp + (g_rSysConfigInfo.deepTempAdjust * 10);
     }
 }
 

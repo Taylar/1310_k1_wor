@@ -65,33 +65,45 @@
 #define PLATFORM_NAME   "_1310"
 
 
-// #define JSLL_S6_6_G
-// #define GZJK_S6_6_G
-#define ZKS_S6_6_G
+// #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
 // #define ZKS_S3_C_SHT2X
 // #define ZKS_S3_C_SHT3X
 // #define ZKS_S3_1_C
+// #define KINGBOSS_S3_C_SHT3X
+// #define KINGBOSS_S6_6_G
+// #define HAIER_Z1_C
 // #define ZKS_Z4_C
-// #define ZKS_B2S_C
+// #define ZKS_S2S_C
 // #define ZKS_B2S_A
 // #define ZKS_B2S_G
+//#define ZKS_S6_6_G_SCAN
+// #define ZKS_S3_WOR
+#define ZKS_S6_6_WOR_G
+
+#ifdef HAIER_Z1_C
+#define     ZKS_Z4_C
+#define     SUPPORT_LIGHT
+#endif //HAIER_Z1_C
 //***********************************************************************************
 //
 // HW version define.
 //
 //***********************************************************************************
-#if defined(JSLL_S6_6_G) || defined(GZJK_S6_6_G) || defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG)
+#if defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_S6_6_G_SCAN) || defined(KINGBOSS_S6_6_G) || defined(ZKS_S6_6_WOR_G)
+
 #define BOARD_S6_6
 #endif
 
-#if defined(ZKS_S3_C_SHT2X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_1_C) || defined(ZKS_Z4_C)
+#if defined(ZKS_S3_C_SHT2X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_1_C) || defined(ZKS_Z4_C) || defined(KINGBOSS_S3_C_SHT3X) || defined(ZKS_S3_WOR)
 #define BOARD_S3
 #endif
 
-#if defined(ZKS_B2S_C) || defined(ZKS_B2S_A) || defined(ZKS_B2S_A)
+#if defined(ZKS_S2S_C) || defined(ZKS_B2S_A) || defined(ZKS_B2S_G)
 #define BOARD_B2S
 #endif 
+
+
 
 #if defined(ZKS_S6_6_CONFIG)
 #define BOARD_CONFIG_DECEIVE
@@ -106,7 +118,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0078
+#define FW_VERSION              0x0091
 
 //***********************************************************************************
 //
@@ -121,16 +133,16 @@
 //
 //***********************************************************************************
 
-#if defined(JSLL_S6_6_G) || defined(GZJK_S6_6_G) || defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_B2S_G)
-#define S_G //网关
+#if defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_B2S_G) || defined(ZKS_S6_6_G_SCAN) || defined(KINGBOSS_S6_6_G) || defined(ZKS_S6_6_WOR_G)
+#define S_G //缂傚啯鍨甸崣锟�
 #endif
 
-#if defined(ZKS_S3_C_SHT2X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_1_C) || defined(ZKS_Z4_C) || defined(ZKS_B2S_C)
-#define S_C //采集器
+#if defined(BOARD_S3) || defined(ZKS_S2S_C)
+#define S_C //闂佹彃娲▔锕傚闯閿燂拷
 #endif
 
 #if defined(ZKS_B2S_A)
-#define S_A //一体机
+#define S_A //娑擄拷娴ｆ挻婧�
 #endif 
 
 //***********************************************************************************
@@ -139,30 +151,29 @@
 //
 //***********************************************************************************
 //#define USE_ENGLISH_MENU
-#ifdef GZJK_S6_6_G
-#define USE_ENGLISH_MENU
-#endif
+
 
 //***********************************************************************************
 //
 //project name define.
 //
-//pls define one project following，otherwise use zks  default.
+//pls define one project following閿涘therwise use zks  default.
 /****************************************************************************/
-#ifdef   JSLL_S6_6_G
-#define  JSLL_PROJECT              //jiangsu lenglian 
-#elif defined(GZJK_S6_6_G)
-#define  GZJK_PROJECT              // guizhou jikong
+
+#if    defined(KINGBOSS_S3_C_SHT3X) || defined(KINGBOSS_S6_6_G)
+#define  KINGBOSS_PROJECT              //
+#elif defined( HAIER_Z1_C)
+#define  HAIER_PROJECT              //
 #else
-#define  ZKS_PROJECT              //ZKS 项目
-#endif
+#define  ZKS_PROJECT              //ZKS 妞ゅ湱娲�
+#endif 
 
 #ifdef ZKS_PROJECT
 #define         COMPANY_NAME                "ZKS"
-#elif defined(JSLL_S6_6_G)
-#define         COMPANY_NAME                "JSLL"
-#elif defined(GZJK_S6_6_G)
-#define         COMPANY_NAME                "GZJK"
+#elif defined( KINGBOSS_PROJECT)
+#define         COMPANY_NAME                "KINGBOSS"
+#elif defined( HAIER_PROJECT)
+#define         COMPANY_NAME                "HAIER"
 #else
 error project name
 #endif
@@ -196,6 +207,12 @@ error type define
 #endif
 
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
+
+
+#ifdef KINGBOSS_PROJECT
+#define  SUPPORT_NETWORK_TX_SENSOR_ACK
+
+#endif //KINGBOSS_PROJECT
 
 
 //***********************************************************************************
@@ -238,7 +255,7 @@ error type define
 #define FLASH_INTERNAL
 #define FLASH_EXTERNAL
 #ifdef FLASH_EXTERNAL
-//#define FLASH_W25Q256FV  //大于128Mb=16MB,采用4字节地址模式。
+//#define FLASH_W25Q256FV  //濠㈠爢鍌滆壘128Mb=16MB,闂佹彃娲ㄩ弫锟�4閻庢稒顨夋俊顓㈠捶閺夋寧绲绘俊顖楋拷宕囩闁靛棴鎷�
 //#define FLASH_SIZE_128M
 //#define FLASH_SENSOR_DATA_32BYTE
 //#define MX66L1G45G  //1G flash
@@ -311,9 +328,9 @@ error type define
 // #define OLED_LX12864K1
 #define SUPPORT_MENU
 
-#define SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
-#define SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
-#define NETGATE_BIND_NODE_MAX       2 //5529上只能支持2个，USB内存不够
+#define SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
+#define SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
+#define NETGATE_BIND_NODE_MAX       2 //5529娑撳﹤褰ч懗鑺ユ暜閹革拷2娑擃亷绱漊SB閸愬懎鐡ㄦ稉宥咁檮
 #endif
 
 //Led define
@@ -366,12 +383,12 @@ error type define
 
 #define SUPPORT_ALARM_SWITCH_PERIOD
 
-#ifdef S_A//一体机
+#ifdef S_A//娑擄拷娴ｆ挻婧�
 
 
 #undef  SUPPORT_LORA
-#undef  SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
-#undef  SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+#undef  SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
+#undef  SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
 //#undef  SUPPORT_ENGMODE //for  more flash space
 // #define SUPPORT_UPLOADTIME_LIMIT
 
@@ -402,8 +419,8 @@ error type define
 #undef SUPPORT_ALARM_SWITCH_PERIOD
 #undef SUPPORT_NETWORK
 #undef SUPPORT_GSM
-#undef SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
-#undef SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+#undef SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
+#undef SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
 #undef SUPPORT_FLIGHT_MODE // flight mode
 #undef SUPPORT_DEVICED_STATE_UPLOAD
 
@@ -426,10 +443,12 @@ error
 //***********************************************************************************
 #ifdef BOARD_B2S
 #ifdef S_C
-#define SUPPORT_SENSOR_ADJUST //传感器数据采集的调整,10S更新一次数据
+#define SUPPORT_SENSOR_ADJUST //娴肩姵鍔呴崳銊︽殶閹诡噣鍣伴梿鍡欐畱鐠嬪啯鏆�,10S閺囧瓨鏌婃稉锟藉▎鈩冩殶閹癸拷
 #undef  SUPPORT_SHT2X
 #define SUPPORT_SHT3X
 #define SUPPORT_DEEPTEMP_PT100
+#define SUPPORT_DOUBLE_PRESS
+
 #endif
 
 #define SUPPORT_REMOTE_UPGRADE
@@ -439,7 +458,6 @@ error
 
 #define SUPPORT_CHARGE_DECT
 
-#undef SUPPORT_NTC
 #undef SUPPORT_ENGMODE
 #undef SUPPORT_DISP_SCREEN
 #undef SUPPORT_MENU
@@ -460,7 +478,7 @@ error
 #define SUPPORT_SHT2X
 #endif // ZKS_S3_C_SHT2X
 
-#ifdef ZKS_S3_C_SHT3X
+#if defined(ZKS_S3_C_SHT3X) || defined(KINGBOSS_S3_C_SHT3X)
 #undef SUPPORT_SHT2X
 #define SUPPORT_SHT3X
 #endif //ZKS_S3_C_SHT3X
@@ -478,8 +496,8 @@ error
 #undef SUPPORT_MENU
 #undef SUPPORT_DEVICED_STATE_UPLOAD
 
-#undef SUPPORT_NETGATE_DISP_NODE   //网关显示收到的节点数据
-#undef SUPPORT_NETGATE_BIND_NODE   //网关绑定的节点，需要收到数据后判断是否超温
+#undef SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
+#undef SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
 //#undef NETGATE_BIND_NODE_MAX
 #endif // SUPPORT_DISP_SCREEN
 
@@ -538,9 +556,30 @@ error
 
 #undef  BOARD_NAME
 #define BOARD_NAME              "_Z4"
+
+#ifdef SUPPORT_LIGHT
+#undef  COMPANY_NAME
+#define COMPANY_NAME              "HAIER"
+#undef  BOARD_NAME
+#define BOARD_NAME              "_Z1"
+#endif //SUPPORT_LIGHT
+
+
 #undef  PROJECT_NAME
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
 #endif //SUPPORT_BOARD_Z4
+
+#ifdef ZKS_S3_WOR
+#undef SUPPORT_SHT2X
+#undef SUPPORT_SHT3X
+
+#undef  BOARD_NAME
+#define BOARD_NAME              "_S3_WOR"
+
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
+
+#endif 
 
 
 #ifdef SUPPORT_BOARD_OLD_S1
@@ -548,7 +587,40 @@ error
 #define FW_VERSION              0x0012
 #endif // SUPPORT_BOARD_OLD_S1
 
+
+
+
+
+/*
+#ifdef ZKS_Z5_C
+#define SUPPORT_BOARD_Z5
+#define SUPPORT_AVOID_LOSE
+
+#endif //ZKS_Z5_C
+
+#ifdef SUPPORT_BOARD_Z5
+
+#undef SUPPORT_SHT2X
+#undef SUPPORT_SHT3X
+#define SUPPORT_UPLOAD_ASSET_INFO
+#undef SUPPORT_SENSOR
+
+#undef  BOARD_NAME
+#define BOARD_NAME              "_Z5"
+#undef  PROJECT_NAME
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
+#endif //SUPPORT_BOARD_Z5
+  */
+
+
+
+
 #endif // BOARD_S3
+
+
+
+
+
 
 
 
@@ -561,8 +633,8 @@ error
 
 #undef SUPPORT_DOUBLE_PRESS
 #define FLASH_SENSOR_DATA_32BYTE
-// #define SUPPORT_CHARGE_DECT
-// #define SUPPORT_CHARGE_DECT_ALARM
+#define SUPPORT_CHARGE_DECT
+#define SUPPORT_CHARGE_DECT_ALARM
 #define SUPPORT_USB
 #define SUPPORT_RARIO_SPEED_SET
 // #define SUPPORT_STRATEGY_SORT
@@ -573,38 +645,36 @@ error
 #endif //S_G
 #endif  //SUPPORT_STRATEGY_SORT
 
-#ifdef GZJK_S6_6_G
-#undef  LCD_ST7567A
-#define OLED_LX12864K1
-#define SUPPORT_BLUETOOTH_PRINT
-#endif
-
-#ifdef JSLL_S6_6_G
-#undef  SUPPORT_BLUETOOTH_PRINT
-// #undef  SUPPORT_LBS
-// #undef  USE_ENGINEERING_MODE_FOR_LBS
-#define SUPPOERT_LBS_NEARBY_CELL
-#undef  SUPPORT_REMOTE_UPGRADE
-
-// #undef SUPPORT_CHARGE_DECT
-// #undef SUPPORT_CHARGE_DECT_ALARM
-#ifndef SUPPORT_CHARGE_DECT
-#define SUPPORT_SOFT_CHARGE_DECT
-#endif //SUPPORT_CHARGE_DECT
-
-#undef  SUPPORT_DEVICED_STATE_UPLOAD
-#define SUPPORT_TCP_MULTIL_LINK
-
-#ifndef SUPPORT_TCP_MULTIL_LINK
-#undef  SUPPORT_REMOTE_UPGRADE
-#define SUPPORT_NETWORK_SYC_RTC
-#endif //SUPPORT_TCP_MULTIL_LINK
-
-#endif //JSLL_S6_6_G
+// #define SUPPORT_TCP_MULTIL_LINK
+// #define SUPPORT_NETWORK_SYC_RTC
 
 #ifdef ZKS_S6_6_G
 #define SUPPORT_UPLOAD_ASSET_INFO
 #endif // ZKS_S6_6_G
+
+
+
+
+//#ifdef ZKS_Z5_G_W
+//#define  PERIOD_TX_ONLY_FUNC
+
+//#endif // ZKS_Z5_G_W
+
+
+//#ifdef ZKS_Z5_G
+//#define  SUPPORT_LOSE_ALARM
+
+//#endif // ZKS_Z5_G
+
+
+#ifdef ZKS_S6_6_G_SCAN
+
+#define SURPORT_RADIO_RSSI_SCAN
+
+//#define ONE_CHANNEL_SCAN
+
+
+#endif
 
 
 
@@ -633,8 +703,14 @@ error
 #define         BT_FUNC                 ""
 #endif //  SUPPORT_BLUETOOTH_PRINT
 
+#ifdef ZKS_S6_6_WOR_G
+#define         WOR_FUNC                 "_WOR"
+#else
+#define         WOR_FUNC                 ""
+#endif //ZKS_S6_6_WOR_G
+
 #undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""CHARGE_FUNC""BT_FUNC)
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""WOR_FUNC""STRATEG_NAME""CHARGE_FUNC""BT_FUNC)
 #endif // BOARD_S6_6
 
 //***********************************************************************************
@@ -651,12 +727,12 @@ error
     #define FW_VERSION              0x0041
     #elif defined(S_G)
     #undef  SUPPORT_RSSI_CHECK
-    #define FW_VERSION              0x0046
+    #define FW_VERSION              0x0048
     #elif defined(S_C)
     #undef  BOARD_NAME
     #define  BOARD_NAME              "_S2S"
     ///#undef SUPPORT_CHARGE_DECT
-    #define FW_VERSION              0x0046
+    #define FW_VERSION              0x0053
     #endif
 
 #undef  PROJECT_NAME
@@ -751,27 +827,32 @@ error
 //Status define.
 //
 //***********************************************************************************
-#define STATUS_LCD_ALWAYS_ON        0x0001//lcd常开
-#define STATUS_GSM_TEST             0x0002//gsm测试模式
-#define STATUS_KEY_LED_ON           0x0004//按键灯亮灯
-#define STATUS_ALARM_OFF            0x0008//本地报警开关
-#define STATUS_SENSOR_NAME_ON       0x0010//网关显示采集器名字开关
-#define STATUS_DISP_BIND_ONLY       0x0020//网关只显示绑定设备的信息开关
+#define STATUS_LCD_ALWAYS_ON        0x0001//lcd鐢绱�
+#define STATUS_GSM_TEST             0x0002//gsm濞村鐦Ο鈥崇础
+#define STATUS_KEY_LED_ON           0x0004//閹稿鏁悘顖欏瘨閻忥拷
+#define STATUS_ALARM_OFF            0x0008//閺堫剙婀撮幎銉劅瀵拷閸忥拷
+#define STATUS_SENSOR_NAME_ON       0x0010//缂冩垵鍙ч弰鍓с仛闁插洭娉﹂崳銊ユ倳鐎涙绱戦崗锟�
+#define STATUS_DISP_BIND_ONLY       0x0020//缂冩垵鍙ч崣顏呮▔缁�铏圭拨鐎规俺顔曟径鍥╂畱娣団剝浼呭锟介崗锟�
 #define STATUS_HIDE_PWOF_MENU       0x0040//hide power off menu 
 #define STATUS_HIDE_SHT_SENSOR      0x0080//dont display sht20 sensor
 #define STATUS_ALARM_SWITCH_ON      0x0100//alarm upload period switch on
 #define STATUS_CHAGE_ALARM_SWITCH_ON    0x0200//charge check alarm switch on
+//0x0400 0x0800 瀹歌尙绮＄悮顐ゆ暏娴滐拷
+#define STATUS_TX_ONLY_GATE_ON       0x1000
+#define STATUS_ALARM_GATE_ON         0x2000
+#define STATUS_POWERON_RESET_DATA    0x4000
 
-#define STATUS_LORA_MASTER      0x0001//lora做master或slaver
-#define STATUS_LORA_TEST      	0x0002//LORA 测试模式
-#define STATUS_LORA_APC      	0x0004//采集器自动增益控制
-#define STATUS_LORA_ALARM      	0x0008//采集器发送报警信息到网关
-#define STATUS_LORA_CHANGE_FREQ 0x0010//LORA的中心频根据客户码变化
-#define STATUS_1310_MASTER      0x0020//1310做master或slaver
+#define STATUS_LORA_MASTER      0x0001//lora閸嬫aster閹存潩laver
+#define STATUS_LORA_TEST      	0x0002//LORA 濞村鐦Ο鈥崇础
+#define STATUS_LORA_APC      	0x0004//闁插洭娉﹂崳銊ㄥ殰閸斻劌顤冮惄濠冨付閸掞拷
+#define STATUS_LORA_ALARM      	0x0008//闁插洭娉﹂崳銊ュ絺闁焦濮ょ拃锔夸繆閹垰鍩岀純鎴濆彠
+#define STATUS_LORA_CHANGE_FREQ 0x0010//LORA閻ㄥ嫪鑵戣箛鍐暥閺嶈宓佺�广垺鍩涢惍浣稿綁閸栵拷
+#define STATUS_1310_MASTER      0x0020//1310閸嬫aster閹存潩laver
 
 
-#define ALARM_RX_EXTERNAL_ALARM      0x100  //接收到外部报警
-#define ALARM_CHARGE_DECT_ALARM      0x200 //断电报警
+#define ALARM_RX_EXTERNAL_ALARM      0x100  //閹恒儲鏁归崚鏉款樆闁劍濮ょ拃锟�
+#define ALARM_CHARGE_DECT_ALARM      0x200 //閺傤厾鏁搁幎銉劅
+#define ALARM_NODE_LOSE_ALARM       0x400 // node lose alarm
 //***********************************************************************************
 //
 //system event define.
@@ -804,7 +885,6 @@ error
 //sysState define.
 //
 //***********************************************************************************
-#define STATUS_POWERON          0x0001
 
 
 //***********************************************************************************
@@ -819,11 +899,10 @@ error
 // device power mode 
 #define         DEVICES_OFF_MODE               0    // power down mode
 #define         DEVICES_ON_MODE                1    // power on mode
-#define         DEVICES_MENU_MODE              2    // in the menu display
-#define         DEVICES_CONFIG_MODE            3    // 
-#define         DEVICES_SLEEP_MODE             4
-#define         DEVICES_BLUE_PRINT             5
-#define         DEVICES_TEST_MODE              6
+#define         DEVICES_CONFIG_MODE            3    // the master in the config mode, waiting for rec radio data
+#define         DEVICES_SLEEP_MODE             4	// in the power on mode and the lcd shutdown
+#define         DEVICES_TEST_MODE              6	// in the eng mode
+#define         DEVICES_WAKEUP_MODE            7	// wait for wait up mode 
 
 #ifdef SUPPORT_BOARD_OLD_S1
 #define        OLD_S1_DEVICES_RADIO_UPGRADE    6
@@ -833,11 +912,12 @@ error
 //***********************************************************************************
 //radio error define.
 //***********************************************************************************
-#define         RADIO_FREQ_SWITCH_ERROR         0X0001
+#define 		STATUS_POWERON          		0x0001
 #define         RADIO_FREQ_SEND_ERROR           0X0002
 #define         RADIO_FREQ_RECIEVE_ERROR        0X0004
 #define         RADIO_FREQ_CORE_ERROR           0X0008
 #define         RADIO_ABORT_ERROR               0X0010
+#define         RADIO_FREQ_SWITCH_ERROR         0X0020
 
 //***********************************************************************************
 //
@@ -1022,6 +1102,7 @@ typedef struct {
 #include "app/s1_app.h"
 #include "app/s2_app.h"
 #include "app/s6_app.h"
+#include "app/z5_app.h"
 #include "engmode/engmode.h"
 #include "usb/usb_bsl.h"
 #include "radio_app/radio_upgrade.h"
@@ -1077,8 +1158,12 @@ EXTERN_ATTR uint8_t  chargeState;
 
 EXTERN_ATTR uint8_t LinkNum;
 
-EXTERN_ATTR uint8_t assetInfo[16];
+EXTERN_ATTR uint8_t assetInfo[24];
 EXTERN_ATTR uint8_t assetInfoValid;
+
+EXTERN_ATTR uint8_t openBoxOccur;
+
+EXTERN_ATTR uint8_t gatewayConfigTime;
 
 
 extern uint8_t deviceMode;

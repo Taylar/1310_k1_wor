@@ -176,7 +176,7 @@ const rfc_CMD_FS_t RF_cmdFs_50K =
 
 // CMD_PROP_TX
 // Proprietary Mode Transmit Command
-const rfc_CMD_PROP_TX_t RF_cmdPropTx_50K =
+rfc_CMD_PROP_TX_t RF_cmdPropTx_50K =
 {
     .commandNo = 0x3801,
     .status = 0x0000,
@@ -198,7 +198,7 @@ const rfc_CMD_PROP_TX_t RF_cmdPropTx_50K =
 
 // CMD_PROP_RX
 // Proprietary Mode Receive Command
-const rfc_CMD_PROP_RX_t RF_cmdPropRx_50K =
+rfc_CMD_PROP_RX_t RF_cmdPropRx_50K =
 {
     .commandNo = 0x3802,
     .status = 0x0000,

@@ -38,7 +38,7 @@ uint8_t      rSensorUpdataNum, rSensorUpdataFull;
 static Event_Struct sensorEvtStruct;
 static Event_Handle sensorEvtHandle;
 #endif //SUPPORT_SENSOR_ADJUST
-
+static Calendar  lastcalendar;
 
 
 
@@ -227,6 +227,64 @@ void RtcBcdToHex(Calendar *calendar){
     calendar->Seconds    = TransBcdToHex((uint8_t)(calendar->Seconds));
 }
 
+void SensorSerialNumAdd(void)
+{
+    if (rSensorObject.serialNum >= 0xfffe) {
+        rSensorObject.serialNum = 0;
+    }
+    rSensorObject.serialNum++;
+}
+
+uint16_t GetSensorSerialNum(void)
+{
+    return rSensorObject.serialNum;
+}
+
+uint8_t Sensor_data_pack(uint8_t *buff)
+{
+    uint8_t i, length = 0;
+    int32_t value_32 = 0;
+
+
+    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+        if (g_rSysConfigInfo.sensorModule[i] > SEN_TYPE_NONE && 
+            g_rSysConfigInfo.sensorModule[i] < SEN_TYPE_MAX  &&
+            Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]] != NULL ){
+
+            if(g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_GSENSOR){            
+                continue;//gsensor  data dont save.
+            }
+            
+            buff[length++] = i;
+            buff[length++] = g_rSysConfigInfo.sensorModule[i];
+            if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_TEMP | SENSOR_HUMI)) {
+                buff[length++] = HIBYTE_ZKS(rSensorData[i].temp);
+                buff[length++] = LOBYTE_ZKS(rSensorData[i].temp);
+                buff[length++] = HIBYTE_ZKS(rSensorData[i].humi);
+                buff[length++] = LOBYTE_ZKS(rSensorData[i].humi);
+
+
+            } else if (Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_DEEP_TEMP)) {
+                value_32 = rSensorData[i].tempdeep;
+                buff[length++] = LOBYTE_ZKS(HIWORD_ZKS(value_32));
+                buff[length++] = HIBYTE_ZKS(LOWORD_ZKS(value_32));
+                buff[length++] = LOBYTE_ZKS(LOWORD_ZKS(value_32));
+            }else if(Sensor_FxnTablePtr[g_rSysConfigInfo.sensorModule[i]]->function == (SENSOR_LIGHT))
+            {
+                buff[length++] = HIBYTE_ZKS(HIWORD_ZKS(rSensorData[i].lux));//HIBYTE_ZKS(HIWORD_ZKS(rSensorData[i].lux));
+                value_32 = (rSensorData[i].lux&0x00ffffff);
+                buff[length++] = LOBYTE_ZKS(HIWORD_ZKS(value_32));
+                buff[length++] = HIBYTE_ZKS(LOWORD_ZKS(value_32));
+                buff[length++] = LOBYTE_ZKS(LOWORD_ZKS(value_32));
+            } else {
+                buff[length++] = HIBYTE_ZKS(rSensorData[i].temp);
+                buff[length++] = LOBYTE_ZKS(rSensorData[i].temp);
+            }
+        }
+    }
+    return length;
+}
+
 
 //***********************************************************************************
 //
@@ -240,7 +298,6 @@ static void Sensor_store_package(void)
     uint16_t value = 0, length;
 	int16_t Minutes;
     Calendar calendar;
-    static Calendar  lastcalendar = {0,};
     int32_t value_32 = 0;
     int16_t temp;
 	uint32_t collectPeriod = g_rSysConfigInfo.collectPeriod;
@@ -256,7 +313,12 @@ static void Sensor_store_package(void)
 #endif //SUPPORT_ALARM_SWITCH_PERIOD
 
     calendar = Rtc_get_calendar();    
-    
+#ifdef SUPPORT_LIGHT
+    if(openBoxOccur){
+        collectPeriod = 10; // 发生箱事件，立刻进行采集与存储数据
+    }
+#endif //SUPPORT_LIGHT
+
     if(collectPeriod % 60 == 0){//只对采集周期为整分钟的情况进行计数器调整。
         
         if(lastcalendar.Year != 0){//not first time
@@ -279,12 +341,20 @@ static void Sensor_store_package(void)
                 rSensorObject.collectTime = (Minutes*60 + calendar.Seconds - 30) % collectPeriod;
             }
             else if(Minutes < (collectPeriod / 60)){//the time become slow, maybe repeat, wait more one minutes
-                rSensorObject.collectTime = collectPeriod - 60;
+                if(calendar.Seconds > 30)
+                    rSensorObject.collectTime = calendar.Seconds - 30 + Minutes*60;
+                else
+                    rSensorObject.collectTime = calendar.Seconds + 30 + Minutes*60;
                 return;
             }
             else if(Minutes <= 2*(collectPeriod / 60)){//the time become fast 2 period, maybe lost, add one time
                 RtcAddMinutes(&lastcalendar, (collectPeriod / 60));
-                rSensorObject.collectTime =  collectPeriod - 1;
+
+                if ((Minutes ==  (2*(collectPeriod / 60)))&&(calendar.Seconds >= 30))
+                    rSensorObject.collectTime =  collectPeriod - 1;
+                else
+                    rSensorObject.collectTime =  (Minutes-1)*60 - collectPeriod + calendar.Seconds + 30;
+
             }   
             else { //the time become fast more then 2 period, maybe first time sync, go on ...
                 lastcalendar  = calendar;
@@ -305,7 +375,7 @@ static void Sensor_store_package(void)
 		
 		lastcalendar = calendar;
 	}
-    
+
     length = 0;
     //消息头
     //消息长度
@@ -324,10 +394,7 @@ static void Sensor_store_package(void)
     //娑堟伅娴佹按鍙�
     buff[length++] = HIBYTE_ZKS(rSensorObject.serialNum);
     buff[length++] = LOBYTE_ZKS(rSensorObject.serialNum);
-    if (rSensorObject.serialNum >= 0xfffe) {
-        rSensorObject.serialNum = 0;
-    }
-    rSensorObject.serialNum++;
+    SensorSerialNumAdd();
     //采集时间
 
 	buff[length++] = TransHexToBcd(lastcalendar.Year - 2000);
@@ -463,7 +530,15 @@ static void Sensor_store_package(void)
     buff[length++] = 0;
     buff[length++] = SEN_TYPE_ASSET;
     assetInfoValid = 1;
-    memcpy(assetInfo, buff, 16);
+    memcpy(assetInfo, buff, 24);
+#ifdef SUPPORT_LIGHT
+    if(openBoxOccur){
+        openBoxOccur = 0; // 发生箱事件，立刻进行数据发送
+        NodeContinueFlagClear();
+        RadioEventPost(RADIO_EVT_TX);
+    }
+#endif //SUPPORT_LIGHT
+
 #else
     Flash_store_sensor_data(buff, 16);
 #endif 
@@ -482,7 +557,49 @@ static void Sensor_store_package(void)
 #endif
 }
 
+#ifndef SUPPORT_UPLOAD_ASSET_INFO
+static void just_reset_time_by_sensor_data(Calendar *rtc)
+{
+    //1B00660242740000190424154730105C00010AF0150102030100119E
+    //1B 00 66 02 42 74 00 01 190424154830105C00010AF0150D02030100131E
 
+    uint8_t buff[FLASH_SENSOR_DATA_SIZE]={0};
+    if(Flash_load_sensor_data_lately(buff)!=ES_ERROR)
+    {
+#ifdef BOARD_S3
+        HIBYTE_ZKS(rtc->Year) = 0x20;
+        LOBYTE_ZKS(rtc->Year) = buff[2];
+        rtc->Month        = buff[3];
+        rtc->DayOfMonth   = buff[4];
+        rtc->Hours        = buff[5];
+        rtc->Minutes      = buff[6];
+        rtc->Seconds      = buff[7];
+#else
+        HIBYTE_ZKS(rtc->Year) = 0x20;
+        LOBYTE_ZKS(rtc->Year) = buff[8];
+        rtc->Month        = buff[9];
+        rtc->DayOfMonth   = buff[10];
+        rtc->Hours        = buff[11];
+        rtc->Minutes      = buff[12];
+        rtc->Seconds      = buff[13];
+
+#endif //BOARD_S3
+        RtcBcdToHex(rtc);
+        Rtc_set_calendar(rtc);
+    }
+    else
+    {
+        LOBYTE_ZKS(rtc->Year) = 0;
+        rtc->Month        = 0;
+        rtc->DayOfMonth   = 0;
+        rtc->Hours        = 0;
+        rtc->Minutes      = 0;
+        rtc->Seconds      = 0;
+    }
+
+
+}
+#endif //SUPPORT_UPLOAD_ASSET_INFO
 //***********************************************************************************
 //
 // Sensor init.
@@ -498,6 +615,10 @@ void Sensor_init(void)
     /* Obtain event instance handle */
     sensorEvtHandle = Event_handle(&sensorEvtStruct);
 #endif //SUPPORT_SENSOR_ADJUST
+
+#ifndef SUPPORT_UPLOAD_ASSET_INFO
+    just_reset_time_by_sensor_data(&lastcalendar);
+#endif //SUPPORT_UPLOAD_ASSET_INFO
 
     rSensorObject.sensorInit = 0;
     rSensorObject.serialNum = 0;
@@ -555,6 +676,14 @@ void Sensor_measure(uint8_t store)
 }
 
 #ifdef SUPPORT_SENSOR_ADJUST
+void Sensor_colect_event_set(void)
+{
+    if(sensorEvtHandle)
+        Event_post(sensorEvtHandle, SENSOR_EVT_STORE);
+    Sys_event_post(SYS_EVT_SENSOR);
+}
+
+
 //***********************************************************************************
 //
 // Sensor measure updata.
@@ -973,7 +1102,8 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
     int8_t isbindNum = - 1;
     int32_t temp;
 #endif
-    
+
+    cursensor.rssi = pData[1];
 	Index = 2;//DeviceId  start
 
     HIBYTE_ZKS(HIWORD_ZKS(cursensor.DeviceId)) = pData[Index++];
@@ -1087,14 +1217,36 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 		}        
 #endif
 
+        //======================================================
+        if((g_rSysConfigInfo.status&STATUS_ALARM_GATE_ON) && (cursensor.type == SEN_TYPE_ASSET)){
+
+            g_AlarmSensor.DeviceId = cursensor.DeviceId;
+            g_AlarmSensor.index      = cursensor.index;
+            g_AlarmSensor.type       = SEN_TYPE_ASSET;
+
+            g_AlarmSensor.time[0]    = pData[8];
+            g_AlarmSensor.time[1]    = cursensor.value.month;
+            g_AlarmSensor.time[2]    =cursensor.value.day;
+            g_AlarmSensor.time[3]    = cursensor.value.hour;
+            g_AlarmSensor.time[4]    = cursensor.value.minutes;
+            Sys_event_post(SYS_EVT_ALARM);
+            g_bAlarmSensorFlag |= ALARM_NODE_LOSE_ALARM;
+
+
+        }
+
         //save to mem
 
         //find in mem 
         for (i = 0; i < MEMSENSOR_NUM; ++i) {
             if ((pMemSensor + i)->DeviceId == cursensor.DeviceId &&
-               (pMemSensor + i)->index == cursensor.index &&
-               (pMemSensor + i)->type == cursensor.type )
-                break;
+               ((pMemSensor + i)->index == cursensor.index || (pMemSensor + i)->type == SEN_TYPE_INVALID) &&
+               ((pMemSensor + i)->type == cursensor.type || cursensor.type == SEN_TYPE_INVALID || (pMemSensor + i)->type == SEN_TYPE_INVALID) ){
+                    if(cursensor.type == SEN_TYPE_INVALID)
+                        return;
+                    
+                    break;
+            }
 
         }
         
@@ -1102,12 +1254,23 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
              memcpy(pMemSensor + i, &cursensor, sizeof(sensordata_mem));
         }
         else {
-            //new sensor id
-            memcpy(pMemSensor + MemSensorIndex, &cursensor, sizeof(sensordata_mem));
 
+            //new sensor id or sensor
+            for(i = 0; i < MEMSENSOR_NUM; i++){
+                if((pMemSensor + i)->DeviceId == cursensor.DeviceId)
+                    break;
+            }
+
+            if(i == MEMSENSOR_NUM){
+                LinkNum++;
+                if(LinkNum > MEMSENSOR_NUM)
+                    LinkNum = MEMSENSOR_NUM;
+            }
+
+            memcpy(pMemSensor + MemSensorIndex, &cursensor, sizeof(sensordata_mem));
             MemSensorIndex = (MemSensorIndex + 1) % MEMSENSOR_NUM;
-            if(LinkNum < MemSensorIndex)
-                LinkNum = MemSensorIndex;
+
+            
         }
 	}
 }
@@ -1130,6 +1293,20 @@ restart:
             goto restart;
         }    
     }
+}
+
+uint16_t CheckNode(uint32_t checkId)
+{
+    uint16_t i;
+
+    for(i = 0; i < MEMSENSOR_NUM; i++){
+        if((pMemSensor + i)->DeviceId == checkId)
+            break;
+    }
+    if(i < MEMSENSOR_NUM)
+        return 0;
+    else
+        return 0xffff;
 }
 #endif
 #endif

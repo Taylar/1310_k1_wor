@@ -156,6 +156,7 @@
 extern uint8_t ads1247PGAGain;
 
 void ADS1247_IOInit(void);
+PIN_Handle ADS1247_Handle(void);
 void ADS1247_ConfigInit(void);
 void ADS1247_PowerOn(void);
 void ADS1247_PowerOff(void);

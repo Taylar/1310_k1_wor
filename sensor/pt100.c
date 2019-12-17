@@ -98,6 +98,9 @@ static void PT100_measure(uint8_t chNum)
     uint8_t sampleNum = 4;
     uint8_t i;
 
+    if(ADS1247_Handle() == NULL)
+        return;
+    
     ADS1247_PowerOn();
 
     ADS1247_ConfigInit();

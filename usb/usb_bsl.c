@@ -43,7 +43,7 @@ void bsl_ack_return(uint8_t *pData, uint16_t length, USB_BSL_ACK_T bsl_ack)
 {
     pData[0] = bsl_ack; // 2
     length = Usb_group_package(AC_Ack, pData, 1);
-    InterfaceSend(pData, length);
+    InterfaceSendImmediately(pData, length);
     return ;
 }
 
@@ -111,6 +111,9 @@ static void USB_BSL_jump_bsl(void)
 }
 #endif
 
+#ifdef BOARD_CONFIG_DECEIVE
+uint8_t configUpgrade;
+#endif //BOARD_CONFIG_DECEIVE
 // 非空消息 分析
 // pack_len(2)offset(4)pack_data(pack_len)
 // ret -1:ERR   0:OK
@@ -141,7 +144,11 @@ static int BSL_data_parse(uint8_t *pData, uint16_t length)
 #ifdef BOARD_CONFIG_DECEIVE
         uint16_t crc = (uint16_t)(pData[pack_head_len] | ((pData[pack_head_len + 1]) << 8));
         uint32_t fileLen = Is_direct_upgrade(crc);
-        if (fileLen != 0xffffffff) {
+        configUpgrade = 0;
+        if(pData[pack_head_len+2] == 0xaa)
+            configUpgrade = 1;
+
+        if (fileLen != 0xffffffff && configUpgrade == 0) {
             bsl_ack_upgrade_success(pData);
             usb_upgrade_info.endFlag = true;
             RadioUpgrade_start(fileLen, GetRadioDstAddr());
@@ -181,15 +188,25 @@ static int BSL_Nodata_parse(uint8_t *pData, uint16_t length)
     result = Usb_bsl_UpgradeLoad_check(usb_upgrade_info.fileLength);
 
 #ifdef BOARD_CONFIG_DECEIVE
-    if(UPGRADE_RESULT_LOADING_COMPLETE == result) {
-        usb_upgrade_info.endFlag = true;
-        RadioUpgrade_start(usb_upgrade_info.fileLength, GetRadioDstAddr());
+    if(configUpgrade == 0)
+    {
+        if(UPGRADE_RESULT_LOADING_COMPLETE == result) {
+            usb_upgrade_info.endFlag = true;
+            RadioUpgrade_start(usb_upgrade_info.fileLength, GetRadioDstAddr());
+        }
+        return 0;
     }
-    return 0;
+    bsl_ack_return(pData, length, BSL_ACK_OK);
+    Task_sleep(100 * CLOCK_UNIT_MS);
+    Flash_store_config();
+    SysCtrlSystemReset();
+    return 0; // will not execute here
 #else
 
     if(UPGRADE_RESULT_LOADING_COMPLETE == result){
         bsl_ack_return(pData, length, BSL_ACK_OK);
+        Task_sleep(300 * CLOCK_UNIT_MS);
+        Flash_store_config();
         USB_BSL_jump_bsl();
         return 0; // will not execute here
     }else{
@@ -292,8 +309,16 @@ UPGRADE_RESULT_E Usb_bsl_UpgradeLoad_check(uint32_t fileLen)
     strcpy((char*)upgradeFlag.validFlag, UPGRADE_FLAG);
 
 #ifdef BOARD_CONFIG_DECEIVE
-    upgradeFlag.waiteUpgrade = 0x00;
-    upgradeFlag.complete     = 0x00;
+    if(configUpgrade)
+    {
+        upgradeFlag.waiteUpgrade = 0x01;
+        upgradeFlag.complete     = 0xff;
+    }
+    else
+    {
+        upgradeFlag.waiteUpgrade = 0x00;
+        upgradeFlag.complete     = 0x00;
+    }
 #else
     upgradeFlag.waiteUpgrade = 0x01;
     upgradeFlag.complete     = 0xff;

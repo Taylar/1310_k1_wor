@@ -144,8 +144,14 @@ uint16_t Battery_get_voltage(void)
     // {
     //     batLowCnt = 0;
     // }
+    
+    if(batVoltageBuf > BAT_VOLTAGE_FULL)
+       batVoltageBuf = BAT_VOLTAGE_FULL;
     return batVoltageBuf;
 #else
+    if(bBatVoltage > BAT_VOLTAGE_FULL)
+       bBatVoltage = BAT_VOLTAGE_FULL;
+	
     return bBatVoltage;
 #endif
 }
@@ -177,6 +183,11 @@ void Battery_porcess(void)
 
                 S6Sleep();
 #endif//BOARD_S6_6
+
+#ifdef BOARD_B2S
+        S2Sleep();
+#endif // BOARD_B2S
+
 #endif//BOARD_S3
             }
         }

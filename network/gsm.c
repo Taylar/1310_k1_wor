@@ -1015,7 +1015,9 @@ static GSM_RESULT Gsm_tcp_connect(uint8_t linkIndex)
     for (i = 5; i > 0; i--) {
         AT_set_connect_domain();
         eventId = Gsm_wait_ack(500);
-        if (!(eventId & GSM_EVT_CMD_OK))
+        if (eventId & GSM_EVT_SHUTDOWN) {
+            return RESULT_SHUTDOWN;
+        } else if (!(eventId & GSM_EVT_CMD_OK))
             continue;            
 #ifdef SUPPORT_TCP_MULTIL_LINK
         AT_start_multil_connect(linkIndex);
@@ -1023,7 +1025,9 @@ static GSM_RESULT Gsm_tcp_connect(uint8_t linkIndex)
         AT_start_connect();
 #endif //SUPPORT_TCP_MULTIL_LINK
         eventId = Gsm_wait_ack(90000);
-        if (!(eventId & GSM_EVT_CMD_ERROR))
+        if (eventId & GSM_EVT_SHUTDOWN) {
+            return RESULT_SHUTDOWN;
+        } else if (!(eventId & GSM_EVT_CMD_ERROR))
             break;
     }
     if (eventId & GSM_EVT_SHUTDOWN) {

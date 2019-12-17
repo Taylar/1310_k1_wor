@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-02-22 14:44:16
+* @Last Modified time: 2019-12-13 14:12:29
 */
 #include "../general.h"
 
@@ -99,7 +99,7 @@ void Sys_alarmFxn(UArg arg0)
 
     if(buzzerAlarmCnt == 1) {      
         Clock_stop(sysAlarmClkHandle);
-        Sys_event_post(SYS_EVT_ALARM_SAVE);
+        Sys_event_post(SYS_EVT_ALARM);
         return;        
     }
 
@@ -150,6 +150,22 @@ void Sys_chagre_alarm_timer_isr(void)
 }
 #endif
 
+
+
+
+//===================================
+// sys_Node_Lose_Alarm
+//=============================
+void sys_Node_Lose_Alarm(void){
+     g_bAlarmSensorFlag |= ALARM_NODE_LOSE_ALARM;
+     Sys_event_post(SYS_EVT_ALARM);
+}
+
+
+
+
+
+
 //***********************************************************************************
 //
 // System LCD shutdown callback function.
@@ -157,6 +173,10 @@ void Sys_chagre_alarm_timer_isr(void)
 //***********************************************************************************
 void Sys_lcdShutFxn(UArg arg0)
 {
+#ifdef SURPORT_RADIO_RSSI_SCAN
+    return;
+#endif
+
     if((!(g_rSysConfigInfo.module & MODULE_LCD)) || (deviceMode == DEVICES_OFF_MODE)){//
         return;
     }
@@ -299,11 +319,24 @@ void S6HwInit(void)
 //***********************************************************************************
 void S6ShortKeyApp(void)
 {
+    RadioEventPost(RADIO_EVT_WAKEUP_SEND);
+
     if (g_bAlarmSensorFlag) {
         Sys_buzzer_disable();
         Clock_stop(sysAlarmClkHandle);
         g_bAlarmSensorFlag = 0;
         return;
+    }
+
+    if(gatewayConfigTime)
+    {
+        if(deviceMode == DEVICES_SLEEP_MODE)
+        {
+            Disp_poweron();
+            deviceMode = DEVICES_ON_MODE;
+            Sys_event_post(SYSTEMAPP_EVT_DISP);
+            return;
+        }
     }
 
     switch(deviceMode)
@@ -348,6 +381,17 @@ void S6ConcenterLongKeyApp(void)
         return;
     }
 
+    if(gatewayConfigTime)
+    {
+        if(deviceMode == DEVICES_SLEEP_MODE)
+        {
+            Disp_poweron();
+            deviceMode = DEVICES_ON_MODE;
+            Sys_event_post(SYSTEMAPP_EVT_DISP);
+            return;
+        }
+    }
+
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -390,10 +434,22 @@ void S6ConcenterLongKeyApp(void)
 void S6ShortKey1App(void)
 {
 #ifdef BOARD_S6_6
+    RadioEventPost(RADIO_EVT_WAKEUP_SEND);
+    
     if (g_bAlarmSensorFlag) {
         Sys_buzzer_disable();
         Clock_stop(sysAlarmClkHandle);
         g_bAlarmSensorFlag = 0;
+        return;
+    }
+
+    if(gatewayConfigTime)
+    {
+        gatewayConfigTime = 0;
+        RadioSwitchRate();
+        Disp_poweron();
+        deviceMode = DEVICES_ON_MODE;
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         return;
     }
 
@@ -443,6 +499,17 @@ void S6LongKey1App(void)
         return;
     }
 
+    if(gatewayConfigTime)
+    {
+        if(deviceMode == DEVICES_SLEEP_MODE)
+        {
+            Disp_poweron();
+            deviceMode = DEVICES_ON_MODE;
+            Sys_event_post(SYSTEMAPP_EVT_DISP);
+            return;
+        }
+    }
+    
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
@@ -472,7 +539,8 @@ void S6LongKey1App(void)
         break;
     }
 }
-
+extern uint8_t MemSensorIndex;
+extern uint32_t starBarDeviceid;
 //***********************************************************************************
 // brief:the Concenter long key application : printf menu
 // 
@@ -480,12 +548,16 @@ void S6LongKey1App(void)
 //***********************************************************************************
 void S6LongKey0App(void)
 {
-    if(!(g_rSysConfigInfo.module & MODULE_BTP))
-        return;
-    if (Menu_is_process()) {
-        Menu_exit();
-    } else {
-        Menu_init();
+    if(DEVICES_CONFIG_MODE != deviceMode)
+    {
+        deviceModeTemp = deviceMode;
+        deviceMode = DEVICES_CONFIG_MODE;
+        gatewayConfigTime = 1;
+        memset(bUsbBuff, 0, USB_BUFF_LENGTH);
+        MemSensorIndex  = 0;
+        starBarDeviceid = 0;
+        LinkNum         = 0;
+        RadioSwitchRate();
     }
     Sys_event_post(SYSTEMAPP_EVT_DISP);
 }
@@ -500,7 +572,8 @@ void S6AppBatProcess(void)
 {
     Battery_porcess();
     //鐢甸噺浣庤嚦涓�鏍�,姣�5绉掗棯绾㈢伅涓�娆�
-    if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE) && (deviceMode != DEVICES_OFF_MODE)) {
+    if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE) && 
+        ((deviceMode == DEVICES_SLEEP_MODE) || (deviceMode == DEVICES_ON_MODE))) {
         Clock_start(BatAlarmClkHandle);
     }
     
@@ -585,10 +658,6 @@ void UsbIntProcess(void)
             case DEVICES_SLEEP_MODE:
             RadioSwitchingSettingRate();
             S6Wakeup();
-            if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
-            {
-                RadioTestEnable();
-            }
             case DEVICES_OFF_MODE:
             break;
 
@@ -620,13 +689,16 @@ void S6Wakeup(void)
 #endif
     }
 
-#ifdef S_G//缃戝叧
-    ConcenterWakeup();
-    
-    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-    AutoFreqInit();
-
-#endif // S_G//缃戝叧
+#ifdef S_G//缂冩垵鍙�
+    if(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON){
+        ConcenterTxOnlyStart();
+    }
+    else{
+        ConcenterWakeup();
+       if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+          AutoFreqInit();
+    }
+#endif // S_G//缂冩垵鍙�
 
 #ifdef S_C //鑺傜偣
     NodeWakeup();

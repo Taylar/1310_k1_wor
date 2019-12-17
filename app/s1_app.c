@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-11-20 18:12:56
+* @Last Modified time: 2019-12-13 10:37:49
 */
 #include "../general.h"
 
@@ -55,9 +55,23 @@ void S1HwInit(void)
     configModeTimeCnt = 0;
 #ifdef SUPPORT_UPLOAD_ASSET_INFO
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_NONE;
-#else
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+
+    #ifdef SUPPORT_LIGHT
+    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_OPT3001;
+    #else
+    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_NONE;
+    #endif //HAIER_Z1_C
 #endif // SUPPORT_UPLOAD_ASSET_INFO
+    
+    
+#if defined(KINGBOSS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT2X)
+
+    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_NONE;
+
+    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+
+#endif //KINGBOSS_PROJECT
 }
 
 
@@ -73,6 +87,11 @@ void S1ShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        case DEVICES_WAKEUP_MODE:
+        if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
+        {
+            RadioTestEnable();
+        }
         Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
 
@@ -81,6 +100,10 @@ void S1ShortKeyApp(void)
         break;
 
         case DEVICES_CONFIG_MODE:
+        // if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
+        // {
+        //     Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
+        // }
         Led_ctrl(LED_G, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
 
@@ -97,13 +120,19 @@ void S1LongKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        case DEVICES_WAKEUP_MODE:
         case DEVICES_CONFIG_MODE:
+        if(!(g_rSysConfigInfo.status & STATUS_HIDE_PWOF_MENU))
+        {
+            g_rSysConfigInfo.sysState.wtd_restarts &= (0xFFFF^STATUS_POWERON);
+        }
         S1Sleep();
-        g_rSysConfigInfo.sysState.wtd_restarts &= (0xFFFF^STATUS_POWERON);
         Led_ctrl2(LED_R, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         g_rSysConfigInfo.rtc = Rtc_get_calendar();
         Flash_store_config();
         Task_sleep(3000 * CLOCK_UNIT_MS);
+        if(STATUS_POWERON_RESET_DATA & g_rSysConfigInfo.status)
+            Flash_reset_all();
         SysCtrlSystemReset();
         break;
 
@@ -134,7 +163,12 @@ void S1DoubleKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        case DEVICES_WAKEUP_MODE:
         case DEVICES_CONFIG_MODE:
+        case DEVICES_OFF_MODE:
+        if(DEVICES_CONFIG_MODE != deviceMode)
+            deviceModeTemp = deviceMode;
+
 #if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
             OldS1NodeApp_stopSendSensorData();
 #endif
@@ -170,22 +204,29 @@ void S1AppRtcProcess(void)
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
     {
         configModeTimeCnt++;
-        if(configModeTimeCnt >= 60)
+        if(configModeTimeCnt >= S1_CONFIG_MODE_TIME)
         {
             Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
         }
     }
 }
 
-void S1AppConfigModeExit(void)
+void NodeAppConfigModeExit(void)
 {
+    deviceMode = deviceModeTemp;
     RadioSwitchingSettingRate();
     NodeStrategyBuffClear();
     RadioModeSet(RADIOMODE_SENDPORT);
-    NodeStartBroadcast();
-    NodeBroadcasting();
-    NodeStrategyStart();
-    deviceMode = DEVICES_ON_MODE;
+    if(deviceMode != DEVICES_OFF_MODE)
+    {
+        NodeStartBroadcast();
+        NodeBroadcasting();
+       if( g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
+          NodeStrategyStart();
+        }
+    }
+
+    NodeWakeup();
 }
 
 extern void WdtResetCb(uintptr_t handle);
@@ -199,7 +240,13 @@ extern void WdtResetCb(uintptr_t handle);
 //***********************************************************************************
 void S1Wakeup(void)
 {
-    deviceMode = DEVICES_ON_MODE;
+
+    if( !(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER)){
+       deviceMode = DEVICES_WAKEUP_MODE;
+    }
+    else{
+        deviceMode = DEVICES_ON_MODE;
+    }
     RtcStart();
 
 #ifdef  SUPPORT_WATCHDOG
@@ -220,9 +267,5 @@ void S1Wakeup(void)
 void S1Sleep(void)
 {
     deviceMode = DEVICES_OFF_MODE;
-
-#if  !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
-    RtcStop();
-#endif
     NodeSleep();
 }

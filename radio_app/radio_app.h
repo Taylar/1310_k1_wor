@@ -22,6 +22,12 @@
 #define         RADIO_EVT_SEND_SYC      Event_Id_15
 #define         RADIO_EVT_CHANNEL_CHECK Event_Id_16
 #define         RADIO_EVT_EVT_OLD_S1_UPLOAD_NODE Event_Id_17
+#define         RADIO_EVT_RSSI_SCAN     Event_Id_18
+#define         RADIO_EVT_SWITCH_RATE   Event_Id_19
+#define         RADIO_EVT_START_SNIFF   Event_Id_20
+#define         RADIO_EVT_WAKEUP_SEND   Event_Id_21
+
+
 #define         RADIO_EVT_ALL           0xffffffff
 
 
@@ -29,14 +35,22 @@
 #define PASSRADIO_ACK_TIMEOUT_TIME_MS (150)
 #define CONCENTER_RADIO_DELAY_TIME_MS (1)
 #define RADIO_RECEIVE_TIMEOUT       RECEIVE_TIMEOUT[g_rSysConfigInfo.rfSF >> 4]
+#define RADIO_DOWNLOAD_TIMEOUT       DOWNLOAD_TIMEOUT[g_rSysConfigInfo.rfSF >> 4]
 
 #define RADIO_EASYLINK_MODULATION      EasyLink_Phy_Custom
 #define RADIO_EASYLINK_MODULATION_50K  EasyLink_Phy_50K_GPSK
 #define RADIO_EASYLINK_MODULATION_S1_OLD EasyLink_Phy_Custom_s1_old
 
-#define RADIO_BASE_FREQ                  433000000
+#define RADIO_BASE_FREQ                   433000000
+#define RADIO_WAKEUP_FREQ                  436125000
 #define RADIO_DIFF_UNIT_FREQ             125000
 #define RADIO_BASE_UNIT_FREQ             250000
+
+
+#define RADIO_SCAN_START_FREQ            433000000
+#define RADIO_SCAN_STEP_FREQ             125000
+#define RADIO_MAX_SCAN_CHANNL_NUM        27
+
 
 #define RADIO_MIN_POWER                 5
 
@@ -79,6 +93,15 @@ extern Semaphore_Handle radioAccessSemHandle;
 extern EasyLink_RxPacket radioRxPacket;
 
 extern const uint16_t RECEIVE_TIMEOUT[5];
+
+
+#ifdef SURPORT_RADIO_RSSI_SCAN
+
+extern int8_t ScanRssiBuffer[RADIO_MAX_SCAN_CHANNL_NUM];
+extern uint8_t ScanChannelIndex;
+extern uint8_t GetScanIndex;
+#endif
+
 
 
 
@@ -133,6 +156,8 @@ void RadioSetTxMode(void);
 
 void RadioDisable(void);
 
+void RadioSwitchRate(void);
+
 uint8_t RadioStatueRead(void);
 
 void Radio_setConfigModeRfFrequency(void);
@@ -149,5 +174,8 @@ void RadioAbort(void);
 
 void RadioSetRfPower(uint8_t rfPower);
 
+#ifdef SURPORT_RADIO_RSSI_SCAN
+ void RadioRxScan(void);
+#endif
 
 #endif		// __RADIO_APP_H__

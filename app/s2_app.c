@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:14:22
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-10-12 11:17:33
+* @Last Modified time: 2019-10-22 16:36:04
 */
 #include "../general.h"
 
@@ -37,17 +37,22 @@ void S2HwInit(void)
 	KeyInit();
     KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
     KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
+    KeyRegister(SystemDoubleKeyEventPostIsr, KEY_0_DOUBLE_PRESS);
 
-#ifdef SUPPORT_SHT3X
-    //SHT3X Reset Pin initial
-    SHT3x_ResetIoInitial();
-#endif
+
+    Led_ctrl2(LED_B, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
 
     I2c_init();
 
     Spi_init();
 
     Flash_init();
+
+#ifdef SUPPORT_SHT3X
+    //SHT3X Reset Pin initial
+    if(g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X)
+        SHT3x_ResetIoInitial();
+#endif
 
 #ifdef SUPPORT_CHARGE_DECT
     Charge_detect_init();
@@ -76,6 +81,14 @@ void S2ShortKeyApp(void)
         case DEVICES_OFF_MODE:
         Led_ctrl(LED_R, 1, 200 * CLOCK_UNIT_MS, 1);
         break;
+
+        case DEVICES_CONFIG_MODE:
+        // if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
+        // {
+        //     Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
+        // }
+        Led_ctrl(LED_G, 1, 200 * CLOCK_UNIT_MS, 1);
+        break;
     }
 }
 
@@ -89,14 +102,66 @@ void S2LongKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
+        case DEVICES_CONFIG_MODE:
         S2Sleep();
         Led_ctrl2(LED_R, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
         break;
 
         case DEVICES_OFF_MODE:
         //Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 3);
+        Flash_store_config();
         SysCtrlSystemReset();
         break;
+    }
+}
+
+
+//***********************************************************************************
+// brief:the node long key application
+// 
+// parameter: 
+//***********************************************************************************
+void S2DoubleKeyApp(void)
+{
+    switch(deviceMode)
+    {
+        case DEVICES_ON_MODE:
+        case DEVICES_CONFIG_MODE:
+        case DEVICES_OFF_MODE:
+        if(DEVICES_CONFIG_MODE != deviceMode)
+            deviceModeTemp = deviceMode;
+
+        // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
+        // if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
+        NodeStrategyReset();
+        NodeResetAPC();
+        deviceMode                      = DEVICES_CONFIG_MODE;
+        configModeTimeCnt = 0;
+        NodeUploadOffectClear();
+        //RadioModeSet(RADIOMODE_RECEIVEPORT);
+        SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
+        RadioSwitchingUserRate();
+
+        NodeStrategyStop();
+        RadioAbort();
+        EasyLink_setRfPower(7);
+        RadioSetRxMode();
+
+        RadioEventPost(RADIO_EVT_SEND_CONFIG);
+        Led_ctrl2(LED_G, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
+        break;
+    }
+}
+
+void S2AppRtcProcess(void)
+{
+    if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
+    {
+        configModeTimeCnt++;
+        if(configModeTimeCnt >= S1_CONFIG_MODE_TIME)
+        {
+            Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
+        }
     }
 }
 
@@ -121,6 +186,7 @@ void S2Wakeup(void)
 #ifdef S_C //节点
 #if !defined (SUPPORT_BOARD_OLD_S1)
     NodeWakeup();
+    Sensor_colect_event_set();
 #endif
 #endif // S_C //节点
 }

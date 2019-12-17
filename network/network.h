@@ -113,7 +113,7 @@ extern void Nwk_send_upload_event(void);
 extern uint8_t Nwk_Is_Ntp();
 extern void Nwk_Ntp_Set(void);
 extern char Nwk_is_Active(void);
-
+extern void Nwk_nodeSetAckEventSet(void);
 #define     GSM_UPLOAD_WAIT_2_MIN    1
 #define     GSM_UPLOAD_WAIT_3_MIN    2
 #define     GSM_UPLOAD_WAIT_4_MIN    3

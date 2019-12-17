@@ -43,6 +43,7 @@ typedef enum {
     SEN_TYPE_IM33XX,
     SEN_TYPE_INFRARED,
     SEN_TYPE_ASSET,
+    SEN_TYPE_INVALID,
     SEN_TYPE_MAX
 } SENSOR_TYPE;
 
@@ -144,6 +145,7 @@ typedef struct {
     uint8_t index;
     uint8_t type;
     SensorData_t value;
+    int8_t  rssi;
 }sensordata_mem;
 
 
@@ -183,5 +185,14 @@ extern uint32_t Sensor_get_function_by_type(uint8_t type);
 extern void Sensor_store_null_package(uint8_t *buff);
 
 extern void Sensor_process(void);
+
+void Sensor_colect_event_set(void);
+
+void SensorSerialNumAdd(void);
+
+uint16_t GetSensorSerialNum(void);
+
+uint8_t Sensor_data_pack(uint8_t *buff);
+
 #endif	/* __ZKSIOT_SENSOR_H__ */
 

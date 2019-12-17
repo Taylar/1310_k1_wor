@@ -27,6 +27,8 @@ void Sys_lcd_start_timing(void);
 
 void Sys_lcd_stop_timing(void);
 
+void sys_Node_Lose_Alarm(void);
+
 void S6HwInit(void);
 
 void S6ShortKeyApp(void);

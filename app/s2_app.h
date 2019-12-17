@@ -22,6 +22,10 @@ void S2ShortKeyApp(void);
 
 void S2LongKeyApp(void);
 
+void S2DoubleKeyApp(void);
+
+void S2AppRtcProcess(void);
+
 void S2Wakeup(void);
 
 void S2Sleep(void);

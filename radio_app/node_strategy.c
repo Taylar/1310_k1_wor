@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-12-06 14:27:28
+* @Last Modified time: 2019-12-13 14:02:35
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -57,8 +57,12 @@ static void (*NodeStrategyFailCb)(void);
 
 static void NodeStrategyStartCb(UArg arg0)
 {
+#ifdef ZKS_S3_WOR
+    RadioEventPost(RADIO_EVT_START_SNIFF);
+#else
     NodeContinueFlagClear();
     RadioEventPost(RADIO_EVT_TX);
+#endif //ZKS_S3_WOR
 }
 
 

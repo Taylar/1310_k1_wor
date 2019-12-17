@@ -57,8 +57,8 @@ typedef enum {
 // Define key pressed time, unit is 10ms.
 #define TIME_KEY_NEW            3
 #define TIME_KEY_DOUBLE         40
-#define TIME_KEY0_LONG          400
-#define TIME_KEY1_LONG          400
+#define TIME_KEY0_LONG          300
+#define TIME_KEY1_LONG          300
 
 // Key state define.
 #define KEY_PRESSED             0

@@ -23,6 +23,7 @@ typedef struct {
 #define NodeBroadcasting(...)
 #define NodeStartBroadcast(...)
 #define NodeStopBroadcast(...)
+#define NodeIsBroadcast(...)
 #define NodeSleep(...)
 #define NodeWakeup(...)
 #define NodeUploadOffectClear(...)
@@ -56,6 +57,8 @@ void NodeBroadcasting(void);
 void NodeStartBroadcast(void);
 
 void NodeStopBroadcast(void);
+
+bool NodeIsBroadcast(void);
 
 void NodeSleep(void);
 

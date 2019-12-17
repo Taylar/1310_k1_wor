@@ -3,7 +3,7 @@
 
 
 /***** Defines *****/
-
+#define 		GATEWAY_CONFIG_MODE_TIME_MAX	60
 
 
 /***** Type declarations *****/
@@ -62,7 +62,7 @@ void ConcenterCollectStart(void);
 
 void ConcenterCollectStop(void);
 
-#ifdef SUPPORT_STRATEGY_SORT
+void ConcenterTxOnlyStart(void);
 
 uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel);
 
@@ -71,7 +71,5 @@ uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr);
 uint16_t ConcenterReadResentNodeChannel(void);
 
 void ConcenterClearSynNode(void);
-
-#endif // SUPPORT_STRATEGY_SORT
 
 #endif			// _CONCENTERAPP_H__

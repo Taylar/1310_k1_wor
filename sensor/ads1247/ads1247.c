@@ -84,12 +84,20 @@ static int32_t ADS1247_ReadData(void)
 
 void ADS1247_IOInit(void)
 {
-    ads1247PinHandle = PIN_open(&ads1247PinState, ads1247_pin_config);
+    if(ads1247PinHandle == NULL)
+    {
+        ads1247PinHandle = PIN_open(&ads1247PinState, ads1247_pin_config);
 
-    ADS_SPI_CLK_LOW();
+        ADS_SPI_CLK_LOW();
 
-    DISENABLE_ADS1247_CS();
-    ADS1247_PowerOff();
+        DISENABLE_ADS1247_CS();
+        ADS1247_PowerOff();
+    }
+}
+
+PIN_Handle ADS1247_Handle(void)
+{
+    return ads1247PinHandle;
 }
 
 // -------------------------------------------

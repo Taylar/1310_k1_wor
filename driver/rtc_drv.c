@@ -85,6 +85,7 @@ void RtcSecondsIsrCb(UArg arg0)
     if(rtc.Seconds >= 60){
         rtc.Seconds = 0;
         rtc.Minutes++;
+        Sys_event_post(SYSTEMAPP_EVT_DISP);
         if(rtc.Minutes >= 60){
             rtc.Minutes = 0;
             rtc.Hours++;

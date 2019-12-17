@@ -101,6 +101,22 @@ void WdtResetCb(uintptr_t handle)
 
 void RtcEventSet(void)
 {
+#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
+	OldS1NodeApp_RtcIProcess();
+#endif
+
+#ifdef BOARD_S3
+	S1AppRtcProcess();
+	if(deviceMode == DEVICES_OFF_MODE)
+		return;
+#endif
+
+#ifdef ZKS_S2S_C
+	S2AppRtcProcess();
+	if(deviceMode == DEVICES_OFF_MODE)
+		return;
+#endif
+
 
 #ifdef SUPPORT_SENSOR
     Sensor_collect_time_isr();
@@ -108,25 +124,39 @@ void RtcEventSet(void)
 
 	Nwk_upload_time_isr();
 
-#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-	OldS1NodeApp_RtcIProcess();
-#endif
-
-#ifdef BOARD_S3
-	S1AppRtcProcess();
-#endif
 
 #ifdef S_C//节点
-	NodeRtcProcess();
+	if(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
+	   NodeRtcProcess();
+	}
+	else{
+	     Z5_wakeup_time_isr();
+	}
+
 #endif // S_C//节点
 
+
+
 #ifdef S_G//网关
-	ConcenterRtcProcess();
+
+	if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)){
+	    ConcenterRtcProcess();
+	}
 #endif // S_G//网关
 
 #ifdef  SUPPORT_CHARGE_DECT_ALARM
     Sys_chagre_alarm_timer_isr();
 #endif
+
+
+#ifdef SURPORT_RADIO_RSSI_SCAN
+    RadioRxScan();
+
+#endif
+
+
+
+
 }
 
 
@@ -217,7 +247,6 @@ void SystemAppTaskFxn(void)
 
 #ifdef BOARD_B2S
     S2HwInit();
-    Led_ctrl2(LED_B, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
 #endif
 
 #ifdef BOARD_S3
@@ -231,7 +260,7 @@ void SystemAppTaskFxn(void)
 
     Task_sleep(10 * CLOCK_UNIT_MS);
 
-#if defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1)|| defined(SUPPORT_BOARD_OLD_S2S_1)
+#if defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1)|| defined(SUPPORT_BOARD_OLD_S2S_1) || defined(BOARD_S3)
     RtcStart();
 #endif
 
@@ -289,12 +318,20 @@ void SystemAppTaskFxn(void)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
 		S1Wakeup();
-#ifndef SUPPORT_BOARD_OLD_S1
-		Sys_event_post(SYS_EVT_SENSOR);
+#if (!defined(SUPPORT_BOARD_OLD_S1) )
+		if(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
+		   Sys_event_post(SYS_EVT_SENSOR);
+		}
 #endif
 	}
 #endif // (defined BOARD_S6_6 || defined BOARD_B2S)
 
+	uint32_t RestStatus;
+    uint8_t logtest[6] = {0};
+    Flash_log("PON\n");
+    RestStatus = SysCtrlResetSourceGet();
+    sprintf((char*)logtest, "R%2ld\n",RestStatus);
+    Flash_log((uint8_t*)logtest);
 
 	for(;;)
 	{
@@ -363,7 +400,10 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S3
 			S1DoubleKeyApp();
 #endif
-			
+
+#ifdef ZKS_S2S_C
+			S2DoubleKeyApp();
+#endif
 		}
 
 
@@ -387,20 +427,21 @@ void SystemAppTaskFxn(void)
 
 #endif
 
-		if(eventId & SYSTEMAPP_EVT_CONCENTER_MONITER)
+		if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(eventId & SYSTEMAPP_EVT_CONCENTER_MONITER))
 		{
 			ConcenterResetRadioState();
 		}
 
-		if(eventId & SYS_EVT_CONFIG_MODE_EXIT)
+		if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(eventId & SYS_EVT_CONFIG_MODE_EXIT))
 		{
-			S1AppConfigModeExit();
+			NodeAppConfigModeExit();
 		}
 
-		if(eventId & SYSTEMAPP_EVT_STORE_CONCENTER)
+		if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(eventId & SYSTEMAPP_EVT_STORE_CONCENTER))
 		{
 			ConcenterSensorDataSave();
 		}
+
 #ifdef SUPPORT_USB
 		if(eventId & SYSTEMAPP_EVT_USBINT)
 		{
@@ -408,10 +449,14 @@ void SystemAppTaskFxn(void)
 		}
 #endif // SUPPORT_USB
 
+#ifdef BOARD_B2S
+		Battery_porcess();
+#endif // BOARD_B2S
+
 #ifdef BOARD_S6_6
 		S6AppBatProcess();
 #ifndef BOARD_CONFIG_DECEIVE
-		if(eventId & SYS_EVT_ALARM)
+		if( (eventId & SYS_EVT_ALARM)  && (deviceMode != DEVICES_OFF_MODE))
 		{
 			if (!(g_rSysConfigInfo.status & STATUS_ALARM_OFF)) {
                 buzzerAlarmCnt = 2;
@@ -439,23 +484,18 @@ void SystemAppTaskFxn(void)
 			Flash_store_config();
 		}
 
-
-//#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-//		if(eventId &   SYS_EVT_EVT_OLD_S1_UPLOAD_NODE) {
-//		    OldS1NodeAPP_Mode2NodeUploadProcess();
-//		}
-//#endif
-
-		if(eventId & SYS_EVT_STRATEGY) 
+		if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(eventId & SYS_EVT_STRATEGY))
 		{
 			if(GetStrategyRegisterStatus() == false)
 			{
-				NodeStrategyTimeoutProcess();
-				RadioSend();
+			    if( g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
+				    NodeStrategyTimeoutProcess();
+				    RadioSend();
+			    }
 			}
 		}
 
-		if(eventId & SYSTEMAPP_EVT_RADIO_ABORT) 
+		if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(eventId & SYSTEMAPP_EVT_RADIO_ABORT))
 		{
 			if(ExtflashRingQueueIsEmpty((&extflashWriteQ)))
 			{

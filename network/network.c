@@ -9,7 +9,10 @@
 //***********************************************************************************
 #include "../general.h"
 
+uint16_t curNetworkSerialNum;
+
 typedef enum {
+    PTI_NODE_ID = 0,
 	PTI_COLLECT_PERIOD = 0x01,
 	PTI_UPLOAD_PERIOD ,
 	PTI_HIGHTEMP_ALARM,
@@ -18,6 +21,9 @@ typedef enum {
 	PTI_BIND_NODE,
 	PTI_SENSOR_CODEC,
 	PTI_SEND_ALARM,
+    PTI_HIGHHUMI_ALARM,
+    PTI_LOWHUMI_ALARM,  
+    PTI_FORWARDING_UNIT = 0x0B,
 	PTI_DEVICE_ID = 0x10,
 }PARA_TYPE_ID;
 
@@ -33,36 +39,99 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
     uint8_t num;
 #endif
 
+#ifdef S_G//缃戝叧
+    node_configpara_t nodePara;
+    uint8_t nodeSet = 0;
+    nodePara.devID = 0;
+    nodePara.preConfigType = 0;
+    nodePara.serialNum = curNetworkSerialNum;
+
+#endif
     while(index < length) {
 
     	paratype = rxData[index++];			
     	switch (paratype) {			
+#ifdef S_G//缃戝叧
+        case PTI_NODE_ID:
+            nodeSet = 1;
+            if((index + 4)<= length) {
+                HIBYTE_ZKS(HIWORD_ZKS(nodePara.devID)) = rxData[index++];
+                LOBYTE_ZKS(HIWORD_ZKS(nodePara.devID)) = rxData[index++];
+                HIBYTE_ZKS(LOWORD_ZKS(nodePara.devID)) = rxData[index++];
+                LOBYTE_ZKS(LOWORD_ZKS(nodePara.devID)) = rxData[index++];
+            }
+            break;
+#endif
+
     	case PTI_COLLECT_PERIOD:
             if((index + 4)<= length) {
-    			HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
-    			LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+#ifdef S_G//缃戝叧
+                if(nodeSet){
+                    HIBYTE_ZKS(HIWORD_ZKS(nodePara.collectPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(HIWORD_ZKS(nodePara.collectPeriod)) = rxData[index++];
+                    HIBYTE_ZKS(LOWORD_ZKS(nodePara.collectPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(LOWORD_ZKS(nodePara.collectPeriod)) = rxData[index++];
+                    if(nodePara.collectPeriod < 10)
+                        nodePara.collectPeriod = 10;
+                    nodePara.preConfigType |= RADIO_CONFIGTYPE_COLLECTPERIOD;
+                }
+                else{
+
+                    HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+                    HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+                    if(g_rSysConfigInfo.collectPeriod < 10)
+                        g_rSysConfigInfo.collectPeriod = 10;
+                }         
+#else
+                HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
+                LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
                 HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
                 LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.collectPeriod)) = rxData[index++];
                 if(g_rSysConfigInfo.collectPeriod < 10)
                     g_rSysConfigInfo.collectPeriod = 10;
+#endif //S_G
                 
                 congfig = true;
             }
             else{
                 goto paraerror;
             }
-            
     		break;
     			
     	case PTI_UPLOAD_PERIOD:
+
             if((index + 4)<= length) {
+
+#ifdef S_G//缃戝叧
+                if(nodeSet){
+                    HIBYTE_ZKS(HIWORD_ZKS(nodePara.uploadPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(HIWORD_ZKS(nodePara.uploadPeriod)) = rxData[index++];
+                    HIBYTE_ZKS(LOWORD_ZKS(nodePara.uploadPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(LOWORD_ZKS(nodePara.uploadPeriod)) = rxData[index++];
+                    if(nodePara.uploadPeriod < 10)
+                        nodePara.uploadPeriod = 10;
+                    nodePara.preConfigType |= RADIO_CONFIGTYPE_COLLECTPERIOD;
+                }
+                else{
+
+                    HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+                    HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+                    LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
+                    if(g_rSysConfigInfo.uploadPeriod < 10)
+                        g_rSysConfigInfo.uploadPeriod = 10;
+                }
+#else
     			HIBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
     			LOBYTE_ZKS(HIWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
                 HIBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
                 LOBYTE_ZKS(LOWORD_ZKS(g_rSysConfigInfo.uploadPeriod)) = rxData[index++];
                 if(g_rSysConfigInfo.uploadPeriod < 10)
                     g_rSysConfigInfo.uploadPeriod = 10;
-                
+
+#endif //缃戝叧
                 congfig = true;
             }            
             else{
@@ -73,6 +142,22 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
     		
     	case PTI_HIGHTEMP_ALARM:
             if((index + 3)<= length) {
+#ifdef S_G
+                if(nodeSet){
+                    if(rxData[index] == 0xff){
+                        nodePara.setChn = 0xff;
+                    }
+                    else if(rxData[index] < MODULE_SENSOR_MAX){
+                        nodePara.setChn = 0x01 << rxData[index];
+                    }
+                    else{
+                        goto paraerror;
+                    }
+                    nodePara.preConfigType |= RADIO_CONFIGTYPE_ALARMTEMP_HIGH;
+                    nodePara.alarmTempHighValue = (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+                }
+
+#else
                 if(rxData[index] == 0xff){
                     for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
                         g_rSysConfigInfo.alarmTemp[i].high = (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
@@ -86,7 +171,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
                 else{
                     goto paraerror;
                 }
-                    
+#endif //S_G
                 index += 3;	
                 congfig = true;
             }
@@ -98,6 +183,22 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
     		
     	case PTI_LOWTEMP_ALARM:		
             if((index + 3)<= length) {
+#ifdef S_G
+                if(nodeSet){
+                    if(rxData[index] == 0xff){
+                        nodePara.setChn = 0xff;
+                    }
+                    else if(rxData[index] < MODULE_SENSOR_MAX){
+                        nodePara.setChn = 0x01 << rxData[index];
+                    }
+                    else{
+                        goto paraerror;
+                    }
+                    nodePara.preConfigType |= RADIO_CONFIGTYPE_ALARMTEMP_LOW;
+                    nodePara.alarmTempLowValue = (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+                }
+
+#else
                 if(rxData[index] == 0xff){
                     for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
                         g_rSysConfigInfo.alarmTemp[i].low= (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
@@ -111,6 +212,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
                 else{
                     goto paraerror;
                 }                
+#endif //S_G
                     
                 index += 3;	
                 congfig = true;
@@ -120,6 +222,90 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
             }
             
     		break;
+/*
+        case PTI_HIGHHUMI_ALARM:
+            if((index + 3)<= length) {
+#ifdef S_G
+                if(nodeSet){
+                    if(rxData[index] == 0xff){
+                        nodePara.setChn = 0xff;
+                    }
+                    else if(rxData[index] < MODULE_SENSOR_MAX){
+                        nodePara.setChn = 0x01 << rxData[index];
+                    }
+                    else{
+                        goto paraerror;
+                    }
+                    nodePara.preConfigType |= RADIO_CONFIGTYPE_ALARMHUMI_HIGH;
+                    nodePara.alarmHumiHighValue = (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+                }
+
+#else
+                if(rxData[index] == 0xff){
+                    for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
+                        g_rSysConfigInfo.alarmTemp[i].high_1 = (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+                    }
+                }
+                else if(rxData[index] < MODULE_SENSOR_MAX){
+                    
+                    g_rSysConfigInfo.alarmTemp[rxData[index]].high_1 = (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+
+                }
+                else{
+                    goto paraerror;
+                }
+#endif //S_G
+                index += 3; 
+                congfig = true;
+            }
+            else{
+                goto paraerror;
+            }
+            
+            break;
+            
+        case PTI_LOWHUMI_ALARM:     
+            if((index + 3)<= length) {
+#ifdef S_G
+                if(nodeSet){
+                    if(rxData[index] == 0xff){
+                        nodePara.setChn = 0xff;
+                    }
+                    else if(rxData[index] < MODULE_SENSOR_MAX){
+                        nodePara.setChn = 0x01 << rxData[index];
+                    }
+                    else{
+                        goto paraerror;
+                    }
+                    nodePara.preConfigType |= RADIO_CONFIGTYPE_ALARMHUMI_LOW;
+                    nodePara.alarmHumiLowValue = (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+                }
+
+#else
+                if(rxData[index] == 0xff){
+                    for ( i = 0 ; i < MODULE_SENSOR_MAX; ++i) {
+                        g_rSysConfigInfo.alarmTemp[i].low_1= (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+                    }
+                }
+                else if(rxData[index] < MODULE_SENSOR_MAX){
+                    
+                    g_rSysConfigInfo.alarmTemp[rxData[index]].low_1= (uint16_t)rxData[index+1]<<8 | (uint16_t)rxData[index+2];
+
+                }
+                else{
+                    goto paraerror;
+                }                
+#endif //S_G
+                    
+                index += 3; 
+                congfig = true;
+            }
+            else{
+                goto paraerror;
+            }
+            
+            break;
+*/
 #ifdef S_C
         case PTI_BIND_GATEWAY:
             if((index + 4)<= length) {
@@ -157,7 +343,7 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
                     HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
                     LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low)  = rxData[index++];
 
-					index +=4;//兼容协议，5529不支持湿度报警信息
+					index +=4;//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�
                 }
                 congfig = true;           
             }
@@ -197,6 +383,12 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
 
 #ifndef S_A
         case PTI_SEND_ALARM:
+#ifdef S_G
+            if(((index + 1)<= length) && nodeSet){
+                nodePara.loraAlarm = rxData[index++];
+                nodePara.preConfigType |= RADIO_CONFIGTYPE_COLLECTPERIOD;
+            }
+#else
             if(((index + 1)<= length) && (g_rSysConfigInfo.rfStatus & STATUS_LORA_MASTER)) {// maseter is sensor 
 
                 if(rxData[index++])
@@ -211,12 +403,21 @@ bool SetDevicePara(uint8_t *rxData, uint16_t length)
             }
             
     		break;            
+#endif  //S_G
+
 #endif
         default:
-            return false;//参数有误
+            return false;//鍙傛暟鏈夎
     	}	
     }
-
+#ifdef S_G
+    if(nodeSet)
+    {
+        if(nodePara.devID == 0)
+            return false;
+        return Radio_SetNodeConfig(&nodePara); //閰嶇疆閲囬泦鍣ㄥ弬鏁颁笉闇�瑕佸瓨鍌�
+    }
+#endif//S_G
     if(congfig)      
         Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 
@@ -303,7 +504,7 @@ uint8_t GetDevicePara(uint8_t paratype, uint8_t *rxData)
                 rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.high);
                 rxData[index++] = HIBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;
                 rxData[index++] = LOBYTE_ZKS(g_rSysConfigInfo.bindnode[i].AlarmInfo.low) ;      
-				rxData[index++] = 0xff;		//兼容协议，5529不支持湿度报警信息
+				rxData[index++] = 0xff;		//鍏煎鍗忚锛�5529涓嶆敮鎸佹箍搴︽姤璀︿俊鎭�
 				rxData[index++] = 0xff;
 				rxData[index++] = 0xff;
 				rxData[index++] = 0xff;
@@ -361,27 +562,29 @@ typedef enum {
     NMI_TX_HEARTBEAT= 0x2002,
     NMI_TX_SETTING  = 0x2003,
     NMI_TX_NTP      = 0x2004,
-    NMI_TX_SYS_STATE= 0x2005,
-    NMI_TX_GETIP_ACK= 0x2006,
+    NMI_TX_SYS_STATE    = 0x2005,
+    NMI_TX_QUERY_PAR_ACK= 0x2006,
 
-    NMI_TX_SENSOR   = 0x2010,
-    NMI_TX_GPS 	    = 0x2020,
-    NMI_TX_LBS 	    = 0x2021,
-    NMI_TX_G_SENSOR = 0x2022,
-    NMI_TX_CELL_INFO = 0x2023,
+    NMI_TX_SENSOR     = 0x2010,
+    NMI_TX_SENSOR_ACK = 0x2011,
+    NMI_TX_GPS        = 0x2020,
+    NMI_TX_LBS        = 0x2021,
+    NMI_TX_G_SENSOR   = 0x2022,
+    NMI_TX_CELL_INFO  = 0x2023,
 
     NMI_TX_UPGRADE_INFO_REQ = 0x2024,
     NMI_TX_UPGRADE_DATA_REQ = 0x2025,
     NMI_TX_UPGRADE_ACK      = 0x2026,
+    NMI_TX_NODESET_ACK      = 0x2027,
 
 //Receive MSG
     NMI_RX_COM_ACK  = 0xA001,
     NMI_RX_SETTING  = 0xA002,
     NMI_RX_ALARM    = 0xA003,
     NMI_RX_NTP      = 0xA004,
-    NMI_RX_SETIP    = 0xA005,
-    NMI_RX_GETIP    = 0xA006,
-    NMI_RX_RESET    = 0xA007,
+    NMI_RX_SET_SYS_STATE  = 0xA005,
+    NMI_RX_QUERY_PAR      = 0xA006,
+    NMI_RX_RESET          = 0xA007,
     NMI_RX_UPGRADE_INFO_ACK = 0xA008,
     NMI_RX_UPGRADE_DATA_ACK = 0xA009,
     NMI_RX_UPGRADE_REQ      = 0xA00A,
@@ -434,7 +637,7 @@ typedef struct {
 #define NWK_EVT_SEVER_ACK           Event_Id_08
 #define NWK_EVT_DATA_CONTINUE       Event_Id_09
 #define NWK_EVT_DATA_ACK_JSLL 		Event_Id_10
-
+#define NWK_EVT_NODE_SET_ACK 		Event_Id_11
 #define NWK_EVT_ALL                 0xffff
 
 
@@ -482,190 +685,6 @@ static const Nwk_FxnTable *Nwk_FxnTablePtr[NWK_MODULE_MAX] = {
 };
 
 static void Nwk_event_post(UInt event);
-
-#ifdef  JSLL_PROJECT
-
-#define SENSOR_DATA_LEN_OFFSET  0
-#define SENSOR_DATA_RSSI_OFFSET 1
-#define SENSOR_DATA_DVID_OFFSET 2
-#define SENSOR_DATA_SENO_OFFSET 6
-#define SENSOR_DATA_TIME_OFFSET 8
-#define SENSOR_DATA_BAT_OFFSET  14
-#define SENSOR_DATA_IDX0_OFFSET 16
-#define SENSOR_DATA_TYP0_OFFSET 17
-#define SENSOR_DATA_DAT0_OFFSET 18
-
-#define S3_BAT_VOLTAGE_LOW             2500
-#define S3_BAT_VOLTAGE_FULL            3000
-
-void Nwk_group_package_JSLL(NwkMsgPacket_t *pPackets)
-{
-    uint8_t i ,rssi;
-    uint16_t crc, bat;
-    uint32_t utcTemp;
-    NwkMsgPacket_t packet;
-    NwkMsgPacket_t *pPacket = pPackets;
-
-    packet.length = 0;
-    //消息头
-    packet.buff[packet.length++] = 0xAA;
-    packet.buff[packet.length++] = 0x75;
-    //消息体长度
-    packet.buff[packet.length++] = 0;
-    // device length
-    packet.buff[packet.length++] = 8;
-
-    for (i = 0; i < 4; i++) {
-        packet.buff[packet.length++] = ((pPacket->buff[SENSOR_DATA_DVID_OFFSET+i] & 0xf0)>>4) + '0';
-        packet.buff[packet.length++] = (pPacket->buff[SENSOR_DATA_DVID_OFFSET+i] & 0x0f)+ '0';
-    }
-
-    // utc time
-    TimeTransformUtc(&pPacket->buff[SENSOR_DATA_TIME_OFFSET], &utcTemp);
-    packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(utcTemp));
-    packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(utcTemp));
-    packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(utcTemp));
-    packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(utcTemp));
-
-    // channel num 
-    packet.buff[packet.length++] = 2;
-
-    // only Sht2x  and sht3x data 
-    // temperature
-    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET+1];
-    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET];
-    // humi
-    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET+3];
-    packet.buff[packet.length++] = pPacket->buff[SENSOR_DATA_DAT0_OFFSET+2];
-
-    // run state
-    packet.buff[packet.length++] = 0xFD;
-    packet.buff[packet.length++] = 0;
-
-    // bat state
-    packet.buff[packet.length++] = 0xFC;
-
-    bat = ((uint16_t)(pPacket->buff[SENSOR_DATA_BAT_OFFSET]) << 8) + pPacket->buff[SENSOR_DATA_BAT_OFFSET+1];
-    if(bat <= S3_BAT_VOLTAGE_LOW)
-        packet.buff[packet.length++] = 0;
-    else if(bat >= S3_BAT_VOLTAGE_FULL)
-        packet.buff[packet.length++] = 100;
-    else
-        packet.buff[packet.length++] = (uint8_t)(((bat - S3_BAT_VOLTAGE_LOW) * 100)/(S3_BAT_VOLTAGE_FULL - S3_BAT_VOLTAGE_LOW));
-
-    // rssi 
-    packet.buff[packet.length++] = 0xFB;
-    rssi = pPacket->buff[SENSOR_DATA_RSSI_OFFSET] + 128;
-    if(rssi > 100)
-        packet.buff[packet.length++] = 100;
-    packet.buff[packet.length++] = rssi;
-
-    packet.buff[2] = packet.length;
-    crc = docrc16(packet.buff, packet.length);
-
-    packet.buff[packet.length++] = LOBYTE_ZKS(crc);
-    packet.buff[packet.length++] = HIBYTE_ZKS(crc);
-
-    memcpy(pPacket->buff, packet.buff, packet.length);
-    pPacket->length = packet.length;
-}
-
-
-void Nwk_gatewayInfo_group_package_JSLL(NwkMsgPacket_t *pPackets)
-{
-    uint8_t i, rssi;
-    uint16_t crc;
-    uint32_t utcTemp;
-    uint16_t bat;
-    Calendar calendar;
-    NwkMsgPacket_t packet;
-    NwkMsgPacket_t *pPacket = pPackets;
-
-    packet.length = 0;
-    //消息头
-    packet.buff[packet.length++] = 0xAA;
-    packet.buff[packet.length++] = 0x75;
-    //消息体长度
-    packet.buff[packet.length++] = 0;
-    // device length
-    packet.buff[packet.length++] = 8;
-
-    for (i = 0; i < 4; i++) {
-        packet.buff[packet.length++] = ((g_rSysConfigInfo.DeviceId[i] & 0xf0)>>4) + '0';
-        packet.buff[packet.length++] = (g_rSysConfigInfo.DeviceId[i] & 0x0f)+ '0';
-    }
-
-    // utc time
-    calendar = Rtc_get_calendar();
-    pPacket->buff[0] = TransHexToBcd((uint8_t)(calendar.Year - 2000));
-    pPacket->buff[1] = TransHexToBcd(calendar.Month);
-    pPacket->buff[2] = TransHexToBcd(calendar.DayOfMonth);
-    pPacket->buff[3] = TransHexToBcd(calendar.Hours);
-    pPacket->buff[4] = TransHexToBcd(calendar.Minutes);
-    pPacket->buff[5] = TransHexToBcd(calendar.Seconds);
-
-    TimeTransformUtc(pPacket->buff, &utcTemp);
-    packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(utcTemp));
-    packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(utcTemp));
-    packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(utcTemp));
-    packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(utcTemp));
-
-    // channel num 
-    packet.buff[packet.length++] = 0;
-
-    // run state
-    packet.buff[packet.length++] = 0xFD;
-#ifdef SUPPORT_SOFT_CHARGE_DECT
-    if(chargeState) {
-        packet.buff[packet.length++] = 0;
-    }else{
-        packet.buff[packet.length++] = 1;
-    }
-#else
-    if(Get_Charge_plug() == NO_CHARGE){
-        packet.buff[packet.length++] = 1;
-    }else{
-        packet.buff[packet.length++] = 0;
-    }
-#endif // SUPPORT_SOFT_CHARGE_DECT
-
-    // bat state
-    packet.buff[packet.length++] = 0xFC;
-    bat = Battery_get_voltage();
-    if(bat <= BAT_VOLTAGE_LOW)
-        packet.buff[packet.length++] = 0;
-    else if(bat >= BAT_VOLTAGE_FULL)
-        packet.buff[packet.length++] = 100;
-    else
-        packet.buff[packet.length++] = (uint8_t)(((bat - BAT_VOLTAGE_LOW)*100)/(BAT_VOLTAGE_FULL - BAT_VOLTAGE_LOW));
-
-    // rssi 
-    Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &rssi);
-    
-    packet.buff[packet.length++] = 0xFB;
-    packet.buff[packet.length++] = rssi * 100 / 31;
-
-    packet.buff[2] = packet.length;
-    crc = docrc16(packet.buff, packet.length);
-
-
-    packet.buff[packet.length++] = LOBYTE_ZKS(crc);
-    packet.buff[packet.length++] = HIBYTE_ZKS(crc);
-
-    memcpy(pPacket->buff, packet.buff, packet.length);
-    pPacket->length = packet.length;
-}
-
-
-void Nwk_data_proc_callback_JSLL(uint8_t *pBuff, uint16_t length)
-{
-    char *ptr;
-    ptr = strstr((char *)pBuff, "\x55\x7a\x04\x85\x00\x00");
-    if(ptr != NULL)
-        Nwk_event_post(NWK_EVT_DATA_ACK_JSLL);
-}
-
-#endif // JSLL_PROJECT
 
 
 
@@ -927,11 +946,11 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
     NwkMsgPacket_t packet;
     NwkMsgPacket_t *pPacket = pPackets;
     packet.length = 0;
-    //消息头
-    //消息ID
+    //娑堟伅澶�
+    //娑堟伅ID
     packet.buff[packet.length++] = HIBYTE_ZKS(msgId);
     packet.buff[packet.length++] = LOBYTE_ZKS(msgId);
-    //消息体属性
+    //娑堟伅浣撳睘鎬�
     packet.buff[packet.length++] = 0;
     packet.buff[packet.length++] = 0;
     //Gateway ID
@@ -943,21 +962,21 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
     packet.buff[packet.length++] = rNwkObject.uuid[1];
 
 
-    if (msgId == NMI_TX_SENSOR) {
-        //消息流水号
+    if ((msgId == NMI_TX_SENSOR) || (msgId == NMI_TX_SENSOR_ACK)) {
+        //娑堟伅娴佹按鍙�
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
 
-        //消息体
-        //固定字段类型
+        //娑堟伅浣�
+        //鍥哄畾瀛楁绫诲瀷
         #ifdef SUPPORT_BB_TIME
         packet.buff[packet.length++] = 0x03;
         #else
         packet.buff[packet.length++] = 0x01;
         #endif
         
-        //网关电压
+        //缃戝叧鐢靛帇
 #ifdef SUPPORT_BATTERY
         value = Battery_get_voltage();
 #endif
@@ -969,7 +988,7 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
 
         packet.buff[packet.length++] = HIBYTE_ZKS(value);
         packet.buff[packet.length++] = LOBYTE_ZKS(value);
-        //网关网络信号
+        //缃戝叧缃戠粶淇″彿
         Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_RSSI_GET, &packet.buff[packet.length++]);
 
         #ifdef SUPPORT_BB_TIME
@@ -982,20 +1001,20 @@ static void Nwk_group_package(NWK_MSG_ID msgId, NwkMsgPacket_t *pPackets)
         packet.buff[packet.length++] = TransHexToBcd(calendar.Minutes);
         packet.buff[packet.length++] = TransHexToBcd(calendar.Seconds);
         #endif
-        //无线信号强度RSSI
+        //鏃犵嚎淇″彿寮哄害RSSI
         //Sensor ID - 4Byte
-        //采集流水号 - 2Byte
-        //采集时间
-        //Sensor电压
-        //参数项列表数据
+        //閲囬泦娴佹按鍙� - 2Byte
+        //閲囬泦鏃堕棿
+        //Sensor鐢靛帇
+        //鍙傛暟椤瑰垪琛ㄦ暟鎹�
 ONEDATA:
         for (i = 0; i < pPacket->buff[0]; i++) {//sensor data: length(1B) rssi(1B) devicedi(4B)...
             packet.buff[packet.length++] = pPacket->buff[1 + i];
         }
 
-        //判断是否还有数据
+        //鍒ゆ柇鏄惁杩樻湁鏁版嵁
         if(pPacket->buff[pPacket->buff[0] + 1]!= 0){
-            //一条数据的结束
+            //涓�鏉℃暟鎹殑缁撴潫
             packet.buff[packet.length++] = 0xFF;
             pPacket = (NwkMsgPacket_t*)&(pPacket->buff[pPacket->buff[0] + 1]);
             goto ONEDATA;
@@ -1022,7 +1041,7 @@ ONEDATA:
 #endif
     else if(msgId == NMI_TX_G_SENSOR) {
 
-        //消息流水号
+        //娑堟伅娴佹按鍙�
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumGSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumGSensor);
         rNwkObject.serialNumGSensor++;
@@ -1031,7 +1050,7 @@ ONEDATA:
             packet.buff[packet.length++] = pPacket->buff[1 + i];
         }
     } else if (msgId == NMI_TX_COM_ACK) {
-        //消息流水号
+        //娑堟伅娴佹按鍙�
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
@@ -1041,7 +1060,7 @@ ONEDATA:
     }
 #ifdef USE_ENGINEERING_MODE_FOR_LBS
     else if(msgId == NMI_TX_CELL_INFO) {
-        //消息流水号
+        //娑堟伅娴佹按鍙�
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumLbs);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumLbs);
         rNwkObject.serialNumLbs++;
@@ -1050,7 +1069,7 @@ ONEDATA:
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.mcc);
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.mnc);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.mnc);
-        packet.buff[packet.length++] = 0;   //小区序号，0代表当前服务小区
+        packet.buff[packet.length++] = 0;   //灏忓尯搴忓彿锛�0浠ｈ〃褰撳墠鏈嶅姟灏忓尯
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.local.lac);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.local.lac);
         packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.local.cellid));
@@ -1060,10 +1079,10 @@ ONEDATA:
         packet.buff[packet.length++] = rNwkObject.location.local.dbm;
 #ifdef SUPPOERT_LBS_NEARBY_CELL
         for (i = 0; i < LBS_NEARBY_CELL_MAX; i++) {
-            // 无效数据不上传
+            // 鏃犳晥鏁版嵁涓嶄笂浼�
             if (rNwkObject.location.nearby[i].cellid == 0)
                 break;
-            packet.buff[packet.length++] = i + 1;   //小区序号
+            packet.buff[packet.length++] = i + 1;   //灏忓尯搴忓彿
             packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.location.nearby[i].lac);
             packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.location.nearby[i].lac);
             packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(rNwkObject.location.nearby[i].cellid));
@@ -1134,7 +1153,7 @@ ONEDATA:
 #endif
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
     else if(msgId == NMI_TX_SYS_STATE){
-        //消息流水号
+        //娑堟伅娴佹按鍙�
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSysState);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSysState);
         rNwkObject.serialNumSysState++;
@@ -1159,7 +1178,7 @@ ONEDATA:
     }
 #endif
     else if(msgId == NMI_TX_SETTING){
-        //消息流水号
+        //娑堟伅娴佹按鍙�
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
@@ -1177,25 +1196,78 @@ ONEDATA:
         packet.buff[packet.length++] = sizeof(PROJECT_NAME);
         strcpy((char*)&packet.buff[packet.length], PROJECT_NAME);
         packet.length += sizeof(PROJECT_NAME);
+    }else if(msgId == NMI_TX_NODESET_ACK){
+#ifdef S_G
+        packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
+        packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
+        rNwkObject.serialNumSensor++;
+
+        packet.buff[packet.length++] = HIBYTE_ZKS(nodeSetComplete.serialNum);
+        packet.buff[packet.length++] = LOBYTE_ZKS(nodeSetComplete.serialNum);
+
+        packet.buff[packet.length++] = 0; //閲囬泦鍣↖D
+
+        packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(nodeSetComplete.devID));
+        packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(nodeSetComplete.devID));
+        packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(nodeSetComplete.devID));
+        packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(nodeSetComplete.devID));
+
+        if(nodeSetComplete.preConfigType & RADIO_CONFIGTYPE_COLLECTPERIOD){
+            packet.buff[packet.length++] = 0x01; //閲囬泦闂撮殧
+            packet.buff[packet.length++] = HIBYTE_ZKS(HIWORD_ZKS(nodeSetComplete.collectPeriod));
+            packet.buff[packet.length++] = LOBYTE_ZKS(HIWORD_ZKS(nodeSetComplete.collectPeriod));
+            packet.buff[packet.length++] = HIBYTE_ZKS(LOWORD_ZKS(nodeSetComplete.collectPeriod));
+            packet.buff[packet.length++] = LOBYTE_ZKS(LOWORD_ZKS(nodeSetComplete.collectPeriod));
+        }
+
+        if(nodeSetComplete.preConfigType & RADIO_CONFIGTYPE_ALARMTEMP_HIGH){
+            packet.buff[packet.length++] = 0x03; //楂樻俯鎶ヨ
+            packet.buff[packet.length++] = nodeSetComplete.setChn; //閫氶亾鍙�
+            packet.buff[packet.length++] = HIBYTE_ZKS(nodeSetComplete.alarmTempHighValue);
+            packet.buff[packet.length++] = LOBYTE_ZKS(nodeSetComplete.alarmTempHighValue);
+
+        }
+        if(nodeSetComplete.preConfigType & RADIO_CONFIGTYPE_ALARMTEMP_LOW){
+            packet.buff[packet.length++] = 0x04; //浣庢俯鎶ヨ
+            packet.buff[packet.length++] = nodeSetComplete.setChn; //閫氶亾鍙�
+            packet.buff[packet.length++] = HIBYTE_ZKS(nodeSetComplete.alarmTempLowValue);
+            packet.buff[packet.length++] = LOBYTE_ZKS(nodeSetComplete.alarmTempLowValue);
+
+        }
+        if(nodeSetComplete.preConfigType & RADIO_CONFIGTYPE_ALARMHUMI_HIGH){
+            packet.buff[packet.length++] = 0x09; //楂樻箍鎶ヨ
+            packet.buff[packet.length++] = nodeSetComplete.setChn; //閫氶亾鍙�
+            packet.buff[packet.length++] = HIBYTE_ZKS(nodeSetComplete.alarmHumiHighValue);
+            packet.buff[packet.length++] = LOBYTE_ZKS(nodeSetComplete.alarmHumiHighValue);
+
+        }
+        if(nodeSetComplete.preConfigType & RADIO_CONFIGTYPE_ALARMHUMI_LOW){
+            packet.buff[packet.length++] = 0x0A; //浣庢箍鎶ヨ
+            packet.buff[packet.length++] = nodeSetComplete.setChn; //閫氶亾鍙�
+            packet.buff[packet.length++] = HIBYTE_ZKS(nodeSetComplete.alarmHumiLowValue);
+            packet.buff[packet.length++] = LOBYTE_ZKS(nodeSetComplete.alarmHumiLowValue);
+
+        }
+#endif //S_G
     }
 
-    else {//其他打包序列号也需增加 如授时
-        //消息流水号
+    else {//鍏朵粬鎵撳寘搴忓垪鍙蜂篃闇�澧炲姞 濡傛巿鏃�
+        //娑堟伅娴佹按鍙�
         packet.buff[packet.length++] = HIBYTE_ZKS(rNwkObject.serialNumSensor);
         packet.buff[packet.length++] = LOBYTE_ZKS(rNwkObject.serialNumSensor);
         rNwkObject.serialNumSensor++;
     }
-    //消息体属性
+    //娑堟伅浣撳睘鎬�
     value = packet.length - 12;
     packet.buff[2] = HIBYTE_ZKS(value);
     packet.buff[3] = LOBYTE_ZKS(value);
 
-    //校验码
+    //鏍￠獙鐮�
     packet.buff[packet.length++] = CheckCode8(&packet.buff[0], packet.length);
 
-    //进行转义
+    //杩涜杞箟
     pPackets->length = Protocol_escape(&pPackets->buff[1], &packet.buff[0], packet.length);
-    //消息标志位
+    //娑堟伅鏍囧織浣�
     pPackets->buff[0] = PROTOCOL_TOKEN;
     pPackets->buff[pPackets->length + 1] = PROTOCOL_TOKEN;
     pPackets->length += 2;
@@ -1267,9 +1339,10 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
     	package_length -= 1;
 
         msgId = (rxData[0] << 8) | rxData[1];
+        curNetworkSerialNum = (rxData[10] << 8) | rxData[11];
         switch (msgId) {
             case NMI_RX_COM_ACK:
-#ifdef  SUPPORT_NB
+#if defined(SUPPORT_NB) || defined(SUPPORT_NETWORK_TX_SENSOR_ACK) 
                 Nwk_event_post(NWK_EVT_SEVER_ACK);
 #endif
                 break;
@@ -1286,7 +1359,7 @@ static void Nwk_data_proc_callback(uint8_t *pBuff, uint16_t length)
 #ifdef SUPPORT_NETGATE_DISP_NODE
             case NMI_RX_ALARM:
                 index = NWK_MSG_BODY_START;
-                if((index + 10) <= package_length) {//可能包含多条报警数据，目前只处理1条
+                if((index + 10) <= package_length) {//鍙兘鍖呭惈澶氭潯鎶ヨ鏁版嵁锛岀洰鍓嶅彧澶勭悊1鏉�
                     HIBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
                     LOBYTE_ZKS(HIWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
                     HIBYTE_ZKS(LOWORD_ZKS(g_AlarmSensor.DeviceId)) = rxData[index++];
@@ -1596,7 +1669,7 @@ static void Nwk_taskFxn(void)
 #endif
 
         if (rNwkObject.ntp == 0) {
-#if defined(JSLL_PROJECT) && !defined(SUPPORT_TCP_MULTIL_LINK)
+#ifdef  SUPPORT_NETWORK_SYC_RTC
             Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_SYC_RTC, &rNwkMsgPacket);
 #else
             Task_sleep(3 * CLOCK_UNIT_S);
@@ -1607,11 +1680,15 @@ static void Nwk_taskFxn(void)
             Nwk_group_package(NMI_TX_SETTING, &rNwkMsgPacket);
             if(Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE)
                 continue;
-#endif //defined(JSLL_PROJECT) && !defined(SUPPORT_TCP_MULTIL_LINK)
+#endif  //SUPPORT_NETWORK_SYC_RTC
         }
 
+        if(eventId & NWK_EVT_NODE_SET_ACK) {
+            Nwk_group_package(NMI_TX_NODESET_ACK, &rNwkMsgPacket);
+            if(Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE)
+                continue;
+        }
         if (eventId & (NWK_EVT_DATA_UPLOAD | NWK_EVT_DATA_CONTINUE| NWK_EVT_HEARTBEAT | NWK_EVT_ACK)) {
-#if defined(JSLL_PROJECT) && defined(SUPPORT_TCP_MULTIL_LINK) || !defined(JSLL_PROJECT)
 #ifdef      SUPPORT_UPLOADTIME_LIMIT
 			uint16_t txTimeOut;
 
@@ -1728,14 +1805,28 @@ static void Nwk_taskFxn(void)
                     }
 
                     if(bsensordata == 1){
+    #ifdef SUPPORT_NETWORK_TX_SENSOR_ACK
+                        Nwk_group_package(NMI_TX_SENSOR_ACK, &rNwkMsgPacket);
+    #else
                         Nwk_group_package(NMI_TX_SENSOR, &rNwkMsgPacket);
+    #endif //SUPPORT_NETWORK_TX_SENSOR_ACK
                         if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT, &rNwkMsgPacket) == FALSE) {
                             continue;
                         }
                         else{
 #ifdef SUPPORT_GSM
+    #ifdef SUPPORT_NETWORK_TX_SENSOR_ACK
+                            eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_SEVER_ACK, 10000*CLOCK_UNIT_MS);
+                            if(eventId&NWK_EVT_SEVER_ACK){
+                                Flash_moveto_offset_sensor_data(package_count);
+                            }
+                            else
+                            {
+                                continue;
+                            }
+    #else
                             Flash_moveto_offset_sensor_data(package_count);
-
+    #endif //SUPPORT_NETWORK_TX_SENSOR_ACK
 #else/*SUPPORT_NB*/
                             eventId = Event_pend(nwkEvtHandle, 0, NWK_EVT_SEVER_ACK, 2000*CLOCK_UNIT_MS);
                             if(eventId&NWK_EVT_SEVER_ACK){
@@ -1765,7 +1856,7 @@ static void Nwk_taskFxn(void)
 
                 }
 
-                //当网关没有sensor数据时上传一个无效sensor数据以避免网关信息失联。
+                //褰撶綉鍏虫病鏈塻ensor鏁版嵁鏃朵笂浼犱竴涓棤鏁坰ensor鏁版嵁浠ラ伩鍏嶇綉鍏充俊鎭け鑱斻��
                 if(!bsensordata){
                     memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
                     Sensor_store_null_package(rNwkMsgPacket.buff);
@@ -1774,7 +1865,7 @@ static void Nwk_taskFxn(void)
                 }
                 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
-                //系统状态信息
+                //绯荤粺鐘舵�佷俊鎭�
                 if(Flash_get_deviced_state_items() > 0 )
                 {
                     memset(rNwkMsgPacket.buff,0x00,NWK_MSG_SIZE);
@@ -1832,28 +1923,6 @@ static void Nwk_taskFxn(void)
 #endif  //SUPPORT_GPS
 #endif  //FLASH_EXTERNAL
 
-#endif //defined(JSLL_PROJECT) && defined(SUPPORT_TCP_MULTIL_LINK)
-
-#ifdef JSLL_PROJECT
-                if(eventId & NWK_EVT_DATA_UPLOAD){
-                    Nwk_gatewayInfo_group_package_JSLL(&rNwkMsgPacket);
-                    if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT_LINK1, &rNwkMsgPacket) == FALSE) {
-                        continue;
-                    }
-                }
-
-                while(Flash_get_unupload_link2_items()> 0){
-                    if(Flash_load_sensor_link2_data_by_offset(rNwkMsgPacket.buff, FLASH_SENSOR_DATA_SIZE, 0) == ES_SUCCESS){
-                        Nwk_group_package_JSLL(&rNwkMsgPacket);
-                        if (Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_TRANSMIT_LINK1, &rNwkMsgPacket) == FALSE) {
-                            continue;
-                        }
-                        eventId = Event_pend(nwkEvtHandle, 0,NWK_EVT_DATA_ACK_JSLL, 5000*CLOCK_UNIT_MS);
-                        if(eventId & NWK_EVT_DATA_ACK_JSLL)
-                            Flash_moveto_offset_sensor_link2_data(1);
-                    }
-                }
-#endif // JSLL_PROJECT
             }
             if(rNwkObject.ntp == 0)
                 continue;
@@ -1969,6 +2038,13 @@ void Nwk_upload_time_isr(void)
     }
 }
 
+void Nwk_nodeSetAckEventSet(void)
+{
+    Nwk_event_post(NWK_EVT_NODE_SET_ACK);
+}
+
+
+
 //***********************************************************************************
 //
 // Network poweron.
@@ -1979,6 +2055,7 @@ void Nwk_poweron(void)
     if (!(g_rSysConfigInfo.module & MODULE_NWK))
         return;
 
+    Event_pend(nwkEvtHandle, 0, NWK_EVT_SHUTDOWN, BIOS_NO_WAIT);
     if (g_rSysConfigInfo.status & STATUS_GSM_TEST)
         Nwk_event_post(NWK_EVT_POWERON | NWK_EVT_TEST);
     else
@@ -1995,6 +2072,7 @@ void Nwk_poweroff(void)
     if (!(g_rSysConfigInfo.module & MODULE_NWK))
         return;
 
+    Event_pend(nwkEvtHandle, 0, NWK_EVT_POWERON, BIOS_NO_WAIT);
     Nwk_event_post(NWK_EVT_SHUTDOWN);
     Nwk_FxnTablePtr[rNwkObject.moduleIndex]->controlFxn(NWK_CONTROL_SHUTDOWN_MSG, NULL);
 }

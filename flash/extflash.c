@@ -403,6 +403,7 @@ static void Flash_reset_data(void)
 
 #ifdef SUPPORT_TCP_MULTIL_LINK
     Flash_external_erase(FLASH_SENSOR_LINK2_PTR_POS, FLASH_EXT_SECTOR_ERASE);
+    Flash_external_erase(FLASH_SENSOR_LINK2_PTR_POS + FLASH_SENSOR_LINK2_PTR_AREA_SIZE - FLASH_SECTOR_SIZE, FLASH_EXT_SECTOR_ERASE);
 #endif //SUPPORT_TCP_MULTIL_LINK
 
 #ifdef SUPPORT_FLASH_LOG    
@@ -480,6 +481,13 @@ void Flash_init(void)
         Sys_config_reset();
         Flash_store_config();
     }
+#else
+    g_rSysConfigInfo.size                = sizeof(ConfigInfo_t);
+    g_rSysConfigInfo.sensorModule[0]     = SEN_TYPE_SHT2X;
+    g_rSysConfigInfo.alarmTemp[0].high   = ALARM_TEMP_HIGH;
+    g_rSysConfigInfo.alarmTemp[0].low    = ALARM_TEMP_LOW;
+    g_rSysConfigInfo.WarningTemp[0].high = ALARM_TEMP_HIGH;
+    g_rSysConfigInfo.WarningTemp[0].low  = ALARM_TEMP_LOW;
 #endif
     
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
@@ -488,9 +496,10 @@ void Flash_init(void)
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
     Semaphore_post(spiSemHandle);
 
-    if (sysInfo.swVersion != FW_VERSION) {
+    if (g_rSysConfigInfo.swVersion != FW_VERSION) {
         Flash_reset_data();
         g_rSysConfigInfo.swVersion = FW_VERSION;
+        Rtc_set_calendar((Calendar *)&g_rSysConfigInfo.rtc);
         Flash_store_config();
     }
 
@@ -509,6 +518,7 @@ void Flash_init(void)
     Flash_load_alarm_record_ptr();
 #endif
     Semaphore_post(spiSemHandle);
+
     flash_inited = 1;
     
 #ifdef SUPPORT_START_LOGO    
@@ -881,7 +891,33 @@ ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, ui
 
     return ES_SUCCESS;
 }
+#ifdef SUPPORT_SENSOR
+ErrorStatus Flash_load_sensor_data_lately(uint8_t *pData)
+{
+    uint32_t LoadAddr;
 
+
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+
+    if(rFlashSensorData.ptrData.rearAddr!=0)
+       LoadAddr = rFlashSensorData.ptrData.rearAddr - FLASH_SENSOR_DATA_SIZE;
+    else
+    {
+        Semaphore_post(spiSemHandle);
+        return ES_ERROR;
+    }
+
+       LoadAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
+
+
+    //Data queue not empty, dequeue data.
+    Flash_external_read(LoadAddr + FLASH_SENSOR_DATA_POS, pData, FLASH_SENSOR_DATA_SIZE);
+
+    Semaphore_post(spiSemHandle);
+
+    return ES_SUCCESS;
+}
+#endif
 
 //***********************************************************************************
 //
@@ -1871,7 +1907,7 @@ ReadBakConfig:
 void Sys_config_reset(void)
 {
     uint8_t i;
-
+    memset( (uint8_t *)&g_rSysConfigInfo, 0x0, sizeof(g_rSysConfigInfo));
     g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
     g_rSysConfigInfo.swVersion = FW_VERSION;
     g_rSysConfigInfo.DeviceId[0] = (uint8_t)((DECEIVE_ID_DEFAULT>>24)&0xff);
@@ -1904,7 +1940,7 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
-    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    g_rSysConfigInfo.rfStatus       &= STATUS_1310_MASTER^0xFFFF;
     strcpy((char*)g_rSysConfigInfo.serverAddr, "newss.coldclouds.com");
 #endif
 
@@ -1916,7 +1952,7 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.serverIpAddr[2] = 122;
     g_rSysConfigInfo.serverIpAddr[3] = 32;
     g_rSysConfigInfo.serverIpPort    = 12200;
-    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    g_rSysConfigInfo.rfStatus       &= STATUS_1310_MASTER^0xFFFF;
     strcpy((char*)g_rSysConfigInfo.serverAddr, "newss.coldclouds.com");
     #endif //S_G
 
@@ -1938,12 +1974,24 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_L1;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
+
+    #if defined(KINGBOSS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT2X)
+
+    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+
+    #endif //KINGBOSS_PROJECT
+
 #endif
 
+#ifdef ZKS_S2S_C
+    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
 
-    g_rSysConfigInfo.rfStatus        &= (0xFFFF ^ STATUS_LORA_CHANGE_FREQ);
+#endif //ZKS_S2S_C
+
+
+    g_rSysConfigInfo.rfStatus        |= STATUS_LORA_CHANGE_FREQ;
     g_rSysConfigInfo.rfSF            = 0;
-    g_rSysConfigInfo.rfBW            = FREQ_434_00;
+    g_rSysConfigInfo.rfBW            = FREQ_434_50;
     g_rSysConfigInfo.rfPA            = (14 << 4);
 
     g_rSysConfigInfo.collectPeriod   = COLLECT_PERIOD_DEFAULT;   //unit is sec

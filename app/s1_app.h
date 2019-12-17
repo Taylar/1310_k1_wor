@@ -3,12 +3,13 @@
 
 
 /***** Defines *****/
-
+#define S1_CONFIG_MODE_TIME		60
 
 /***** Type declarations *****/
 
 
 /***** Variable declarations *****/
+extern uint32_t configModeTimeCnt;          // the unit is sec
 
 
 
@@ -25,7 +26,7 @@ void S1DoubleKeyApp(void);
 
 void S1AppRtcProcess(void);
 
-void S1AppConfigModeExit(void);
+void NodeAppConfigModeExit(void);
 
 void S1Wakeup(void);
 

@@ -1,7 +1,7 @@
 //***********************************************************************************
 // Copyright 2017, Zksiot Development Ltd.
 // Created by Linjie, 2017.08.08
-// MCU:	MSP430F5529
+// MCU: MSP430F5529
 // OS: TI-RTOS
 // Project:
 // File name: sht2x.c
@@ -144,7 +144,7 @@ static uint16_t SHT3x_calc_humidty(uint16_t humidty)
     //-- calculate relative humidity [%RH] --   100.0f * (ft)rawValue / 65535.0f;
     humidity =   (uint16_t)round((100.0f * (float)humidty / 65535.0f)*100);             //(uint16_t)round(-6.0 + 125.0/65536 * (float)humidty * 100); 100.0f * (ft)rawValue / 65535.0f;
 
-    if(humidity > 10000)//??humidity?T???¨²100
+    if(humidity > 10000)//??humidity?T???Â¨Â²100
         humidity = 10000;
 
     return humidity;
@@ -160,13 +160,38 @@ static uint16_t SHT3x_calc_humidty(uint16_t humidty)
 //***********************************************************************************
 static void SHT3x_init(uint8_t chNum)
 {
+    uint8_t buff[2];
+    uint8_t err=0;
+    uint16_t command_word;
 
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X){
         // && rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
-        //Ó²¼þ¸´Î»½ÅÖ±½Ó¸´Î»Ð¾Æ¬
+#if 1
+        //Ã“Â²Â¼Ã¾Â¸Â´ÃŽÂ»Â½Ã…Ã–Â±Â½Ã“Â¸Â´ÃŽÂ»ÃÂ¾Ã†Â¬
         SH3X_RESET_CLR;
-        delay_ms(10); //¸´Î»À­µÍÊ±¼äÖÁÉÙ1US
+        delay_ms(10); //Â¸Â´ÃŽÂ»Ã€Â­ÂµÃÃŠÂ±Â¼Ã¤Ã–ÃÃ‰Ã™1US
         SH3X_RESET_SET;
+
+#else
+        command_word = CMD_SOFT_RESET;
+        buff[0] = HIBYTE(command_word);
+        buff[1] = LOBYTE(command_word);
+       // I2c_write(Board_SHT3x_ADDR, buff, 2);
+        I2C_start();
+        I2C_send_byte(Board_SHT3x_ADDR<<1);
+        if(I2C_ack_receive()==false){
+            err |= 0x01;
+        }
+        I2C_send_byte(buff[0]);
+        if(I2C_ack_receive()==false){
+            err |= 0x01;
+        }
+        I2C_send_byte(buff[1]);
+        if(I2C_ack_receive()==false){
+            err |= 0x01;
+        }
+        I2C_stop();
+#endif
         Task_sleep(50 * CLOCK_UNIT_MS);
 
     }
@@ -255,10 +280,10 @@ uint8_t SHT3x_MeasurePoll(uint8_t eSHT2xMeasureType, uint8_t *pMeasurand)
     uint8_t error=0; //error variable
     uint16_t command_word=0; //counting variable
 
-    command_word = CMD_MEAS_POLLING_H;  //2a¨¢?
+    command_word = CMD_MEAS_POLLING_H;  //2aÂ¨Â¢?
     SHT3x_WriteUserRegister(&command_word);
 
-    Task_sleep(50 * CLOCK_UNIT_MS);     //¦Ì¨¨¡äy50ms ???¨¨¨®?¨ºa?¨¨¨¢???2?¨ºy??2a¨¢?
+    Task_sleep(50 * CLOCK_UNIT_MS);     //Â¦ÃŒÂ¨Â¨Â¡Ã¤y50ms ???Â¨Â¨Â¨Â®?Â¨Âºa?Â¨Â¨Â¨Â¢???2?Â¨Âºy??2aÂ¨Â¢?
 
    // I2c_read(Board_SHT3x_ADDR<<1, buff, 6);
     I2C_start();
@@ -295,6 +320,65 @@ uint8_t SHT3x_MeasurePoll(uint8_t eSHT2xMeasureType, uint8_t *pMeasurand)
 }
 
 
+#define Board_AHT10_ADDR 0x38
+uint8_t AHT_StartMeasure(void)
+{
+    uint8_t error=0; //variable for error code
+
+    I2C_start();
+    I2C_send_byte (Board_AHT10_ADDR<<1);
+    if(I2C_ack_receive() == false){
+        error |= 0x01;
+    }
+    I2C_send_byte (0xac);
+    if(I2C_ack_receive() == false){
+        error |= 0x01;
+    }
+    I2C_send_byte (0x33);
+    if(I2C_ack_receive() == false){
+        error |= 0x01;
+    }
+    I2C_send_byte (0x33);
+    if(I2C_ack_receive() == false){
+        error |= 0x01;
+    }
+    I2C_stop();
+    return error;
+}
+
+
+uint8_t AHT_ReadData(uint8_t chNum)
+{
+    uint8_t buff[6], i;
+    uint8_t error=0; //variable for error code
+    uint64_t ahtTemp, humi;
+
+
+    I2C_start();
+    I2C_send_byte ((Board_AHT10_ADDR<<1)+1);
+    if(I2C_ack_receive() == false){
+        error |= 0x01;
+        I2C_stop();
+        return error;
+    }
+
+    for(i = 0; i < 6; i++)
+    {
+        buff[i] = I2C_receive_byte();
+        I2C_ack_send();
+    }
+    I2C_stop();
+
+    if(buff[0] & 0x80)
+        return 0x80;
+    humi = ((uint32_t)buff[1] << 12) + ((uint32_t)buff[2] << 4) + (buff[3]>>4);
+    ahtTemp = ((uint32_t)(buff[3]&0x0f) << 16) + ((uint32_t)buff[4] << 8) + buff[5];
+
+    rSensorData[chNum].temp = ((ahtTemp*20000)>>20)-5000;
+    rSensorData[chNum].humi = ((humi*10000)>>20);
+
+    return error;
+}
 //***********************************************************************************
 //
 // SHT3x measure.
@@ -307,7 +391,7 @@ static void SHT3x_measure(uint8_t chNum)
     uint8_t error=0;
    // uint8_t i;
     //int16_t tempT[5], humiT[5], delt;
-    uint8_t retrys = 0;//3?¡ä¨ª¨º¡À??¨º?3¡ä?
+    uint8_t retrys = 0;//3?Â¡Ã¤Â¨ÂªÂ¨ÂºÂ¡Ã€??Â¨Âº?3Â¡Ã¤?
    // i = 0;
     if (g_rSysConfigInfo.sensorModule[chNum] == SEN_TYPE_SHT2X){
         //&& rSensorHWAttrs[chNum].chNum < SEN_I2C_MAX) {
@@ -318,28 +402,32 @@ static void SHT3x_measure(uint8_t chNum)
              retrys = 0;
              SHT3x_init(chNum);
 err_retrys:
-            error = 0;
-            command_word = CMD_READ_STATUS;
-            error |= SHT3x_ReadUserRegister(&command_word);
-            error |= SHT3x_MeasurePoll(0, buff);
-            if (error == 0) {
-                  HIBYTE_ZKS(rSensorData[chNum].temp) = buff[0];  // temperature
-                  LOBYTE_ZKS(rSensorData[chNum].temp) = buff[1];
+//             error = 0;
+//             command_word = CMD_READ_STATUS;
+//             error |= SHT3x_ReadUserRegister(&command_word);
+//             error |= SHT3x_MeasurePoll(0, buff);
+//             if (error == 0) {
+//                   HIBYTE_ZKS(rSensorData[chNum].temp) = buff[0];  // temperature
+//                   LOBYTE_ZKS(rSensorData[chNum].temp) = buff[1];
 
-                  HIBYTE_ZKS(rSensorData[chNum].humi) = buff[3]; // humidity
-                  LOBYTE_ZKS(rSensorData[chNum].humi) = buff[4];
-             }
-            else {
-                  rSensorData[chNum].temp = 0;
-                  rSensorData[chNum].humi = 0;
-                  if(retrys++ < 3)goto err_retrys;
-             }
-#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
-            //convert rawdata to temperature
-            rSensorData[chNum].temp = SHT3x_calc_temperatureC(rSensorData[chNum].temp );
-            //convert rawdata to humidty
-            rSensorData[chNum].humi= SHT3x_calc_humidty(rSensorData[chNum].humi);
-#endif
+//                   HIBYTE_ZKS(rSensorData[chNum].humi) = buff[3]; // humidity
+//                   LOBYTE_ZKS(rSensorData[chNum].humi) = buff[4];
+//              }
+//             else {
+//                   rSensorData[chNum].temp = 0;
+//                   rSensorData[chNum].humi = 0;
+//                   if(retrys++ < 3)goto err_retrys;
+//              }
+// #if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
+//             //convert rawdata to temperature
+//             rSensorData[chNum].temp = SHT3x_calc_temperatureC(rSensorData[chNum].temp );
+//             //convert rawdata to humidty
+//             rSensorData[chNum].humi= SHT3x_calc_humidty(rSensorData[chNum].humi);
+// #endif
+            AHT_StartMeasure();
+            Task_sleep(100 * CLOCK_UNIT_MS);
+            if(AHT_ReadData(chNum) != 0)
+                if(retrys++ < 3)goto err_retrys;
 
 
 #if 0

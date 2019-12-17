@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-02-25 10:06:46
+* @Last Modified time: 2019-10-15 15:53:03
 */
 #include "../general.h"
 
@@ -340,6 +340,15 @@ void ConcenterRtcProcess(void)
     {
         Sys_event_post(SYSTEMAPP_EVT_CONCENTER_MONITER);
     }
+    if(gatewayConfigTime)
+    {
+        gatewayConfigTime++;
+        if(gatewayConfigTime > GATEWAY_CONFIG_MODE_TIME_MAX)
+        {
+            gatewayConfigTime = 0;
+            RadioSwitchRate();
+        }
+    }
 }
 
 //***********************************************************************************
@@ -364,6 +373,21 @@ void ConcenterResetRadioState(void)
     Flash_store_config();
     RadioEventPost(RADIO_EVT_SEND_CONFIG);
 }
+
+
+
+//#ifdef PERIOD_TX_ONLY_FUNC
+//=======================================================
+//ConcenterTxOnlyStart
+//=========================================================
+void ConcenterTxOnlyStart(void){
+
+    NodeStrategyBuffClear();
+    GateWakeUpSensorSend( GetRadioSrcAddr() , RADIO_BROCAST_ADDRESS );
+
+}
+
+//#endif
 
 
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-04-01 10:42:08
+* @Last Modified time: 2019-12-13 16:41:19
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -26,7 +26,7 @@
 #define RADIO_ADDR_LEN_MAX              12
 
 #if (defined(BOARD_S6_6) || defined(BOARD_B2S))
-#define RADIO_RSSI_FLITER               -40
+#define RADIO_RSSI_FLITER               -80
 #else
 #define RADIO_RSSI_FLITER               -80
 #endif
@@ -64,9 +64,18 @@ static struct RadioOperation currentRadioOperation;
 
 EasyLink_RxPacket radioRxPacket;
 
-static uint8_t  radioTestFlag;
+uint8_t  radioTestFlag;
 
 uint8_t radioStatus;
+
+#ifdef SURPORT_RADIO_RSSI_SCAN
+
+int8_t ScanRssiBuffer[RADIO_MAX_SCAN_CHANNL_NUM];
+uint8_t ScanChannelIndex=0;
+uint8_t GetScanIndex =0;
+uint8_t ScanTimeCounter;
+bool EvenFlag=TRUE;
+#endif
 
 /* Clock for the fast report timeout */
 
@@ -83,6 +92,16 @@ const uint16_t RECEIVE_TIMEOUT[5] =
     30, // 50k bps
 };
 
+
+const uint16_t DOWNLOAD_TIMEOUT[5] = 
+{
+    100,//5K bps
+    10, // 50k bps
+    800, // 625bps
+    200, //2.5k bps
+    15, // 50k bps
+};
+
 /***** Prototypes *****/
 
 void RadioAppTaskFxn(void);
@@ -91,6 +110,9 @@ static void RxDoneCallback(EasyLink_RxPacket * rxPacket, EasyLink_Status status)
 
 void RadioCoreErrorCb(RF_Handle h, RF_CmdHandle ch, RF_EventMask e);
 
+#ifdef SURPORT_RADIO_RSSI_SCAN
+void Radio_setScanRxRfFrequency(uint8_t ChannelNum);
+#endif
 /***** Function definitions *****/
 
 //***********************************************************************************
@@ -289,6 +311,85 @@ int8_t RadioCheckRssi(void)
 }
 
 
+#ifdef SURPORT_RADIO_RSSI_SCAN
+
+//==============================================
+//RadioScanChannelRssi
+//==============================================
+int8_t RadioScanChannelRssi(void)
+{
+    int8_t rssi;
+    uint8_t i,j;
+    int8_t RssiTemp[3];
+    rssi  = -128;
+
+
+#ifdef ONE_CHANNEL_SCAN
+    RssiTemp[0] = -128;
+
+    for(i=0;i<20;i++){
+
+     // if((i%2==0 && EvenFlag) || (i%2!=0 && (!EvenFlag))  ){
+           Radio_setScanRxRfFrequency( GetScanIndex ); //����ɨ��ͨ��Ƶ��
+           RadioAbort();
+           EasyLink_setCtrl(EasyLink_Ctrl_Rx_Test_Tone, 0);
+           //EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+           //RadioReceiveData();
+           Task_sleep(50 * CLOCK_UNIT_MS);
+           EasyLink_getRssi(&rssi);  //
+           if(rssi>RssiTemp[0]){
+                 RssiTemp[0]= rssi;
+           }
+          RadioAbort();
+     // }
+    }
+    ScanRssiBuffer[GetScanIndex]  = RssiTemp[0];
+
+
+
+    EvenFlag = !EvenFlag;
+#else
+    for(i=0;i<3;i++){
+           RssiTemp[i] = -128;
+       }
+
+    for(j=0;j<6;j++){
+        for(i=0;i<3;i++){
+              Radio_setScanRxRfFrequency( GetScanIndex+i ); //����ɨ��ͨ��Ƶ��
+              RadioAbort();
+              EasyLink_setCtrl(EasyLink_Ctrl_Rx_Test_Tone, 0);
+             // EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+             //RadioReceiveData();
+             Task_sleep(100 * CLOCK_UNIT_MS);
+             EasyLink_getRssi(&rssi);
+             RadioAbort();
+             if(rssi > RssiTemp[i]){
+                 RssiTemp[i] = rssi;
+             }
+
+         }
+    }
+    //==========================
+    for(i=0;i<3;i++){
+        ScanRssiBuffer[GetScanIndex+i] = RssiTemp[i];
+
+    }
+
+
+#endif
+
+
+    return rssi;
+}
+
+
+
+#endif
+
+
+
+
+
 //***********************************************************************************
 // brief:   radio send data timeout
 // 
@@ -387,6 +488,7 @@ void RadioAppTaskFxn(void)
     Task_sleep(50 * CLOCK_UNIT_MS);
 
     RadioUpgrade_Init();
+
     // init the easylink
     EasyLink_Params easyLink_params;
     EasyLink_Params_init(&easyLink_params);
@@ -404,14 +506,14 @@ void RadioAppTaskFxn(void)
 
 #ifdef  BOARD_CONFIG_DECEIVE
     easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
-    g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
+    g_rSysConfigInfo.rfStatus &= STATUS_1310_MASTER^0xFFFF;;
     g_rSysConfigInfo.rfSF = 3 << 4;
 #endif  // BOARD_CONFIG_DECEIVE
 
 #ifdef SUPPORT_RARIO_SPEED_SET
     if((g_rSysConfigInfo.rfSF >> 4) > RADIO_EASYLINK_MODULATION_S1_OLD)
         g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
-    easyLink_params.ui32ModType = g_rSysConfigInfo.rfSF >> 4;
+    easyLink_params.ui32ModType = (EasyLink_PhyType)(g_rSysConfigInfo.rfSF >> 4);
 #endif // SUPPORT_RARIO_SPEED_SET
 
     if((g_rSysConfigInfo.rfPA >> 4) < RADIO_MIN_POWER)
@@ -420,6 +522,11 @@ void RadioAppTaskFxn(void)
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
     }
+
+#if defined(ZKS_S3_WOR) || defined(ZKS_S6_6_WOR_G)
+    RadioSniffInit();
+#endif //ZKS_S3_WOR
+
     EasyLink_setRfPower(SET_RADIO_POWER);
 #ifndef BOARD_CONFIG_DECEIVE
 #ifndef BOARD_S3
@@ -433,28 +540,28 @@ void RadioAppTaskFxn(void)
 
 
 #ifdef S_G//网关
-    g_rSysConfigInfo.rfStatus |= STATUS_1310_MASTER;
+    g_rSysConfigInfo.rfStatus &= STATUS_1310_MASTER^0xFFFF;
 #endif // S_G//网关
 
 #ifdef S_C //节点
-#if !defined(SUPPORT_BOARD_OLD_S2S_1)
-            g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;
-#endif //!defined(SUPPORT_BOARD_OLD_S2S_1)
+// #if !defined(SUPPORT_BOARD_OLD_S2S_1)
+//             g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;
+// #endif //!defined(SUPPORT_BOARD_OLD_S2S_1)
 #endif // S_C //节点
 
     if(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)
     {
-        radioMode = RADIOMODE_RECEIVEPORT;
+        radioMode = RADIOMODE_SENDPORT;
     }
     else
     {
-        radioMode = RADIOMODE_SENDPORT;
+        radioMode = RADIOMODE_RECEIVEPORT;
     }
 
     
 #endif  // BOARD_S6_6
 
-#ifdef  BOARD_S3
+#ifdef  S_C
 
     radioMode = RADIOMODE_SENDPORT;
 
@@ -478,9 +585,19 @@ void RadioAppTaskFxn(void)
     {
         ConcenterAppInit();
     }
+#ifdef S_G
+     if( !(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ) && (!(g_rSysConfigInfo.status & STATUS_TX_ONLY_GATE_ON))){
+           AutoFreqInit();
+       }
 
-    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-        AutoFreqInit();
+#else
+     if( !(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)&& (g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER)){
+          AutoFreqInit();
+      }
+
+#endif
+
+
 
 #ifdef FACTOR_RADIO_TEST
     while(1)
@@ -496,12 +613,41 @@ void RadioAppTaskFxn(void)
     Task_sleep(4000 *CLOCK_UNIT_MS);
 #endif // BOARD_B2S
 
+    if(g_rSysConfigInfo.status & STATUS_TX_ONLY_GATE_ON){
+        NodeStrategyBuffClear();
+        GateWakeUpSensorSend( GetRadioSrcAddr() , RADIO_BROCAST_ADDRESS );
+    }
+
     for(;;)
     {
         uint32_t events = Event_pend(radioOperationEventHandle, 0, RADIO_EVT_ALL, BIOS_WAIT_FOREVER);
+
+
+#ifdef SURPORT_RADIO_RSSI_SCAN
+         if( events & RADIO_EVT_RSSI_SCAN){
+
+            // Radio_setScanRxRfFrequency( ScanChannelIndex ); //����ɨ��ͨ��Ƶ��
+              RadioScanChannelRssi(); //��ȡɨ��ͨ�����ź�ǿ��
+
+#if 0
+             ScanChannelIndex ++;
+             if(ScanChannelIndex >= RADIO_MAX_SCAN_CHANNL_NUM){
+
+                 ScanChannelIndex = 0;
+             }
+#endif
+
+             Sys_event_post(SYSTEMAPP_EVT_DISP);
+             continue;
+
+         }
+
+
+#endif
+
 #ifdef S_G
     #ifndef  BOARD_CONFIG_DECEIVE
-        if(events & RADIO_EVT_CHANNEL_CHECK)
+        if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(events & RADIO_EVT_CHANNEL_CHECK))
         {
             if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                 AutoFreqConcenterSwitchFreqProcess();
@@ -524,22 +670,25 @@ void RadioAppTaskFxn(void)
         }
 #endif
 
+#ifdef S_C
         if (events & RADIO_EVT_TEST)
         {
+            NodeStrategyBuffClear();
+            NodeStartBroadcast();
+            NodeRadioSendSynReq();
+
             RadioAbort();
-            EasyLink_setRfPower(14);
+            Radio_setTxModeRfFrequency();
             RadioAbort();
-            RadioSetFrequency(RADIO_BASE_FREQ);
-            EasyLink_setCtrl(EasyLink_Ctrl_Test_Tone, 0);
-            while(radioTestFlag)
-            {
-                Task_sleep(100 * CLOCK_UNIT_MS);
-            }
-            continue;
+
+            Clock_start(radioSendTimeoutClockHandle);
+            radioStatus = RADIOSTATUS_TRANSMITTING;
+            RadioSendData();
+            Clock_stop(radioSendTimeoutClockHandle);
         }
+#endif // S_C
 
-
-        if (events & RADIO_EVT_RX)
+        if ( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_RX))
         {
             if(radioStatus == RADIOSTATUS_RECEIVING)
             {
@@ -548,12 +697,14 @@ void RadioAppTaskFxn(void)
 
                 if((radioMode == RADIOMODE_RECEIVEPORT) || (radioMode == RADIOMODE_UPGRADE))
                 {
-               
-#ifdef  BOARD_S3
+#ifdef  S_C
                         NodeProtocalDispath(&radioRxPacket);
                         if (radioMode == RADIOMODE_RECEIVEPORT) {
+                        #ifndef SUPPORT_LIGHT
                             Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
+                        #endif //SUPPORT_LIGHT
                         }
+
 #else
                         ConcenterProtocalDispath(&radioRxPacket);
 
@@ -580,22 +731,31 @@ void RadioAppTaskFxn(void)
                     NodeProtocalDispath(&radioRxPacket);
                     if(deviceMode == DEVICES_CONFIG_MODE)
                         Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
+
+                    if(nodeParaSetting){
+                        nodeParaSetting = 0;
+                        Radio_setRxModeRfFrequency();
+                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(1500));
+                        RadioReceiveData();
+                        continue;
+                    }
 #endif
                 }
 
             }
         }
 
-
         if (events & RADIO_EVT_TX)
         {
 #ifdef S_G
     #ifndef  BOARD_CONFIG_DECEIVE
-            if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+            if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)))
             {
                 if(AutoFreqStateRead() == false)
                 {
+
                     Radio_setTxModeRfFrequency();
+
                     rssi = RadioCheckRssi();
                     if(rssi > RADIO_RSSI_FLITER)
                     {
@@ -606,12 +766,17 @@ void RadioAppTaskFxn(void)
                     {
                         AutoFreqCarrierRssiSet(rssi);
                     }
+
                 }
             }
     #endif // BOARD_CONFIG_DECEIVE
 
 #endif // S_G
 
+
+            if( deviceMode == DEVICES_WAKEUP_MODE){ //�ɼ�������ΪMASTER
+                goto TxAction;
+            }
 
 #ifdef SUPPORT_RSSI_CHECK
             Radio_setTxModeRfFrequency();
@@ -645,8 +810,15 @@ void RadioAppTaskFxn(void)
             }
             else 
 #endif // SUPPORT_RSSI_CHECK
+
+
+
+TxAction:
             if((currentRadioOperation.easyLinkTxPacket.len) <= EASYLINK_MAX_DATA_LENGTH && (currentRadioOperation.easyLinkTxPacket.len > 0))// && (rssi <= RADIO_RSSI_FLITER))
             {
+#ifdef SUPPORT_RSSI_CHECK            
+                Task_sleep(RADIO_DOWNLOAD_TIMEOUT * CLOCK_UNIT_MS);
+#endif // SUPPORT_RSSI_CHECK
                 Semaphore_pend(radioAccessSemHandle, BIOS_WAIT_FOREVER);
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
                 if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
@@ -662,7 +834,9 @@ void RadioAppTaskFxn(void)
 
                 if (deviceMode != DEVICES_OFF_MODE && deviceMode != DEVICES_CONFIG_MODE)
                 {
+                #ifndef SUPPORT_LIGHT
                     Led_set(LED_B, 1);
+                #endif //SUPPORT_LIGHT
 #ifdef SUPPORT_RARIO_APC_SET
                     NodeSetAPC();
 #endif // SUPPORT_RARIO_APC_SET
@@ -674,16 +848,24 @@ void RadioAppTaskFxn(void)
                 radioStatus = RADIOSTATUS_TRANSMITTING;
                 RadioSendData();
                 Clock_stop(radioSendTimeoutClockHandle);
+            #ifndef SUPPORT_LIGHT
                 Led_set(LED_B, 0);
+            #endif //SUPPORT_LIGHT
 
 #if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-                    if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
-                        OldS1NodeApp_setDataRxRfFreque();
-                    }
+                if (deviceMode == DEVICES_ON_MODE && g_oldS1OperatingMode == S1_OPERATING_MODE2) {
+                    OldS1NodeApp_setDataRxRfFreque();
+                }
 #else
+
+                if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)){
                     Radio_setRxModeRfFrequency();
+                }
+
 #endif //SUPPORT_BOARD_OLD_S1
-                if(radioMode == RADIOMODE_SENDPORT)
+
+
+                if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(radioMode == RADIOMODE_SENDPORT))
                 {
 #if (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
                     if (deviceMode == DEVICES_CONFIG_MODE || RADIOMODE_UPGRADE == RadioModeGet() || g_oldS1OperatingMode == S1_OPERATING_MODE2)
@@ -696,19 +878,21 @@ void RadioAppTaskFxn(void)
                         radioStatus = RADIOSTATUS_IDLE;
                     }
 #else
-                    radioStatus = RADIOSTATUS_RECEIVING;
+                    if(deviceMode != DEVICES_WAKEUP_MODE){
+                        radioStatus = RADIOSTATUS_RECEIVING;
 #ifdef SUPPORT_STRATEGY_SORT
-                    if(GetStrategyRegisterStatus() == false)
-                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(1500));
-                    else
+                        if(GetStrategyRegisterStatus() == false)
+                            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(1500));
+                        else
 #endif  // SUPPORT_STRATEGY_SORT
-                        EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
-                    RadioReceiveData();
+                            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
+                        RadioReceiveData();
+                    }
 #endif
-
                 }
 
-                if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
+
+                if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE))
                 {
 #ifdef S_G//网关
     #ifndef BOARD_CONFIG_DECEIVE
@@ -721,10 +905,18 @@ void RadioAppTaskFxn(void)
                     }
                     else
     #endif // BOARD_CONFIG_DECEIVE
+                        /*
+                       if(g_rSysConfigInfo.rfStatus&STATUS_LOSE_ALARM){ //SUPPORT_LOSE_ALARM
+                            RadioAbort();
+                            Radio_setRxModeRfFrequency();
+                            RadioAbort();
+                       } */
+
 #endif // S_G
                         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
 
-                    RadioReceiveData();
+                    if(nodeParaSetting == false)
+                        RadioReceiveData();
                 }
 #ifdef  SUPPORT_RADIO_UPGRADE
                 if (radioMode == RADIOMODE_UPGRADE)
@@ -732,22 +924,44 @@ void RadioAppTaskFxn(void)
                     RadioSwitchingUpgradeRate();
                 }
 #endif
+
+
+                if(deviceMode == DEVICES_WAKEUP_MODE){
+                    RadioAbort();
+                    radioStatus = RADIOSTATUS_IDLE;
+                }
+
                 Semaphore_post(radioAccessSemHandle);
+
+
+                if( (g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(deviceMode != DEVICES_OFF_MODE)){
+                    NodeStrategyBuffClear();
+                    GateWakeUpSensorSend( GetRadioSrcAddr() , RADIO_BROCAST_ADDRESS );
+                    Task_sleep(20 * CLOCK_UNIT_MS);
+                }
+
             }
             else
             {
                 NodeStrategyBuffClear();
             }
+
+#ifdef S_G
+            ConcentorSetConfigCheck();// check if need send the remote config to the node
+#endif //S_G
         }
 
 
-        
-
-
-
-        if (events & RADIO_EVT_TOUT)
+        if (!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_TOUT))
         {
-#ifdef S_C//閲囬泦鍣�?
+
+           if(deviceMode == DEVICES_WAKEUP_MODE){
+               RadioAbort();
+               radioStatus = RADIOSTATUS_IDLE;
+               continue;
+            }
+
+#ifdef S_C//閲囬泦鍣�?
             if(radioMode == RADIOMODE_SENDPORT)
             {
 #if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
@@ -756,7 +970,7 @@ void RadioAppTaskFxn(void)
 #endif
 
             }
-#endif  // S_C//閲囬泦鍣�?
+#endif  // S_C//閲囬泦鍣�?
 
 #ifdef S_G
             if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
@@ -769,20 +983,30 @@ void RadioAppTaskFxn(void)
 #endif // S_G
         }
 
-        if(events & RADIO_EVT_SET_RX_MODE)
+        if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_SET_RX_MODE))
         {
             radioMode = RADIOMODE_RECEIVEPORT;
             if(radioStatus != RADIOSTATUS_IDLE)
             {
                 RadioAbort();
             }
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+
+            if(deviceMode == DEVICES_WAKEUP_MODE){ //AVOID LOSE  in wakeup mode need timeout limt
+                EasyLink_setCtrl(EasyLink_Ctrl_Idle_TimeOut, 200 * CLOCK_UNIT_MS); //100 * CLOCK_UNIT_MS
+            }
+            else{
+#ifdef S_G
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+#else
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(currentRadioOperation.ackTimeoutMs));
+#endif //S_G
+            }
             Radio_setRxModeRfFrequency();
             RadioReceiveData();
         }
 
 
-        if(events & RADIO_EVT_SET_TX_MODE)
+        if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_SET_TX_MODE))
         {
             radioMode = RADIOMODE_SENDPORT;
             if(radioStatus == RADIOSTATUS_RECEIVING)
@@ -795,7 +1019,7 @@ void RadioAppTaskFxn(void)
             EasyLink_setRfPower(SET_RADIO_POWER);
         }
 
-        if(events & RADIO_EVT_DISABLE)
+        if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_DISABLE))
         {
             if(radioStatus == RADIOSTATUS_RECEIVING)
             {
@@ -803,64 +1027,144 @@ void RadioAppTaskFxn(void)
                 radioStatus = RADIOSTATUS_IDLE;   
             }
         }
-
-        if (events & RADIO_EVT_UPGRADE_SEND)
+//#ifndef SUPPORT_AVOID_LOSE
+        if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_UPGRADE_SEND))
         {
 //            System_printf("US\r\n");
             RadioUpgrade_FileDataSend();
         }
 
-        if (events & RADIO_EVT_UPGRADE_RX_TIMEOUT) {
+        if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_UPGRADE_RX_TIMEOUT)) {
             RadioSwitchingUserRate();
         }
+//#endif
 
-        // if (events & (RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL))
-        // {
-        //     radioStatus = RADIOSTATUS_IDLE;
-        //     if(radioMode == RADIOMODE_RECEIVEPORT || radioMode == RADIOMODE_UPGRADE)
-        //     {
-        //         RadioAbort();
-        //         EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
-        //         RadioReceiveData();
-        //     }
 
-        // }
-
-        if(events & RADIO_EVT_RADIO_REPAIL) 
+        if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_RADIO_REPAIL))
         {
             if(GetStrategyRegisterStatus() == false)
             {
-                NodeStrategyTimeoutProcess();
-                RadioSend();
+                if( g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
+                   NodeStrategyTimeoutProcess();
+                   RadioSend();
+                }
             }
         }
 
-        if(events & (RADIO_EVT_SEND_CONFIG | RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL)) 
+        if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & (RADIO_EVT_SEND_CONFIG|RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL)))
         {
 #ifdef   BOARD_S3
+
+           if(  (events & (RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL) )  && (deviceMode==DEVICES_WAKEUP_MODE) ){
+               radioStatus = RADIOSTATUS_IDLE;
+               RadioAbort();
+           }
+           else{
+                 RadioAbort();
+                 Radio_setConfigModeRfFrequency();
+                 NodeStrategyBuffClear();
+                 NodeRadioSendConfig();
+           }
+#endif
+
+#ifdef   BOARD_S6_6
+            ClearRadioSendBuf();
+            concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
+            ConcenterRadioSendSynTime(0xabababab, 0xbabababa);
+            Event_post(radioOperationEventHandle, RADIO_EVT_TX);
+#endif
+
+#ifdef   BOARD_B2S
+
+#ifdef   S_C
             RadioAbort();
             Radio_setConfigModeRfFrequency();
             NodeStrategyBuffClear();
             NodeRadioSendConfig();
+#else
+            ClearRadioSendBuf();
+            concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
+            ConcenterRadioSendSynTime(0xabababab, 0xbabababa);
+            Event_post(radioOperationEventHandle, RADIO_EVT_TX);
 #endif
 
-#ifdef   BOARD_S6_6
-            ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
-#endif
-
-#ifdef   BOARD_B2S
-            ConcenterRadioSendParaSet(0xabababab, 0xbabababa);
 #endif
             // RadioSend();
         }
 
-        if(events & RADIO_EVT_SEND_SYC) 
+        if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(events & RADIO_EVT_SEND_SYC))
         {
-            if (deviceMode != DEVICES_CONFIG_MODE)
+            if ( (deviceMode != DEVICES_CONFIG_MODE) && ( g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER))
             {
                 NodeRadioSendSynReq();
             }
         }
+
+        if(events & RADIO_EVT_SWITCH_RATE)
+        {
+            if(gatewayConfigTime)
+            {
+                
+                RadioSwitchingUserRate();
+                RadioAbort();
+                SetRadioSubSrcAddr(CONFIG_DECEIVE_ID_DEFAULT);
+                Radio_setConfigModeRfFrequency();
+            }
+            else
+            {
+                deviceMode = deviceModeTemp;
+                RadioSwitchingSettingRate();
+                RadioAbort();
+                ConcenterAppInit();
+                ConcenterWakeup();
+#ifdef SUPPORT_DISP_SCREEN
+                Disp_clear_all();
+#endif//SUPPORT_DISP_SCREEN
+                Sys_event_post(SYSTEMAPP_EVT_DISP);
+                Sys_event_post(SYSTEMAPP_EVT_CONCENTER_MONITER);
+                // SystemResetAndSaveRtc();
+            }
+            RadioModeSet(RADIOMODE_RECEIVEPORT);
+            
+        }
+
+#ifdef ZKS_S3_WOR
+        if(events & RADIO_EVT_START_SNIFF)
+        {
+            Radio_setRxModeRfFrequency();
+            if(RadioWorCheck() == true)
+            {
+                RadioSetRxMode();
+            }
+        }
+#endif //ZKS_S3_WOR
+
+        if(events & RADIO_EVT_WAKEUP_SEND)
+        {
+            RadioAbort();
+            Radio_setTxModeRfFrequency();
+            RadioAbort();
+
+            ClearRadioSendBuf();
+            concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
+            ConcenterRadioSendSniff(GetRadioSrcAddr(), 0x12346666);
+            Radio_setTxModeRfFrequency();
+
+            Clock_start(radioSendTimeoutClockHandle);
+            radioStatus = RADIOSTATUS_TRANSMITTING;
+            RadioSniffSend(&currentRadioOperation.easyLinkTxPacket);
+            Clock_stop(radioSendTimeoutClockHandle);
+
+            RadioAbort();
+            Radio_setRxModeRfFrequency();
+            RadioAbort();
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            radioStatus = RADIOSTATUS_RECEIVING;
+            RadioReceiveData();
+
+
+        }
+
     }
 }
 
@@ -916,7 +1220,8 @@ void RadioEventPost(UInt event)
 //***********************************************************************************
 void RadioSensorDataPack(void)
 {
-    Event_post(radioOperationEventHandle, RADIO_EVT_SENSOR_PACK);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_SENSOR_PACK);
 }
 
 
@@ -928,7 +1233,8 @@ void RadioSensorDataPack(void)
 //***********************************************************************************
 void RadioSend(void)
 {
-    Event_post(radioOperationEventHandle, RADIO_EVT_TX);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_TX);
 }
 
 //***********************************************************************************
@@ -938,7 +1244,8 @@ void RadioSend(void)
 //***********************************************************************************
 void RadioSetRxMode(void)
 {
-    Event_post(radioOperationEventHandle, RADIO_EVT_SET_RX_MODE);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_SET_RX_MODE);
 }
 
 //***********************************************************************************
@@ -948,9 +1255,39 @@ void RadioSetRxMode(void)
 //***********************************************************************************
 void RadioSetTxMode(void)
 {
-    Event_post(radioOperationEventHandle, RADIO_EVT_SET_TX_MODE);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_SET_TX_MODE);
 }
 
+
+
+#ifdef SURPORT_RADIO_RSSI_SCAN
+
+ void RadioRxScan(void){
+#ifndef ONE_CHANNEL_SCAN
+    if(++ScanTimeCounter>=2)
+#endif
+    {
+        ScanTimeCounter = 0;
+         if(radioOperationEventHandle)
+              Event_post(radioOperationEventHandle, RADIO_EVT_RSSI_SCAN);
+    }
+
+ }
+
+#endif
+
+
+//***********************************************************************************
+// brief:   switch rate 
+// 
+// parameter:   none 
+//***********************************************************************************
+void RadioSwitchRate(void)
+{
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_SWITCH_RATE);
+}
 
 //***********************************************************************************
 // brief:   disable the radio 
@@ -959,7 +1296,8 @@ void RadioSetTxMode(void)
 //***********************************************************************************
 void RadioDisable(void)
 {
-    Event_post(radioOperationEventHandle, RADIO_EVT_DISABLE);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_DISABLE);
 }
 
 //***********************************************************************************
@@ -969,12 +1307,14 @@ void RadioDisable(void)
 //***********************************************************************************
 void RadioUpgradeSendFile(void)
 {
-    Event_post(radioOperationEventHandle, RADIO_EVT_UPGRADE_SEND);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_UPGRADE_SEND);
 }
 
 void RadioUpgradeRxFileDataTimout(void)
 {
-    Event_post(radioOperationEventHandle,RADIO_EVT_UPGRADE_RX_TIMEOUT);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle,RADIO_EVT_UPGRADE_RX_TIMEOUT);
 }
 
 //***********************************************************************************
@@ -989,7 +1329,8 @@ void RadioUpgradeRxFileDataTimout(void)
 void RadioSendPacket(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs)
 {
     RadioCopyPacketToBuf(dataP, len, maxNumberOfRetries, ackTimeoutMs, 0);
-    Event_post(radioOperationEventHandle, RADIO_EVT_TX);
+    if(radioOperationEventHandle)
+        Event_post(radioOperationEventHandle, RADIO_EVT_TX);
 }
 
 
@@ -1007,8 +1348,6 @@ static void RxDoneCallback(EasyLink_RxPacket * rxPacket, EasyLink_Status status)
         memcpy(&radioRxPacket, rxPacket, sizeof(EasyLink_RxPacket));
         Event_post(radioOperationEventHandle, RADIO_EVT_RX);
         break;
-
-
         case EasyLink_Status_Config_Error:
         case EasyLink_Status_Param_Error:
         case EasyLink_Status_Mem_Error:
@@ -1212,21 +1551,27 @@ void Radio_setRxModeRfFrequency(void)
 {
     uint32_t freq, dstFreq, diffFreq;
 
+
     freq = EasyLink_getFrequency();
 
 #ifndef BOARD_CONFIG_DECEIVE
 
     if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
-#ifdef  S_C//閲囬泦鍣�?
+#ifdef  S_C//閲囬泦鍣�?
         dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_C//閲囬泦鍣�?
+#endif  // S_C//閲囬泦鍣�?
 
-#ifdef  S_G//缃戝�?
+#ifdef  S_G//缃戝�?
         if((AutoFreqStateRead() == false) && (!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)))
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         else
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_G//缃戝�?
+
+#endif  // S_G//缃戝�?
+
+        if(deviceMode == DEVICES_WAKEUP_MODE){
+            dstFreq = RADIO_WAKEUP_FREQ  ;
+        }
 
         if (freq < dstFreq) {
             diffFreq = dstFreq - freq;
@@ -1243,6 +1588,40 @@ void Radio_setRxModeRfFrequency(void)
 #endif  // BOARD_CONFIG_DECEIVE
 }
 
+
+#ifdef SURPORT_RADIO_RSSI_SCAN
+
+void Radio_setScanRxRfFrequency(uint8_t ChannelNum)
+{
+    uint32_t freq, dstFreq, diffFreq;
+
+    freq = EasyLink_getFrequency();
+
+    dstFreq = RADIO_SCAN_START_FREQ + ChannelNum*RADIO_SCAN_STEP_FREQ;
+
+
+        if (freq < dstFreq) {
+            diffFreq = dstFreq - freq;
+        } else {
+            diffFreq = freq - dstFreq;
+        }
+
+        if (diffFreq < 20000) { ///< 20Khz
+            return;
+        }
+
+        RadioSetFrequency(dstFreq);
+
+
+}
+#endif
+
+
+
+
+
+
+
 //***********************************************************************************
 // brief:
 //
@@ -1256,16 +1635,20 @@ void Radio_setTxModeRfFrequency(void)
 #ifndef BOARD_CONFIG_DECEIVE
     if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
         
-#ifdef  S_C//閲囬泦鍣�?
+#ifdef  S_C//
         dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_C//閲囬泦鍣�?
+#endif  // 
 
-#ifdef  S_G//缃戝�?
+#ifdef  S_G//
         if((AutoFreqStateRead() == false) && (!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ)))
             dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
         else
             dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ +  ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
-#endif  // S_G//缃戝�?
+#endif  // S_G
+
+        if(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON){
+            dstFreq = RADIO_WAKEUP_FREQ; //ֻ���ڻ��Ѳɼ����������ã�Ƶ��Ĭ����0Ƶ��
+        }
 
         if (freq < dstFreq) {
             diffFreq = dstFreq - freq;
@@ -1298,6 +1681,10 @@ void RadioSwitchingUpgradeRate(void)
     if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
         //System_abort("EasyLink_init failed");
     }
+
+#ifdef ZKS_S3_WOR
+    RadioSniffInit();
+#endif //ZKS_S3_WOR
 
     Task_sleep(500 * CLOCK_UNIT_MS);
     RadioDefaultParaInit();
@@ -1334,6 +1721,10 @@ void RadioSwitchingUserRate(void)
         //System_abort("EasyLink_init failed");
     }
 
+#ifdef ZKS_S3_WOR
+    RadioSniffInit();
+#endif //ZKS_S3_WOR
+
     Task_sleep(500 * CLOCK_UNIT_MS);
 
     RadioAbort();
@@ -1363,10 +1754,14 @@ void RadioSwitchingSettingRate(void)
 
     RadioAbort();
     EasyLink_Params_init(&easyLink_params);
-    easyLink_params.ui32ModType = g_rSysConfigInfo.rfSF >> 4;
+    easyLink_params.ui32ModType = (EasyLink_PhyType)(g_rSysConfigInfo.rfSF >> 4);
     if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
         System_abort("EasyLink_init failed");
     }
+
+#ifdef ZKS_S3_WOR
+    RadioSniffInit();
+#endif //ZKS_S3_WOR
 
     Task_sleep(500 * CLOCK_UNIT_MS);
 
