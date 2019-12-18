@@ -623,11 +623,6 @@ extern EasyLink_Status EasyLink_getCtrl(EasyLink_CtrlOption Ctrl,
 }
 #endif
 
-void RadioSniffInit(void);
-bool RadioWorCheck(void);
-EasyLink_Status RadioSniffSend(EasyLink_TxPacket *txPacket);
-
-
 #endif // Easylink__include
 
 //*****************************************************************************

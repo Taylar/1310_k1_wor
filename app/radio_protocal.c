@@ -1145,9 +1145,9 @@ ConcenterConfigRespondEnd:
 			
 			break;
 
-
-			case RADIO_PRO_CMD_SPE_BROCAST_ACK:
 #ifdef SUPPORT_NETGATE_DISP_NODE
+			case RADIO_PRO_CMD_SPE_BROCAST_ACK:
+
 				buff[1] = protocalRxPacket->rssi;  // rssi
 				buff[2] = protocalRxPacket->payload[9];  //id
 				buff[3] = protocalRxPacket->payload[8];  //id

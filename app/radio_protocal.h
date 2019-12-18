@@ -195,4 +195,6 @@ void ConcenterSendRfConfig(uint32_t srcAddr, uint32_t dstAddr);
 
 void ConcenterRadioSendSniff(uint32_t srcAddr, uint32_t dstAddr);
 
+void NodeRadioSendBrocastAck(void);
+
 #endif      // __RADIO_PROTOCAL_H__

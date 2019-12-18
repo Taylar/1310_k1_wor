@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-17 17:07:22
+* @Last Modified time: 2019-12-18 10:32:55
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -298,11 +298,9 @@ int8_t RadioCheckRssi(void)
     RadioAbort();
     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
     RadioReceiveData();
-    delay_ms(1);
-    // Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
+    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     EasyLink_getRssi(&rssi);
-    delay_ms(1);
-    // Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
+    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     EasyLink_getRssi(&rssi2);
     RadioAbort();
 
@@ -524,11 +522,6 @@ void RadioAppTaskFxn(void)
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
     }
-
-// #if defined(ZKS_S3_WOR) || defined(ZKS_S6_6_WOR_G)
-//     RadioSniffInit();
-// #endif //ZKS_S3_WOR
-
     EasyLink_setRfPower(SET_RADIO_POWER);
 #ifndef BOARD_CONFIG_DECEIVE
 #ifndef BOARD_S3
@@ -1702,10 +1695,6 @@ void RadioSwitchingUpgradeRate(void)
         //System_abort("EasyLink_init failed");
     }
 
-#ifdef ZKS_S3_WOR
-    RadioSniffInit();
-#endif //ZKS_S3_WOR
-
     Task_sleep(500 * CLOCK_UNIT_MS);
     RadioDefaultParaInit();
 
@@ -1741,10 +1730,6 @@ void RadioSwitchingUserRate(void)
         //System_abort("EasyLink_init failed");
     }
 
-#ifdef ZKS_S3_WOR
-    RadioSniffInit();
-#endif //ZKS_S3_WOR
-
     Task_sleep(500 * CLOCK_UNIT_MS);
 
     RadioAbort();
@@ -1778,10 +1763,6 @@ void RadioSwitchingSettingRate(void)
     if (EasyLink_init(&easyLink_params) != EasyLink_Status_Success){
         System_abort("EasyLink_init failed");
     }
-
-#ifdef ZKS_S3_WOR
-    RadioSniffInit();
-#endif //ZKS_S3_WOR
 
     Task_sleep(500 * CLOCK_UNIT_MS);
 
