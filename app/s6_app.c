@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-17 14:11:35
+* @Last Modified time: 2019-12-18 16:16:30
 */
 #include "../general.h"
 
@@ -157,7 +157,6 @@ void Sys_chagre_alarm_timer_isr(void)
 // sys_Node_Lose_Alarm
 //=============================
 void sys_Node_Lose_Alarm(void){
-     g_bAlarmSensorFlag |= ALARM_NODE_LOSE_ALARM;
      Sys_event_post(SYS_EVT_ALARM);
 }
 
@@ -173,9 +172,6 @@ void sys_Node_Lose_Alarm(void){
 //***********************************************************************************
 void Sys_lcdShutFxn(UArg arg0)
 {
-#ifdef SURPORT_RADIO_RSSI_SCAN
-    return;
-#endif
 
     if((!(g_rSysConfigInfo.module & MODULE_LCD)) || (deviceMode == DEVICES_OFF_MODE)){//
         return;
@@ -692,14 +688,9 @@ void S6Wakeup(void)
     }
 
 #ifdef S_G//缂冩垵鍙�
-    if(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON){
-        ConcenterTxOnlyStart();
-    }
-    else{
-        ConcenterWakeup();
-       if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-          AutoFreqInit();
-    }
+    ConcenterWakeup();
+    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+        AutoFreqInit();
 #endif // S_G//缂冩垵鍙�
 
 #ifdef S_C //鑺傜偣

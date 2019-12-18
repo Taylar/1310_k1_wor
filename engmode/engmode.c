@@ -53,9 +53,7 @@ EngMode_Result Eng_Result = {0,};
 bool GetEngModeFlag()
 {
 	if ((PIN_getInputValue(Board_BUTTON0) != KEY_PRESSED)
-#if !defined(BOARD_B2S)
 	        && (PIN_getInputValue(Board_BUTTON1) == KEY_PRESSED)
-#endif
 		)
 	{
 		deviceMode = DEVICES_TEST_MODE;

@@ -96,12 +96,6 @@ extern EasyLink_RxPacket radioRxPacket;
 extern const uint16_t RECEIVE_TIMEOUT[5];
 
 
-#ifdef SURPORT_RADIO_RSSI_SCAN
-
-extern int8_t ScanRssiBuffer[RADIO_MAX_SCAN_CHANNL_NUM];
-extern uint8_t ScanChannelIndex;
-extern uint8_t GetScanIndex;
-#endif
 
 
 
@@ -175,8 +169,6 @@ void RadioAbort(void);
 
 void RadioSetRfPower(uint8_t rfPower);
 
-#ifdef SURPORT_RADIO_RSSI_SCAN
- void RadioRxScan(void);
-#endif
+
 
 #endif		// __RADIO_APP_H__

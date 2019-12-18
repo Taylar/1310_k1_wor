@@ -67,41 +67,22 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-// #define ZKS_S3_C_SHT2X
-// #define ZKS_S3_C_SHT3X
-// #define ZKS_S3_1_C
-// #define KINGBOSS_S3_C_SHT3X
-// #define KINGBOSS_S6_6_G
-// #define HAIER_Z1_C
-// #define ZKS_Z4_C
-// #define ZKS_S2S_C
-// #define ZKS_B2S_A
-// #define ZKS_B2S_G
-//#define ZKS_S6_6_G_SCAN
-#define ZKS_S3_WOR
-// #define ZKS_S6_6_WOR_G
+// #define ZKS_S3_WOR
+#define ZKS_S6_6_WOR_G
 
-#ifdef HAIER_Z1_C
-#define     ZKS_Z4_C
-#define     SUPPORT_LIGHT
-#endif //HAIER_Z1_C
 //***********************************************************************************
 //
 // HW version define.
 //
 //***********************************************************************************
-#if defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_S6_6_G_SCAN) || defined(KINGBOSS_S6_6_G) || defined(ZKS_S6_6_WOR_G)
+#if defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_S6_6_WOR_G)
 
 #define BOARD_S6_6
 #endif
 
-#if defined(ZKS_S3_C_SHT2X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_1_C) || defined(ZKS_Z4_C) || defined(KINGBOSS_S3_C_SHT3X) || defined(ZKS_S3_WOR)
+#if defined(ZKS_S3_WOR)
 #define BOARD_S3
 #endif
-
-#if defined(ZKS_S2S_C) || defined(ZKS_B2S_A) || defined(ZKS_B2S_G)
-#define BOARD_B2S
-#endif 
 
 
 
@@ -111,7 +92,6 @@
 
 // #define FACTOR_RADIO_TEST
 // #define FACTOR_RADIO_32K_TEST
-//#define RADIO_1310_50K_GPSK
 
 //***********************************************************************************
 //
@@ -133,17 +113,14 @@
 //
 //***********************************************************************************
 
-#if defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_B2S_G) || defined(ZKS_S6_6_G_SCAN) || defined(KINGBOSS_S6_6_G) || defined(ZKS_S6_6_WOR_G)
+#if defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_S6_6_WOR_G)
 #define S_G //缂傚啯鍨甸崣锟�
 #endif
 
-#if defined(BOARD_S3) || defined(ZKS_S2S_C)
-#define S_C //闂佹彃娲▔锕傚闯閿燂拷
+#if defined(BOARD_S3)
+#define S_C //
 #endif
 
-#if defined(ZKS_B2S_A)
-#define S_A //娑擄拷娴ｆ挻婧�
-#endif 
 
 //***********************************************************************************
 //
@@ -160,18 +137,10 @@
 //pls define one project following閿涘therwise use zks  default.
 /****************************************************************************/
 
-#if    defined(KINGBOSS_S3_C_SHT3X) || defined(KINGBOSS_S6_6_G)
-#define  KINGBOSS_PROJECT              //
-#elif defined( HAIER_Z1_C)
-#define  HAIER_PROJECT              //
-#else
 #define  ZKS_PROJECT              //ZKS 妞ゅ湱娲�
-#endif 
 
 #ifdef ZKS_PROJECT
 #define         COMPANY_NAME                "ZKS"
-#elif defined( KINGBOSS_PROJECT)
-#define         COMPANY_NAME                "KINGBOSS"
 #elif defined( HAIER_PROJECT)
 #define         COMPANY_NAME                "HAIER"
 #else
@@ -181,8 +150,6 @@ error project name
 
 #ifdef BOARD_S6_6
 #define         BOARD_NAME              "_S6_6"
-#elif defined( BOARD_B2S)
-#define         BOARD_NAME              "_B2S"
 #elif defined( BOARD_S3)
 #define         BOARD_NAME              "_S3"
 #else
@@ -209,10 +176,6 @@ error type define
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
 
 
-#ifdef KINGBOSS_PROJECT
-#define  SUPPORT_NETWORK_TX_SENSOR_ACK
-
-#endif //KINGBOSS_PROJECT
 
 
 //***********************************************************************************
@@ -439,49 +402,11 @@ error
 /****************************************************************************/
 
 //***********************************************************************************
-// S2_2 board define
-//***********************************************************************************
-#ifdef BOARD_B2S
-#ifdef S_C
-#define SUPPORT_SENSOR_ADJUST //娴肩姵鍔呴崳銊︽殶閹诡噣鍣伴梿鍡欐畱鐠嬪啯鏆�,10S閺囧瓨鏌婃稉锟藉▎鈩冩殶閹癸拷
-#undef  SUPPORT_SHT2X
-#define SUPPORT_SHT3X
-#define SUPPORT_DEEPTEMP_PT100
-#define SUPPORT_DOUBLE_PRESS
-
-#endif
-
-#define SUPPORT_REMOTE_UPGRADE
-#define SUPPORT_USB_UPGRADE
-
-#define  SUPPORT_USB
-
-#define SUPPORT_CHARGE_DECT
-
-#undef SUPPORT_ENGMODE
-#undef SUPPORT_DISP_SCREEN
-#undef SUPPORT_MENU
-#undef SUPPORT_START_LOGO
-#undef SUPPORT_NETGATE_DISP_NODE
-
-//#define SUPPORT_BOARD_OLD_S2S_1
-#endif
-
-//***********************************************************************************
 // S1_2/3 board define
 //***********************************************************************************
 #ifdef BOARD_S3
 #define SUPPORT_SENSOR
 
-#ifdef ZKS_S3_C_SHT2X
-#undef  SUPPORT_SHT3X
-#define SUPPORT_SHT2X
-#endif // ZKS_S3_C_SHT2X
-
-#if defined(ZKS_S3_C_SHT3X) || defined(KINGBOSS_S3_C_SHT3X)
-#undef SUPPORT_SHT2X
-#define SUPPORT_SHT3X
-#endif //ZKS_S3_C_SHT3X
 
 #define SUPPORT_RADIO_UPGRADE
 #define SUPPORT_DOUBLE_PRESS
@@ -527,90 +452,6 @@ error
 #undef  PROJECT_NAME
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""SENSOR_TYPE_NAME)
 
-/* old S1*/
-#ifdef ZKS_S3_1_C
-#define SUPPORT_BOARD_OLD_S1
-#endif // ZKS_S3_1_C
-
-#ifdef SUPPORT_BOARD_OLD_S1
-#undef  SUPPORT_SHT2X
-#define SUPPORT_SHT3X
-#undef SUPPORT_RARIO_SPEED_SET
-#undef SUPPORT_RSSI_CHECK
-#undef  BOARD_NAME
-#define BOARD_NAME              "_S3_1"
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
-#endif //SUPPORT_BOARD_OLD_S1
-
-/* Z4 */
-#ifdef ZKS_Z4_C
-#define SUPPORT_BOARD_Z4
-#endif //ZKS_Z4_C
-
-#ifdef SUPPORT_BOARD_Z4
-
-#undef SUPPORT_SHT2X
-#undef SUPPORT_SHT3X
-#define SUPPORT_UPLOAD_ASSET_INFO
-
-#undef  BOARD_NAME
-#define BOARD_NAME              "_Z4"
-
-#ifdef SUPPORT_LIGHT
-#undef  COMPANY_NAME
-#define COMPANY_NAME              "HAIER"
-#undef  BOARD_NAME
-#define BOARD_NAME              "_Z1"
-#endif //SUPPORT_LIGHT
-
-
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
-#endif //SUPPORT_BOARD_Z4
-
-#ifdef ZKS_S3_WOR
-#undef SUPPORT_SHT2X
-#undef SUPPORT_SHT3X
-
-#undef  BOARD_NAME
-#define BOARD_NAME              "_S3_WOR"
-
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
-
-#endif 
-
-
-#ifdef SUPPORT_BOARD_OLD_S1
-#undef  FW_VERSION
-#define FW_VERSION              0x0012
-#endif // SUPPORT_BOARD_OLD_S1
-
-
-
-
-
-/*
-#ifdef ZKS_Z5_C
-#define SUPPORT_BOARD_Z5
-#define SUPPORT_AVOID_LOSE
-
-#endif //ZKS_Z5_C
-
-#ifdef SUPPORT_BOARD_Z5
-
-#undef SUPPORT_SHT2X
-#undef SUPPORT_SHT3X
-#define SUPPORT_UPLOAD_ASSET_INFO
-#undef SUPPORT_SENSOR
-
-#undef  BOARD_NAME
-#define BOARD_NAME              "_Z5"
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME)
-#endif //SUPPORT_BOARD_Z5
-  */
 
 
 
@@ -655,27 +496,6 @@ error
 
 
 
-//#ifdef ZKS_Z5_G_W
-//#define  PERIOD_TX_ONLY_FUNC
-
-//#endif // ZKS_Z5_G_W
-
-
-//#ifdef ZKS_Z5_G
-//#define  SUPPORT_LOSE_ALARM
-
-//#endif // ZKS_Z5_G
-
-
-#ifdef ZKS_S6_6_G_SCAN
-
-#define SURPORT_RADIO_RSSI_SCAN
-
-//#define ONE_CHANNEL_SCAN
-
-
-#endif
-
 
 
 
@@ -713,43 +533,6 @@ error
 #define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""WOR_FUNC""STRATEG_NAME""CHARGE_FUNC""BT_FUNC)
 #endif // BOARD_S6_6
 
-//***********************************************************************************
-//
-// BOARD_B2S define.
-//
-//***********************************************************************************
-#ifdef BOARD_B2S
-#define SUPPORT_RSSI_CHECK
-#define CONCENTER_MAX_CHANNEL       100
-#define SUPPORT_RARIO_SPEED_SET
-#undef  FW_VERSION
-    #ifdef S_A
-    #define FW_VERSION              0x0041
-    #elif defined(S_G)
-    #undef  SUPPORT_RSSI_CHECK
-    #define FW_VERSION              0x0048
-    #elif defined(S_C)
-    #undef  BOARD_NAME
-    #define  BOARD_NAME              "_S2S"
-    ///#undef SUPPORT_CHARGE_DECT
-    #define FW_VERSION              0x0053
-    #endif
-
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""MENU_NAME)
-
-#ifdef  UPPORT_BOARD_OLD_S2S_1
-#undef  SUPPORT_CHARGE_DECT
-#undef  SUPPORT_RSSI_CHECK
-#undef  SUPPORT_RARIO_SPEED_SET
-#undef  FW_VERSION
-#define FW_VERSION              0x0001
-#undef  BOARD_NAME
-#define BOARD_NAME              "_S2S_1"
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
-#endif // UPPORT_BOARD_OLD_S2S_1
-#endif // BOARD_B2S
 
 
 //***********************************************************************************
@@ -902,11 +685,7 @@ error
 #define         DEVICES_CONFIG_MODE            3    // the master in the config mode, waiting for rec radio data
 #define         DEVICES_SLEEP_MODE             4	// in the power on mode and the lcd shutdown
 #define         DEVICES_TEST_MODE              6	// in the eng mode
-#define         DEVICES_WAKEUP_MODE            7	// wait for wait up mode 
 
-#ifdef SUPPORT_BOARD_OLD_S1
-#define        OLD_S1_DEVICES_RADIO_UPGRADE    6
-#endif
 
 
 //***********************************************************************************
@@ -1100,17 +879,12 @@ typedef struct {
 #include "app/concenterApp.h"
 #include "app/systemApp.h"
 #include "app/s1_app.h"
-#include "app/s2_app.h"
 #include "app/s6_app.h"
-#include "app/z5_app.h"
 #include "engmode/engmode.h"
 #include "usb/usb_bsl.h"
 #include "radio_app/radio_upgrade.h"
 #include "radio_app/auto_findfreq.h"
 
-#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-    #include "app/old_s1/old_s1_node_app.h"
-#endif
 
 #ifdef SUPPORT_DEEPTEMP_PT100
 // #include "ads1247/ads1247.h"

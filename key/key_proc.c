@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-11 17:50:10
+* @Last Modified time: 2019-12-18 14:56:09
 */
 
 #include "../general.h"
@@ -25,15 +25,6 @@ const PIN_Config keyPinTable[] = {
 #endif
 
 // gateway board
-#ifdef BOARD_B2S
-#define Board_BUTTON0                    IOID_1
-
-const PIN_Config keyPinTable[] = {
-    Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
-    PIN_TERMINATE
-};
-
-#endif
 
 // S6_6 board
 #ifdef BOARD_S6_6

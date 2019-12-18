@@ -123,36 +123,7 @@ void NodeUploadProcess(void)
     NodeStrategyBuffClear();
     offsetUnit = 0;
     memset(&lastTxSensorDataRecord, 0, sizeof(lastTxSensorDataRecord));
-#ifdef SUPPORT_UPLOAD_ASSET_INFO
-    if(assetInfoValid)
-    {
-
-#ifdef  HAIER_Z1_C
-        memcpy(data+6, assetInfo, 24);
-        data[0] = 23;
-#else
-        memcpy(data+6, assetInfo, 24);
-        data[0] = 17;
-#endif  //HAIER_Z1_C
-
-        data[1] = 0;
-        data[2] = g_rSysConfigInfo.DeviceId[0];
-        data[3] = g_rSysConfigInfo.DeviceId[1];
-        data[4] = g_rSysConfigInfo.DeviceId[2];
-        data[5] = g_rSysConfigInfo.DeviceId[3];
-
-        serialNumber = ((data[6] << 8) | data[7]);
-        // the radio buf is full 
-        if(NodeRadioSendSensorData(data, data[0] + 1) == false)
-        {
-            Semaphore_post(uploadSemHandle);
-            return;
-        }
-        lastTxSensorDataRecord.lastFrameSerial[lastTxSensorDataRecord.Cnt] = serialNumber;
-        lastTxSensorDataRecord.Cnt++;
-        offsetUnit++;
-    }
-#else
+    
     dataItems  = Flash_get_unupload_items();
 
     if(dataItems >= offsetUnit)
@@ -186,7 +157,6 @@ void NodeUploadProcess(void)
         dataItems--;
         offsetUnit++;
     }
-#endif //SUPPORT_UPLOAD_ASSET_INFO
     Semaphore_post(uploadSemHandle);
 }
 //***********************************************************************************
@@ -286,14 +256,10 @@ void NodeHighTemperatureSet(uint8_t num, uint16_t alarmTemp)
 //***********************************************************************************
 void NodeBroadcasting(void)
 {
- #if !defined(SUPPORT_BOARD_OLD_S1) || !defined(SUPPORT_BOARD_OLD_S2S_1)
     if(nodeParameter.broadcasting)
     {
-        // NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
         RadioEventPost(RADIO_EVT_SEND_SYC);
-//        RadioSensorDataPack();
     }
-#endif
 }
 
 //***********************************************************************************
@@ -358,9 +324,7 @@ void NodeWakeup(void)
     NodeStrategyReset();
     NodeStartBroadcast();
     NodeBroadcasting();
-    if(deviceMode != DEVICES_WAKEUP_MODE){
-       NodeStrategyStart();
-    }
+   NodeStrategyStart();
 #ifdef ZKS_S3_WOR
     RadioEventPost(RADIO_EVT_START_SNIFF);
 #else
@@ -390,14 +354,12 @@ void NodeRequestConfig(void)
 //***********************************************************************************
 void NodeRtcProcess(void)
 {
-#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
     nodeParameter.sysTime++;
     if(nodeParameter.sysTime >= 3600)
     {
         RadioEventPost(RADIO_EVT_SEND_SYC);
         nodeParameter.sysTime       = 0;
     }
-#endif
 }
 
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-13 10:37:49
+* @Last Modified time: 2019-12-18 15:38:23
 */
 #include "../general.h"
 
@@ -53,25 +53,12 @@ void S1HwInit(void)
     Flash_init();
 
     configModeTimeCnt = 0;
-#ifdef SUPPORT_UPLOAD_ASSET_INFO
+    
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_NONE;
-
-    #ifdef SUPPORT_LIGHT
-    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_OPT3001;
-    #else
-    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_NONE;
-    #endif //HAIER_Z1_C
-#endif // SUPPORT_UPLOAD_ASSET_INFO
-    
-    
-#if defined(KINGBOSS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT2X)
-
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
     g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_NONE;
 
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
 
-#endif //KINGBOSS_PROJECT
 }
 
 
@@ -87,7 +74,6 @@ void S1ShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        case DEVICES_WAKEUP_MODE:
         if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
         {
             RadioTestEnable();
@@ -120,7 +106,6 @@ void S1LongKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        case DEVICES_WAKEUP_MODE:
         case DEVICES_CONFIG_MODE:
         if(!(g_rSysConfigInfo.status & STATUS_HIDE_PWOF_MENU))
         {
@@ -163,15 +148,12 @@ void S1DoubleKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        case DEVICES_WAKEUP_MODE:
         case DEVICES_CONFIG_MODE:
         case DEVICES_OFF_MODE:
         if(DEVICES_CONFIG_MODE != deviceMode)
             deviceModeTemp = deviceMode;
 
-#if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-            OldS1NodeApp_stopSendSensorData();
-#endif
+
         // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
         // if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
         NodeStrategyReset();
@@ -181,16 +163,14 @@ void S1DoubleKeyApp(void)
         NodeUploadOffectClear();
         //RadioModeSet(RADIOMODE_RECEIVEPORT);
         SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
-#if   defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1) || defined(SUPPORT_RARIO_SPEED_SET)
+#if  defined(SUPPORT_RARIO_SPEED_SET)
         RadioSwitchingUserRate();
 #endif
 
-#if  !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
         NodeStrategyStop();
         RadioAbort();
         EasyLink_setRfPower(7);
         RadioSetRxMode();
-#endif
 
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
         Led_ctrl2(LED_G, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
@@ -241,21 +221,14 @@ extern void WdtResetCb(uintptr_t handle);
 void S1Wakeup(void)
 {
 
-    if( !(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER)){
-       deviceMode = DEVICES_WAKEUP_MODE;
-    }
-    else{
-        deviceMode = DEVICES_ON_MODE;
-    }
+    deviceMode = DEVICES_ON_MODE;
     RtcStart();
 
 #ifdef  SUPPORT_WATCHDOG
     WdtInit(WdtResetCb);
 #endif
 
-#if !defined (SUPPORT_BOARD_OLD_S1)
     NodeWakeup();
-#endif
 }
 
 

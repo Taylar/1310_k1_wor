@@ -184,9 +184,6 @@ void Battery_porcess(void)
                 S6Sleep();
 #endif//BOARD_S6_6
 
-#ifdef BOARD_B2S
-        S2Sleep();
-#endif // BOARD_B2S
 
 #endif//BOARD_S3
             }

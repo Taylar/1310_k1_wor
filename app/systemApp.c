@@ -101,9 +101,6 @@ void WdtResetCb(uintptr_t handle)
 
 void RtcEventSet(void)
 {
-#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-	OldS1NodeApp_RtcIProcess();
-#endif
 
 #ifdef BOARD_S3
 	S1AppRtcProcess();
@@ -111,11 +108,6 @@ void RtcEventSet(void)
 		return;
 #endif
 
-#ifdef ZKS_S2S_C
-	S2AppRtcProcess();
-	if(deviceMode == DEVICES_OFF_MODE)
-		return;
-#endif
 
 
 #ifdef SUPPORT_SENSOR
@@ -129,9 +121,6 @@ void RtcEventSet(void)
 	if(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
 	   NodeRtcProcess();
 	}
-	else{
-	     Z5_wakeup_time_isr();
-	}
 
 #endif // S_C//节点
 
@@ -139,19 +128,11 @@ void RtcEventSet(void)
 
 #ifdef S_G//网关
 
-	if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)){
 	    ConcenterRtcProcess();
-	}
 #endif // S_G//网关
 
 #ifdef  SUPPORT_CHARGE_DECT_ALARM
     Sys_chagre_alarm_timer_isr();
-#endif
-
-
-#ifdef SURPORT_RADIO_RSSI_SCAN
-    RadioRxScan();
-
 #endif
 
 
@@ -245,9 +226,6 @@ void SystemAppTaskFxn(void)
 	S6HwInit();
 #endif
 
-#ifdef BOARD_B2S
-    S2HwInit();
-#endif
 
 #ifdef BOARD_S3
    	S1HwInit();
@@ -260,7 +238,7 @@ void SystemAppTaskFxn(void)
 
     Task_sleep(10 * CLOCK_UNIT_MS);
 
-#if defined(BOARD_CONFIG_DECEIVE) || defined(SUPPORT_BOARD_OLD_S1)|| defined(SUPPORT_BOARD_OLD_S2S_1) || defined(BOARD_S3)
+#if defined(BOARD_CONFIG_DECEIVE) || defined(BOARD_S3)
     RtcStart();
 #endif
 
@@ -273,7 +251,7 @@ void SystemAppTaskFxn(void)
 #endif
 
 
-#if (defined BOARD_S6_6 || defined BOARD_B2S)
+#if (defined BOARD_S6_6)
 
 #ifdef SUPPORT_ENGMODE
     if (GetEngModeFlag())
@@ -292,23 +270,17 @@ void SystemAppTaskFxn(void)
 		S6Sleep();
 #endif // BOARD_S6_6
 
-#ifdef BOARD_B2S
-	if(Battery_get_voltage() > BAT_VOLTAGE_LOW)
-		S2Wakeup();
-	else
-		S2Sleep();
-#endif // BOARD_B2S
 
 #endif // BOARD_CONFIG_DECEIVE
 
-#endif // defined BOARD_S6_6 || defined BOARD_B2S
+#endif 
 
 #ifdef  SUPPORT_DEVICED_STATE_UPLOAD
 			Flash_store_devices_state(TYPE_POWER_ON);
 #endif // SUPPORT_DEVICED_STATE_UPLOAD
 
 #ifdef		SUPPORT_WATCHDOG
-    #if (defined(BOARD_S6_6) ||  defined(BOARD_B2S))
+    #if (defined(BOARD_S6_6))
 	    WdtInit(WdtResetCb);
     #endif
 #endif //SUPPORT_WATCHDOG
@@ -318,13 +290,11 @@ void SystemAppTaskFxn(void)
 	{
 	    Task_sleep(100 * CLOCK_UNIT_MS);
 		S1Wakeup();
-#if (!defined(SUPPORT_BOARD_OLD_S1) )
 		if(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
 		   Sys_event_post(SYS_EVT_SENSOR);
 		}
-#endif
 	}
-#endif // (defined BOARD_S6_6 || defined BOARD_B2S)
+#endif //
 
 	uint32_t RestStatus;
     uint8_t logtest[6] = {0};
@@ -372,9 +342,6 @@ void SystemAppTaskFxn(void)
 			S6ShortKeyApp();
 #endif
 
-#ifdef BOARD_B2S
-            S2ShortKeyApp();
-#endif
 		}
 
 
@@ -389,9 +356,6 @@ void SystemAppTaskFxn(void)
 			// S6ConcenterLongKeyApp();
 #endif
 
-#ifdef BOARD_B2S
-			S2LongKeyApp();
-#endif
 		}
 
 		if(eventId & SYSTEMAPP_EVT_KEY0_DOUBLE)
@@ -401,9 +365,6 @@ void SystemAppTaskFxn(void)
 			S1DoubleKeyApp();
 #endif
 
-#ifdef ZKS_S2S_C
-			S2DoubleKeyApp();
-#endif
 		}
 
 
@@ -427,17 +388,17 @@ void SystemAppTaskFxn(void)
 
 #endif
 
-		if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(eventId & SYSTEMAPP_EVT_CONCENTER_MONITER))
+		if((eventId & SYSTEMAPP_EVT_CONCENTER_MONITER))
 		{
 			ConcenterResetRadioState();
 		}
 
-		if( !(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(eventId & SYS_EVT_CONFIG_MODE_EXIT))
+		if((eventId & SYS_EVT_CONFIG_MODE_EXIT))
 		{
 			NodeAppConfigModeExit();
 		}
 
-		if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON) &&(eventId & SYSTEMAPP_EVT_STORE_CONCENTER))
+		if((eventId & SYSTEMAPP_EVT_STORE_CONCENTER))
 		{
 			ConcenterSensorDataSave();
 		}
@@ -449,9 +410,6 @@ void SystemAppTaskFxn(void)
 		}
 #endif // SUPPORT_USB
 
-#ifdef BOARD_B2S
-		Battery_porcess();
-#endif // BOARD_B2S
 
 #ifdef BOARD_S6_6
 		S6AppBatProcess();
@@ -484,7 +442,7 @@ void SystemAppTaskFxn(void)
 			Flash_store_config();
 		}
 
-		if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(eventId & SYS_EVT_STRATEGY))
+		if((eventId & SYS_EVT_STRATEGY))
 		{
 			if(GetStrategyRegisterStatus() == false)
 			{
@@ -495,7 +453,7 @@ void SystemAppTaskFxn(void)
 			}
 		}
 
-		if(!(g_rSysConfigInfo.status&STATUS_TX_ONLY_GATE_ON)&&(eventId & SYSTEMAPP_EVT_RADIO_ABORT))
+		if((eventId & SYSTEMAPP_EVT_RADIO_ABORT))
 		{
 			if(ExtflashRingQueueIsEmpty((&extflashWriteQ)))
 			{
@@ -547,9 +505,7 @@ void SystemAppTaskFxn(void)
 #ifdef  S_C
             if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
 	        {
-#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
 	            RadioSensorDataPack();
-#endif //!defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
 	        }
 #endif // S_C
 
@@ -571,13 +527,6 @@ void SystemAppTaskFxn(void)
 		}
 #endif
 
-#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-        if(eventId & SYS_EVT_S1_SENSOR)
-        {
-            Battery_porcess();
-            OldS1NodeAPP_scheduledUploadData();
-        }
-#endif
 	}
 }
 

@@ -15,9 +15,6 @@
 #define Board_BUTTON0                            IOID_4
 #endif
 
-#ifdef BOARD_B2S
-#define Board_BUTTON0                    IOID_1
-#endif
 
 #ifdef BOARD_S6_6
 #define Board_BUTTON1                    IOID_4

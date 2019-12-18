@@ -2,30 +2,19 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-09-28 10:53:53
+* @Last Modified time: 2019-12-18 14:55:51
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
 //#include "interface.h"
 //#include "../app/usb_prot.h"
 
-// #if (defined BOARD_B2S) || (defined BOARD_S6_6)
 
 /***** Defines *****/
 #define         INTERFACE_STACK_SIZE        840
 
 #define         INTERFACE_REC_TIMEOUT_MS    3
 
-
-#if (defined(BOARD_S6_6) || defined(BOARD_B2S))
-//#define INTERFACE_REQ_PIN                            IOID_22
-//
-//const PIN_Config Int_Req_PinTable[] = {
-//    INTERFACE_REQ_PIN | PIN_INPUT_EN | PIN_NOPULL | PIN_IRQ_NEGEDGE,       /* key isr enable          */
-//    PIN_TERMINATE
-//};
-
-#endif
 
 
 

@@ -765,13 +765,6 @@ void Disp_sensor_data(void)
     uint16_t valueH;
 #endif
 
-#ifdef  SURPORT_RADIO_RSSI_SCAN
-    uint32_t FreTemp1;
-    uint8_t Len;
-    uint8_t Temp;
-    uint8_t i;
-    uint8_t buff[20];
-#endif
 
 
     if (rDispObject.init == 0)
@@ -804,53 +797,6 @@ void Disp_sensor_data(void)
 #endif
 
     
-#ifdef SURPORT_RADIO_RSSI_SCAN
-      Lcd_clear_area(0,2);
-      Lcd_clear_area(0,4);
-      Lcd_clear_area(0,6);
-#ifdef ONE_CHANNEL_SCAN
-
-      memset(buff,0x00,sizeof(buff));
-
-       FreTemp1 = RADIO_SCAN_START_FREQ + (GetScanIndex)*RADIO_SCAN_STEP_FREQ;
-       Len = sprintf((char *)buff, "%03d.%03d:", FreTemp1/1000000,(FreTemp1/1000)%1000);
-       if (ScanRssiBuffer[GetScanIndex] < 0) {
-              Temp = -ScanRssiBuffer[GetScanIndex];
-              buff[Len] = '-';
-       }
-       else {
-              Temp = ScanRssiBuffer[GetScanIndex];
-              buff[Len] = ' ';
-       }
-       Len++;
-       sprintf((char *)&buff[Len], "%03d", Temp);
-       Disp_msg(0, 4, buff, FONT_8X16);
-
-#else
-     for(i=0;i<3;i++){
-
-         memset(buff,0x00,sizeof(buff));
-
-         FreTemp1 = RADIO_SCAN_START_FREQ + (GetScanIndex+i)*RADIO_SCAN_STEP_FREQ;
-         Len = sprintf((char *)buff, "%03d.%03d:", FreTemp1/1000000,(FreTemp1/1000)%1000);
-         if (ScanRssiBuffer[GetScanIndex+i] < 0) {
-             Temp = -ScanRssiBuffer[GetScanIndex+i];
-             buff[Len] = '-';
-         }
-         else {
-             Temp = ScanRssiBuffer[GetScanIndex+i];
-             buff[Len] = ' ';
-         }
-         Len++;
-         sprintf((char *)&buff[Len], "%03d", Temp);
-
-         Disp_msg(0, i*2+2, buff, FONT_8X16);
-
-     }
-#endif
-
-     return;
-#endif
 
 #ifdef SUPPORT_NETGATE_DISP_NODE
     sensordata_mem Sensor = {0,0,0,0};
@@ -859,65 +805,6 @@ void Disp_sensor_data(void)
 
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor
-
-        if (g_bAlarmSensorFlag & (ALARM_RX_EXTERNAL_ALARM | ALARM_NODE_LOSE_ALARM))
-        {
-
-            if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
-                cursensorno = Flash_load_sensor_codec(g_AlarmSensor.DeviceId); //find sensor no in sensor codec table           
-#if 0
-            if (cursensorno){
-                sprintf((char*)buff, "%02d#", cursensorno);
-                Disp_msg(4, 2, buff, FONT_8X16);
-            }
-            else {                
-                sprintf((char*)buff, "%08lx", g_AlarmSensor.DeviceId);
-                Disp_msg(2, 2, buff, FONT_8X16);
-            }
-
-            //all  data  saved to tempdeep
-            if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {
-
-                TempToDisplayBuff(g_AlarmSensor.value.tempdeep,buff,g_AlarmSensor.index);
-
-                Lcd_set_font(132, 16, 0);
-				Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);    
-            }
-            else if (g_AlarmSensor.type == SENSOR_DATA_HUMI) {
-                sprintf((char*)buff, "%02d%%", (uint16_t)g_AlarmSensor.value.tempdeep/100);
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);    
-            }
-#else
-            if (cursensorno){
-                starBarDeviceid =cursensorno;
-            }
-            else {
-                starBarDeviceid = g_AlarmSensor.DeviceId;
-
-            }
-            //all  data  saved to tempdeep
-            if (g_AlarmSensor.type == SENSOR_DATA_TEMP) {
-
-                Disp_temperature(TEMP1_ROW_POS, TEMP1_ROW_POS, g_AlarmSensor.value.tempdeep ,false);
-            }
-            else if (g_AlarmSensor.type == SENSOR_DATA_HUMI) {
-
-                Disp_humidty(TEMP1_ROW_POS,HUMI_ROW_POS,g_AlarmSensor.value.tempdeep);
-            }
-            else if(g_AlarmSensor.type == SEN_TYPE_ASSET){
-                uint8_t buff[32];
-                sprintf((char*)buff, "%02x-%02x %02x:%02x", g_AlarmSensor.time[1], g_AlarmSensor.time[2], g_AlarmSensor.time[3], g_AlarmSensor.time[4]);
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 2, buff, FONT_8X16);
-
-            }
-#endif
-            return;
-        }
 
 
         if(get_next_sensor_memory(&Sensor)){
@@ -1051,19 +938,6 @@ void Disp_sensor_switch(void)
         return;
     }
 
-#ifdef   SURPORT_RADIO_RSSI_SCAN
-   //
-#ifdef ONE_CHANNEL_SCAN
-    GetScanIndex ++;
-#else
-    GetScanIndex += 3;
-#endif
-    if(GetScanIndex >= RADIO_MAX_SCAN_CHANNL_NUM){
-        GetScanIndex = 0;
-    }
-    return;
-
-#endif
 #ifdef SUPPORT_NETGATE_DISP_NODE    
     if(g_rSysConfigInfo.module & MODULE_NWK && 
        g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, only display  node  sensor
@@ -1640,7 +1514,6 @@ void Disp_proc(void)
 #if 1//def SUPPORT_SENSOR
         Disp_sensor_data();
 #endif
-#ifndef SURPORT_RADIO_RSSI_SCAN
         Disp_status_bar();
 
 
@@ -1651,7 +1524,6 @@ void Disp_proc(void)
                 Disp_msg(3, 6, "Register", FONT_8X16);//display
            }
        }
-#endif
 
     }
 

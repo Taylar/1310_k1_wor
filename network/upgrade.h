@@ -8,36 +8,7 @@
 #define 		UPGRADE_FLAG				"valid info"
 
 
-/*
-#ifdef 			BOARD_S6_6
-#ifdef 			BOARD_CONFIG_DECEIVE
-#define 		PROJECT_NAME				"ZKS_1310_S6_6_CONFIG"
-#else
-#define 		PROJECT_NAME				"ZKS_1310_S6_6_V5"
-#endif	// BOARD_CONFIG_DECEIVE
 
-#endif	// BOARD_S6_6
-
-
-#ifdef          BOARD_B2S
-#define         PROJECT_NAME                "ZKS_1310_S2_2_B2"
-#endif //BOARD_B2S
-
-
-#ifdef 			BOARD_S3
-
-#ifdef          SUPPORT_BOARD_OLD_S1
-#define         PROJECT_NAME                "ZKS_1310_S1_1"
-#else
-#define 		PROJECT_NAME				"ZKS_1310_S3_1"
-#endif
-
-#endif	// BOARD_S3
-
-#ifndef		PROJECT_NAME
-#define 	PROJECT_NAME 			"ZKS_1310"
-#endif		// PROJECT_NAME
-*/
 
 #if             NWK_MSG_SIZE >= 300
 #define 		NWK_UPGRADE_PACKAGE_LENGTH			(256)

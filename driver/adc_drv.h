@@ -18,9 +18,6 @@
 typedef enum ZKS_ADCName
 {
 	ZKS_BATTERY_ADC,
-#ifdef BOARD_B2S
-	ZKS_NTC_ADC,
-#endif
 	ZKS_MAX_ADC,
 } ZKS_ADCName;
 

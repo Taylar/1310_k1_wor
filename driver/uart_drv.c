@@ -2,17 +2,11 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-01-21 16:09:06
+* @Last Modified time: 2019-12-18 14:54:28
 */
 #include "../general.h"
 
 /* UART Board */
-#ifdef BOARD_B2S
-
-#define UART_RX_INTERFACE               IOID_10        /* RXD */
-#define UART_TX_INTERFACE               IOID_13        /* TXD */
-
-#endif //BOARD_B2S
 
 #ifdef BOARD_S6_6
 
@@ -25,7 +19,7 @@
 #endif //BOARD_CONFIG_DECEIVE
 #endif // BOARD_S6_6
 
-#if (!defined BOARD_S6_6) && (!defined BOARD_B2S)
+#if (!defined BOARD_S6_6)
 
 #define UART_RX_INTERFACE               IOID_13          /* RXD */
 #define UART_TX_INTERFACE               IOID_12          /* TXD */
@@ -34,14 +28,6 @@
 
 #define UART_RX_GSM                     IOID_5          /* RXD */
 #define UART_TX_GSM                     IOID_26         /* TXD */
-
-#ifdef BOARD_B2S
-#undef UART_RX_GSM
-#undef UART_TX_GSM
-
-#define UART_RX_GSM                     IOID_5          /* RXD */
-#define UART_TX_GSM                     IOID_4          /* TXD */
-#endif // BOARD_B2S
 
 #ifdef SUPPORT_BLUETOOTH_PRINT
 #define UART_RX_BLUE                     IOID_19          /* RXD */

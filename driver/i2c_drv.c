@@ -17,14 +17,6 @@
 #define CC1310_LAUNCHXL_I2C0_SDA0             IOID_18
 // #endif
 
-#ifdef  BOARD_B2S
-
-#undef  CC1310_LAUNCHXL_I2C0_SCL0
-#undef  CC1310_LAUNCHXL_I2C0_SDA0
-#define CC1310_LAUNCHXL_I2C0_SCL0             IOID_11
-#define CC1310_LAUNCHXL_I2C0_SDA0             IOID_12
-#endif
-
 
 I2C_Handle i2cHandle;
 

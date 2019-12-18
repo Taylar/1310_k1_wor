@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-17 14:59:26
+* @Last Modified time: 2019-12-18 14:28:37
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -233,16 +233,12 @@ void NodeStrategyReceiveTimeoutProcess(void)
                 AutoFreqNodeResetCurFreq();
 
             NodeStrategyFailCb();
-#ifdef  SUPPORT_BOARD_Z4
-            goto TimeOutResend;
-#endif 
+
         }
     }
     else
     {
-#ifdef  SUPPORT_BOARD_Z4
-TimeOutResend:
-#endif 
+
         // every period only send FAIL_CONNECT_MAX_NUM times
         nodeStrategy.sendCnt ++;
         if(nodeStrategy.sendCnt < FAIL_CONNECT_MAX_NUM)

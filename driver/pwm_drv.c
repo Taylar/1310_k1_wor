@@ -2,15 +2,11 @@
 * @Author: zxt
 * @Date:   2018-05-09 14:02:37
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-08-28 19:16:31
+* @Last Modified time: 2019-12-18 14:56:00
 */
 #include "../general.h"
 
-#ifdef BOARD_B2S
-#define BUZZER_PIN                       IOID_19
-#else
 #define BUZZER_PIN                       IOID_15
-#endif //BOARD_B2S
 
 PWMTimerCC26XX_Object pwmtimerCC26xxObjects[CC1310_LAUNCHXL_PWMCOUNT];
 

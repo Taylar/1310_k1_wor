@@ -229,9 +229,6 @@ void RadioUpgrade_CmdDataParse(uint8_t *pData, uint16_t length)
 
     // len(2)cmd(1)data(n) // len = n+1
     if (data_len <= 1) {// 空消息处理
-#if defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-        Flash_store_config();
-#endif
         RadioUpgrade_NodataParse(pData, length);
         Clock_start(radioUpgradeRxClkHandle);
         return ;

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-17 16:58:41
+* @Last Modified time: 2019-12-18 16:25:26
 */
 #include "../general.h"
 
@@ -95,7 +95,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			calendarTemp.Seconds    = bufTemp->load[5];
 			
 			Rtc_set_calendar(&calendarTemp);
-#ifndef SUPPORT_BOARD_Z4
 			temp   =  ((uint32_t)bufTemp->load[6]) << 24;
 			temp  |=  ((uint32_t)bufTemp->load[7]) << 16;
 			temp  |=  ((uint32_t)bufTemp->load[8]) << 8;
@@ -107,26 +106,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			}
 			g_rSysConfigInfo.uploadPeriod = temp;
 			NodeStrategySetPeriod(temp);
-#endif  // SUPPORT_BOARD_Z4
 
-#ifdef SUPPORT_BOARD_Z4
-			if(NodeIsBroadcast() == true)
-			{
-				SensorSerialNumAdd();
-				serialNum    = GetSensorSerialNum();
-				assetInfo[0] = HIBYTE_ZKS(serialNum);
-				assetInfo[1] = LOBYTE_ZKS(serialNum);
-				assetInfo[2] = TransHexToBcd(calendarTemp.Year -2000); //TransHexToBcd(lastcalendar.Year - 2000);
-				assetInfo[3] = TransHexToBcd(calendarTemp.Month);
-				assetInfo[4] = TransHexToBcd(calendarTemp.DayOfMonth);
-			    assetInfo[5] = TransHexToBcd(calendarTemp.Hours);
-			    assetInfo[6] = TransHexToBcd(calendarTemp.Minutes);
-			    // assetInfo[7] = TransHexToBcd(calendarTemp.Seconds);
-			    NodeContinueFlagSet();
-			    RadioSensorDataPack();
-			    RadioSend();
-			}
-#endif //SUPPORT_BOARD_Z4
 			NodeStopBroadcast();
 			break;
 
@@ -261,14 +241,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 						g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
 					if((g_rSysConfigInfo.rfPA >> 4) < RADIO_MIN_POWER)
 						g_rSysConfigInfo.rfPA = (RADIO_MIN_POWER<<4) + (g_rSysConfigInfo.rfPA & 0xf);
-#if defined (SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-                    /* µ±ÉèÎªmastÊ±S3_1ºÍS2S_1µÄ¹¤×÷Ä£Ê½ÎªÄ£Ê½1£¬ÆäËüÄ£Ê½2*/
-                    if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
-                        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE1);
-                    } else {
-                        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE2);
-                    }
-#endif
+
 					lenTemp -= 5;
 					break;
 
@@ -356,21 +329,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 #endif
 
 			case RADIO_PRO_CMD_WAKEUP_SENSOR :
-			    if( !(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER)){
 
-			        calendarTemp.Year       = ((bufTemp->load[0] << 8) | bufTemp->load[1]);
-			        calendarTemp.Month      = bufTemp->load[2];
-			        calendarTemp.DayOfMonth = bufTemp->load[3];
-			        calendarTemp.Hours      = bufTemp->load[4];
-			        calendarTemp.Minutes    = bufTemp->load[5];
-			        calendarTemp.Seconds    = bufTemp->load[6];
-
-			         Rtc_set_calendar(&calendarTemp);
-
-			         Z5TxLoseAlarm();//
-			         lenTemp -= 6;
-
-			    }
 			    break;
 
 			case RADIO_PRO_CMD_CONFIG_CONTROL:
@@ -903,10 +862,6 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			}
 
 
-		//	if(g_rSysConfigInfo.status&STATUS_ALARM_GATE_ON){
-
-			    //sys_Node_Lose_Alarm();
-		//	}
 
 			break;
 
@@ -1156,6 +1111,7 @@ ConcenterConfigRespondEnd:
 				buff[16] = 0;  // sensor num
 				buff[17] = SEN_TYPE_INVALID;  //sensor type
 				sensor_unpackage_to_memory(buff, 17);
+			    Sys_event_post(SYSTEMAPP_EVT_DISP);
 				return;
 #endif // SUPPORT_NETGATE_DISP_NODE
 
@@ -1165,7 +1121,6 @@ ConcenterConfigRespondEnd:
 	}
 
 	// receive several cmd in one radio packet, must return in one radio packet;
-	//if( !(g_rSysConfigInfo.status&STATUS_ALARM_GATE_ON) && ((RadioModeGet() != RADIOMODE_UPGRADE)))
 	if( RadioModeGet() != RADIOMODE_UPGRADE)
 	{
 		Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);

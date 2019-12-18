@@ -13,12 +13,6 @@
 #define SOFT_I2C_SCL_PIN             IOID_19
 #define SOFT_I2C_SDA_PIN             IOID_18
 
-#ifdef BOARD_B2S
-#undef SOFT_I2C_SCL_PIN
-#undef SOFT_I2C_SDA_PIN
-#define SOFT_I2C_SCL_PIN             IOID_11
-#define SOFT_I2C_SDA_PIN             IOID_12
-#endif //BOARD_B2S
 
 
 

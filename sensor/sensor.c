@@ -894,9 +894,6 @@ uint32_t Sensor_get_lux(uint8_t chNum)
 //***********************************************************************************
 void Sensor_collect_time_isr(void)
 {
-#if  defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-        return;
-#endif
 
     rSensorObject.collectTime++;
 	uint32_t collectPeriod = g_rSysConfigInfo.collectPeriod;
@@ -1217,23 +1214,6 @@ void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length)
 		}        
 #endif
 
-        //======================================================
-        if((g_rSysConfigInfo.status&STATUS_ALARM_GATE_ON) && (cursensor.type == SEN_TYPE_ASSET)){
-
-            g_AlarmSensor.DeviceId = cursensor.DeviceId;
-            g_AlarmSensor.index      = cursensor.index;
-            g_AlarmSensor.type       = SEN_TYPE_ASSET;
-
-            g_AlarmSensor.time[0]    = pData[8];
-            g_AlarmSensor.time[1]    = cursensor.value.month;
-            g_AlarmSensor.time[2]    =cursensor.value.day;
-            g_AlarmSensor.time[3]    = cursensor.value.hour;
-            g_AlarmSensor.time[4]    = cursensor.value.minutes;
-            Sys_event_post(SYS_EVT_ALARM);
-            g_bAlarmSensorFlag |= ALARM_NODE_LOSE_ALARM;
-
-
-        }
 
         //save to mem
 

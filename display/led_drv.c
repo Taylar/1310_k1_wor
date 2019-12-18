@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-01-19 14:05:31
+* @Last Modified time: 2019-12-18 14:53:16
 */
 #include "../general.h"
 
@@ -14,15 +14,6 @@
 #define LED_G_PIN_NODE                       IOID_23
 #define LED_B_PIN_NODE                       IOID_24
 
-#ifdef BOARD_B2S
-#undef  LED_R_PIN_NODE
-#undef  LED_G_PIN_NODE
-#undef  LED_B_PIN_NODE
-
-#define LED_R_PIN_NODE                       IOID_14
-#define LED_G_PIN_NODE                       IOID_6
-#define LED_B_PIN_NODE                       IOID_15
-#endif
 
 #ifdef  BOARD_CONFIG_DECEIVE
 #undef  LED_B_PIN_NODE

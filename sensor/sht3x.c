@@ -47,10 +47,6 @@ static PIN_Handle  sht3xResetPinHandle;
 
 #define SHT3X_RESET_PIN        IOID_26
 
-#ifdef BOARD_B2S
-#undef SHT3X_RESET_PIN
-#define SHT3X_RESET_PIN       NULL
-#endif
 
 const PIN_Config sht3xResetPinTable[] = {
     SHT3X_RESET_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
@@ -60,12 +56,6 @@ const PIN_Config sht3xResetPinTable[] = {
 #define SH3X_RESET_SET         PIN_setOutputValue(sht3xResetPinHandle, SHT3X_RESET_PIN, 1)
 #define SH3X_RESET_CLR         PIN_setOutputValue(sht3xResetPinHandle, SHT3X_RESET_PIN, 0)
 
-#ifdef BOARD_B2S
-#undef SH3X_RESET_SET
-#undef SH3X_RESET_CLR
-#define SH3X_RESET_SET
-#define SH3X_RESET_CLR
-#endif
 
 
 //***********************************************************************************
@@ -334,12 +324,10 @@ err_retrys:
                   rSensorData[chNum].humi = 0;
                   if(retrys++ < 3)goto err_retrys;
              }
-#if !defined(SUPPORT_BOARD_OLD_S1) && !defined(SUPPORT_BOARD_OLD_S2S_1)
             //convert rawdata to temperature
             rSensorData[chNum].temp = SHT3x_calc_temperatureC(rSensorData[chNum].temp );
             //convert rawdata to humidty
             rSensorData[chNum].humi= SHT3x_calc_humidty(rSensorData[chNum].humi);
-#endif
 
 
 #if 0

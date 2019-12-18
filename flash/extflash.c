@@ -51,43 +51,6 @@ const PIN_Config extFlashPinTable[] = {
 #endif
 
 // board gateway
-#ifdef BOARD_B2S
-
-#define FLASH_SPI_CS_PIN        IOID_24
-#define FLASH_SPI_SIMO          IOID_27
-#define FLASH_SPI_CLK           IOID_26
-#define FLASH_SPI_SOMI          IOID_25
-
-static PIN_Handle  FLASH_SPI_COM_PinHandle = NULL;
-static PIN_State   FLASH_SPI_COM_State;
-
-const PIN_Config extFlashPinTable[] = {
-    FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    PIN_TERMINATE
-};
-
-const PIN_Config extFlashComPinTable[] = {
-    FLASH_SPI_SIMO | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    FLASH_SPI_SOMI | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    FLASH_SPI_CLK | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,
-    PIN_TERMINATE
-};
-
-#define Flash_spi_enable()      do { \
-                                       if (FLASH_SPI_COM_PinHandle) { \
-                                            PIN_close(FLASH_SPI_COM_PinHandle); \
-                                        } \
-                                        Spi_open(); \
-                                       PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 0); \
-                                } while(0)
-#define Flash_spi_disable()     do { \
-                                       Spi_close(); \
-                                       PIN_setOutputValue(extFlashPinHandle, FLASH_SPI_CS_PIN, 1); \
-                                       FLASH_SPI_COM_PinHandle = PIN_open(&FLASH_SPI_COM_State, extFlashComPinTable); \
-                                   }while(0)
-
-
-#endif
 
 
 // board S6_6
@@ -542,37 +505,7 @@ void Flash_init(void)
         Flash_store_config();
     }
 
-#if  defined(SUPPORT_BOARD_OLD_S1) || defined(SUPPORT_BOARD_OLD_S2S_1)
-    uint8_t i;
-    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
-        g_rSysConfigInfo.sensorModule[i]     = SEN_TYPE_NONE;
-        g_rSysConfigInfo.alarmTemp[i].high   = ALARM_TEMP_HIGH;
-        g_rSysConfigInfo.alarmTemp[i].low    = ALARM_TEMP_LOW;
-        g_rSysConfigInfo.WarningTemp[i].high = ALARM_TEMP_HIGH;
-        g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
-    }
 
-#ifdef SUPPORT_BOARD_OLD_S1
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
-#endif //SUPPORT_BOARD_OLD_S1
-
-#ifdef SUPPORT_BOARD_OLD_S2S_1
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_DEEPTEMP;
-#endif //SUPPORT_BOARD_OLD_S2S_1
-
-    /* 当设为mast时为旧的S1工作模式为模式1，其它模式2*/
-    if (g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER) {
-        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE1);
-    } else {
-        OldS1nodeAPP_setWorkMode(S1_OPERATING_MODE2);
-    }
-#endif // (defined SUPPORT_BOARD_OLD_S1) || (defined SUPPORT_BOARD_OLD_S2S_1)
-
-#if  defined(BOARD_B2S) && defined(S_C)
-    if ((uint8_t)g_rSysConfigInfo.deepTempAdjust == 0xff) {
-        g_rSysConfigInfo.deepTempAdjust = 0;
-    }
-#endif
 }
 
 void Flash_reset_all(void)
@@ -1928,22 +1861,6 @@ void Sys_config_reset(void)
         g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
     }
 
-#ifdef      BOARD_B2S
-
-    g_rSysConfigInfo.module          = MODULE_GSM | MODULE_CC1310;
-    g_rSysConfigInfo.serverIpAddr[0] = 114;
-    g_rSysConfigInfo.serverIpAddr[1] = 215;
-    g_rSysConfigInfo.serverIpAddr[2] = 122;
-    g_rSysConfigInfo.serverIpAddr[3] = 32;
-    g_rSysConfigInfo.serverIpPort    = 12200;
-
-    g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
-    g_rSysConfigInfo.apnuserpwd[0]   = 0;
-    g_rSysConfigInfo.hbPeriod        = UPLOAD_PERIOD_DEFAULT;     // unit is sec
-    g_rSysConfigInfo.rfStatus       &= STATUS_1310_MASTER^0xFFFF;
-    strcpy((char*)g_rSysConfigInfo.serverAddr, "newss.coldclouds.com");
-#endif
-
 #ifdef      BOARD_S6_6
     #ifdef S_G //缃戝叧
     g_rSysConfigInfo.module          = MODULE_GSM | MODULE_CC1310 | MODULE_LCD;
@@ -1975,18 +1892,14 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
     g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
 
-    #if defined(KINGBOSS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT3X) || defined(ZKS_S3_C_SHT2X)
+    #if defined(ZKS_S3_WOR)
 
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
 
-    #endif //KINGBOSS_PROJECT
+    #endif //ZKS_S3_WOR
 
 #endif
 
-#ifdef ZKS_S2S_C
-    g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
-
-#endif //ZKS_S2S_C
 
 
     g_rSysConfigInfo.rfStatus        |= STATUS_LORA_CHANGE_FREQ;
