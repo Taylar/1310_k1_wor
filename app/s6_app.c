@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-13 14:12:29
+* @Last Modified time: 2019-12-17 14:11:35
 */
 #include "../general.h"
 
@@ -320,6 +320,7 @@ void S6HwInit(void)
 void S6ShortKeyApp(void)
 {
     RadioEventPost(RADIO_EVT_WAKEUP_SEND);
+    brocastTimes = 25;
 
     if (g_bAlarmSensorFlag) {
         Sys_buzzer_disable();
@@ -435,6 +436,7 @@ void S6ShortKey1App(void)
 {
 #ifdef BOARD_S6_6
     RadioEventPost(RADIO_EVT_WAKEUP_SEND);
+    brocastTimes = 25;
     
     if (g_bAlarmSensorFlag) {
         Sys_buzzer_disable();

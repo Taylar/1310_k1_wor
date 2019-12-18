@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-13 15:25:15
+* @Last Modified time: 2019-12-17 16:58:41
 */
 #include "../general.h"
 
@@ -425,6 +425,12 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			break;
 
 
+			case RADIO_PRO_CMD_SPE_BROCAST:
+				Task_sleep((bufTemp->load[0]+1) * 40 * CLOCK_UNIT_MS);
+			    RadioEventPost(RADIO_EVT_WAKEUP_SEND_ACK);
+			return;
+
+
 			default:
 			goto NodeDispath;
 
@@ -713,6 +719,24 @@ void NodeRadioSendRemoteSetAck(void)
 
 	protocalTxBuf.len = 10;
 	RadioSendPacket((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0);
+}
+
+
+//***********************************************************************************
+// brief:   send the brocast ack to gateway
+// 
+// parameter: 
+// status:	success or fail
+//***********************************************************************************
+void NodeRadioSendBrocastAck(void)
+{
+
+	protocalTxBuf.command	= RADIO_PRO_CMD_SPE_BROCAST_ACK;
+	protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
+
+	protocalTxBuf.len = 10;
+	RadioCopyPacketToBuf((uint8_t*)&protocalTxBuf, protocalTxBuf.len, 0, 0, 0);
 }
 
 
@@ -1120,6 +1144,20 @@ ConcenterConfigRespondEnd:
 			Radio_ClearNodeConfig(GetRadioDstAddr());
 			
 			break;
+
+
+			case RADIO_PRO_CMD_SPE_BROCAST_ACK:
+#ifdef SUPPORT_NETGATE_DISP_NODE
+				buff[1] = protocalRxPacket->rssi;  // rssi
+				buff[2] = protocalRxPacket->payload[9];  //id
+				buff[3] = protocalRxPacket->payload[8];  //id
+				buff[4] = protocalRxPacket->payload[7];  //id
+				buff[5] = protocalRxPacket->payload[6];  //id
+				buff[16] = 0;  // sensor num
+				buff[17] = SEN_TYPE_INVALID;  //sensor type
+				sensor_unpackage_to_memory(buff, 17);
+				return;
+#endif // SUPPORT_NETGATE_DISP_NODE
 
 		}
 		// point to new message the head
@@ -1595,12 +1633,17 @@ void ConcentorSetConfigCheck(void)
 void ConcenterRadioSendSniff(uint32_t srcAddr, uint32_t dstAddr)
 {
 
-	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
+	protocalTxBuf.command	= RADIO_PRO_CMD_SPE_BROCAST;
 	protocalTxBuf.dstAddr	= dstAddr;
 	protocalTxBuf.srcAddr	= srcAddr;
-	protocalTxBuf.len 		= 10;
+	protocalTxBuf.len 		= 10+1;
+	protocalTxBuf.load[0]	= brocastTimes;
+	brocastTimes --;
 
 	SetRadioDstAddr(dstAddr);
+
+    ClearRadioSendBuf();
+    concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
 
     if(RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, EASYLINK_MAX_DATA_LENGTH - concenterRemainderCache) == true)
 	    concenterRemainderCache -= protocalTxBuf.len;

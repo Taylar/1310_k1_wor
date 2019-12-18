@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-13 14:02:35
+* @Last Modified time: 2019-12-17 14:59:26
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -211,6 +211,11 @@ void NodeStrategyRssiOverProcess(void)
 //***********************************************************************************
 void NodeStrategyReceiveTimeoutProcess(void)
 {
+#ifdef ZKS_S3_WOR
+    return;
+#else
+
+
     if(nodeStrategy.success == true)
     {
         nodeStrategy.periodFailNum++;
@@ -252,6 +257,9 @@ TimeOutResend:
             
         }
     }
+
+
+#endif //ZKS_S3_WOR
 }
 
 

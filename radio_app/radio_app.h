@@ -26,6 +26,7 @@
 #define         RADIO_EVT_SWITCH_RATE   Event_Id_19
 #define         RADIO_EVT_START_SNIFF   Event_Id_20
 #define         RADIO_EVT_WAKEUP_SEND   Event_Id_21
+#define         RADIO_EVT_WAKEUP_SEND_ACK   Event_Id_22
 
 
 #define         RADIO_EVT_ALL           0xffffffff

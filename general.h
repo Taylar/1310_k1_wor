@@ -78,8 +78,8 @@
 // #define ZKS_B2S_A
 // #define ZKS_B2S_G
 //#define ZKS_S6_6_G_SCAN
-// #define ZKS_S3_WOR
-#define ZKS_S6_6_WOR_G
+#define ZKS_S3_WOR
+// #define ZKS_S6_6_WOR_G
 
 #ifdef HAIER_Z1_C
 #define     ZKS_Z4_C
@@ -1165,6 +1165,7 @@ EXTERN_ATTR uint8_t openBoxOccur;
 
 EXTERN_ATTR uint8_t gatewayConfigTime;
 
+EXTERN_ATTR uint8_t brocastTimes;
 
 extern uint8_t deviceMode;
 

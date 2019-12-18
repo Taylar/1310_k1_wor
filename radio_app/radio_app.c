@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-13 16:41:19
+* @Last Modified time: 2019-12-17 17:07:22
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -298,9 +298,11 @@ int8_t RadioCheckRssi(void)
     RadioAbort();
     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
     RadioReceiveData();
-    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
+    delay_ms(1);
+    // Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     EasyLink_getRssi(&rssi);
-    Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
+    delay_ms(1);
+    // Task_sleep(CONCENTER_RADIO_DELAY_TIME_MS * CLOCK_UNIT_MS);
     EasyLink_getRssi(&rssi2);
     RadioAbort();
 
@@ -523,9 +525,9 @@ void RadioAppTaskFxn(void)
         System_abort("EasyLink_init failed");
     }
 
-#if defined(ZKS_S3_WOR) || defined(ZKS_S6_6_WOR_G)
-    RadioSniffInit();
-#endif //ZKS_S3_WOR
+// #if defined(ZKS_S3_WOR) || defined(ZKS_S6_6_WOR_G)
+//     RadioSniffInit();
+// #endif //ZKS_S3_WOR
 
     EasyLink_setRfPower(SET_RADIO_POWER);
 #ifndef BOARD_CONFIG_DECEIVE
@@ -1132,11 +1134,34 @@ TxAction:
         if(events & RADIO_EVT_START_SNIFF)
         {
             Radio_setRxModeRfFrequency();
-            if(RadioWorCheck() == true)
+            // if(RadioWorCheck() == true)
+            // {
+            //     RadioSetRxMode();
+            // }
+            if(RadioCheckRssi() > -80)
             {
-                RadioSetRxMode();
+                Led_set(LED_G, 1);
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(100));
+                RadioReceiveData();
+                Led_set(LED_G, 0);
             }
         }
+
+        if(events & RADIO_EVT_WAKEUP_SEND_ACK)
+        {
+            RadioAbort();
+            Radio_setTxModeRfFrequency();
+            RadioAbort();
+
+            NodeRadioSendBrocastAck();
+            Led_set(LED_B, 1);
+            Clock_start(radioSendTimeoutClockHandle);
+            radioStatus = RADIOSTATUS_TRANSMITTING;
+            RadioSendData();
+            Clock_stop(radioSendTimeoutClockHandle);
+            Led_set(LED_B, 0);
+        }
+
 #endif //ZKS_S3_WOR
 
         if(events & RADIO_EVT_WAKEUP_SEND)
@@ -1145,15 +1170,13 @@ TxAction:
             Radio_setTxModeRfFrequency();
             RadioAbort();
 
-            ClearRadioSendBuf();
-            concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
-            ConcenterRadioSendSniff(GetRadioSrcAddr(), 0x12346666);
-            Radio_setTxModeRfFrequency();
-
-            Clock_start(radioSendTimeoutClockHandle);
-            radioStatus = RADIOSTATUS_TRANSMITTING;
-            RadioSniffSend(&currentRadioOperation.easyLinkTxPacket);
-            Clock_stop(radioSendTimeoutClockHandle);
+            while(brocastTimes){
+                ConcenterRadioSendSniff(GetRadioSrcAddr(), 0x12346666);
+                Clock_start(radioSendTimeoutClockHandle);
+                radioStatus = RADIOSTATUS_TRANSMITTING;
+                RadioSendData();
+                Clock_stop(radioSendTimeoutClockHandle);
+            }
 
             RadioAbort();
             Radio_setRxModeRfFrequency();
@@ -1161,8 +1184,6 @@ TxAction:
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
             radioStatus = RADIOSTATUS_RECEIVING;
             RadioReceiveData();
-
-
         }
 
     }
@@ -1329,8 +1350,7 @@ void RadioUpgradeRxFileDataTimout(void)
 void RadioSendPacket(uint8_t *dataP, uint8_t len, uint8_t maxNumberOfRetries, uint32_t ackTimeoutMs)
 {
     RadioCopyPacketToBuf(dataP, len, maxNumberOfRetries, ackTimeoutMs, 0);
-    if(radioOperationEventHandle)
-        Event_post(radioOperationEventHandle, RADIO_EVT_TX);
+    RadioSend();
 }
 
 
