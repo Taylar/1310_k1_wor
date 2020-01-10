@@ -85,9 +85,6 @@ void EngMode()
 	g_rSysConfigInfo.status |= STATUS_LCD_ALWAYS_ON;
 	Disp_poweron();
 
-#ifdef SUPPORT_NETWORK
-	Nwk_poweron();
-#endif
 	Disp_clear_all();
 	Disp_msg(0, 0, "Enter EngMode...", FONT_8X16);
 	Disp_msg(0, 2, "Release Power Key", FONT_8X16);
@@ -96,22 +93,10 @@ void EngMode()
 
 	//key	
 	Disp_clear_all();
-	Disp_msg(0, 0, "Power Key:", FONT_8X16);
-	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
-	if (event & SYSTEMAPP_EVT_KEY1) {
-		Disp_msg(10, 0, "OK", FONT_8X16);
-		Eng_Result.powerkey = true;
-	}
-	else {
-
-		Disp_msg(10, 0, "Fail", FONT_8X16);
-		Eng_Result.powerkey = false;
-
-	}
 		
 	Disp_msg(0, 2, "Menu Key:", FONT_8X16);
 	event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
-	if (event & SYSTEMAPP_EVT_KEY0) {
+	if (event & SYSTEMAPP_EVT_KEY) {
 		Disp_msg(10, 2, "OK", FONT_8X16);
 		Eng_Result.menukey = true;
 	}
@@ -195,66 +180,6 @@ void EngMode()
 	
 #endif
 
-#ifdef SUPPORT_GSM
-	
-    uint8_t temp;
-    uint8_t col = 0, row = 4;
-    uint16_t value;
-    if (g_rSysConfigInfo.module & MODULE_GSM) {
-
-		//gsm
-		Disp_clear_all();
-		Disp_msg(0, 0, "GSM test:", FONT_8X16);
-
-		//SIM CCID
-		Disp_msg(0, 2, "CCID: ", FONT_8X16);
-		Nwk_get_simccid(buff);
-		buff[20] = '\0';
-		temp = buff[10];
-		buff[10] = '\0';
-		Disp_msg(6, 2, buff, FONT_8X16);
-		buff[10] = temp;
-		Disp_msg(6, 4, &buff[10], FONT_8X16);
-
-
-		//Display signal	
-		value = Nwk_get_rssi();
-#ifdef S_G
-		Lcd_set_font(13, 8, 0);
-		if (value < 2 || value == 99)
-			Disp_icon(col, row, ICON_13X8_SIGNAL_0, 0);
-		else if (value >= 12)
-			Disp_icon(col, row, ICON_13X8_SIGNAL_3, 1);
-		else if (value >= 8)
-			Disp_icon(col, row, ICON_13X8_SIGNAL_2, 1);
-		else if (value >= 5)
-			Disp_icon(col, row, ICON_13X8_SIGNAL_1, 1);
-		else
-			Disp_icon(col, row, ICON_13X8_SIGNAL_0, 1);
-#else
-		Lcd_set_font(16, 16, 0);
-        if (value < 2 || value == 99)
-            Disp_icon(col, row, ICON_16X16_SIGNAL0, 0);
-        else if (value >= 12)
-            Disp_icon(col, row, ICON_16X16_SIGNAL3, 1);
-        else if (value >= 8)
-            Disp_icon(col, row, ICON_16X16_SIGNAL2, 1);
-        else if (value >= 5)
-            Disp_icon(col, row, ICON_16X16_SIGNAL1, 1);
-        else
-            Disp_icon(col, row, ICON_16X16_SIGNAL0, 1);
-#endif
-
-		event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
-		if (event) {
-			Eng_Result.gsm = true;
-		}
-		else {
-			Eng_Result.gsm = false;
-		}
-    }
-#endif
-
 // #ifdef SUPPORT_RADIO
     // if (g_rSysConfigInfo.module & MODULE_CC1310) {
 
@@ -288,37 +213,6 @@ void EngMode()
     // }
 	
 // #endif
-
-#ifdef SUPPORT_BLUETOOTH_PRINT
-
-    if (g_rSysConfigInfo.module & MODULE_BTP) {
-
-		//bluetooth
-		Disp_clear_all();
-		Disp_msg(0, 0, "BT test:", FONT_8X16);
-
-		//Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECTING * MENU_128X32_OFS]);
-		Disp_msg(0, 2, "connect...", FONT_8X16);
-		Btp_poweron();		
-		if (Btp_is_connect()) {
-		  //Bluetooth connect success
-		  //Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_PRINTING * MENU_128X32_OFS]);
-		  Disp_msg(0, 2, "connect success", FONT_8X16);
-	      Btp_send_cmd("\e!\x30 BT TEST\r\n");
-
-		} else {
-		  //Bluetooth connect fail
-		  //Disp_picture(0, 2, 128, 32, &menu128x32[MENU_128X32_CONNECT_FAIL * MENU_128X32_OFS]);
-		  Disp_msg(0, 2, "connect fail", FONT_8X16);
-		}
-
-		Task_sleep(3 * CLOCK_UNIT_S);
-		Btp_poweroff();
-
-		event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
-
-    }
-#endif
 
 	Disp_clear_all();
 	Disp_poweroff();

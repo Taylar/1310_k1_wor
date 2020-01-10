@@ -98,7 +98,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0091
+#define FW_VERSION              0x0001
 
 //***********************************************************************************
 //
@@ -859,18 +859,16 @@ typedef struct {
 #include "display/display.h"
 #include "display/menu.h"
 #include "display/led_drv.h"
-#include "sensor/sensor.h"
 #include "battery/battery.h"
 #include "easylink/EasyLink.h"
 #include "radio_app/radio_app.h"
 #include "radio_app/node_strategy.h"
-#include "network/network.h"
-#include "network/upgrade.h"
 
 #ifdef SUPPORT_BLUETOOTH_PRINT
 #include "bluetooth/bluetooth_print.h"
 #endif // SUPPORT_BLUETOOTH_PRINT
 
+#include "network/upgrade.h"
 #include "interface_app/interface.h"
 #include "usb/usb_proc.h"
 #include "app/concenterApp.h"
@@ -886,22 +884,12 @@ typedef struct {
 #include "radio_app/auto_findfreq.h"
 
 
-#ifdef SUPPORT_DEEPTEMP_PT100
-// #include "ads1247/ads1247.h"
-#include "sensor/pt100.h"
-#include "sensor/ads1247/ads1247.h"
-#endif
-
 #ifdef SUPPORT_FLIGHT_MODE
 #include "network/flight_mode.h"
-#endif
-#ifdef SUPPORT_SHT3X
-#include "sensor/sht3x.h"
 #endif
 #ifdef SUPPORT_CHARGE_DECT
 #include "chargedetect/chargedect.h"
 #endif
-
 //***********************************************************************************
 //
 //	Global variable define
@@ -910,7 +898,6 @@ typedef struct {
 EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
 
 EXTERN_ATTR uint16_t     g_bAlarmSensorFlag; //
-EXTERN_ATTR  Alarmdata_t    g_AlarmSensor;
 
 #ifdef SUPPORT_ALARM_SWITCH_PERIOD
 EXTERN_ATTR bool g_alarmFlag;

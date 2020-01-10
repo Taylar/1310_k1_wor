@@ -72,9 +72,38 @@ typedef struct {
     uint8_t shortPress;
     // Key double press flag.
     uint8_t doublePress;
+    // key scan port
+    uint8_t scanPort;       //0: P0 as input ,  1: P1 as input
+    // key scan port
+    uint8_t scanState;       //
+    // key code
+    uint8_t keyCode;       //
     // key num
     uint8_t keyNum;
 } KeyTask_t;
+
+#define _VK_NULL                0xFF
+
+#define _VK_COMMAND             0xEE
+#define _VK_ACTIVE              0xED
+#define _VK_DELETE              0xEB
+
+#define _VK_NUM1                0xE7
+#define _VK_NUM2                0xDE
+#define _VK_NUM3                0xDD
+
+#define _VK_NUM4                0xDB
+#define _VK_NUM5                0xD7
+#define _VK_NUM6                0xBE
+
+#define _VK_NUM7                0xDD
+#define _VK_NUM8                0xBB
+#define _VK_NUM9                0xB7
+
+#define _VK_MODE                0x7E
+#define _VK_NUM0                0x7D
+#define _VK_OK                  0x7B
+
 
 
 

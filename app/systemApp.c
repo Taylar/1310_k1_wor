@@ -50,34 +50,19 @@ void Sys_event_post(UInt event)
 
 void SystemKeyEventPostIsr(void)
 {
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0);
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY);
 }
 
 void SystemLongKeyEventPostIsr(void)
 {
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_LONG);
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY_LONG);
 }
 
 void SystemDoubleKeyEventPostIsr(void)
 {
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_DOUBLE);
+    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY_DOUBLE);
 }
 
-
-void SystemKey1EventPostIsr(void)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY1);
-}
-
-void SystemLongKey1EventPostIsr(void)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY1_LONG);
-}
-
-void SystemLongKey0EventPostIsr(void)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY0_LONG);
-}
 
 void SystemUsbIntEventPostIsr(void)
 {
@@ -86,15 +71,6 @@ void SystemUsbIntEventPostIsr(void)
 
 void WdtResetCb(uintptr_t handle)
 {
-	// UInt hwiKey;
-	// // hwiKey = Hwi_disable();	
-
- //    hwiKey = Hwi_enable();
- //    Flash_log("WDT\n");
-	// // call this function will reset immediately, otherwise will waite another wdt timeout to reset
-	// g_rSysConfigInfo.sysState.err_restarts ++;
- //    Flash_store_config();
- //    Hwi_restore(hwiKey);
     while(1)
         HWREGBITW( PRCM_BASE + PRCM_O_WARMRESET, PRCM_WARMRESET_WR_TO_PINRESET_BITN ) = 1;
 }
@@ -114,7 +90,6 @@ void RtcEventSet(void)
     Sensor_collect_time_isr();
 #endif // SUPPORT_SENSOR
 
-	Nwk_upload_time_isr();
 
 
 #ifdef S_C//节点
@@ -134,8 +109,6 @@ void RtcEventSet(void)
 #ifdef  SUPPORT_CHARGE_DECT_ALARM
     Sys_chagre_alarm_timer_isr();
 #endif
-
-
 
 
 }
@@ -232,26 +205,15 @@ void SystemAppTaskFxn(void)
 #endif
    	RtcInit(RtcEventSet);
 
-#ifdef SUPPORT_SENSOR
-	Sensor_init();
-#endif // SUPPORT_SENSOR
 
     Task_sleep(10 * CLOCK_UNIT_MS);
 
-#if defined(BOARD_CONFIG_DECEIVE) || defined(BOARD_S3)
+#ifdef BOARD_S3
     RtcStart();
 #endif
 
-#ifdef BOARD_CONFIG_DECEIVE
-	ConcenterConfigDeceiveInit();
-#endif
-
-#ifdef SUPPORT_SENSOR
-	Sensor_measure(0);
-#endif
 
 
-#if (defined BOARD_S6_6)
 
 #ifdef SUPPORT_ENGMODE
     if (GetEngModeFlag())
@@ -261,29 +223,16 @@ void SystemAppTaskFxn(void)
     }
 #endif  // SUPPORT_ENGMODE
 
-#ifndef  BOARD_CONFIG_DECEIVE
 
 #ifdef BOARD_S6_6		
 	if((Battery_get_voltage() > BAT_VOLTAGE_LOW) && (engmodeFlag == 0))
 		S6Wakeup();
 	else
 		S6Sleep();
+
+    WdtInit(WdtResetCb);
 #endif // BOARD_S6_6
 
-
-#endif // BOARD_CONFIG_DECEIVE
-
-#endif 
-
-#ifdef  SUPPORT_DEVICED_STATE_UPLOAD
-			Flash_store_devices_state(TYPE_POWER_ON);
-#endif // SUPPORT_DEVICED_STATE_UPLOAD
-
-#ifdef		SUPPORT_WATCHDOG
-    #if (defined(BOARD_S6_6))
-	    WdtInit(WdtResetCb);
-    #endif
-#endif //SUPPORT_WATCHDOG
 
 #ifdef BOARD_S3
 	if(g_rSysConfigInfo.sysState.wtd_restarts & STATUS_POWERON)
@@ -308,32 +257,14 @@ void SystemAppTaskFxn(void)
         eventId = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL, BIOS_WAIT_FOREVER);
 	
 
-#ifdef		SUPPORT_WATCHDOG
         if(eventId & SYS_FEED_WATCHDOG)
         {
 			WdtClear();
         }
-#endif	
 
 // the config deceive key is disable
-#ifdef   BOARD_CONFIG_DECEIVE
-        if(eventId & (SYSTEMAPP_EVT_KEY0_LONG | SYSTEMAPP_EVT_KEY1_LONG))
-        {
-        	Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-	        Task_sleep(750 * CLOCK_UNIT_MS);
-	        while(1)
-	        	SysCtrlSystemReset();
-        }
-
-        if(eventId &(SYSTEMAPP_EVT_KEY0 | SYSTEMAPP_EVT_KEY1))
-        {
-        	Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
-        }
-
-#else
-		if(eventId &SYSTEMAPP_EVT_KEY0)
+		if(eventId &SYSTEMAPP_EVT_KEY)
 		{
-
 #ifdef BOARD_S3
 			S1ShortKeyApp();
 #endif
@@ -341,52 +272,21 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S6_6
 			S6ShortKeyApp();
 #endif
-
 		}
 
-
+#ifdef BOARD_S3
 		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
 		{
 
-#ifdef BOARD_S3
 			S1LongKeyApp();
-#endif
-
-#ifdef BOARD_S6_6
-			// S6ConcenterLongKeyApp();
-#endif
-
 		}
 
 		if(eventId & SYSTEMAPP_EVT_KEY0_DOUBLE)
 		{
-
-#ifdef BOARD_S3
 			S1DoubleKeyApp();
-#endif
-
-		}
-
-
-
-#ifdef BOARD_S6_6
-		if(eventId & SYSTEMAPP_EVT_KEY1)
-		{
-			S6ShortKey1App();
-		}
-
-		if(eventId & SYSTEMAPP_EVT_KEY1_LONG)
-		{
-			S6LongKey1App();
-		}
-
-		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
-		{
-			S6LongKey0App();
 		}
 #endif
 
-#endif
 
 		if((eventId & SYSTEMAPP_EVT_CONCENTER_MONITER))
 		{
@@ -413,19 +313,7 @@ void SystemAppTaskFxn(void)
 
 #ifdef BOARD_S6_6
 		S6AppBatProcess();
-#ifndef BOARD_CONFIG_DECEIVE
-		if( (eventId & SYS_EVT_ALARM)  && (deviceMode != DEVICES_OFF_MODE))
-		{
-			if (!(g_rSysConfigInfo.status & STATUS_ALARM_OFF)) {
-                buzzerAlarmCnt = 2;
-                Sys_buzzer_enable();
-                Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
-                Clock_start(sysAlarmClkHandle);
-                Disp_info_close();
-                Disp_poweron();
-            }
-		}
-#endif  // BOARD_CONFIG_DECEIVE
+
 
 #ifdef SUPPORT_ALARM_RECORD_QURERY
       	if(eventId & SYS_EVT_ALARM_SAVE)
@@ -466,52 +354,6 @@ void SystemAppTaskFxn(void)
 				Sys_event_post(SYSTEMAPP_EVT_STORE_CONCENTER);
 			}
 		}
-
-#ifdef SUPPORT_SENSOR
-        if (eventId & SYS_EVT_SENSOR) {
-#ifdef SUPPORT_SENSOR_ADJUST
-            Sensor_process();
-#else
-#ifdef 	BOARD_S3
-            if(radioAccessSemHandle)
-            {
-	            if(Semaphore_pend(radioAccessSemHandle, 4000 * CLOCK_UNIT_MS) == FALSE)
-	            {
-		            Sys_event_post(SYS_EVT_SENSOR);
-	            }
-	            else
-	            {
-	            	Sensor_measure(1);
-	            	Semaphore_post(radioAccessSemHandle);
-	            }
-            }
-	    	else
-	    	{
-	            Sensor_measure(1);
-	    	}
-#else    
-            Sensor_measure(1);
-#endif  //BOARD_S3
-
-#endif
-            Battery_porcess();
-
-#ifdef      SUPPORT_UPLOADTIME_LIMIT
-            if((g_rSysConfigInfo.uploadPeriod/60) < Flash_get_unupload_items()){
-                Nwk_upload_set();
-            }
-#endif      // SUPPORT_UPLOADTIME_LIMIT
-
-#ifdef  S_C
-            if ((deviceMode != DEVICES_OFF_MODE) && (deviceMode != DEVICES_CONFIG_MODE))
-	        {
-	            RadioSensorDataPack();
-	        }
-#endif // S_C
-
-        }
-#endif // SUPPORT_SENSOR
-
 
          //=======================================
 #ifdef SUPPORT_BLUETOOTH_PRINT

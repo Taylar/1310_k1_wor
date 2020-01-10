@@ -54,10 +54,6 @@ void Menu_flight_mode_exit(void);
 void Menu_alrm_query_proc(void);
 void Menu_alarm_recode_proc(void);
 extern SysTask_t rSysTask;
-#ifdef SUPPORT_BLUETOOTH_PRINT
-extern uint8_t PrintProStep;
-#endif //#ifdef SUPPORT_BLUETOOTH_PRINT
-#include "../bluetooth/print_list.h"
 
 
 #ifdef SUPPORT_BLE_PRINT_LIST_MODE

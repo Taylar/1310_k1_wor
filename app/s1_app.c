@@ -54,8 +54,7 @@ void S1HwInit(void)
 
     configModeTimeCnt = 0;
     
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_NONE;
-    g_rSysConfigInfo.sensorModule[1] = SEN_TYPE_NONE;
+
 
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
 

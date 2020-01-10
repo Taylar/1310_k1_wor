@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-18 16:16:30
+* @Last Modified time: 2020-01-09 15:42:20
 */
 #include "../general.h"
 
@@ -249,13 +249,9 @@ void S6HwInit(void)
 
     LedInit();
 
-	KeyInit();
-    KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
-    KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
+    I2c_init();
 
-    KeyRegister(SystemKey1EventPostIsr, KEY_1_SHORT_PRESS);
-    KeyRegister(SystemLongKey1EventPostIsr, KEY_1_LONG_PRESS);
-    KeyRegister(SystemLongKey0EventPostIsr, KEY_0_LONG_PRESS);
+	KeyInit();
 
 	AdcDriverInit();
 
@@ -263,17 +259,6 @@ void S6HwInit(void)
 
     Spi_init();
 
-#ifdef SUPPORT_SHT3X
-    //SHT3X Reset Pin initial
-    SHT3x_ResetIoInitial();
-#endif
-#ifdef S_A
-    I2c_init();
-#endif //S_A
-
-#ifdef SUPPORT_BLUETOOTH_PRINT
-    Btp_init();
-#endif // SUPPORT_BLUETOOTH_PRINT
 
     Flash_init();
     Menu_init_byflash();
@@ -537,7 +522,6 @@ void S6LongKey1App(void)
         break;
     }
 }
-extern uint8_t MemSensorIndex;
 extern uint32_t starBarDeviceid;
 //***********************************************************************************
 // brief:the Concenter long key application : printf menu
@@ -551,8 +535,6 @@ void S6LongKey0App(void)
         deviceModeTemp = deviceMode;
         deviceMode = DEVICES_CONFIG_MODE;
         gatewayConfigTime = 1;
-        memset(bUsbBuff, 0, USB_BUFF_LENGTH);
-        MemSensorIndex  = 0;
         starBarDeviceid = 0;
         LinkNum         = 0;
         RadioSwitchRate();
@@ -589,7 +571,6 @@ void S6AppBatProcess(void)
 //***********************************************************************************
 void UsbIntProcess(void)
 {
-    uint8_t limitTime;
     if(GetUsbState() == USB_LINK_STATE)
     {
         switch(deviceMode)
@@ -602,19 +583,6 @@ void UsbIntProcess(void)
 #endif
             Task_sleep(100 * CLOCK_UNIT_MS);
             // wait for the gsm uart close
-#ifdef  SUPPORT_NETWORK
-            Nwk_poweroff();
-            limitTime = 0;
-            while(Nwk_is_Active() && limitTime < 10)
-            {
-                WdtClear();
-                Nwk_poweroff();
-                limitTime++;
-                Task_sleep(1000 * CLOCK_UNIT_MS);
-            }
-            if(limitTime >= 10)
-                SystemResetAndSaveRtc();
-#endif
 
             InterfaceEnable();
 
@@ -683,7 +651,6 @@ void S6Wakeup(void)
     if(GetUsbState() == USB_UNLINK_STATE)
     {
 #ifdef  SUPPORT_NETWORK
-        Nwk_poweron();
 #endif
     }
 
@@ -715,20 +682,8 @@ void S6Sleep(void)
     // wait the nwk disable the uart
     Disp_clear_all();
     Disp_msg(2, 3, "Power Off...", FONT_8X16);//display
-#ifdef  SUPPORT_NETWORK
-    Nwk_upload_set();
-    Task_sleep(3 * CLOCK_UNIT_S);
-    Nwk_poweroff();
-    // while(Nwk_is_Active())
-    // {
-    //     WdtClear();
-    //     Task_sleep(100 * CLOCK_UNIT_MS);
-    // }
-#endif
 
-#ifndef S_A
     ConcenterSleep();
-#endif // S_A
 
     deviceMode = DEVICES_OFF_MODE;
     if(Clock_isActive(BatAlarmClkHandle) == TRUE)

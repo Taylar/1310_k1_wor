@@ -702,21 +702,11 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 #endif
         case EV_Get_DevicePara://len(2B) cmd(1B)  para  chk
-        
-            len = GetDevicePara(pData[3],pData);
-            len = Usb_group_package(AC_Send_DevicePara, pData, len);
-            InterfaceSendImmediately(pData, len);
+    
                 
             break;
             
         case EV_Set_DevicePara://len(2B) cmd(1B)  para  chk
-            if(SetDevicePara(pData+3, length-3))
-                pData[0] = 0;     
-            else
-                pData[0] = 1;
-           
-            len = Usb_group_package(AC_Ack, pData, 1);
-            InterfaceSendImmediately(pData, len);
             
             break;        
 #ifdef FLASH_EXTERNAL
@@ -848,12 +838,6 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             InterfaceSendImmediately(pData, len);
             break;
 
-		case EV_Get_SIM_CCID:
-            pData[0] = 20;
-			Nwk_get_simccid(pData+1);
-            len = Usb_group_package(EV_Send_SIM_CCID, pData, 21);
-            InterfaceSendImmediately(pData, len);
-            break;
 
         case EV_Get_Cur_Vol:
 #ifdef  BOARD_CONFIG_DECEIVE

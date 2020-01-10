@@ -63,10 +63,6 @@ int main(void)
 
 #if (defined  BOARD_S6_6)
 
-#ifdef SUPPORT_NETWORK
-    Nwk_task_create();
-#endif // SUPPORT_NETWORK
-
     InterfaceTaskCreate();
 #endif  // BOARD_S6_6
 

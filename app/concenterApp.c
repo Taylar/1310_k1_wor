@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-10-15 15:53:03
+* @Last Modified time: 2020-01-08 20:29:45
 */
 #include "../general.h"
 
@@ -270,8 +270,7 @@ void ConcenterConfigDeceiveInit(void)
 {
 #ifdef  SUPPORT_NETWORK
     Nwk_poweroff();
-    while(Nwk_is_Active())
-    Task_sleep(100 * CLOCK_UNIT_MS);
+
 #endif
 
     deviceMode = DEVICES_CONFIG_MODE;

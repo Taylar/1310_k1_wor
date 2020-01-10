@@ -469,25 +469,7 @@ static void Disp_calendar(void)
 #if defined(S_G)
     Lcd_set_font(SIGNAL_W, SIGNAL_H, 0);
     col += CAICON_W + 2*CAICON_GAP;
-#ifdef SUPPORT_FLIGHT_MODE
-    if(Flight_mode_isFlightMode() && (!Nwk_is_Active())){
-        Disp_icon(col, row, ICOM_13X8_BAT_FLIGHT, 1);
-    }else
-#endif
-    {
-    value = Nwk_get_rssi();
-    if (value < 2 || value == 99)
-        Disp_icon(col, row, ICON_13X8_SIGNAL_0, 0);
-    else if (value >= 12)
-        Disp_icon(col, row, ICON_13X8_SIGNAL_3, 1);
-    else if (value >= 8)
-        Disp_icon(col, row, ICON_13X8_SIGNAL_2, 1);
-    else if (value >= 5)
-        Disp_icon(col, row, ICON_13X8_SIGNAL_1, 1);
-    else
-        Disp_icon(col, row, ICON_13X8_SIGNAL_0, 1);
-    }
-    col += SBICON_W;
+
 #endif
 #if defined(SUPPORT_BATTERY) && defined(S_G)
 //Display battery
@@ -531,24 +513,7 @@ static void Disp_temperature(uint8_t col, uint8_t row, int32_t value, bool deep)
 
 	Lcd_set_font(TPICON_W, TPICON_H, 0);
     
-    if ((deep == false && value == TEMPERATURE_OVERLOAD) ||
-        (deep == true && value == (DEEP_TEMP_OVERLOAD >> 4))){
-        Disp_icon(col, row, TPICON_SUB, 0);
-        col += TPICON_W + TPICON_GAP;
-        Disp_icon(col, row, TPICON_SUB, 1);
-        col += TPICON_W + TPICON_GAP;
-        Disp_icon(col, row, TPICON_SUB, 1);
-        col += TPICON_W + TPICON_GAP;
-    	Lcd_set_font(TPICON_DOT_W, TPICON_DOT_H, 0);
-        Disp_icon(col, row, TPICON_DOT, 0);
-        col += TPICON_DOT_W + TPICON_GAP;
-    	Lcd_set_font(TPICON_W, TPICON_H, 0);
-        Disp_icon(col, row, TPICON_DIGIT, 0);
-        col += TPICON_W + TPICON_GAP;
-    	Lcd_set_font(TPICON_DC_W, TPICON_DC_H, 0);
-        Disp_icon(col, row, TPICON_DC, 0);
-        return;
-    }
+
 
     value = (int32_t)round((float)value / 10.0);
     if (value < 0) {
@@ -604,17 +569,7 @@ static void Disp_temperature(uint8_t col, uint8_t row, int32_t value, bool deep)
 static void Disp_humidty(uint8_t col, uint8_t row, uint16_t value)
 {
 	Lcd_set_font(HUICON_W, HUICON_H, 0);
-    if (value == HUMIDTY_OVERLOAD) {
-        Disp_icon(col, row, HUICON_DIGIT, 0);
-        col += HUICON_W + HUICON_GAP;
-        Disp_icon(col, row, ICON_9X24_SUB, 1);
-        col += HUICON_W + HUICON_GAP;
-        Disp_icon(col, row, ICON_9X24_SUB, 1);
-        col += HUICON_W + HUICON_GAP;
-    	Lcd_set_font(HUICON_PCT_W, HUICON_PCT_H, 0);
-        Disp_icon(col, row, HUICON_PCT, 0);
-        return;
-    }
+
 
     value /= 100;
     if (value >= 99) {
@@ -657,16 +612,7 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 #endif
     Lcd_set_font(132, 32, 0);
     Lcd_clear_area(0, 2);
-        if(value == (LIGHT_OVERLOAD & 0x00ffffff)){
 
-            Lcd_set_font(TPICON_W, TPICON_H, 0);
-            Disp_icon(col, row, TPICON_SUB, 0);
-            col += TPICON_W + TPICON_GAP;
-            Disp_icon(col, row, TPICON_SUB, 1);
-            col += TPICON_W + TPICON_GAP;
-            Disp_icon(col, row, TPICON_SUB, 1);
-            return;
-        }
 
         uint8_t buff[21];
         memset(buff,0x00,21);
@@ -759,165 +705,7 @@ static uint8_t  starBarRssi = 0;
 
 void Disp_sensor_data(void)
 {
-#ifdef SUPPORT_SENSOR
-    int32_t valueT;
-    uint32_t valueL;
-    uint16_t valueH;
-#endif
 
-
-
-    if (rDispObject.init == 0)
-        return;
-
-    if (g_bAlarmSensorFlag&&(Alarm_ffs(g_bAlarmSensorFlag) < MODULE_SENSOR_MAX)) {//显示需要报警的senso
-        rDispObject.sensorIndex = Alarm_ffs(g_bAlarmSensorFlag);
-    }
-    
-#ifdef SUPPORT_SENSOR
-    if (rDispObject.sensorIndex < MODULE_SENSOR_MAX) {    //display  local sensor
-        if (Sensor_get_function(rDispObject.sensorIndex) == (SENSOR_TEMP | SENSOR_HUMI)) {
-            valueT = Sensor_get_temperatureC(rDispObject.sensorIndex);
-            valueH = Sensor_get_humidty(rDispObject.sensorIndex);
-            Disp_temperature(TEMP0_COL_POS, TEMP0_ROW_POS, valueT,false);
-            Disp_humidty(HUMI_COL_POS, HUMI_ROW_POS, valueH);
-
-        } else if (Sensor_get_function(rDispObject.sensorIndex) == SENSOR_TEMP) {
-            valueT = Sensor_get_temperatureC(rDispObject.sensorIndex);
-            Disp_temperature(TEMP1_COL_POS, TEMP1_ROW_POS, valueT,false);
-        }else if(Sensor_get_function(rDispObject.sensorIndex) == SENSOR_DEEP_TEMP){
-            valueT = Sensor_get_deepTemperatureC(rDispObject.sensorIndex);
-            Disp_temperature(TEMP1_COL_POS, TEMP1_ROW_POS, valueT>>4, true);
-        }else if(Sensor_get_function(rDispObject.sensorIndex) == SENSOR_LIGHT){
-            valueL = Sensor_get_lux(rDispObject.sensorIndex);
-            Disp_Lux(LUX_COL_POS, TEMP1_ROW_POS,valueL & 0x00ffffff);
-        }
-        return;
-    }
-#endif
-
-    
-
-#ifdef SUPPORT_NETGATE_DISP_NODE
-    sensordata_mem Sensor = {0,0,0,0};
-    //uint8_t buff[32];
-    uint16_t  cursensorno = 0;
-
-    if(g_rSysConfigInfo.module & MODULE_NWK && 
-       g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor
-
-
-        if(get_next_sensor_memory(&Sensor)){
-
-            if (g_rSysConfigInfo.status & STATUS_SENSOR_NAME_ON)
-                cursensorno = Flash_load_sensor_codec(Sensor.DeviceId); //find sensor no in sensor codec table             
-#if 0
-            if (cursensorno){
-                sprintf((char*)buff, "%02d#", cursensorno);
-                Disp_msg(4, 2, buff, FONT_8X16);
-            }
-            else {                
-                sprintf((char*)buff, "%08lx", Sensor.DeviceId);
-                Disp_msg(2, 2, buff, FONT_8X16);
-            }
-            
-            if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)(SENSOR_TEMP | SENSOR_HUMI)) {
-                if (Sensor.value.temp != TEMPERATURE_OVERLOAD){//temp valid
-
-                    TempToDisplayBuff((int32_t)Sensor.value.temp,buff,Sensor.index);
-                }
-                else 
-                    sprintf((char*)buff, "--c");
-                
-                if (Sensor.value.humi != HUMIDTY_OVERLOAD) //humi valid
-                    sprintf((char*)(buff + strlen((const char *)buff)), " %02d%%", Sensor.value.humi/100);
-                else 
-                    sprintf((char*)(buff + strlen((const char *)buff)), " --%%");
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);                
-            } else if (Sensor_get_function_by_type(Sensor.type) == SENSOR_TEMP) {   
-            
-                if (Sensor.value.temp != TEMPERATURE_OVERLOAD){//temp valid
-
-                    TempToDisplayBuff((int32_t)Sensor.value.temp,buff,Sensor.index);
-                }
-                else 
-                    sprintf((char*)buff, "--c");
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);                
-            } else if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_DEEP_TEMP){
-                if (Sensor.value.tempdeep != DEEP_TEMP_OVERLOAD){
-
-                    TempToDisplayBuff(Sensor.value.tempdeep>>4,buff,Sensor.index);
-                }
-                else
-                    sprintf((char*)buff, "--c");
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);
-            } else if(Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_LIGHT){
-
-                if (Sensor.value.lux != LIGHT_OVERLOAD){
-                    sprintf((char *)buff,  "%ld.%dLx", (uint32_t)((Sensor.value.lux&0x00ffffff)/100),(uint16_t)(LOWORD(Sensor.value.lux)%100/10.0));
-                }
-                else
-                    sprintf((char*)buff, "--c");
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);
-            }
-#ifdef SUPPORT_UPLOAD_ASSET_INFO
-            else if(Sensor.type == SEN_TYPE_ASSET){
-                sprintf((char*)buff, "%02x-%02x %02x:%02x", Sensor.value.month, Sensor.value.day, Sensor.value.hour, Sensor.value.minutes);
-                Lcd_set_font(132, 16, 0);
-                Lcd_clear_area(2, 4);
-                Disp_msg(2, 4, buff, FONT_8X16);
-            }
-#endif // SUPPORT_UPLOAD_ASSET_INFO
-
-#else
-            if (cursensorno){
-                starBarDeviceid =cursensorno;
-            }
-            else {
-                starBarDeviceid = Sensor.DeviceId;
-                starBarRssi = (uint8_t)(-Sensor.rssi);
-            }
-            
-            if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)(SENSOR_TEMP | SENSOR_HUMI)) {
-
-                    Disp_temperature(TEMP0_COL_POS, TEMP0_ROW_POS, Sensor.value.temp ,false);
-                    Disp_humidty(HUMI_COL_POS,HUMI_ROW_POS,Sensor.value.humi);
-
-            } else if (Sensor_get_function_by_type(Sensor.type) == SENSOR_TEMP) {   
-            
-                    Disp_temperature(TEMP1_COL_POS, TEMP1_ROW_POS, Sensor.value.temp ,false);
-
-            } else if (Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_DEEP_TEMP){
-
-                  Disp_temperature(TEMP1_COL_POS, TEMP1_ROW_POS, (Sensor.value.tempdeep>>4),true);
-
-            } else if(Sensor_get_function_by_type(Sensor.type) == (uint32_t)SENSOR_LIGHT){
-
-                     Disp_Lux(LUX_COL_POS, TEMP1_ROW_POS,Sensor.value.lux&0x00ffffff);
-#ifdef SUPPORT_UPLOAD_ASSET_INFO
-            } else if(Sensor.type == SEN_TYPE_ASSET){
-                uint8_t buff[32];
-                sprintf((char*)buff, "%02x-%02x %02x:%02x", Sensor.value.month, Sensor.value.day, Sensor.value.hour, Sensor.value.minutes);
-                Lcd_set_font(128, 32, 0);
-                Lcd_clear_area(0, 2);
-                Disp_msg(2, 2, buff, FONT_8X16);
-#endif // SUPPORT_UPLOAD_ASSET_INFO
-            }
-#endif
-        }
-
-    }
-        
-#endif
-    
 }
 
 //***********************************************************************************
@@ -951,18 +739,7 @@ void Disp_sensor_switch(void)
 #endif
 
     oldNum = rDispObject.sensorIndex;
-    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
-        num = (rDispObject.sensorIndex + i + 1) % MODULE_SENSOR_MAX;
-        if ((g_rSysConfigInfo.sensorModule[num] != SEN_TYPE_NONE)&&(g_rSysConfigInfo.sensorModule[num] != SEN_TYPE_GSENSOR)) {
 
-            if((g_rSysConfigInfo.status & STATUS_HIDE_SHT_SENSOR) && (g_rSysConfigInfo.sensorModule[num] == SEN_TYPE_SHT2X)){
-                continue;//hide sht20 sensor
-            }
-            
-            rDispObject.sensorIndex = num;
-            break;
-        }
-    }
     if (oldNum != num && g_rSysConfigInfo.sensorModule[oldNum] != g_rSysConfigInfo.sensorModule[num]) {
         //If exist more than 2 type temperature, should switch display.
     	Lcd_set_font(128, 32, 0);
@@ -1041,24 +818,7 @@ static void Disp_status_bar(void)
 
 #ifndef S_G
 //Display signal    or flight
-#ifdef SUPPORT_FLIGHT_MODE
-    if(Flight_mode_isFlightMode() && (!Nwk_is_Active())){
-        Disp_icon(col, row, ICON_16X16_FLIGHT, 1);
-    }else
-#endif
-    {
-    value = Nwk_get_rssi();
-    if (value < 2 || value == 99)
-        Disp_icon(col, row, ICON_16X16_SIGNAL0, 0);
-    else if (value >= 12)
-        Disp_icon(col, row, ICON_16X16_SIGNAL3, 1);
-    else if (value >= 8)
-        Disp_icon(col, row, ICON_16X16_SIGNAL2, 1);
-    else if (value >= 5)
-        Disp_icon(col, row, ICON_16X16_SIGNAL1, 1);
-    else
-        Disp_icon(col, row, ICON_16X16_SIGNAL0, 1);
-    }
+
     col += SBICON_W;
 
 #ifdef SUPPORT_BATTERY
@@ -1153,11 +913,7 @@ void Disp_info_switch(void)
         return;
 
     
-    for(i =0; i< MODULE_SENSOR_MAX; ++i){
-        if((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE)&&(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)) {
-            sensor_num++;
-        }
-    }
+
 
     info_num +=(sensor_num/2);//  info  5 , 6, 7 ,8
 
@@ -1227,19 +983,6 @@ void Disp_info(void)
             //CUSTOM ID
             sprintf((char *)buff, "CUID: %02x%02x", g_rSysConfigInfo.customId[0], g_rSysConfigInfo.customId[1]);
             Disp_msg(0, 2, buff, FONT_8X16);
-
-			if (g_rSysConfigInfo.module & MODULE_NWK) {
-                //SIM CCID
-                Disp_msg(0, 4, "CCID: ", FONT_8X16);
-                memset(buff, 0 ,21);
-                Nwk_get_simccid(buff);
-                buff[20] = '\0';
-                temp = buff[10];
-                buff[10] = '\0';
-                Disp_msg(6, 4, buff, FONT_8X16);
-                buff[10] = temp;
-                Disp_msg(6, 6, &buff[10], FONT_8X16);
-			}
 
 
 #ifdef S_C
@@ -1393,56 +1136,6 @@ void Disp_info(void)
             break;
             
         case DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE : // 4 ... 7:
-            
-            j= 0;
-            
-            for(i =0; i< MODULE_SENSOR_MAX; ++i){
-                if((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE)&&
-					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)&&
-					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_OPT3001)){
-
-#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
-                    //if(j++ <= ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2))continue;//跳过第一个通道的报警和预警信息
-
-                    if (j++ > ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2 + 2))break;//从第一个通道开始显示报警和预警信息
- #else
- 
-                    if(j++ <= ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2))continue;//跳过第一个通道的报警和预警信息
-
-                    if (j > ((rDispObject.infoIndex - DISPLAY_PAGE_SOFTVERSION_INDEX - 1)*2 + 3))break;//只显示第 2 / 3 个通道的报警和预警信息
- #endif  
-                  /*
-                    if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "TA%02d:    ", i);
-                    else if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH)
-                        sprintf((char *)buff, "TA%02d:%d~ ", i, g_rSysConfigInfo.alarmTemp[i].low/100);
-                    else if(g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "TA%02d: ~%d", i,g_rSysConfigInfo.alarmTemp[i].high/100);
-                    else                        
-                        sprintf((char *)buff, "TA%02d:%d~%d", i, g_rSysConfigInfo.alarmTemp[i].low/100,g_rSysConfigInfo.alarmTemp[i].high/100);
-*/
-#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE                    
-                    Disp_msg(0, 4*((((j)%2)?1:2)-1), buff, FONT_8X16);
-#else
-                     Disp_msg(0, 4*((((j-1)%2)?1:2)-1), buff, FONT_8X16);
-#endif
-                    if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.WarningTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "PA%02d:    ", i);
-                    else if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH)
-                        sprintf((char *)buff, "PA%02d:%d~ ", i, g_rSysConfigInfo.WarningTemp[i].low/100);
-                    else if(g_rSysConfigInfo.WarningTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "PA%02d: ~%d", i,g_rSysConfigInfo.WarningTemp[i].high/100);
-                    else                        
-                        sprintf((char *)buff, "PA%02d:%d~%d", i, g_rSysConfigInfo.WarningTemp[i].low/100,g_rSysConfigInfo.WarningTemp[i].high/100);
-
-#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE                   
-                    Disp_msg(0, 4*((((j)%2)?1:2)-1)+2, buff, FONT_8X16);
-#else
-                    Disp_msg(0, 4*((((j-1)%2)?1:2)-1)+2, buff, FONT_8X16);
-#endif
-                }
-                
-            }
 
             break;
     }

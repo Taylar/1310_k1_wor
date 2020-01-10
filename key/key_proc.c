@@ -2,10 +2,13 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-18 14:56:09
+* @Last Modified time: 2020-01-09 18:46:32
 */
 
 #include "../general.h"
+#define     KEY_IC_ADDR     0x58
+#define     KEY_IC_P0_INVALID   0X0F
+#define     KEY_IC_P1_INVALID   0XF0
 
 static Clock_Struct keyClkStruct;
 static Clock_Handle keyClkHandle;
@@ -15,10 +18,10 @@ static KeyTask_t rKeyTask;
 
 // node board
 #ifdef BOARD_S3
-#define Board_BUTTON0                            IOID_4
+#define Board_BUTTON_INT                            IOID_4
 
 const PIN_Config keyPinTable[] = {
-    Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+    Board_BUTTON_INT | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
     PIN_TERMINATE
 };
 
@@ -28,21 +31,23 @@ const PIN_Config keyPinTable[] = {
 
 // S6_6 board
 #ifdef BOARD_S6_6
-#define Board_BUTTON1                    IOID_4
-#define Board_BUTTON0                    IOID_14
+#define Board_BUTTON_INT                    IOID_14
+#define Board_BUTTON_RES                    IOID_4
 
 const PIN_Config keyPinTable[] = {
-    Board_BUTTON0 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+    Board_BUTTON_INT | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
     PIN_TERMINATE
 };
 
-const PIN_Config key1PinTable[] = {
-    Board_BUTTON1 | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
+const PIN_Config keyResPinTable[] = {
+    Board_BUTTON_RES | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
     PIN_TERMINATE
 };
+
+
 
 static PIN_State   key1State;
-static PIN_Handle  key1Handle;
+static PIN_Handle  keyResHandle;
 #endif
 
 
@@ -52,11 +57,7 @@ static PIN_Handle  keyHandle;
 
 static const uint8_t key_pin_id[KEY_MAX_NUM] = 
 {
-    Board_BUTTON0,
-
-#ifdef BOARD_S6_6
-    Board_BUTTON1,
-#endif
+    Board_BUTTON_INT,
 };
 
 
@@ -84,10 +85,9 @@ void KeyIoInit(PIN_IntCb pCb)
 //
 //***********************************************************************************
 #ifdef BOARD_S6_6
-void Key1IoInit(PIN_IntCb pCb)
+void Key1IoInit(void)
 {
-    key1Handle = PIN_open(&key1State, key1PinTable);
-    PIN_registerIntCb(key1Handle, pCb);
+    keyResHandle = PIN_open(&key1State, keyResPinTable);
 }
 #endif
 
@@ -102,10 +102,38 @@ static void KeyScanStop(void)
     rKeyTask.doublePressTime = 0;
     rKeyTask.holdPress       = 0;
     rKeyTask.doublePress     = 0;
+    rKeyTask.scanPort        = 0;
+    rKeyTask.scanState       = 0;
 
     Clock_stop(keyClkHandle);
 }
 
+#ifdef BOARD_S6_6
+static void KeyScanFxn(UArg arg0)
+{
+    uint8_t portState;
+    if(rKeyTask.scanPort == 0){
+        portState = KeyReadP0();
+        if(portState == KEY_IC_P0_INVALID){
+            KeyScanStop();
+            return; 
+        }
+        rKeyTask.scanState = portState;
+        rKeyTask.scanPort = 1;
+        KeySetP1InP0Out();
+    }else if(rKeyTask.scanPort){
+        portState = KeyReadP1();
+        if(portState == KEY_IC_P1_INVALID){
+            KeyScanStop();
+            return; 
+        }
+        rKeyTask.scanState |= portState;
+        rKeyTask.keyCode = rKeyTask.scanState;
+        KeyScanStop();
+        Sys_event_post(SYSTEMAPP_EVT_KEY);
+    }
+}
+#else
 //***********************************************************************************
 //
 // Key scan callback function, use 10ms clock.
@@ -165,7 +193,7 @@ static void KeyScanFxn(UArg arg0)
         }
     }
 }
-
+#endif //BOARD_S6_6
 
 //***********************************************************************************
 //
@@ -195,7 +223,64 @@ static void Key1IsrFxn(UInt index)
         Clock_start(keyClkHandle);
     }
 }
+
+void KeySetP0InP1Out(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x04, 0XFF); //设置P0口作为输入
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x05, 0X00); //设置P1口作为输出
+
+
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x03, 0X00); //设置P1口输出低
+}
+
+void KeySetP1InP0Out(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x04, 0X00); //设置P0口作为输出
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x05, 0XFF); //设置P1口作为输入
+
+
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x02, 0X00); //设置P0口输出低
+
+}
+
+
+static void KeyIcInit(void)
+{
+    uint8_t controlReg;
+    PIN_setOutputValue(keyResHandle, Board_BUTTON_RES, 1);
+    Task_sleep(10 * CLOCK_UNIT_MS);
+
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x12, 0XFF); //设置P0口为gpio模式
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x13, 0XFF); //设置P1口为gpio模式
+
+    controlReg = I2C_byteread(KEY_IC_ADDR << 1, 0x11);
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x11, controlReg | (0x01 << 4)); //设置P0口为推挽式输出
+    controlReg = I2C_byteread(KEY_IC_ADDR << 1, 0x11);
+
+    if(controlReg == (0x01 << 4))
+        KeySetP0InP1Out();
+}
+
+uint8_t KeyReadP0(void)
+{
+    uint8_t portData;
+    portData = I2C_byteread(KEY_IC_ADDR << 1, 0x00) >> 3;
+    return (portData&0x0f);
+}
+
+uint8_t KeyReadP1(void)
+{
+    uint8_t portData;
+    portData = I2C_byteread(KEY_IC_ADDR << 1, 0x01) << 3;
+    return (portData&0xf0);
+}
+
+
 #endif
+
+
+
+
 //***********************************************************************************
 //
 // Key init.
@@ -205,10 +290,13 @@ void KeyInit(void)
 {
     uint8_t i;
 
-    rKeyTask.holdTime = 0;
+    rKeyTask.holdTime        = 0;
     rKeyTask.doublePressTime = 0;
-    rKeyTask.shortPress = 0;
-    rKeyTask.doublePress = 0;
+    rKeyTask.shortPress      = 0;
+    rKeyTask.doublePress     = 0;
+    rKeyTask.scanPort        = 0;
+    rKeyTask.scanState       = 0;
+    rKeyTask.keyCode         = 0;
 
     /* Construct a 10ms periodic Clock Instance to scan key */
     Clock_Params clkParams;
@@ -224,10 +312,15 @@ void KeyInit(void)
         AppKeyIsrCb[i] = NULL;
     }
 
-    /* install Button callback */
     KeyIoInit((PIN_IntCb)KeyIsrFxn);
 #ifdef  BOARD_S6_6
-    Key1IoInit((PIN_IntCb)Key1IsrFxn);
+    Key1IoInit();
+    Task_sleep(2 * CLOCK_UNIT_MS);
+    KeyIcInit();
+
+    // 检测是否有按键按下
+    if(KeyReadP0() != 0x0f)
+        KeyIsrFxn(0);
 #endif
 
 }

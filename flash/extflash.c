@@ -1853,13 +1853,7 @@ void Sys_config_reset(void)
 
     g_rSysConfigInfo.status = 0;
 
-    for (i = 0; i < MODULE_SENSOR_MAX; i++) {
-        g_rSysConfigInfo.sensorModule[i]     = SEN_TYPE_NONE;
-        g_rSysConfigInfo.alarmTemp[i].high   = ALARM_TEMP_HIGH;
-        g_rSysConfigInfo.alarmTemp[i].low    = ALARM_TEMP_LOW;
-        g_rSysConfigInfo.WarningTemp[i].high = ALARM_TEMP_HIGH;
-        g_rSysConfigInfo.WarningTemp[i].low  = ALARM_TEMP_LOW;
-    }
+
 
 #ifdef      BOARD_S6_6
     #ifdef S_G //缃戝叧

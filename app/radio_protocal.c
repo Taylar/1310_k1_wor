@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-18 16:25:26
+* @Last Modified time: 2020-01-08 20:27:18
 */
 #include "../general.h"
 
@@ -845,9 +845,6 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			bufTemp->load[1]		= (uint8_t)(protocalRxPacket->rssi);
 
 #ifdef  S_G
-#ifdef SUPPORT_NETGATE_DISP_NODE
-			sensor_unpackage_to_memory(bufTemp->load, bufTemp->load[0]+1);
-#endif // SUPPORT_NETGATE_DISP_NODE
 #endif // S_G
 			HIBYTE_ZKS(serialNum) = bufTemp->load[6];
 			LOBYTE_ZKS(serialNum) = bufTemp->load[7];
@@ -877,16 +874,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			}
 
 #ifdef  S_G
-#ifdef SUPPORT_NETGATE_DISP_NODE
-				buff[1] = protocalRxPacket->rssi;  // rssi
-				buff[2] = protocalRxPacket->payload[9];  //id
-				buff[3] = protocalRxPacket->payload[8];  //id
-				buff[4] = protocalRxPacket->payload[7];  //id
-				buff[5] = protocalRxPacket->payload[6];  //id
-				buff[16] = 0;  // sensor num
-				buff[17] = SEN_TYPE_INVALID;  //sensor type
-				sensor_unpackage_to_memory(buff, 17);
-#endif // SUPPORT_NETGATE_DISP_NODE
+
 #endif // S_G
 			syncTime = 1;
 			break;
@@ -1100,20 +1088,6 @@ ConcenterConfigRespondEnd:
 			
 			break;
 
-#ifdef SUPPORT_NETGATE_DISP_NODE
-			case RADIO_PRO_CMD_SPE_BROCAST_ACK:
-
-				buff[1] = protocalRxPacket->rssi;  // rssi
-				buff[2] = protocalRxPacket->payload[9];  //id
-				buff[3] = protocalRxPacket->payload[8];  //id
-				buff[4] = protocalRxPacket->payload[7];  //id
-				buff[5] = protocalRxPacket->payload[6];  //id
-				buff[16] = 0;  // sensor num
-				buff[17] = SEN_TYPE_INVALID;  //sensor type
-				sensor_unpackage_to_memory(buff, 17);
-			    Sys_event_post(SYSTEMAPP_EVT_DISP);
-				return;
-#endif // SUPPORT_NETGATE_DISP_NODE
 
 		}
 		// point to new message the head
@@ -1563,7 +1537,6 @@ void Radio_ClearNodeConfig(uint32_t devID)
 		if((nodeConfig[i].devID == devID) && (devID != 0))
 		{
 			nodeSetComplete = nodeConfig[i];
-			Nwk_nodeSetAckEventSet();
 			nodeConfig[i].preConfigType = 0;
 			nodeConfig[i].devID = 0;
 		}

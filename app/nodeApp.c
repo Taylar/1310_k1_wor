@@ -324,7 +324,7 @@ void NodeWakeup(void)
     NodeStrategyReset();
     NodeStartBroadcast();
     NodeBroadcasting();
-   NodeStrategyStart();
+    NodeStrategyStart();
 #ifdef ZKS_S3_WOR
     RadioEventPost(RADIO_EVT_START_SNIFF);
 #else
