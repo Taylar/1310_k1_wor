@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-09 15:42:20
+* @Last Modified time: 2020-01-10 14:22:43
 */
 #include "../general.h"
 
@@ -292,257 +292,6 @@ void S6HwInit(void)
 
 
 
-
-//***********************************************************************************
-// brief:the S6 Concenter short key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6ShortKeyApp(void)
-{
-    RadioEventPost(RADIO_EVT_WAKEUP_SEND);
-    brocastTimes = 25;
-
-    if (g_bAlarmSensorFlag) {
-        Sys_buzzer_disable();
-        Clock_stop(sysAlarmClkHandle);
-        g_bAlarmSensorFlag = 0;
-        return;
-    }
-
-    if(gatewayConfigTime)
-    {
-        if(deviceMode == DEVICES_SLEEP_MODE)
-        {
-            Disp_poweron();
-            deviceMode = DEVICES_ON_MODE;
-            Sys_event_post(SYSTEMAPP_EVT_DISP);
-            return;
-        }
-    }
-
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Disp_poweron();
-#ifdef SUPPORT_MENU
-        if (Menu_is_process()) {
-            Menu_action_proc(MENU_AC_DOWN);
-        } else
-#endif
-        {
-            Disp_info_switch();
-        }
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-
-        case DEVICES_OFF_MODE:
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        // Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        deviceMode = DEVICES_ON_MODE;
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-    }
-}
-
-//***********************************************************************************
-// brief:the Concenter long key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6ConcenterLongKeyApp(void)
-{
-    if (g_bAlarmSensorFlag) {
-        Sys_buzzer_disable();
-        Clock_stop(sysAlarmClkHandle);
-        g_bAlarmSensorFlag = 0;
-        return;
-    }
-
-    if(gatewayConfigTime)
-    {
-        if(deviceMode == DEVICES_SLEEP_MODE)
-        {
-            Disp_poweron();
-            deviceMode = DEVICES_ON_MODE;
-            Sys_event_post(SYSTEMAPP_EVT_DISP);
-            return;
-        }
-    }
-
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Disp_poweroff();
-        S6Sleep();
-        Led_ctrl(LED_R, 1, 250 * CLOCK_UNIT_MS, 6);
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-
-        case DEVICES_OFF_MODE:
-        Battery_voltage_measure();
-        if(Battery_get_voltage() > g_rSysConfigInfo.batLowVol)
-        {
-            Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-            deviceMode = DEVICES_ON_MODE;
-            S6Wakeup();
-            Disp_poweron();
-            Disp_info_close();
-            Sys_event_post(SYSTEMAPP_EVT_DISP);
-        }
-        else
-        {
-            Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        }
-        break;
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        deviceMode = DEVICES_ON_MODE;
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-    }
-}
-
-//***********************************************************************************
-// brief:the S6 Concenter short key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6ShortKey1App(void)
-{
-#ifdef BOARD_S6_6
-    RadioEventPost(RADIO_EVT_WAKEUP_SEND);
-    brocastTimes = 25;
-    
-    if (g_bAlarmSensorFlag) {
-        Sys_buzzer_disable();
-        Clock_stop(sysAlarmClkHandle);
-        g_bAlarmSensorFlag = 0;
-        return;
-    }
-
-    if(gatewayConfigTime)
-    {
-        gatewayConfigTime = 0;
-        RadioSwitchRate();
-        Disp_poweron();
-        deviceMode = DEVICES_ON_MODE;
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        return;
-    }
-
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Disp_poweron();
-#ifdef SUPPORT_MENU
-        if (Menu_is_process()) {
-            Menu_action_proc(MENU_AC_ENTER);
-        } else
-#endif
-        {
-            Disp_sensor_switch();
-        }
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-
-        case DEVICES_OFF_MODE:
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 1);
-        // Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        deviceMode = DEVICES_ON_MODE;
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-
-    }
-#endif
-}
-
-
-
-//***********************************************************************************
-// brief:the Concenter long key application
-// 
-// parameter: 
-//***********************************************************************************
-void S6LongKey1App(void)
-{
-    if (g_bAlarmSensorFlag) {
-        Sys_buzzer_disable();
-        Clock_stop(sysAlarmClkHandle);
-        g_bAlarmSensorFlag = 0;
-        return;
-    }
-
-    if(gatewayConfigTime)
-    {
-        if(deviceMode == DEVICES_SLEEP_MODE)
-        {
-            Disp_poweron();
-            deviceMode = DEVICES_ON_MODE;
-            Sys_event_post(SYSTEMAPP_EVT_DISP);
-            return;
-        }
-    }
-    
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        Disp_poweron();
-        PoweroffMenu_init();
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-
-        case DEVICES_OFF_MODE:
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 6);
-        Battery_voltage_measure();
-        if(Battery_get_voltage() > g_rSysConfigInfo.batLowVol)
-        {
-            deviceMode = DEVICES_ON_MODE;
-            S6Wakeup();
-            Disp_poweron();
-            Disp_info_close();
-            Sys_event_post(SYSTEMAPP_EVT_DISP);
-        }
-        break;
-
-
-        case DEVICES_SLEEP_MODE:
-        Disp_poweron();
-        deviceMode = DEVICES_ON_MODE;
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-        break;
-    }
-}
-extern uint32_t starBarDeviceid;
-//***********************************************************************************
-// brief:the Concenter long key application : printf menu
-// 
-// parameter: 
-//***********************************************************************************
-void S6LongKey0App(void)
-{
-    if(DEVICES_CONFIG_MODE != deviceMode)
-    {
-        deviceModeTemp = deviceMode;
-        deviceMode = DEVICES_CONFIG_MODE;
-        gatewayConfigTime = 1;
-        starBarDeviceid = 0;
-        LinkNum         = 0;
-        RadioSwitchRate();
-    }
-    Sys_event_post(SYSTEMAPP_EVT_DISP);
-}
-
-
 //***********************************************************************************
 // brief:S6 measure the bat
 // 
@@ -551,7 +300,7 @@ void S6LongKey0App(void)
 void S6AppBatProcess(void)
 {
     Battery_porcess();
-    //鐢甸噺浣庤嚦涓�鏍�,姣�5绉掗棯绾㈢伅涓�娆�
+
     if((Battery_get_voltage()<= BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == FALSE) && 
         ((deviceMode == DEVICES_SLEEP_MODE) || (deviceMode == DEVICES_ON_MODE))) {
         Clock_start(BatAlarmClkHandle);
@@ -654,15 +403,15 @@ void S6Wakeup(void)
 #endif
     }
 
-#ifdef S_G//缂冩垵鍙�
+#ifdef S_G//缃戝�?
     ConcenterWakeup();
     if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
         AutoFreqInit();
-#endif // S_G//缂冩垵鍙�
+#endif // S_G//缃戝�?
 
-#ifdef S_C //鑺傜偣
+#ifdef S_C //节点
     NodeWakeup();
-#endif // S_C //鑺傜偣
+#endif // S_C //节点
 }
 
 
@@ -689,6 +438,75 @@ void S6Sleep(void)
     if(Clock_isActive(BatAlarmClkHandle) == TRUE)
         Clock_stop(BatAlarmClkHandle);
 }
+
+void S6KeyApp(void)
+{
+    KEY_CODE_E keyCode;
+
+    keyCode = Key_get();
+    switch(keyCode)
+    {
+        case _VK_COMMAND:
+        break;
+
+
+        case _VK_ACTIVE:
+        break;
+
+
+        case _VK_DELETE:
+        break;
+
+
+        case _VK_NUM1:
+        break;
+
+
+        case _VK_NUM2:
+        break;
+
+
+        case _VK_NUM3:
+        break;
+
+
+        case _VK_NUM4:
+        break;
+
+
+        case _VK_NUM5:
+        break;
+
+
+        case _VK_NUM6:
+        break;
+
+
+        case _VK_NUM7:
+        break;
+
+
+        case _VK_NUM8:
+        break;
+
+
+        case _VK_NUM9:
+        break;
+
+
+        case _VK_MODE:
+        break;
+
+
+        case _VK_NUM0:
+        break;
+
+
+        case _VK_OK:
+        break;
+    }
+}
+
 
 
 #endif

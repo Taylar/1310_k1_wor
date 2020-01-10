@@ -48,22 +48,6 @@ void Sys_event_post(UInt event)
 }
 
 
-void SystemKeyEventPostIsr(void)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY);
-}
-
-void SystemLongKeyEventPostIsr(void)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY_LONG);
-}
-
-void SystemDoubleKeyEventPostIsr(void)
-{
-    Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_KEY_DOUBLE);
-}
-
-
 void SystemUsbIntEventPostIsr(void)
 {
     Event_post(systemAppEvtHandle, SYSTEMAPP_EVT_USBINT);
@@ -262,6 +246,12 @@ void SystemAppTaskFxn(void)
 			WdtClear();
         }
 
+#ifdef BOARD_S6_6
+        if(eventId & SYS_EVT_KEY_SCAN){
+        	KeyScanFxn();
+        }
+#endif // BOARD_S6_6
+
 // the config deceive key is disable
 		if(eventId &SYSTEMAPP_EVT_KEY)
 		{
@@ -270,14 +260,13 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef BOARD_S6_6
-			S6ShortKeyApp();
+			S6KeyApp();
 #endif
 		}
 
 #ifdef BOARD_S3
 		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
 		{
-
 			S1LongKeyApp();
 		}
 
@@ -314,7 +303,6 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S6_6
 		S6AppBatProcess();
 
-
 #ifdef SUPPORT_ALARM_RECORD_QURERY
       	if(eventId & SYS_EVT_ALARM_SAVE)
       	{
@@ -330,16 +318,6 @@ void SystemAppTaskFxn(void)
 			Flash_store_config();
 		}
 
-		if((eventId & SYS_EVT_STRATEGY))
-		{
-			if(GetStrategyRegisterStatus() == false)
-			{
-			    if( g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
-				    NodeStrategyTimeoutProcess();
-				    RadioSend();
-			    }
-			}
-		}
 
 		if((eventId & SYSTEMAPP_EVT_RADIO_ABORT))
 		{
@@ -355,12 +333,6 @@ void SystemAppTaskFxn(void)
 			}
 		}
 
-         //=======================================
-#ifdef SUPPORT_BLUETOOTH_PRINT
-        if (eventId & SYS_EVT_PRINT_CONTINU){
-            Btp_print_record();
-        }
-#endif
 
 #ifdef SUPPORT_DISP_SCREEN
 		if(eventId & SYSTEMAPP_EVT_DISP)

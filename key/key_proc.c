@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-09 18:46:32
+* @Last Modified time: 2020-01-10 14:38:28
 */
 
 #include "../general.h"
@@ -109,7 +109,70 @@ static void KeyScanStop(void)
 }
 
 #ifdef BOARD_S6_6
-static void KeyScanFxn(UArg arg0)
+
+KEY_CODE_E Key_get(void)
+{
+    return rKeyTask.keyCode;
+}
+
+
+void KeySetP0InP1Out(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x04, 0XFF); //设置P0口作为输入
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x05, 0X00); //设置P1口作为输出
+
+
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x03, 0X00); //设置P1口输出低
+}
+
+void KeySetP1InP0Out(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x04, 0X00); //设置P0口作为输出
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x05, 0XFF); //设置P1口作为输入
+
+
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x02, 0X00); //设置P0口输出低
+
+}
+
+
+static void KeyIcInit(void)
+{
+    uint8_t controlReg;
+    PIN_setOutputValue(keyResHandle, Board_BUTTON_RES, 1);
+    Task_sleep(10 * CLOCK_UNIT_MS);
+
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x12, 0XFF); //设置P0口为gpio模式
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x13, 0XFF); //设置P1口为gpio模式
+
+    controlReg = I2C_byteread(KEY_IC_ADDR << 1, 0x11);
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x11, controlReg | (0x01 << 4)); //设置P0口为推挽式输出
+    controlReg = I2C_byteread(KEY_IC_ADDR << 1, 0x11);
+
+    if(controlReg == (0x01 << 4))
+        KeySetP0InP1Out();
+}
+
+uint8_t KeyReadP0(void)
+{
+    uint8_t portData;
+    portData = I2C_byteread(KEY_IC_ADDR << 1, 0x00) >> 3;
+    return (portData&0x0f);
+}
+
+uint8_t KeyReadP1(void)
+{
+    uint8_t portData;
+    portData = I2C_byteread(KEY_IC_ADDR << 1, 0x01) << 3;
+    return (portData&0xf0);
+}
+
+void KeyScanCbEvent(UArg arg0)
+{
+    Sys_event_post(SYS_EVT_KEY_SCAN);
+}
+
+void KeyScanFxn(void)
 {
     uint8_t portState;
     if(rKeyTask.scanPort == 0){
@@ -129,6 +192,11 @@ static void KeyScanFxn(UArg arg0)
         }
         rKeyTask.scanState |= portState;
         rKeyTask.keyCode = rKeyTask.scanState;
+        KeySetP0InP1Out();
+        // 延迟一段时间，等待中断产生，并读取IO口状态，清除中断标志
+        Task_sleep(2 * CLOCK_UNIT_MS);
+        KeyReadP0();
+        KeyReadP1();
         KeyScanStop();
         Sys_event_post(SYSTEMAPP_EVT_KEY);
     }
@@ -193,8 +261,8 @@ static void KeyScanFxn(UArg arg0)
         }
     }
 }
-#endif //BOARD_S6_6
 
+#endif //BOARD_S6_6
 //***********************************************************************************
 //
 // Key gpio hwi callback function.
@@ -209,74 +277,7 @@ static void KeyIsrFxn(UInt index)
     }
 }
 
-//***********************************************************************************
-//
-// Key gpio hwi callback function.
-//
-//***********************************************************************************
-#ifdef  BOARD_S6_6
-static void Key1IsrFxn(UInt index)
-{
-    if (Clock_isActive(keyClkHandle) == FALSE)
-    {
-        rKeyTask.keyNum = KEY1_NUM;
-        Clock_start(keyClkHandle);
-    }
-}
 
-void KeySetP0InP1Out(void)
-{
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x04, 0XFF); //设置P0口作为输入
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x05, 0X00); //设置P1口作为输出
-
-
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x03, 0X00); //设置P1口输出低
-}
-
-void KeySetP1InP0Out(void)
-{
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x04, 0X00); //设置P0口作为输出
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x05, 0XFF); //设置P1口作为输入
-
-
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x02, 0X00); //设置P0口输出低
-
-}
-
-
-static void KeyIcInit(void)
-{
-    uint8_t controlReg;
-    PIN_setOutputValue(keyResHandle, Board_BUTTON_RES, 1);
-    Task_sleep(10 * CLOCK_UNIT_MS);
-
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x12, 0XFF); //设置P0口为gpio模式
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x13, 0XFF); //设置P1口为gpio模式
-
-    controlReg = I2C_byteread(KEY_IC_ADDR << 1, 0x11);
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x11, controlReg | (0x01 << 4)); //设置P0口为推挽式输出
-    controlReg = I2C_byteread(KEY_IC_ADDR << 1, 0x11);
-
-    if(controlReg == (0x01 << 4))
-        KeySetP0InP1Out();
-}
-
-uint8_t KeyReadP0(void)
-{
-    uint8_t portData;
-    portData = I2C_byteread(KEY_IC_ADDR << 1, 0x00) >> 3;
-    return (portData&0x0f);
-}
-
-uint8_t KeyReadP1(void)
-{
-    uint8_t portData;
-    portData = I2C_byteread(KEY_IC_ADDR << 1, 0x01) << 3;
-    return (portData&0xf0);
-}
-
-
-#endif
 
 
 
@@ -303,7 +304,11 @@ void KeyInit(void)
     Clock_Params_init(&clkParams);
     clkParams.period = 10 * CLOCK_UNIT_MS;
     clkParams.startFlag = FALSE;
+#ifdef BOARD_S6_6
+    Clock_construct(&keyClkStruct, (Clock_FuncPtr)KeyScanCbEvent, 0, &clkParams);
+#else
     Clock_construct(&keyClkStruct, (Clock_FuncPtr)KeyScanFxn, 0, &clkParams);
+#endif
     /* Obtain clock instance handle */
     keyClkHandle = Clock_handle(&keyClkStruct);
 

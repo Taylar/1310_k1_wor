@@ -17,11 +17,9 @@
 #define         SYS_EVT_ALARM                      		Event_Id_10
 #define         SYS_EVT_SENSOR                      	Event_Id_11
 #define         SYS_FEED_WATCHDOG                      	Event_Id_12
-#define         SYS_EVT_STRATEGY                      	Event_Id_13
-#define         SYS_EVT_USB_CHARGE                      Event_Id_14
-#define         SYS_EVT_CONFIG_MODE_EXIT                Event_Id_15
-#define         SYS_EVT_S1_SENSOR                       Event_Id_16
-#define         SYS_EVT_PRINT_CONTINU                   Event_Id_17
+#define         SYS_EVT_USB_CHARGE                      Event_Id_13
+#define         SYS_EVT_CONFIG_MODE_EXIT                Event_Id_14
+#define 		SYS_EVT_KEY_SCAN						Event_Id_15
 
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 

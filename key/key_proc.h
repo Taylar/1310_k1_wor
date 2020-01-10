@@ -25,11 +25,6 @@
 //  define key num
 typedef enum {
     KEY0_NUM,
-
-#ifdef BOARD_S6_6
-    KEY1_NUM,
-#endif
-
     KEY_MAX_NUM,
 }KEY_NUM_E;
 
@@ -61,6 +56,33 @@ typedef enum {
 #define KEY_PRESSED             0
 #define KEY_RELEASE             1
 
+
+typedef enum name
+{
+    _VK_NULL    = 0xFF,
+    
+    _VK_COMMAND = 0xEE,
+    _VK_ACTIVE  = 0xED,
+    _VK_DELETE  = 0xEB,
+    
+    _VK_NUM1    = 0xE7,
+    _VK_NUM2    = 0xDE,
+    _VK_NUM3    = 0xDD,
+    
+    _VK_NUM4    = 0xDB,
+    _VK_NUM5    = 0xD7,
+    _VK_NUM6    = 0xBE,
+    
+    _VK_NUM7    = 0xBD,
+    _VK_NUM8    = 0xBB,
+    _VK_NUM9    = 0xB7,
+    
+    _VK_MODE    = 0x7E,
+    _VK_NUM0    = 0x7D,
+    _VK_OK      = 0x7B,
+}KEY_CODE_E;
+
+
 typedef struct {
     // Key hold on time count.
     uint16_t holdTime;
@@ -77,32 +99,12 @@ typedef struct {
     // key scan port
     uint8_t scanState;       //
     // key code
-    uint8_t keyCode;       //
+    KEY_CODE_E keyCode;       //
     // key num
     uint8_t keyNum;
 } KeyTask_t;
 
-#define _VK_NULL                0xFF
 
-#define _VK_COMMAND             0xEE
-#define _VK_ACTIVE              0xED
-#define _VK_DELETE              0xEB
-
-#define _VK_NUM1                0xE7
-#define _VK_NUM2                0xDE
-#define _VK_NUM3                0xDD
-
-#define _VK_NUM4                0xDB
-#define _VK_NUM5                0xD7
-#define _VK_NUM6                0xBE
-
-#define _VK_NUM7                0xDD
-#define _VK_NUM8                0xBB
-#define _VK_NUM9                0xB7
-
-#define _VK_MODE                0x7E
-#define _VK_NUM0                0x7D
-#define _VK_OK                  0x7B
 
 
 
@@ -113,6 +115,9 @@ void KeyRegister(void (*Cb)(void), KEY_ACTION action);
 
 uint8_t KeyReadState(KEY_NUM_E key);
 
+#ifdef BOARD_S6_6
+void KeyScanFxn(void);
+#endif //BOARD_S6_6
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */
 

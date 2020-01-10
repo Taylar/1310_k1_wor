@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-01-27 11:44:25
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-01-24 16:28:20
+* @Last Modified time: 2020-01-10 14:04:37
 */
 #include "../general.h"
 
@@ -11,7 +11,7 @@
 #ifdef SUPPORT_WATCHDOG
 Clock_Struct watchdogClkStruct;
 Clock_Handle watchdogClkHandle;
-#define WATCHDAG_FEED_TIME          10 * CLOCK_UNIT_S
+#define WATCHDAG_FEED_TIME          5 * CLOCK_UNIT_S
 #endif
 
 //***********************************************************************************
