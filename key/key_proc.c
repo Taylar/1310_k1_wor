@@ -297,7 +297,7 @@ void KeyInit(void)
     rKeyTask.doublePress     = 0;
     rKeyTask.scanPort        = 0;
     rKeyTask.scanState       = 0;
-    rKeyTask.keyCode         = 0;
+    rKeyTask.keyCode         = _VK_NULL;
 
     /* Construct a 10ms periodic Clock Instance to scan key */
     Clock_Params clkParams;

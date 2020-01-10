@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-08 20:27:18
+* @Last Modified time: 2020-01-10 17:37:14
 */
 #include "../general.h"
 
@@ -320,7 +320,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 #ifdef SUPPORT_RADIO_UPGRADE
 			case RADIO_PRO_CMD_UPGRADE :
 			    RadioUpgrade_CmdDataParse(bufTemp->load, lenTemp - 10);
-			    Led_ctrl(LED_G, 1, 30 * CLOCK_UNIT_MS, 1);
 			break;
 
 			case RADIO_PRO_CMD_RATE_SWITCH :
@@ -336,9 +335,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 				switch(bufTemp->load[0])
 				{
 					case CONFIG_CONTROL_CLEAR_DATA:
-					Led_set(LED_R, 1);
-					Led_set(LED_G, 1);
-					Led_set(LED_B, 1);
 					Flash_reset_all();
 					Task_sleep(500* CLOCK_UNIT_MS);
 					SystemResetAndSaveRtc();
@@ -646,12 +642,6 @@ void NodeRadioSend_CMD_CONFIG_CONTROL_ACK(uint8_t cmd)
 		protocalTxBuf.load[index++] = (uint8_t)(temp);
 		break;
 
-#ifdef  SUPPORT_SENSOR
-		case CONFIG_CONTROL_SEND_SENSORDATA:
-		index += Sensor_data_pack(protocalTxBuf.load+index);
-		break;
-#endif //SUPPORT_SENSOR
-
 		default:
 		break;
 	}
@@ -765,9 +755,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	radio_protocal_t	*bufTemp;
 	uint16_t serialNum;
 	uint8_t syncTime;
-#ifdef SUPPORT_NETGATE_DISP_NODE
-	uint8_t buff[32];
-#endif //SUPPORT_NETGATE_DISP_NODE
+
 
 #ifdef BOARD_CONFIG_DECEIVE
 	uint8_t lenTemp, baseAddr;
@@ -801,19 +789,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	ConcenterRadioMonitorClear();
 	
 	ClearRadioSendBuf();
-#ifdef SUPPORT_DISP_SCREEN
-	if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST) {    //display rssi            
 
-        Disp_number(0,6,protocalRxPacket->rssi <0?-protocalRxPacket->rssi:protocalRxPacket->rssi, 3, FONT_8X16);
-
-        sprintf((char*)buff, "%02x%02x%02x%02x",    HIBYTE_ZKS(HIWORD_ZKS(bufTemp->srcAddr)),
-                                                    LOBYTE_ZKS(HIWORD_ZKS(bufTemp->srcAddr)),
-                                                    HIBYTE_ZKS(LOWORD_ZKS(bufTemp->srcAddr)),
-                                                    LOBYTE_ZKS(LOWORD_ZKS(bufTemp->srcAddr)));
-        Disp_msg(8, 6, buff, FONT_8X16);
-        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
-    }
-#endif //S_G
 	if(bufTemp->srcAddr != lastNodeAddr)
 		syncTime = 1;
 	else

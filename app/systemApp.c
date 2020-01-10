@@ -70,9 +70,6 @@ void RtcEventSet(void)
 
 
 
-#ifdef SUPPORT_SENSOR
-    Sensor_collect_time_isr();
-#endif // SUPPORT_SENSOR
 
 
 
@@ -264,17 +261,6 @@ void SystemAppTaskFxn(void)
 #endif
 		}
 
-#ifdef BOARD_S3
-		if(eventId & SYSTEMAPP_EVT_KEY0_LONG)
-		{
-			S1LongKeyApp();
-		}
-
-		if(eventId & SYSTEMAPP_EVT_KEY0_DOUBLE)
-		{
-			S1DoubleKeyApp();
-		}
-#endif
 
 
 		if((eventId & SYSTEMAPP_EVT_CONCENTER_MONITER))

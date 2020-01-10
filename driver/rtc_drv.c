@@ -203,25 +203,10 @@ void RtcStop(void)
 void Rtc_set_calendar(Calendar *currentTime)
 {
     UInt key;
-#ifdef SUPPORT_SENSOR
-    uint8_t localtime;
-    uint8_t Seconds;
-    localtime = rtc.Seconds;
-#endif
+
     key = Hwi_disable();
     memcpy(&rtc, currentTime, sizeof(Calendar));
     Hwi_restore(key);
-
-#ifdef SUPPORT_SENSOR
-    if(g_rSysConfigInfo.collectPeriod % 60 == 0){//只对采集周期为整分钟的情况进行计数器调整。
-        Seconds = rtc.Seconds;
-        Seconds += 30;//将采集计数增加30，即采集时间固定在30S.
-        Sensor_set_collect_time(Seconds);//同步采集计数
-    }
-    else{
-        Sensor_collect_time_Adjust(localtime, rtc.Seconds);
-    }
-#endif
 
 
 }

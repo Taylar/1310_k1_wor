@@ -125,7 +125,7 @@ void RadioUpgrade_start(uint32_t upgradeFileLen, uint32_t address)
     Clock_setPeriod(radioUpgradeClkHandle, RADIO_UPGRADE_SHAKE_HANDLE_TIMEROUT);
     Clock_start(radioUpgradeClkHandle);
     RadioUpgrade_SendRateReq();
-    Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 2);
+
 }
 
 void RadioUpgrade_stop(void)
@@ -136,7 +136,7 @@ void RadioUpgrade_stop(void)
 
     if (RADIOMODE_RECEIVEPORT != RadioModeGet()) {
         Task_sleep(500 * CLOCK_UNIT_MS);
-        Led_ctrl(LED_R, 1, 500 * CLOCK_UNIT_MS, 2);
+
         RadioModeSet(RADIOMODE_RECEIVEPORT);
     }
 }
@@ -263,7 +263,7 @@ void RadioUpgrade_CmdACKDataParse(uint8_t *pData, uint16_t length)
         return;
     }
 
-    Led_ctrl(LED_R, 1, 30 * CLOCK_UNIT_MS, 1);
+
     if (pData == NULL || length == 0) {
         return;
     }
@@ -277,7 +277,7 @@ void RadioUpgrade_CmdACKDataParse(uint8_t *pData, uint16_t length)
             &&  ( 0 == pack_len) \
             &&  sTxRadio_upgrade_info.endFlag) {
         RadioUpgrade_stop();
-        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 5);
+
         return;
     }
 
@@ -290,7 +290,7 @@ void RadioUpgrade_CmdACKDataParse(uint8_t *pData, uint16_t length)
 //0x05 Instruction analysis
 void RadioUpgrade_CmdRateSwitch(void)
 {
-    Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 4);
+
     RadioModeSet(RADIOMODE_UPGRADE);
     RadioUpgrade_SendRateReqAck(0);
 
@@ -312,7 +312,7 @@ void RadioUpgrade_CmdACKRateSwitch(uint8_t *pData, uint16_t length)
         clkRadioUpgradeTimeoutCallback = radioUpgradeTxTimeoutFxn;
         Clock_setPeriod(radioUpgradeClkHandle, RADIO_UPGRADE_TX_TIMEOUT);
 
-        Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 4);
+
         RadioSwitchingUpgradeRate();
 
         Task_sleep(500 * CLOCK_UNIT_MS);
@@ -353,7 +353,7 @@ static void radioUpgradeTxTimeoutFxn(void)
 static void radioUpgradeShakeHanleTimeoutFxn(void)
 {
     if (radio_upgrade_shake_handle_Cnt > RADIO_UPGRADE_SHAKE_HANDLE_TIMES_MAX) {
-        Led_ctrl(LED_R, 1, 0, 0);
+
         //System_printf("Upgrade handshake failed!!!\r\n");
         Clock_stop(radioUpgradeClkHandle);
         return;
@@ -565,7 +565,7 @@ static int RadioUpgrade_NodataParse(uint8_t *pData, uint16_t length)
     uint16_t pack_len = pData[0];
     uint32_t data_offset_addr = ((uint32_t)(pData[1]) << 24) | ((uint32_t)(pData[2]) << 16) | ((uint32_t)(pData[3]) << 8) | (uint32_t)pData[4];
 
-    Led_ctrl(LED_B, 1, 500 * CLOCK_UNIT_MS, 1);
+
     // CRC check // MAKE BSL flag if OK
     result = RaidoUpgrade_LoadCheck();
 

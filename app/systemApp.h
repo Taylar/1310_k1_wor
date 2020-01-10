@@ -42,8 +42,6 @@ void SysAppTaskCreate(void);
 
 void SystemUsbIntEventPostIsr(void);
 
-void SystemKeyEventPostIsr(void);
-
 void SystemLongKeyEventPostIsr(void);
 
 void SystemDoubleKeyEventPostIsr(void);

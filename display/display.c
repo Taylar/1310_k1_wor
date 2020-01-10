@@ -675,11 +675,8 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
             sprintf((char *)buff, "Klx");
         }else
         sprintf((char *)buff, "Lx");
-#ifdef S_G
+
         Disp_msg(col, row+1, buff, FONT_8X16);
-#else
-        Disp_msg(col, row+2, buff, FONT_8X16);
-#endif
 /*    uint8_t buff[21];
 
     sprintf((char *)buff, "%ld.%dLx", (uint32_t)(value/100), (uint16_t)round(((value%100))/10));
@@ -767,35 +764,6 @@ static void Disp_status_bar(void)
 
 	Lcd_set_font(SBICON_W, SBICON_H, 0);
 
-#ifdef SUPPORT_SENSOR
-//Display external sensor flag
-    if ( (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_SHT2X) ||
-        (rDispObject.sensorIndex  ==  0 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_NONE) ||
-        (rDispObject.sensorIndex  ==  2 && g_rSysConfigInfo.sensorModule[0] == SEN_TYPE_OPT3001) ){
-        Disp_icon(col, row, ICON_16X16_EXTERNAL, 0);            
-    } else {
-        Disp_icon(col, row, ICON_16X16_EXTERNAL, 1);
-    }
-#else
-
-#ifdef SUPPORT_GPS
-    if(g_rSysConfigInfo.module & MODULE_GPS){
-
-        Lcd_set_font(SBICON_W*2, SBICON_H, 0);
-        if(GPS_get_setting_state())
-          {
-             if(GPS_get_location_state())
-               Disp_msg(STATUSB_COL_POS, row, "GL", FONT_8X16);
-             else
-               Disp_msg(STATUSB_COL_POS, row, "G", FONT_8X16);
-          }else
-          {
-               Disp_msg(STATUSB_COL_POS, row, "NG", FONT_8X16);
-          }
-    }
-#endif	/*SUPPORT_GPS*/
-
-#endif
     col += SBICON_W;
 
 #ifdef SUPPORT_MENU
@@ -1204,9 +1172,7 @@ void Disp_proc(void)
         Disp_info();
     } else {
         Disp_calendar();
-#if 1//def SUPPORT_SENSOR
-        Disp_sensor_data();
-#endif
+
         Disp_status_bar();
 
 
@@ -1262,21 +1228,6 @@ bool Disp_poweron(void)
         rDispObject.infoIndex = 0;
         ret = true;
         
-#ifdef SUPPORT_SENSOR
-        uint8_t i;
-        for (i = 0; i < MODULE_SENSOR_MAX; i++) {
-            if ((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) && 
-			   (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)) {
-                if((g_rSysConfigInfo.status & STATUS_HIDE_SHT_SENSOR) && (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X)){
-                    continue;//hide sht20 sensor
-                }								
-				rDispObject.sensorIndex = i;//remember the current sensor index.				
-				if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_SHT2X )				
-	                break;//remember the first sensor index,whitch is not sht20
-		    }
-        }        
-        
-#endif
 
 #ifdef SUPPORT_NETGATE_DISP_NODE    
         if(g_rSysConfigInfo.module & MODULE_NWK && g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor??don't display local sensor data

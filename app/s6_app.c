@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-10 14:22:43
+* @Last Modified time: 2020-01-10 19:09:33
 */
 #include "../general.h"
 
@@ -62,7 +62,7 @@ void Sys_buzzer_init(void)
 void Sys_buzzer_enable(void)
 {
     PWM_start(buzzerHandle);
-    Led_ctrl(LED_R, 1, 0, 0);
+    eleShock_ctrl(LED_R, 1, 0, 0);
 }
 
 
@@ -74,7 +74,7 @@ void Sys_buzzer_enable(void)
 void Sys_buzzer_disable(void)
 {
     PWM_stop(buzzerHandle);
-    Led_ctrl(LED_R, 0, 0, 0);
+    eleShock_ctrl(LED_R, 0, 0, 0);
 }
 
 
@@ -124,7 +124,7 @@ void Sys_alarmFxn(UArg arg0)
 //***********************************************************************************
 void Bat_alarmFxn(UArg arg0)
 {
-    Led_ctrl(LED_R, 1, 500* CLOCK_UNIT_MS, 1);
+    eleShock_ctrl(LED_R, 1, 500* CLOCK_UNIT_MS, 1);
 }
 
 
@@ -247,7 +247,7 @@ void S6HwInit(void)
     /* Obtain clock instance handle */
     BatAlarmClkHandle = Clock_handle(&BatAlarmClkStruct);
 
-    LedInit();
+    ElectricShockInit();
 
     I2c_init();
 
@@ -266,10 +266,6 @@ void S6HwInit(void)
     Sys_buzzer_init();
 
     UsbIntInit(SystemUsbIntEventPostIsr);
-
-#ifdef SUPPORT_CHARGE_DECT
-    Charge_detect_init();
-#endif
 
     Battery_init();
     Battery_voltage_measure();

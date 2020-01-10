@@ -853,16 +853,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 
         case EV_Get_SensorData:
-#ifdef  BOARD_CONFIG_DECEIVE
-            RadioUpgrade_stop();
-            ConcenterRadioSendCmd(GetRadioSrcAddr(), GetRadioDstAddr(), CONFIG_CONTROL_GET_SENSORDATA);
-#else
-#ifdef SUPPORT_SENSOR
-            len = Sensor_data_pack(pData);
-            len = Usb_group_package(AC_Send_SensorData, pData, len);
-            InterfaceSendImmediately(pData, len);
-#endif //SUPPORT_SENSOR
-#endif  //BOARD_CONFIG_DECEIVE
+
             break;            
 
         default:

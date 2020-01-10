@@ -8,11 +8,9 @@
 
 /* UART Board */
 
-#ifdef BOARD_S6_6
-
 #define UART_RX_INTERFACE               IOID_12          /* RXD */
 #define UART_TX_INTERFACE               IOID_13          /* TXD */
-#endif // BOARD_S6_6
+
 
 
 /*

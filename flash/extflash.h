@@ -402,9 +402,7 @@ extern void Flash_store_sensor_data(uint8_t *pData, uint16_t length);
 extern void Flash_recovery_last_sensor_data(void);
 extern void Flash_moveto_next_sensor_data(void);
 extern ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, uint32_t offset);
-#ifdef SUPPORT_SENSOR
-ErrorStatus Flash_load_sensor_data_lately(uint8_t *pData);
-#endif //SUPPORT_SENSOR
+
 extern ErrorStatus Flash_load_sensor_link2_data_by_offset(uint8_t *pData, uint16_t length, uint32_t offset);
 extern void Flash_moveto_offset_sensor_data(uint8_t offset);
 extern void Flash_moveto_offset_sensor_link2_data(uint8_t offset);

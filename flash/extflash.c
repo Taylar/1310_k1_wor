@@ -13,9 +13,9 @@
 #define FLASH_WP_PIN            IOID_11
 #define FLASH_HOLD_PIN          IOID_5
 
-#define FLASH_SPI_SIMO          IOID_10
-#define FLASH_SPI_CLK           IOID_7
-#define FLASH_SPI_SOMI          IOID_6
+#define FLASH_SPI_SIMO          IOID_7
+#define FLASH_SPI_CLK           IOID_6
+#define FLASH_SPI_SOMI          IOID_10
 
 static PIN_Handle  FLASH_SPI_COM_PinHandle = NULL;
 static PIN_State   FLASH_SPI_COM_State;
@@ -818,33 +818,6 @@ ErrorStatus Flash_load_sensor_data_by_offset(uint8_t *pData, uint16_t length, ui
 
     return ES_SUCCESS;
 }
-#ifdef SUPPORT_SENSOR
-ErrorStatus Flash_load_sensor_data_lately(uint8_t *pData)
-{
-    uint32_t LoadAddr;
-
-
-    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-
-    if(rFlashSensorData.ptrData.rearAddr!=0)
-       LoadAddr = rFlashSensorData.ptrData.rearAddr - FLASH_SENSOR_DATA_SIZE;
-    else
-    {
-        Semaphore_post(spiSemHandle);
-        return ES_ERROR;
-    }
-
-       LoadAddr %= (FLASH_SENSOR_DATA_SIZE * FLASH_SENSOR_DATA_NUMBER);
-
-
-    //Data queue not empty, dequeue data.
-    Flash_external_read(LoadAddr + FLASH_SENSOR_DATA_POS, pData, FLASH_SENSOR_DATA_SIZE);
-
-    Semaphore_post(spiSemHandle);
-
-    return ES_SUCCESS;
-}
-#endif
 
 //***********************************************************************************
 //
@@ -1833,7 +1806,7 @@ ReadBakConfig:
 //***********************************************************************************
 void Sys_config_reset(void)
 {
-    uint8_t i;
+
     memset( (uint8_t *)&g_rSysConfigInfo, 0x0, sizeof(g_rSysConfigInfo));
     g_rSysConfigInfo.size = sizeof(ConfigInfo_t);
     g_rSysConfigInfo.swVersion = FW_VERSION;
@@ -1850,7 +1823,8 @@ void Sys_config_reset(void)
 
 
 #ifdef      BOARD_S6_6
-    #ifdef S_G //缃戝叧
+    uint8_t i;
+
     g_rSysConfigInfo.module          = MODULE_GSM | MODULE_CC1310 | MODULE_LCD;
     g_rSysConfigInfo.serverIpAddr[0] = 114;
     g_rSysConfigInfo.serverIpAddr[1] = 215;
@@ -1859,11 +1833,8 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.serverIpPort    = 12200;
     g_rSysConfigInfo.rfStatus       &= STATUS_1310_MASTER^0xFFFF;
     strcpy((char*)g_rSysConfigInfo.serverAddr, "newss.coldclouds.com");
-    #endif //S_G
 
-    #ifdef S_A//涓�浣撴満
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
-    #endif //S_A
+
     
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_LOW;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
@@ -1878,13 +1849,9 @@ void Sys_config_reset(void)
     g_rSysConfigInfo.module          = MODULE_CC1310;
     g_rSysConfigInfo.batLowVol       = BAT_VOLTAGE_L1;
     g_rSysConfigInfo.apnuserpwd[0]   = 0;
-    g_rSysConfigInfo.sensorModule[0] = SEN_TYPE_SHT2X;
-
-    #if defined(ZKS_S3_WOR)
 
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
 
-    #endif //ZKS_S3_WOR
 
 #endif
 

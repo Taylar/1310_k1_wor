@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-18 15:45:31
+* @Last Modified time: 2020-01-10 19:09:23
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -566,16 +566,14 @@ void RadioAppTaskFxn(void)
 #ifdef  S_C
                         NodeProtocalDispath(&radioRxPacket);
                         if (radioMode == RADIOMODE_RECEIVEPORT) {
-                        #ifndef SUPPORT_LIGHT
-                            Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
-                        #endif //SUPPORT_LIGHT
+
                         }
 
 #else
                         ConcenterProtocalDispath(&radioRxPacket);
 
     #ifdef  BOARD_CONFIG_DECEIVE
-                        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 1);
+                        eleShock_ctrl(ELE_SHOCK_MID, 1, 250 * CLOCK_UNIT_MS, 1);
     #endif  //BOARD_CONFIG_DECEIVE
 
 #endif  //BOARD_S3
@@ -587,8 +585,6 @@ void RadioAppTaskFxn(void)
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
                     NodeProtocalDispath(&radioRxPacket);
-                    if(deviceMode == DEVICES_CONFIG_MODE)
-                        Led_ctrl(LED_B, 1, 250 * CLOCK_UNIT_MS, 2);
 
                     if(nodeParaSetting){
                         nodeParaSetting = 0;
@@ -678,9 +674,7 @@ void RadioAppTaskFxn(void)
 
                 if (deviceMode != DEVICES_OFF_MODE && deviceMode != DEVICES_CONFIG_MODE)
                 {
-                #ifndef SUPPORT_LIGHT
-                    Led_set(LED_B, 1);
-                #endif //SUPPORT_LIGHT
+
 #ifdef SUPPORT_RARIO_APC_SET
                     NodeSetAPC();
 #endif // SUPPORT_RARIO_APC_SET
@@ -689,9 +683,7 @@ void RadioAppTaskFxn(void)
                 radioStatus = RADIOSTATUS_TRANSMITTING;
                 RadioSendData();
                 Clock_stop(radioSendTimeoutClockHandle);
-            #ifndef SUPPORT_LIGHT
-                Led_set(LED_B, 0);
-            #endif //SUPPORT_LIGHT
+
 
 
                 Radio_setRxModeRfFrequency();
@@ -909,10 +901,8 @@ void RadioAppTaskFxn(void)
             // }
             if(RadioCheckRssi() > -80)
             {
-                Led_set(LED_G, 1);
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(100));
                 RadioReceiveData();
-                Led_set(LED_G, 0);
             }
         }
 
@@ -923,12 +913,11 @@ void RadioAppTaskFxn(void)
             RadioAbort();
 
             NodeRadioSendBrocastAck();
-            Led_set(LED_B, 1);
             Clock_start(radioSendTimeoutClockHandle);
             radioStatus = RADIOSTATUS_TRANSMITTING;
             RadioSendData();
             Clock_stop(radioSendTimeoutClockHandle);
-            Led_set(LED_B, 0);
+
         }
 
 #endif //ZKS_S3_WOR

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-18 15:38:23
+* @Last Modified time: 2020-01-10 16:35:36
 */
 #include "../general.h"
 
@@ -34,12 +34,10 @@ uint32_t configModeTimeCnt;          // the unit is sec
 //***********************************************************************************
 void S1HwInit(void)
 {
-    LedInit();
     
+
     KeyInit();
-    KeyRegister(SystemKeyEventPostIsr, KEY_0_SHORT_PRESS);
-    KeyRegister(SystemLongKeyEventPostIsr, KEY_0_LONG_PRESS);
-    KeyRegister(SystemDoubleKeyEventPostIsr, KEY_0_DOUBLE_PRESS);
+
 
     Spi_init();
 
@@ -77,11 +75,11 @@ void S1ShortKeyApp(void)
         {
             RadioTestEnable();
         }
-        Led_ctrl(LED_B, 1, 200 * CLOCK_UNIT_MS, 1);
+
         break;
 
         case DEVICES_OFF_MODE:
-        Led_ctrl(LED_R, 1, 200 * CLOCK_UNIT_MS, 1);
+
         break;
 
         case DEVICES_CONFIG_MODE:
@@ -89,7 +87,7 @@ void S1ShortKeyApp(void)
         // {
         //     Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
         // }
-        Led_ctrl(LED_G, 1, 200 * CLOCK_UNIT_MS, 1);
+
         break;
 
     }
@@ -111,7 +109,7 @@ void S1LongKeyApp(void)
             g_rSysConfigInfo.sysState.wtd_restarts &= (0xFFFF^STATUS_POWERON);
         }
         S1Sleep();
-        Led_ctrl2(LED_R, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
+
         g_rSysConfigInfo.rtc = Rtc_get_calendar();
         Flash_store_config();
         Task_sleep(3000 * CLOCK_UNIT_MS);
@@ -123,11 +121,11 @@ void S1LongKeyApp(void)
         case DEVICES_OFF_MODE:
         if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
         {
-            Led_ctrl(LED_R, 1, 200 * CLOCK_UNIT_MS, 1);
+
         }
         else
         {
-            Led_ctrl2(LED_B, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
+
             g_rSysConfigInfo.sysState.wtd_restarts |= STATUS_POWERON;
             S1Wakeup();
             Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
@@ -172,7 +170,7 @@ void S1DoubleKeyApp(void)
         RadioSetRxMode();
 
         RadioEventPost(RADIO_EVT_SEND_CONFIG);
-        Led_ctrl2(LED_G, 1, 200 * CLOCK_UNIT_MS, 800 * CLOCK_UNIT_MS, 3);
+
         break;
     }
 }

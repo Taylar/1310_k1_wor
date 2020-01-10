@@ -51,7 +51,7 @@ static node_strategy_t      nodeStrategy;
 
 /***** Prototypes *****/
 
-static void (*NodeStrategyFailCb)(void);
+void (*NodeStrategyFailCb)(void);
 /***** Function definitions *****/
 
 

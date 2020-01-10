@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-// #define ZKS_S3_WOR
-#define ZKS_S6_6_WOR_G
+#define ZKS_S3_WOR
+// #define ZKS_S6_6_WOR_G
 
 //***********************************************************************************
 //
@@ -134,10 +134,10 @@
 //
 //project name define.
 //
-//pls define one project following閿涘therwise use zks  default.
+//pls define one project following use zks  default.
 /****************************************************************************/
 
-#define  ZKS_PROJECT              //ZKS 妞ゅ湱娲�
+#define  ZKS_PROJECT              //ZKS
 
 #ifdef ZKS_PROJECT
 #define         COMPANY_NAME                "ZKS"
@@ -218,7 +218,7 @@ error type define
 #define FLASH_INTERNAL
 #define FLASH_EXTERNAL
 #ifdef FLASH_EXTERNAL
-//#define FLASH_W25Q256FV  //濠㈠爢鍌滆壘128Mb=16MB,闂佹彃娲ㄩ弫锟�4閻庢稒顨夋俊顓㈠捶閺夋寧绲绘俊顖楋拷宕囩闁靛棴鎷�
+//#define FLASH_W25Q256FV  //
 //#define FLASH_SIZE_128M
 //#define FLASH_SENSOR_DATA_32BYTE
 //#define MX66L1G45G  //1G flash
@@ -229,40 +229,7 @@ error type define
 #undef FLASH_INTERNAL
 #endif
 
-//Sensor define
-#define SUPPORT_SENSOR
-#ifdef SUPPORT_SENSOR
 
-#define SUPPORT_SHT2X
-//#define SUPPORT_SHT3X
-
-#define SUPPORT_NTC
-
-
-#ifdef BOARD_S6_6
-#undef SUPPORT_NTC
-#endif
-
-#ifdef SUPPORT_LIGHT
-#define SUPPORT_OPT3001
-#endif
-
-#ifdef SUPPORT_GSENSOR
-#define SUPPORT_LIS2DS12
-#endif
-
-//#define SUPPORT_GPS
-#ifdef SUPPORT_NTC
-//#define NTC_ELIWELL_10K
-//#define NTC_KEMIT_10K
-//#define NTC_KEMIT_100K
-//#define NTC_KEMIT_PT1000
-//#define NTC_KEMIT_PT1000_2ADC
-#define NTC_XINXIANG_10K
-//#define NTC_TIANYOU_10K
-#endif
-
-#endif
 
 //CRC function define.
 #define SUPPORT_CRC16
@@ -291,9 +258,9 @@ error type define
 // #define OLED_LX12864K1
 #define SUPPORT_MENU
 
-#define SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
-#define SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
-#define NETGATE_BIND_NODE_MAX       2 //5529娑撳﹤褰ч懗鑺ユ暜閹革拷2娑擃亷绱漊SB閸愬懎鐡ㄦ稉宥咁檮
+#define SUPPORT_NETGATE_DISP_NODE   //
+#define SUPPORT_NETGATE_BIND_NODE   //
+#define NETGATE_BIND_NODE_MAX       2 //
 #endif
 
 //Led define
@@ -321,7 +288,6 @@ error type define
 #define PACKAGE_ITEM_COUNT_MAX 10
 #define SUPPORT_ZKS_PROTOCOL
 
-//#define SUPPORT_FLIGHT_MODE // flight mode
 #define SUPPORT_REMOTE_UPGRADE
 
 #endif //SUPPORT_NETWORK
@@ -344,22 +310,19 @@ error type define
 
 #define SUPPORT_DEVICED_STATE_UPLOAD
 
-#define SUPPORT_ALARM_SWITCH_PERIOD
 
 #ifdef S_A//娑擄拷娴ｆ挻婧�
 
 
 #undef  SUPPORT_LORA
-#undef  SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
-#undef  SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
+#undef  SUPPORT_NETGATE_DISP_NODE   //
+#undef  SUPPORT_NETGATE_BIND_NODE   //
 //#undef  SUPPORT_ENGMODE //for  more flash space
 // #define SUPPORT_UPLOADTIME_LIMIT
 
 #elif defined(S_G)//gateway
 
-#undef SUPPORT_ALARM_SWITCH_PERIOD
 //#undef SUPPORT_DEVICED_STATE_UPLOAD
-#undef SUPPORT_FLIGHT_MODE // flight mode
 
 #undef SUPPORT_SENSOR
 
@@ -379,12 +342,10 @@ error type define
 #define SUPPORT_NETGATE_BIND_NODE
 #elif defined(S_C)//collection
 
-#undef SUPPORT_ALARM_SWITCH_PERIOD
 #undef SUPPORT_NETWORK
 #undef SUPPORT_GSM
-#undef SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
-#undef SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
-#undef SUPPORT_FLIGHT_MODE // flight mode
+#undef SUPPORT_NETGATE_DISP_NODE   //
+#undef SUPPORT_NETGATE_BIND_NODE   //
 #undef SUPPORT_DEVICED_STATE_UPLOAD
 
 
@@ -405,7 +366,6 @@ error
 // S1_2/3 board define
 //***********************************************************************************
 #ifdef BOARD_S3
-#define SUPPORT_SENSOR
 
 
 #define SUPPORT_RADIO_UPGRADE
@@ -856,9 +816,9 @@ typedef struct {
 #include "flash/extflash_ringq.h"
 #include "flash/internalFlash.h"
 #include "key/key_proc.h"
+#include "electricshock/electricshock.h"
 #include "display/display.h"
 #include "display/menu.h"
-#include "display/led_drv.h"
 #include "battery/battery.h"
 #include "easylink/EasyLink.h"
 #include "radio_app/radio_app.h"
@@ -883,13 +843,6 @@ typedef struct {
 #include "radio_app/radio_upgrade.h"
 #include "radio_app/auto_findfreq.h"
 
-
-#ifdef SUPPORT_FLIGHT_MODE
-#include "network/flight_mode.h"
-#endif
-#ifdef SUPPORT_CHARGE_DECT
-#include "chargedetect/chargedect.h"
-#endif
 //***********************************************************************************
 //
 //	Global variable define
@@ -899,9 +852,6 @@ EXTERN_ATTR volatile ConfigInfo_t g_rSysConfigInfo;
 
 EXTERN_ATTR uint16_t     g_bAlarmSensorFlag; //
 
-#ifdef SUPPORT_ALARM_SWITCH_PERIOD
-EXTERN_ATTR bool g_alarmFlag;
-#endif //SUPPORT_ALARM_SWITCH_PERIOD
 
 EXTERN_ATTR uint8_t radioError;
 EXTERN_ATTR bool g_bNeedUploadRecord;

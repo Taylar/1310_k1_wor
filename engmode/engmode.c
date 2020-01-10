@@ -149,36 +149,6 @@ void EngMode()
 	
 	}
 
-#ifdef SUPPORT_SENSOR
-	//sensor		
-    uint8_t i;
-    Disp_clear_all();
-    Disp_msg(0, 0, "Sensor test:", FONT_8X16);
-	Sensor_measure(0);
-    
-	for (i = 0; i < MODULE_SENSOR_MAX; i++) {        
-        if (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) {  
-            Disp_clear_all();
-            sprintf((char*)buff, "Sensor test: %d", i);
-            Disp_msg(0, 0, buff, FONT_8X16);
-
-            Disp_sensor_data();
-            
-			event = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL_KEY, BIOS_WAIT_FOREVER);
-			Disp_sensor_switch();
-        }
-    }
-	
-	if (event) {
-		Eng_Result.sensor= true;
-	}
-	else {
-	
-		Eng_Result.sensor= false;
-	
-	}
-	
-#endif
 
 // #ifdef SUPPORT_RADIO
     // if (g_rSysConfigInfo.module & MODULE_CC1310) {
