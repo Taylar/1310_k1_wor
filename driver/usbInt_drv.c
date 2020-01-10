@@ -2,12 +2,12 @@
 * @Author: zxt
 * @Date:   2018-03-01 16:50:29
 * @Last Modified by:   zxt
-* @Last Modified time: 2018-05-11 13:50:12
+* @Last Modified time: 2020-01-10 15:14:38
 */
 #include "../general.h"
 
 
-#define USB_INT_PIN                            IOID_22
+#define USB_INT_PIN                            IOID_11
 
 void (*UsbIntIsrCb)(void);
 
@@ -99,5 +99,20 @@ void UsbIntInit(void (*Cb)(void))
 #ifndef   BOARD_CONFIG_DECEIVE
     UsbIntScanFxn();
 #endif
+}
+
+//***********************************************************************************
+//
+// Battery get voltage value.
+//
+//***********************************************************************************
+ChargeStateType Get_Charge_plug(void)
+{
+    if(GetUsbState()){
+        return(CHARGEING);
+    }
+    else{
+       return (NO_CHARGE);
+    }
 }
 
