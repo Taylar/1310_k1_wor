@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-08 20:29:45
+* @Last Modified time: 2020-01-13 16:56:12
 */
 #include "../general.h"
 
@@ -242,9 +242,6 @@ void ConcenterSleep(void)
 #ifndef BOARD_CONFIG_DECEIVE
 
     concenterParameter.synTimeFlag  = false;
-#ifdef SUPPORT_STRATEGY_SORT
-    AutoFreqConcenterStop();
-#endif // SUPPORT_STRATEGY_SORT
     RadioDisable();
 
 #endif // BOARD_CONFIG_DECEIVE
@@ -388,128 +385,3 @@ void ConcenterTxOnlyStart(void){
 
 //#endif
 
-
-
-#ifdef SUPPORT_STRATEGY_SORT
-#ifdef SUPPORT_STORE_ID_IN_EXTFLASH
-uint16_t  nodeNumDispath;
-uint16_t  nodeRecentId;
-uint32_t  nodeIdRecentAddr;
-
-//***********************************************************************************
-// brief:dispath the channel to the node ande return the channel
-// 
-// parameter: 
-//***********************************************************************************
-uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel)
-{
-    uint32_t nodeIdTemp;
-    if(channel == RADIO_INVAILD_CHANNEL)
-    {
-        nodeRecentId = RADIO_INVAILD_CHANNEL;
-        return RADIO_INVAILD_CHANNEL;
-    }
-
-    if(channel < nodeNumDispath)
-    {
-        Flash_load_nodeid((uint8_t*)(&nodeIdTemp), channel);
-        if(nodeIdTemp == nodeAddr)
-        {
-            nodeRecentId = channel;
-            return channel;
-        }
-    }
-    nodeRecentId = nodeNumDispath;
-    nodeNumDispath++;
-    if(nodeNumDispath > FLASH_NODEID_STORE_NUMBER)
-        nodeNumDispath = 0;
-    Flash_store_nodeid((uint8_t*)(&nodeAddr), nodeRecentId);
-    return nodeRecentId;
-}
-
-//***********************************************************************************
-// brief:fine the node channel through the Node ID in the memory
-// 
-// parameter: 
-//***********************************************************************************
-uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr)
-{
-    uint32_t i; 
-    uint32_t nodeIdTemp;
-    for(i = 0; i < nodeNumDispath; i++)
-    {
-        Flash_load_nodeid((uint8_t*)(&nodeIdTemp), i);
-        if(nodeIdTemp == nodeAddr)
-        {
-            nodeRecentId = i;
-            return i;
-        }
-    }
-    return 0xffff;
-}
-
-#else
-uint32_t nodeAddrTable[CONCENTER_MAX_CHANNEL];
-uint16_t  nodeNumDispath;
-uint16_t  nodeRecentId;
-
-//***********************************************************************************
-// brief:dispath the channel to the node ande return the channel
-// 
-// parameter: 
-//***********************************************************************************
-uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel)
-{
-
-    if(channel < nodeNumDispath)
-    {
-        if(nodeAddrTable[channel] == nodeAddr)
-        {
-            nodeRecentId = channel;
-            return channel;
-        }
-    }
-    // could not find the nodeaddr in the nodeAddrTable
-    if(nodeNumDispath >= CONCENTER_MAX_CHANNEL)
-    {
-        memset((uint8_t*)nodeAddrTable, 0, sizeof(nodeAddrTable));
-        nodeNumDispath = 0;
-    }
-    nodeAddrTable[nodeNumDispath] = nodeAddr;
-    nodeRecentId = nodeNumDispath;
-    nodeNumDispath++;
-    return (nodeRecentId);
-}
-
-//***********************************************************************************
-// brief:fine the node channel through the Node ID in the memory
-// 
-// parameter: 
-//***********************************************************************************
-uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr)
-{
-    uint8_t i; 
-    for(i = 0; i < CONCENTER_MAX_CHANNEL; i++)
-    {
-        if(nodeAddrTable[i] == nodeAddr)
-        {
-            nodeRecentId = i;
-            return i;
-        }
-    }
-    return 0xffff;
-}
-
-#endif //SUPPORT_STORE_ID_IN_EXTFLASH
-
-//***********************************************************************************
-// brief:read the 
-// 
-// parameter: 
-//***********************************************************************************
-uint16_t ConcenterReadResentNodeChannel(void)
-{
-    return nodeRecentId;
-}
-
-#endif // SUPPORT_STRATEGY_SORT

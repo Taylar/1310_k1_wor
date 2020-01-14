@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2019-12-18 14:28:37
+* @Last Modified time: 2020-01-13 17:10:20
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -225,9 +225,6 @@ void NodeStrategyReceiveTimeoutProcess(void)
             nodeStrategy.success       = false;
             nodeStrategy.sendCnt       = 0;
             nodeStrategy.radioBusyCnt  = 0;
-#ifdef SUPPORT_RARIO_APC_SET
-            NodeResetAPC();
-#endif // SUPPORT_RARIO_APC_SET
 
             if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
                 AutoFreqNodeResetCurFreq();

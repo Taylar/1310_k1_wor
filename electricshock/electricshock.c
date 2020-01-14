@@ -2,43 +2,67 @@
 * @Author: zxt
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-10 19:12:27
+* @Last Modified time: 2020-01-13 17:05:36
 */
 #include "../general.h"
 
 
 
 // board node
-#define HIGH_LEVEL_ENABLE_PIN                      IOID_14		//高压档位
-#define MID_LEVEL_ENABLE_PIN                       IOID_27		//中档电压档位
-#define LOW_LEVEL_ENABLE_PIN                       IOID_28		//低档电压档位
-#define SHOCK_CTR_ENABLE_PIN                       IOID_15		//电击功能总开关使能脚
+#define HIGH_LEVEL_ENABLE_PIN                       IOID_14		//高压档位
+#define MID_LEVEL_ENABLE_PIN                        IOID_27		//中档电压档位
+#define LOW_LEVEL_ENABLE_PIN                        IOID_28		//低档电压档位
+#define SHOCK_CTR_ENABLE_PIN                        IOID_15		//电击功能总开关使能脚
+
+#define MOTO_ENABLE_PIN                             IOID_2      //马达使能脚
 
 
-#define TAMPER_CTR_ENABLE_PIN                      IOID_15		//防拆中断脚
+#define PREVENTIVE_INSERT_ENABLE_PIN                IOID_20      //防塞检测开启
+#define PREVENTIVE_INSERT_ENABLE_PIN2               IOID_23      //防塞检测开启
+
+#define MOTO_INT_PIN                                IOID_1      //马达中断脚
+
+#define DESTROY_INT_PIN                             IOID_3      //防拆中断脚
 
 
+const PIN_Config motoIntPinTable[] = {
+    MOTO_INT_PIN | PIN_INPUT_EN | PIN_IRQ_POSEDGE,       /* 马达中断          */
+    PIN_TERMINATE
+};
+
+const PIN_Config destroyIntPinTable[] = {
+    DESTROY_INT_PIN | PIN_INPUT_EN | PIN_IRQ_POSEDGE,       /* 防拆中断          */
+    PIN_TERMINATE
+};
 
 
-static const uint8_t LED_ID_CONST[ELE_SHOCK_PIN_MAX] =
+static const uint8_t ELE_CTR_ID_CONST[ELE_SHOCK_PIN_MAX] =
 {
     HIGH_LEVEL_ENABLE_PIN,
-    LOW_LEVEL_ENABLE_PIN,
     MID_LEVEL_ENABLE_PIN,
+    LOW_LEVEL_ENABLE_PIN,
     SHOCK_CTR_ENABLE_PIN,
+    MOTO_ENABLE_PIN,
+    PREVENTIVE_INSERT_ENABLE_PIN,
+    PREVENTIVE_INSERT_ENABLE_PIN2,
 };
 
 
 
 const PIN_Config eleShockPinTable[] = {
-    HIGH_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    MID_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    LOW_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    SHOCK_CTR_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* LED initially off          */
-    TAMPER_CTR_ENABLE_PIN | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* LED initially off          */
+    HIGH_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 高压档位         */
+    MID_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 中档电压档位         */
+    LOW_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 低档电压档位         */
+    SHOCK_CTR_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 电击功能总开关使能脚          */
+    MOTO_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 马达使能脚         */
+    PREVENTIVE_INSERT_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 防塞检测开启          */
+    PREVENTIVE_INSERT_ENABLE_PIN2 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 防塞检测开启          */
     PIN_TERMINATE
 };
 
+
+static PIN_State   motoIntState, destroyIntState;
+static PIN_Handle  motoIntHandle, destroyIntHandle;
 
 
 static Semaphore_Struct eleShockSemStruct;
@@ -46,6 +70,11 @@ static Semaphore_Handle eleShockSemHandle;
 
 static PIN_State   eleShockState;
 static PIN_Handle  eleShockHandle;
+
+Clock_Struct pulseClkStruct;
+Clock_Handle pulseClkHandle;
+
+
 
 #define     LED_PERIOD_CLOCK_TIME_MS       10
 singleport_drive_t singlePort[ELE_SHOCK_PIN_MAX];
@@ -57,6 +86,19 @@ Clock_Handle eleShockProcessClkHandle;
 PWM_Handle eletricShockPulseHandle = NULL;
 
 #define 	PWM_ELE_SHOCK_PULSE_FRQ			1
+
+uint16_t    pulseTimes_sec = 0;
+
+
+void PulseFxn(UArg arg0)
+{
+    if(pulseTimes_sec == 0){
+        EletricShockPulseDisable();
+        Clock_stop(pulseClkHandle);
+    }else{
+        pulseTimes_sec--;
+    }
+}
 //***********************************************************************************
 //
 // System buzzer enable.
@@ -65,7 +107,6 @@ PWM_Handle eletricShockPulseHandle = NULL;
 void EletricShockPulseEnable(void)
 {
     PWM_start(eletricShockPulseHandle);
-
 }
 
 
@@ -77,7 +118,6 @@ void EletricShockPulseEnable(void)
 void EletricShockPulseDisable(void)
 {
     PWM_stop(eletricShockPulseHandle);
-
 }
 
 //***********************************************************************************
@@ -88,6 +128,15 @@ void EletricShockPulseDisable(void)
 void EletricShockPulseInit(void)
 {
     PWM_Params params;
+    Clock_Params clkParams;
+
+    Clock_Params_init(&clkParams);
+    clkParams.period = 1000 * CLOCK_UNIT_MS;
+    clkParams.startFlag = FALSE;
+    Clock_construct(&pulseClkStruct, (Clock_FuncPtr)PulseFxn, 1000 * CLOCK_UNIT_MS, &clkParams);
+    /* Obtain clock instance handle */
+    pulseClkHandle = Clock_handle(&pulseClkStruct);
+
 
     PWM_Params_init(&params);
     params.dutyUnits   = PWM_DUTY_US;
@@ -99,22 +148,58 @@ void EletricShockPulseInit(void)
 }
 
 
-
-//***********************************************************************************
-//
-// eleShockIoInit.
-//      
-//
-//***********************************************************************************
-void eleShockIoInit(void)
+void EletricPulseSetTime_S(uint16_t keepTime_S)
 {
-    eleShockHandle = PIN_open(&eleShockState, eleShockPinTable);
+    pulseTimes_sec = keepTime_S;
+
+    if(pulseTimes_sec == 0){
+        EletricShockPulseDisable();
+        Clock_stop(pulseClkHandle);
+    }
+    else{
+        Clock_start(pulseClkHandle);
+        EletricShockPulseEnable();
+    }
+}
+
+#define     INSERT_DECTECT_VALUE        1000
+ADC_Handle   preventInsertHandle;
+uint8_t     insertOccur = 0;
+
+
+void ElecPreventInsertInit(void)
+{
+    ADC_Params   params;
+
+    ADC_Params_init(&params);
+
+    if(preventInsertHandle == NULL)
+        preventInsertHandle = ADC_open(PREVENTIVE_INSERT_ADC, &params);
+}
+
+void ElecPreventInsertMeasure(void)
+{
+    uint16_t temp;
+    uint32_t value;
+
+    ADC_convert(preventInsertHandle, &temp);
+    value    = ADC_convertToMicroVolts(preventInsertHandle, temp);
+    if(value > INSERT_DECTECT_VALUE)
+        insertOccur = 1;
+    else
+        insertOccur = 0;
+}
+
+
+uint8_t ElecPreventInsertState(void)
+{
+    return insertOccur;
 }
 
 
 //***********************************************************************************
 //
-// Led control.
+// eletric shock control.
 //      id:     allow multi led
 //      state:  led first state, 0 or 1
 //      period: led blink time,  0 means just set led state and no blink
@@ -149,7 +234,7 @@ void eleShock_ctrl2(uint8_t ledId, uint8_t state, uint32_t period, uint32_t peri
 
     Semaphore_pend(eleShockSemHandle, BIOS_WAIT_FOREVER);
 
-    PIN_setOutputValue(eleShockHandle, LED_ID_CONST[ledId], state);
+    PIN_setOutputValue(eleShockHandle, ELE_CTR_ID_CONST[ledId], state);
 
     if (period == 0 || times == 0) {
         /* Unlock resource */
@@ -194,7 +279,7 @@ void eleShock_toggle(uint8_t ledId)
     Semaphore_pend(eleShockSemHandle, BIOS_WAIT_FOREVER);
 
 //    GPIO_toggleOutputOnPin(rLedHWAttrs[ledId].port, rLedHWAttrs[ledId].pin);
-    PIN_setOutputValue(eleShockHandle, LED_ID_CONST[ledId], !(PIN_getOutputValue(LED_ID_CONST[ledId])));
+    PIN_setOutputValue(eleShockHandle, ELE_CTR_ID_CONST[ledId], !(PIN_getOutputValue(ELE_CTR_ID_CONST[ledId])));
 
     /* Unlock resource */
     Semaphore_post(eleShockSemHandle);
@@ -212,7 +297,7 @@ void eleShock_set(uint8_t ledId, uint8_t status)
     Semaphore_pend(eleShockSemHandle, BIOS_WAIT_FOREVER);
 
 //    GPIO_toggleOutputOnPin(rLedHWAttrs[ledId].port, rLedHWAttrs[ledId].pin);
-    PIN_setOutputValue(eleShockHandle, LED_ID_CONST[ledId], status);
+    PIN_setOutputValue(eleShockHandle, ELE_CTR_ID_CONST[ledId], status);
 
     /* Unlock resource */
     Semaphore_post(eleShockSemHandle);
@@ -236,7 +321,7 @@ void eleShock_clk_cb(UArg arg0)
                 {
                     singlePort[i].periodT1--;
                     if(singlePort[i].periodT1 == 0)
-                        PIN_setOutputValue(eleShockHandle, LED_ID_CONST[i], !singlePort[i].state);
+                        PIN_setOutputValue(eleShockHandle, ELE_CTR_ID_CONST[i], !singlePort[i].state);
                 }
                 else
                 {
@@ -248,7 +333,7 @@ void eleShock_clk_cb(UArg arg0)
                     {
                         singlePort[i].times--;
                         if(singlePort[i].times)
-                            PIN_setOutputValue(eleShockHandle, LED_ID_CONST[i], singlePort[i].state);
+                            PIN_setOutputValue(eleShockHandle, ELE_CTR_ID_CONST[i], singlePort[i].state);
                         singlePort[i].periodT1    = singlePort[i].periodT1Set;
                         singlePort[i].periodT2    = singlePort[i].periodT2Set;
                     }
@@ -256,7 +341,7 @@ void eleShock_clk_cb(UArg arg0)
             }
             else
             {
-                PIN_setOutputValue(eleShockHandle, LED_ID_CONST[i], !singlePort[i].state);
+                PIN_setOutputValue(eleShockHandle, ELE_CTR_ID_CONST[i], !singlePort[i].state);
                 singlePort[i].enable = 0;
             }
         }
@@ -272,6 +357,15 @@ void eleShock_clk_cb(UArg arg0)
     }
 }
 
+static void MotoIsrFxn(PIN_Handle handle, PIN_Id pinId)
+{
+    Sys_event_post(SYS_EVT_MOTO_INT_REC);
+}
+
+static void DestroyIsrFxn(PIN_Handle handle, PIN_Id pinId)
+{
+    Sys_event_post(SYS_EVT_ELE_SHOCK_DESTROY);
+}
 
 //***********************************************************************************
 //
@@ -280,7 +374,19 @@ void eleShock_clk_cb(UArg arg0)
 //***********************************************************************************
 void ElectricShockInit(void)
 {
-    eleShockIoInit();
+    eleShockHandle = PIN_open(&eleShockState, eleShockPinTable);
+
+    motoIntHandle = PIN_open(&motoIntState, motoIntPinTable);
+    PIN_registerIntCb(motoIntHandle, MotoIsrFxn);
+
+    destroyIntHandle = PIN_open(&destroyIntState, destroyIntPinTable);
+    PIN_registerIntCb(destroyIntHandle, DestroyIsrFxn);
+
+    // 电击脉冲初始化
+    EletricShockPulseInit();
+
+    // 防塞检测初始化
+    ElecPreventInsertInit();
 
     /* Construct a Semaphore object to be use as a resource lock, inital count 1 */
     Semaphore_Params ledSemParams;
@@ -298,6 +404,46 @@ void ElectricShockInit(void)
     eleShockProcessClkHandle = Clock_handle(&eleShockProcessClk);
     Clock_setTimeout(eleShockProcessClkHandle, LED_PERIOD_CLOCK_TIME_MS * CLOCK_UNIT_MS);
     Clock_setPeriod(eleShockProcessClkHandle, LED_PERIOD_CLOCK_TIME_MS * CLOCK_UNIT_MS);
+}
+
+
+// 设置电击强度
+void ElectricShockLevelSet(uint8_t level)
+{
+    switch(level)
+    {
+        case ELECTRIC_LOW_LEVEL:
+        eleShock_set(ELE_SHOCK_HIGH, 0);
+        eleShock_set(ELE_SHOCK_MID, 0);
+        eleShock_set(ELE_SHOCK_LOW, 1);
+        break;
+
+
+        case ELECTRIC_MID_LEVEL:
+        eleShock_set(ELE_SHOCK_HIGH, 0);
+        eleShock_set(ELE_SHOCK_LOW, 0);
+        eleShock_set(ELE_SHOCK_MID, 1);
+        break;
+
+
+        case ELECTRIC_HIGH_LEVEL:
+        eleShock_set(ELE_SHOCK_MID, 0);
+        eleShock_set(ELE_SHOCK_LOW, 0);
+        eleShock_set(ELE_SHOCK_HIGH, 1);
+        break;
+    }
+}
+
+
+void ElectricShockPowerEnable(void)
+{
+    eleShock_set(ELE_SHOCK_POWER_ENABLE, 1);
+}
+
+
+void ElectricShockPowerDisable(void)
+{
+    eleShock_set(ELE_SHOCK_POWER_ENABLE, 0);
 }
 
 

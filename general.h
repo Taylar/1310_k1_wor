@@ -393,15 +393,7 @@ error
 
 #define SUPPORT_RARIO_SPEED_SET
 #define SUPPORT_RSSI_CHECK
-// #define SUPPORT_STRATEGY_SORT
 #define CONCENTER_MAX_CHANNEL       100
-#define SUPPORT_RARIO_APC_SET
-
-#ifdef SUPPORT_STRATEGY_SORT
-#define         STRATEG_NAME               "_SORT"
-#else
-#define         STRATEG_NAME               ""
-#endif  // SUPPORT_STRATEGY_SORT
 
 #ifdef  SUPPORT_SHT2X
 #define SENSOR_TYPE_NAME                    "_SHT20"
@@ -410,7 +402,7 @@ error
 #endif  // SUPPORT_SHT2X
 
 #undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""STRATEG_NAME""SENSOR_TYPE_NAME)
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""SENSOR_TYPE_NAME)
 
 
 
@@ -438,13 +430,9 @@ error
 #define SUPPORT_CHARGE_DECT_ALARM
 #define SUPPORT_USB
 #define SUPPORT_RARIO_SPEED_SET
-// #define SUPPORT_STRATEGY_SORT
+
 #define CONCENTER_MAX_CHANNEL       100
-#ifdef SUPPORT_STRATEGY_SORT
-#ifdef S_G
-#define SUPPORT_STORE_ID_IN_EXTFLASH
-#endif //S_G
-#endif  //SUPPORT_STRATEGY_SORT
+
 
 // #define SUPPORT_TCP_MULTIL_LINK
 // #define SUPPORT_NETWORK_SYC_RTC
@@ -462,14 +450,7 @@ error
 
 #ifdef ZKS_S6_6_CONFIG
 #undef  SUPPORT_RSSI_CHECK
-#undef  SUPPORT_STRATEGY_SORT
 #endif // ZKS_S6_6_CONFIG
-
-#ifdef SUPPORT_STRATEGY_SORT
-#define         STRATEG_NAME               "_SORT"
-#else
-#define         STRATEG_NAME               ""
-#endif  // SUPPORT_STRATEGY_SORT
 
 #ifdef SUPPORT_CHARGE_DECT
 #define         CHARGE_FUNC                 "_CHR"
@@ -501,7 +482,6 @@ error
 #ifdef  BOARD_CONFIG_DECEIVE
 
 #undef SUPPORT_RARIO_SPEED_SET
-#undef SUPPORT_STRATEGY_SORT
 #undef  BOARD_NAME
 #define BOARD_NAME              "_S3_CONFIG"
 #undef  PROJECT_NAME
@@ -877,6 +857,8 @@ EXTERN_ATTR uint8_t openBoxOccur;
 EXTERN_ATTR uint8_t gatewayConfigTime;
 
 EXTERN_ATTR uint8_t brocastTimes;
+
+EXTERN_ATTR uint8_t destroyEleShock;
 
 extern uint8_t deviceMode;
 

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-10 16:35:36
+* @Last Modified time: 2020-01-13 16:52:39
 */
 #include "../general.h"
 
@@ -175,7 +175,7 @@ void S1DoubleKeyApp(void)
     }
 }
 
-
+uint32_t lowBatCnt = 0;
 void S1AppRtcProcess(void)
 {
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
@@ -186,6 +186,29 @@ void S1AppRtcProcess(void)
             Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
         }
     }
+
+    ElecPreventInsertMeasure();
+    if(ElecPreventInsertState()){
+        EletricPulseSetTime_S(1);
+    }
+
+
+    Battery_porcess();
+    if(Battery_get_voltage() < 3600){
+        if((lowBatCnt == 0) || (lowBatCnt >= 3600)){
+            lowBatCnt = 1;
+            
+        }
+        lowBatCnt++;
+    }else{
+        lowBatCnt = 0;
+    }
+
+
+    if(destroyEleShock){
+        EletricPulseSetTime_S(1);
+    }
+
 }
 
 void NodeAppConfigModeExit(void)

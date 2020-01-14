@@ -20,6 +20,8 @@
 #define         SYS_EVT_USB_CHARGE                      Event_Id_13
 #define         SYS_EVT_CONFIG_MODE_EXIT                Event_Id_14
 #define 		SYS_EVT_KEY_SCAN						Event_Id_15
+#define 		SYS_EVT_ELE_SHOCK_DESTROY				Event_Id_16
+#define 		SYS_EVT_MOTO_INT_REC					Event_Id_17
 
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff
 

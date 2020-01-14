@@ -28,18 +28,10 @@ ADC_Handle   batteryHandle;
 //***********************************************************************************
 void Battery_init(void)
 {
-#ifndef BOARD_S3
     ADC_Params   params;
 
     ADC_Params_init(&params);
     batteryHandle = ADC_open(ZKS_BATTERY_ADC, &params);
-#endif
-
-#ifdef SUPPORT_SOFT_CHARGE_DECT
-    minBat = INVALID_BAT;
-    maxBat = INVALID_BAT;
-    chargeState = 0;
-#endif //SUPPORT_SOFT_CHARGE_DECT
 }
 
 //***********************************************************************************
@@ -49,7 +41,6 @@ void Battery_init(void)
 //***********************************************************************************
 void Battery_voltage_measure(void)
 {
-#ifndef BOARD_S3
     uint16_t temp;
     uint32_t value, max, min;
     uint32_t  batSum;
@@ -105,7 +96,6 @@ void Battery_voltage_measure(void)
     if(maxBat < bBatVoltage)
         maxBat = bBatVoltage;
 #endif //SUPPORT_SOFT_CHARGE_DECT
-#endif
 }
 
 //***********************************************************************************
@@ -115,45 +105,11 @@ void Battery_voltage_measure(void)
 //***********************************************************************************
 uint16_t Battery_get_voltage(void)
 {
-#ifdef  BOARD_S3
-    //static uint8_t init = 0, batLowCnt = 0;
-    static uint16_t batVoltageBuf;
-    uint16_t    voltage;
-    voltage = AONBatMonBatteryVoltageGet();
-    voltage = ((voltage&0xff00)>>8)*1000 +1000*(voltage&0xff)/256;
-    batVoltageBuf = voltage;
-    
-    // if(init == 0)
-    // {
-    //     batVoltageBuf = voltage;
-    //     init          = 1;
-    // }
 
-    // if(batVoltageBuf > voltage)
-    // {
-    //     if(batLowCnt > 2)
-    //     {
-    //         batVoltageBuf -= 5;
-    //     }
-    //     else
-    //     {
-    //         batLowCnt++;
-    //     }
-    // }
-    // else
-    // {
-    //     batLowCnt = 0;
-    // }
-    
-    if(batVoltageBuf > BAT_VOLTAGE_FULL)
-       batVoltageBuf = BAT_VOLTAGE_FULL;
-    return batVoltageBuf;
-#else
     if(bBatVoltage > BAT_VOLTAGE_FULL)
        bBatVoltage = BAT_VOLTAGE_FULL;
 	
     return bBatVoltage;
-#endif
 }
 
 static uint8_t  batCount = 0;
@@ -172,20 +128,15 @@ void Battery_porcess(void)
             if (batCount > 5 && (deviceMode != DEVICES_OFF_MODE))
             {
                 batCount = 6;
-#ifdef  BOARD_S3
                 S1Sleep();
-#else
 
-#ifdef BOARD_S6_6
 #ifdef      SUPPORT_DISP_SCREEN
-            Disp_poweroff();
+                Disp_poweroff();
 #endif      //SUPPORT_DISP_SCREEN
 
+#ifdef BOARD_S6_6
                 S6Sleep();
-#endif//BOARD_S6_6
-
-
-#endif//BOARD_S3
+#endif
             }
         }
         else

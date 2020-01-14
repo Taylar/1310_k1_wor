@@ -6,9 +6,17 @@ typedef enum {
     ELE_SHOCK_HIGH,
     ELE_SHOCK_MID,
     ELE_SHOCK_LOW,
-    ELE_SHOCK_ENABLE,
+    ELE_SHOCK_POWER_ENABLE,
+    ELE_MOTO_ENABLE,
+    ELE_PREVENT_INSERT_ENABLE,
+    ELE_PREVENT_INSERT2_ENABLE,
     ELE_SHOCK_PIN_MAX
-} LED_ID;
+} ELECTRIC_CTR_ID;
+
+
+#define 		ELECTRIC_LOW_LEVEL		0
+#define 		ELECTRIC_MID_LEVEL		1
+#define 		ELECTRIC_HIGH_LEVEL		2
 
 // variable typedef
 typedef struct 
@@ -33,3 +41,4 @@ extern void ElectricShockInit(void);
 
 
 #endif //ELECTRIC_SHOCK
+

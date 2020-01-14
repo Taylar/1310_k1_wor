@@ -319,6 +319,13 @@ void SystemAppTaskFxn(void)
 			}
 		}
 
+		if(SYS_EVT_ELE_SHOCK_DESTROY & eventId){
+			destroyEleShock = 1;
+		}
+
+
+		
+
 
 #ifdef SUPPORT_DISP_SCREEN
 		if(eventId & SYSTEMAPP_EVT_DISP)
