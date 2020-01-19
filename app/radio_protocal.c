@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-19 11:16:15
+* @Last Modified time: 2020-01-19 11:32:06
 */
 #include "../general.h"
 
@@ -380,7 +380,7 @@ void ConcenterRadioSendGroudShockEvt(uint32_t srcAddr, uint32_t dstAddr, uint32_
     protocalTxBuf.load[2] 	= HIBYTE_ZKS(LOWORD_ZKS(ground));
     protocalTxBuf.load[3] 	= LOBYTE_ZKS(LOWORD_ZKS(ground));
 
-	SetRadioDstAddr(dstAddr);
+	SetRadioDstAddr(ground);
 
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, 0);
 }
