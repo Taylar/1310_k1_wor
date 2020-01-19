@@ -1171,28 +1171,7 @@ void Disp_proc(void)
 
         Disp_status_bar();
 
-
-       if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-       {
-           if(AutoFreqStateRead() == false)
-           {
-                Disp_msg(3, 6, "Register", FONT_8X16);//display
-           }
-       }
-
     }
-
-#ifdef SUPPORT_LORA
-    //增加采集?网关显示注册信息
-   if( g_rSysConfigInfo.module & MODULE_RADIO ) {
-      if(Lora_get_ntp()== 0){
-          if(*(uint32_t*)g_rSysConfigInfo.DeviceId != 0)
-            Disp_msg(0, 6, "Registering...", FONT_8X16);//display
-          else
-            Disp_msg(0, 6, "NO DEID", FONT_8X16);//display
-      }
-   }
-#endif
 
 }
 

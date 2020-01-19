@@ -63,35 +63,23 @@ void RtcEventSet(void)
 {
 
 #ifdef BOARD_S3
-	S1AppRtcProcess();
-	if(deviceMode == DEVICES_OFF_MODE)
-		return;
+	Sys_event_post(SYS_EVT_RTC);
 #endif
-
-
-
-
-
 
 #ifdef S_C//节点
 	if(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
 	   NodeRtcProcess();
 	}
-
 #endif // S_C//节点
 
 
-
 #ifdef S_G//网关
-
 	    ConcenterRtcProcess();
 #endif // S_G//网关
 
 #ifdef  SUPPORT_CHARGE_DECT_ALARM
     Sys_chagre_alarm_timer_isr();
 #endif
-
-
 }
 
 
@@ -206,32 +194,23 @@ void SystemAppTaskFxn(void)
 
 
 #ifdef BOARD_S6_6		
-	if((Battery_get_voltage() > BAT_VOLTAGE_LOW) && (engmodeFlag == 0))
 		S6Wakeup();
-	else
-		S6Sleep();
 
     WdtInit(WdtResetCb);
 #endif // BOARD_S6_6
 
 
 #ifdef BOARD_S3
-	if(g_rSysConfigInfo.sysState.wtd_restarts & STATUS_POWERON)
-	{
-	    Task_sleep(100 * CLOCK_UNIT_MS);
-		S1Wakeup();
-		if(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
-		   Sys_event_post(SYS_EVT_SENSOR);
-		}
-	}
+	Task_sleep(100 * CLOCK_UNIT_MS);
+	S1Wakeup();
 #endif //
 
-	uint32_t RestStatus;
-    uint8_t logtest[6] = {0};
-    Flash_log("PON\n");
-    RestStatus = SysCtrlResetSourceGet();
-    sprintf((char*)logtest, "R%2ld\n",RestStatus);
-    Flash_log((uint8_t*)logtest);
+	// uint32_t RestStatus;
+ //    uint8_t logtest[6] = {0};
+ //    Flash_log("PON\n");
+ //    RestStatus = SysCtrlResetSourceGet();
+ //    sprintf((char*)logtest, "R%2ld\n",RestStatus);
+ //    Flash_log((uint8_t*)logtest);
 
 	for(;;)
 	{
@@ -266,11 +245,6 @@ void SystemAppTaskFxn(void)
 		if((eventId & SYSTEMAPP_EVT_CONCENTER_MONITER))
 		{
 			ConcenterResetRadioState();
-		}
-
-		if((eventId & SYS_EVT_CONFIG_MODE_EXIT))
-		{
-			NodeAppConfigModeExit();
 		}
 
 		if((eventId & SYSTEMAPP_EVT_STORE_CONCENTER))
@@ -325,6 +299,16 @@ void SystemAppTaskFxn(void)
 
 
 		
+		if(eventId & SYS_EVT_RTC){
+			S1AppRtcProcess();
+		}
+
+		if(eventId & SYS_EVT_MOTO_INT_REC){
+			eleShock_set(ELE_MOTO_ENABLE, 1);
+			Task_sleep(100 * CLOCK_UNIT_MS);
+			eleShock_set(ELE_MOTO_ENABLE, 0);
+		}
+
 
 
 #ifdef SUPPORT_DISP_SCREEN

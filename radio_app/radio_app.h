@@ -4,29 +4,20 @@
 #include "../easylink/EasyLink.h"
 
 
-#define         RADIO_EVT_TEST          Event_Id_00
-#define         RADIO_EVT_RX            Event_Id_01
-#define         RADIO_EVT_TX            Event_Id_02
-#define         RADIO_EVT_TOUT          Event_Id_03
-#define         RADIO_EVT_RX_FAIL       Event_Id_04
-#define         RADIO_EVT_TX_FAIL       Event_Id_05
-#define         RADIO_EVT_FAIL          Event_Id_06
-#define         RADIO_EVT_SET_RX_MODE   Event_Id_07
-#define         RADIO_EVT_SET_TX_MODE   Event_Id_08
-#define         RADIO_EVT_DISABLE	    Event_Id_09
-#define         RADIO_EVT_UPGRADE_SEND  Event_Id_10
-#define         RADIO_EVT_UPGRADE_RX_TIMEOUT   Event_Id_11
-#define         RADIO_EVT_SENSOR_PACK   Event_Id_12
-#define         RADIO_EVT_RADIO_REPAIL  Event_Id_13
-#define         RADIO_EVT_SEND_CONFIG   Event_Id_14
-#define         RADIO_EVT_SEND_SYC      Event_Id_15
-#define         RADIO_EVT_CHANNEL_CHECK Event_Id_16
-#define         RADIO_EVT_EVT_OLD_S1_UPLOAD_NODE Event_Id_17
-#define         RADIO_EVT_RSSI_SCAN     Event_Id_18
-#define         RADIO_EVT_SWITCH_RATE   Event_Id_19
-#define         RADIO_EVT_START_SNIFF   Event_Id_20
-#define         RADIO_EVT_WAKEUP_SEND   Event_Id_21
-#define         RADIO_EVT_WAKEUP_SEND_ACK   Event_Id_22
+#define         RADIO_EVT_RX            Event_Id_00
+#define         RADIO_EVT_TX            Event_Id_01
+#define         RADIO_EVT_TOUT          Event_Id_02
+#define         RADIO_EVT_RX_FAIL       Event_Id_03
+#define         RADIO_EVT_FAIL          Event_Id_04
+#define         RADIO_EVT_SET_RX_MODE   Event_Id_05
+#define         RADIO_EVT_SET_TX_MODE   Event_Id_06
+#define         RADIO_EVT_DISABLE	    Event_Id_07
+#define         RADIO_EVT_SEND_CONFIG   Event_Id_08
+#define         RADIO_EVT_SEND_SYC      Event_Id_09
+#define         RADIO_EVT_START_SNIFF   Event_Id_10
+#define         RADIO_EVT_WAKEUP_SEND   Event_Id_11
+#define         RADIO_EVT_WAKEUP_SEND_ACK   Event_Id_12
+#define         RADIO_EVT_TX_NO_RESPON  Event_Id_13
 
 
 #define         RADIO_EVT_ALL           0xffffffff
@@ -116,6 +107,8 @@ void RadioSensorDataPack(void);
 
 void RadioSend(void);
 
+void RadioSingleSend(void);
+
 void RadioUpgradeSendFile(void);
 
 void RadioUpgradeRxFileDataTimout(void);
@@ -128,6 +121,8 @@ void RadioResendPacket(void);
 uint32_t GetRadioSrcAddr(void);
 
 uint32_t GetRadioDstAddr(void);
+
+uint32_t GetRadioSubDstAddr(void);
 
 void SetRadioSrcAddr(uint32_t addr);
 
@@ -143,15 +138,11 @@ void ClearRadioSendBuf(void);
 
 void RadioTestEnable(void);
 
-void RadioTestDisable(void);
-
 void RadioSetRxMode(void);
 
 void RadioSetTxMode(void);
 
 void RadioDisable(void);
-
-void RadioSwitchRate(void);
 
 uint8_t RadioStatueRead(void);
 
@@ -159,14 +150,8 @@ void Radio_setConfigModeRfFrequency(void);
 void Radio_setRxModeRfFrequency(void);
 void Radio_setTxModeRfFrequency(void);
 
-void RadioSwitchingUpgradeRate(void);
 void RadioSwitchingUserRate(void);
-void RadioSwitchingSettingRate(void);
-
-void RadioSwitchingS1OldUserRate(void);
-
 void RadioAbort(void);
-
 void RadioSetRfPower(uint8_t rfPower);
 
 

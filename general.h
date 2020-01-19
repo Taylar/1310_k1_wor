@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-#define ZKS_S3_WOR
-// #define ZKS_S6_6_WOR_G
+// #define ZKS_S3_WOR
+#define ZKS_S6_6_WOR_G
 
 //***********************************************************************************
 //
@@ -85,10 +85,6 @@
 #endif
 
 
-
-#if defined(ZKS_S6_6_CONFIG)
-#define BOARD_CONFIG_DECEIVE
-#endif 
 
 // #define FACTOR_RADIO_TEST
 // #define FACTOR_RADIO_32K_TEST
@@ -370,6 +366,7 @@ error
 
 #define SUPPORT_RADIO_UPGRADE
 #define SUPPORT_DOUBLE_PRESS
+#define SUPPORT_USB
 
 //LCD undefine
 #ifdef SUPPORT_DISP_SCREEN
@@ -471,23 +468,10 @@ error
 #endif //ZKS_S6_6_WOR_G
 
 #undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""WOR_FUNC""STRATEG_NAME""CHARGE_FUNC""BT_FUNC)
+#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME""WOR_FUNC""CHARGE_FUNC""BT_FUNC)
 #endif // BOARD_S6_6
 
 
-
-//***********************************************************************************
-// config board define
-//***********************************************************************************
-#ifdef  BOARD_CONFIG_DECEIVE
-
-#undef SUPPORT_RARIO_SPEED_SET
-#undef  BOARD_NAME
-#define BOARD_NAME              "_S3_CONFIG"
-#undef  PROJECT_NAME
-#define PROJECT_NAME (COMPANY_NAME""PLATFORM_NAME""BOARD_NAME""TYPE_NAME""MENU_NAME)
-
-#endif //BOARD_CONFIG_DECEIVE
 
 
 
@@ -505,9 +489,9 @@ error
 
 #define CUSTOM_ID_DEFAULT               0X0000
 
-#define UPLOAD_PERIOD_DEFAULT           600
+#define UPLOAD_PERIOD_DEFAULT           1
 
-#define COLLECT_PERIOD_DEFAULT          600
+#define COLLECT_PERIOD_DEFAULT          1
 
 #define HEARTBEAT_PERIOD_DEFAULT        600
 
@@ -820,8 +804,7 @@ typedef struct {
 #include "app/s6_app.h"
 #include "engmode/engmode.h"
 #include "usb/usb_bsl.h"
-#include "radio_app/radio_upgrade.h"
-#include "radio_app/auto_findfreq.h"
+
 
 //***********************************************************************************
 //

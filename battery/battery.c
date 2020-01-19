@@ -123,26 +123,26 @@ void Battery_porcess(void)
     Battery_voltage_measure();
 
     if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
+    {
+        batCount++;
+        if (batCount > 5 && (deviceMode != DEVICES_OFF_MODE))
         {
-            batCount++;
-            if (batCount > 5 && (deviceMode != DEVICES_OFF_MODE))
-            {
-                batCount = 6;
-                S1Sleep();
+            batCount = 6;
+            // S1Sleep();
 
 #ifdef      SUPPORT_DISP_SCREEN
-                Disp_poweroff();
+            Disp_poweroff();
 #endif      //SUPPORT_DISP_SCREEN
 
 #ifdef BOARD_S6_6
-                S6Sleep();
+            // S6Sleep();
 #endif
-            }
         }
-        else
-        {
-            batCount = 0;
-        }
+    }
+    else
+    {
+        batCount = 0;
+    }
 
 }
 #endif  /* SUPPORT_BATTERY */

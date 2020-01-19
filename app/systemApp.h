@@ -15,7 +15,7 @@
 #define         SYSTEMAPP_EVT_STORE_SYS_CONFIG			Event_Id_08
 #define         SYSTEMAPP_EVT_DISP                      Event_Id_09
 #define         SYS_EVT_ALARM                      		Event_Id_10
-#define         SYS_EVT_SENSOR                      	Event_Id_11
+#define         SYS_EVT_RTC                      		Event_Id_11
 #define         SYS_FEED_WATCHDOG                      	Event_Id_12
 #define         SYS_EVT_USB_CHARGE                      Event_Id_13
 #define         SYS_EVT_CONFIG_MODE_EXIT                Event_Id_14

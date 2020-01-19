@@ -77,10 +77,8 @@ void NodeAppInit(void)
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
                      g_rSysConfigInfo.DeviceId[3]);
 
-    if(!(g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER)){
-        SetRadioSubSrcAddr(nodeParameter.customId );
-        SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
-    }
+    SetRadioSubSrcAddr(nodeParameter.customId );
+    SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
 
 
     SetRadioDstAddr(nodeParameter.customId);
@@ -104,61 +102,6 @@ void NodeUploadPeriodSet(uint32_t period)
 
 }
 
-
-
-//***********************************************************************************
-// brief:   Node send the sensor data to concenter
-// 
-// parameter: 
-//***********************************************************************************
-void NodeUploadProcess(void)
-{
-    uint8_t     data[32];
-    uint32_t    dataItems;
-    uint16_t serialNumber;
-
-    // reverse the buf to other command
-    Semaphore_pend(uploadSemHandle, BIOS_WAIT_FOREVER);
-
-    NodeStrategyBuffClear();
-    offsetUnit = 0;
-    memset(&lastTxSensorDataRecord, 0, sizeof(lastTxSensorDataRecord));
-    
-    dataItems  = Flash_get_unupload_items();
-
-    if(dataItems >= offsetUnit)
-    {
-        dataItems = dataItems - offsetUnit;
-    }
-
-    while(dataItems)
-    {
-    #ifdef BOARD_S3
-        Flash_load_sensor_data_by_offset(data+6, 16, offsetUnit);
-        data[0] = 21;
-        data[1] = 0;
-        data[2] = g_rSysConfigInfo.DeviceId[0];
-        data[3] = g_rSysConfigInfo.DeviceId[1];
-        data[4] = g_rSysConfigInfo.DeviceId[2];
-        data[5] = g_rSysConfigInfo.DeviceId[3];
-    #else
-        Flash_load_sensor_data_by_offset(data, 32, offsetUnit);
-    #endif  // BOARD_S3
-
-        serialNumber = ((data[6] << 8) | data[7]);
-        // the radio buf is full 
-        if(NodeRadioSendSensorData(data, data[0] + 1) == false)
-        {
-            Semaphore_post(uploadSemHandle);
-            return;
-        }
-        lastTxSensorDataRecord.lastFrameSerial[lastTxSensorDataRecord.Cnt] = serialNumber;
-        lastTxSensorDataRecord.Cnt++;
-        dataItems--;
-        offsetUnit++;
-    }
-    Semaphore_post(uploadSemHandle);
-}
 //***********************************************************************************
 // brief:   when the sensor data upload fail, needn't do everything
 // 
@@ -355,11 +298,7 @@ void NodeRequestConfig(void)
 void NodeRtcProcess(void)
 {
     nodeParameter.sysTime++;
-    if(nodeParameter.sysTime >= 3600)
-    {
-        RadioEventPost(RADIO_EVT_SEND_SYC);
-        nodeParameter.sysTime       = 0;
-    }
+
 }
 
 

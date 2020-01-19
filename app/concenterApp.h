@@ -62,14 +62,10 @@ void ConcenterCollectStart(void);
 
 void ConcenterCollectStop(void);
 
-void ConcenterTxOnlyStart(void);
-
 uint16_t ConcenterSetNodeChannel(uint32_t nodeAddr, uint32_t channel);
 
 uint16_t ConcenterReadNodeChannel(uint32_t nodeAddr);
 
 uint16_t ConcenterReadResentNodeChannel(void);
-
-void ConcenterClearSynNode(void);
 
 #endif			// _CONCENTERAPP_H__

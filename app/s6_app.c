@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-10 19:09:33
+* @Last Modified time: 2020-01-19 11:14:21
 */
 #include "../general.h"
 
@@ -62,7 +62,6 @@ void Sys_buzzer_init(void)
 void Sys_buzzer_enable(void)
 {
     PWM_start(buzzerHandle);
-    eleShock_ctrl(LED_R, 1, 0, 0);
 }
 
 
@@ -74,7 +73,6 @@ void Sys_buzzer_enable(void)
 void Sys_buzzer_disable(void)
 {
     PWM_stop(buzzerHandle);
-    eleShock_ctrl(LED_R, 0, 0, 0);
 }
 
 
@@ -124,7 +122,7 @@ void Sys_alarmFxn(UArg arg0)
 //***********************************************************************************
 void Bat_alarmFxn(UArg arg0)
 {
-    eleShock_ctrl(LED_R, 1, 500* CLOCK_UNIT_MS, 1);
+
 }
 
 
@@ -247,8 +245,6 @@ void S6HwInit(void)
     /* Obtain clock instance handle */
     BatAlarmClkHandle = Clock_handle(&BatAlarmClkStruct);
 
-    ElectricShockInit();
-
     I2c_init();
 
 	KeyInit();
@@ -279,14 +275,12 @@ void S6HwInit(void)
     }
 
 
-    if(Battery_get_voltage() > g_rSysConfigInfo.batLowVol)
-    {
-        Disp_poweron();
-        Sys_event_post(SYSTEMAPP_EVT_DISP);
-    }
+    Disp_poweron();
+    Sys_event_post(SYSTEMAPP_EVT_DISP);
 }
 
 
+uint8_t testRadio = 0;
 
 //***********************************************************************************
 // brief:S6 measure the bat
@@ -305,80 +299,14 @@ void S6AppBatProcess(void)
     if((Battery_get_voltage()> BAT_VOLTAGE_L1) && (Clock_isActive(BatAlarmClkHandle) == TRUE)) {
         Clock_stop(BatAlarmClkHandle);
     }
-}
-
-
-
-//***********************************************************************************
-// brief:   
-// 
-// parameter: 
-//***********************************************************************************
-void UsbIntProcess(void)
-{
-    if(GetUsbState() == USB_LINK_STATE)
-    {
-        switch(deviceMode)
-        {
-            case DEVICES_ON_MODE:
-            case DEVICES_SLEEP_MODE:
-
-#ifdef      SUPPORT_DISP_SCREEN
-            Disp_poweroff();
-#endif
-            Task_sleep(100 * CLOCK_UNIT_MS);
-            // wait for the gsm uart close
-
-            InterfaceEnable();
-
-            RadioTestDisable();
-            S6Sleep();
-
-            deviceModeTemp = DEVICES_SLEEP_MODE;
-            deviceMode = DEVICES_CONFIG_MODE;
-            break;
-
-            case DEVICES_OFF_MODE:
-            InterfaceEnable();
-            deviceModeTemp = DEVICES_OFF_MODE;
-            deviceMode = DEVICES_CONFIG_MODE;
-            break;
-
-            case DEVICES_CONFIG_MODE:
-            case DEVICES_TEST_MODE:
-            break;
-
-        }
-
-    }
-    else
-    {
-        // the usb has unlink
-        if(deviceMode != DEVICES_CONFIG_MODE)
-            return;
-        deviceMode = deviceModeTemp;
-        InterfaceDisable();
-        SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
-                         (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
-                         (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
-                         g_rSysConfigInfo.DeviceId[3]);
-        SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-        switch(deviceMode)
-        {
-            case DEVICES_ON_MODE:
-            case DEVICES_SLEEP_MODE:
-            RadioSwitchingSettingRate();
-            S6Wakeup();
-            case DEVICES_OFF_MODE:
-            break;
-
-            case DEVICES_CONFIG_MODE:
-            case DEVICES_TEST_MODE:
-            break;
-
-        }
+    if(testRadio){
+        // testRadio = 0;
+        RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
     }
 }
+
+
+
 
 //***********************************************************************************
 // brief:   S6 wakeup enable the rtc and the radio function
@@ -389,25 +317,13 @@ void S6Wakeup(void)
 {
     deviceMode = DEVICES_ON_MODE;
     RtcStart();
-    Flash_log("PON\n");
+    //Flash_log("PON\n");
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
-    Flash_store_devices_state(TYPE_POWER_ON);
+    //Flash_store_devices_state(TYPE_POWER_ON);
 #endif //SUPPORT_DEVICED_STATE_UPLOAD
-    if(GetUsbState() == USB_UNLINK_STATE)
-    {
-#ifdef  SUPPORT_NETWORK
-#endif
-    }
 
-#ifdef S_G//缃戝�?
     ConcenterWakeup();
-    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-        AutoFreqInit();
-#endif // S_G//缃戝�?
 
-#ifdef S_C //节点
-    NodeWakeup();
-#endif // S_C //节点
 }
 
 
@@ -420,9 +336,9 @@ void S6Wakeup(void)
 void S6Sleep(void)
 {
     RtcStop();
-    Flash_log("POF\n");
+    //Flash_log("POF\n");
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
-    Flash_store_devices_state(TYPE_POWER_DOWN);
+    //Flash_store_devices_state(TYPE_POWER_DOWN);
 #endif //SUPPORT_DEVICED_STATE_UPLOAD
     // wait the nwk disable the uart
     Disp_clear_all();

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 14:22:11
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-13 17:10:20
+* @Last Modified time: 2020-01-16 11:47:23
 */
 #include "../general.h"
 #include <ti/sysbios/BIOS.h>
@@ -245,8 +245,6 @@ void NodeStrategyReceiveTimeoutProcess(void)
         else
         {
             nodeStrategy.sendCnt = 0;
-            if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-                AutoFreqNodeSwitchFreq();
             
         }
     }
@@ -351,8 +349,6 @@ void StrategyCheckRssiBusyProcess(void)
     {
         nodeStrategy.radioBusyCnt = 0;
         nodeStrategy.sendCnt      = 0;
-        if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-            AutoFreqNodeSwitchFreq();
     }
 }
 

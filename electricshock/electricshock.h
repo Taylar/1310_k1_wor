@@ -30,12 +30,21 @@ typedef struct
 	uint8_t periodT2;
 } singleport_drive_t;
 
+extern void EletricShockPulseEnable(void);
+extern void EletricShockPulseDisable(void);
+extern void EletricShockPulseInit(void);
+extern void EletricPulseSetTime_S(uint16_t keepTime_S);
+extern void ElecPreventInsertInit(void);
+extern void ElecPreventInsertMeasure(void);
+extern uint8_t ElecPreventInsertState(void);
+
 
 extern void eleShock_ctrl(uint8_t ledId, uint8_t state, uint32_t period, uint8_t times);
 extern void eleShock_ctrl2(uint8_t ledId, uint8_t state, uint32_t period, uint32_t period2, uint8_t times);
 extern void eleShock_set(uint8_t ledId, uint8_t status);
 extern void eleShock_toggle(uint8_t ledId);
 extern void ElectricShockInit(void);
+extern uint8_t DestroyPinRead(void);
 
 
 

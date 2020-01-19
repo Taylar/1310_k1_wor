@@ -26,9 +26,6 @@ static void USB_BSL_jump_bsl(void);
 static int BSL_data_parse(uint8_t *pData, uint16_t length);
 static int BSL_Nodata_parse(uint8_t *pData, uint16_t length);
 
-#ifdef BOARD_CONFIG_DECEIVE
-static uint32_t Is_direct_upgrade(uint16_t crc);
-#endif
 
 void bsl_ack_upgrade_success(uint8_t *pData)
 {
@@ -92,28 +89,20 @@ void Usb_BSL_data_parse(uint8_t *pData, uint16_t length)
     return;
 
 err_end:
-#ifdef BOARD_CONFIG_DECEIVE
-    if (ret == -2) {
-        return;
-    }
-#endif
+
     bsl_ack_error(pData, length);
     return;
 }
 
 // Jump to boot
-#ifndef BOARD_CONFIG_DECEIVE
 static void USB_BSL_jump_bsl(void)
 {
 #ifdef SUPPORT_USB_UPGRADE
     SysCtrlSystemReset();
 #endif
 }
-#endif
 
-#ifdef BOARD_CONFIG_DECEIVE
-uint8_t configUpgrade;
-#endif //BOARD_CONFIG_DECEIVE
+
 // 非空消息 分析
 // pack_len(2)offset(4)pack_data(pack_len)
 // ret -1:ERR   0:OK
@@ -141,20 +130,7 @@ static int BSL_data_parse(uint8_t *pData, uint16_t length)
         usb_upgrade_info.fileLength = pack_len;
         usb_upgrade_info.endFlag    = false;
 
-#ifdef BOARD_CONFIG_DECEIVE
-        uint16_t crc = (uint16_t)(pData[pack_head_len] | ((pData[pack_head_len + 1]) << 8));
-        uint32_t fileLen = Is_direct_upgrade(crc);
-        configUpgrade = 0;
-        if(pData[pack_head_len+2] == 0xaa)
-            configUpgrade = 1;
 
-        if (fileLen != 0xffffffff && configUpgrade == 0) {
-            bsl_ack_upgrade_success(pData);
-            usb_upgrade_info.endFlag = true;
-            RadioUpgrade_start(fileLen, GetRadioDstAddr());
-            return -2;
-        }
-#endif
     } else {
         usb_upgrade_info.pack_num++;
         usb_upgrade_info.pack_offset = data_offset_addr;
@@ -187,21 +163,6 @@ static int BSL_Nodata_parse(uint8_t *pData, uint16_t length)
     // CRC check // MAKE BSL flag if OK
     result = Usb_bsl_UpgradeLoad_check(usb_upgrade_info.fileLength);
 
-#ifdef BOARD_CONFIG_DECEIVE
-    if(configUpgrade == 0)
-    {
-        if(UPGRADE_RESULT_LOADING_COMPLETE == result) {
-            usb_upgrade_info.endFlag = true;
-            RadioUpgrade_start(usb_upgrade_info.fileLength, GetRadioDstAddr());
-        }
-        return 0;
-    }
-    bsl_ack_return(pData, length, BSL_ACK_OK);
-    Task_sleep(100 * CLOCK_UNIT_MS);
-    Flash_store_config();
-    SysCtrlSystemReset();
-    return 0; // will not execute here
-#else
 
     if(UPGRADE_RESULT_LOADING_COMPLETE == result){
         bsl_ack_return(pData, length, BSL_ACK_OK);
@@ -217,41 +178,9 @@ static int BSL_Nodata_parse(uint8_t *pData, uint16_t length)
         bsl_ack_return(pData, length, BSL_ACK_FAIL);
         return -1;
     }
-#endif
 }
 
-#ifdef BOARD_CONFIG_DECEIVE
-// brief: Is direct wireless upgrade
-// return: File len
-// note: return 0xffffffff Indicates that you cannot upgrade directly
-static uint32_t Is_direct_upgrade(uint16_t crc)
-{
-    upgrade_flag_t upgradeFlag;
-    uint8_t buff[2];
-    uint16_t fileCrc;
 
-    memset((char*)&upgradeFlag, 0x0, sizeof(upgrade_flag_t));
-    // Loading upgrade information
-    Flash_load_upgrade_info((uint8_t*)&upgradeFlag, sizeof(upgrade_flag_t));
-
-    Flash_load_upgrade_data(0, buff, sizeof(buff));
-    fileCrc = ((uint16_t)buff[1] << 8) + buff[0];
-
-    if (upgradeFlag.fileLength >= 0xffffffff) {
-          return 0xffffffff;
-     }
-
-     if (upgradeFlag.crc >= 0xffff) {
-          return 0xffffffff;
-     }
-
-    if (crc == upgradeFlag.crc && crc == fileCrc) {
-        return upgradeFlag.fileLength;
-    }
-
-    return 0xffffffff;
-}
-#endif
 
 #endif //SUPPORT_USB
 uint16_t Usb_group_package(USB_TX_MSG_ID msgId, uint8_t *pPacket, uint16_t dataLen);
@@ -308,21 +237,10 @@ UPGRADE_RESULT_E Usb_bsl_UpgradeLoad_check(uint32_t fileLen)
     memset(&upgradeFlag, 0xff, sizeof(upgrade_flag_t));
     strcpy((char*)upgradeFlag.validFlag, UPGRADE_FLAG);
 
-#ifdef BOARD_CONFIG_DECEIVE
-    if(configUpgrade)
-    {
-        upgradeFlag.waiteUpgrade = 0x01;
-        upgradeFlag.complete     = 0xff;
-    }
-    else
-    {
-        upgradeFlag.waiteUpgrade = 0x00;
-        upgradeFlag.complete     = 0x00;
-    }
-#else
+
     upgradeFlag.waiteUpgrade = 0x01;
     upgradeFlag.complete     = 0xff;
-#endif
+
     upgradeFlag.crc          = calCrc;//usb_upgrade_info.crc;
     upgradeFlag.fileLength   = fileLen;
 

@@ -20,7 +20,7 @@ typedef enum ZKS_ADCName
 	ZKS_BATTERY_ADC,
 #ifdef BOARD_S3
 	PREVENTIVE_INSERT_ADC,
-#endif
+#endif //BOARD_S3
 	ZKS_MAX_ADC,
 } ZKS_ADCName;
 

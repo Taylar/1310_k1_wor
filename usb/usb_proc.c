@@ -401,11 +401,6 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             len = Usb_group_package(AC_Ack, pData, 1);
             InterfaceSendImmediately(pData, len);
 #endif // SYS_CONFIG_USE_ID_MODE
-
-#ifdef  BOARD_CONFIG_DECEIVE
-            RadioUpgrade_stop();
-            ConcenterRadioSendParaSet(GetRadioSrcAddr(), GetRadioDstAddr());
-#endif //BOARD_CONFIG_DECEIVE
             break;
 
         case EV_Get_APN:       
@@ -503,17 +498,13 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             break;
 #endif
         case EV_Reset_Data:
-#ifdef  BOARD_CONFIG_DECEIVE
-            RadioUpgrade_stop();
-            ConcenterRadioSendCmd(GetRadioSrcAddr(), GetRadioDstAddr(), CONFIG_CONTROL_CLEAR_DATA);
-#else
+
             Flash_reset_all();
             pData[0] = 0;
             len = Usb_group_package(AC_Ack, pData, 1);
             InterfaceSendImmediately(pData, len);
             __delay_cycles(60000);
             SysCtrlSystemReset();//閲嶅惎
-#endif //BOARD_CONFIG_DECEIVE
             break;
             
 		case EV_Get_History_Data://len(2B) cmd(1B)  no(2B or 4B)
@@ -840,16 +831,12 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 
 
         case EV_Get_Cur_Vol:
-#ifdef  BOARD_CONFIG_DECEIVE
-            RadioUpgrade_stop();
-            ConcenterRadioSendCmd(GetRadioSrcAddr(), GetRadioDstAddr(), CONFIG_CONTROL_GET_VOLTAGE);
-#else
+
             vol = Battery_get_voltage();
             pData[0] = (uint8_t)(vol>>8);
             pData[1] = (uint8_t)(vol);
             len = Usb_group_package(AC_Send_Voltage, pData, 2);
             InterfaceSendImmediately(pData, len);
-#endif  //BOARD_CONFIG_DECEIVE
             break;
 
         case EV_Get_SensorData:

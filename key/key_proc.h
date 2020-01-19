@@ -114,6 +114,7 @@ void KeyInit(void);
 void KeyRegister(void (*Cb)(void), KEY_ACTION action);
 
 uint8_t KeyReadState(KEY_NUM_E key);
+KEY_CODE_E Key_get(void);
 
 #ifdef BOARD_S6_6
 void KeyScanFxn(void);

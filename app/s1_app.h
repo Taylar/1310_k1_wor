@@ -26,8 +26,6 @@ void S1DoubleKeyApp(void);
 
 void S1AppRtcProcess(void);
 
-void NodeAppConfigModeExit(void);
-
 void S1Wakeup(void);
 
 void S1Sleep(void);

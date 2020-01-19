@@ -63,7 +63,7 @@ static const uint8_t key_pin_id[KEY_MAX_NUM] =
 
 typedef void (*AppKeyIsrCb_t)(void);
 
-static AppKeyIsrCb_t   AppKeyIsrCb[KEY_ACTION_MAX];
+AppKeyIsrCb_t   AppKeyIsrCb[KEY_ACTION_MAX];
 
 
 //***********************************************************************************

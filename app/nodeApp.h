@@ -15,7 +15,6 @@ typedef struct {
 #ifdef S_G
 #define NodeAppInit(...)
 #define NodeUploadPeriodSet(...)
-#define NodeUploadProcess(...)
 #define NodeCollectPeriodSet(...)
 #define NodeCollectProcess(...)
 #define NodeLowTemperatureSet(...)
@@ -41,8 +40,6 @@ typedef struct {
 void NodeAppInit(void);
 
 void NodeUploadPeriodSet(uint32_t period);
-
-void NodeUploadProcess(void);
 
 void NodeCollectPeriodSet(uint32_t period);
 

@@ -431,44 +431,36 @@ void Flash_init(void)
 #endif
     Semaphore_post(spiSemHandle);
 
-#ifndef   BOARD_CONFIG_DECEIVE
     // Init the config
-    if(Flash_load_config() == false)
+    //if(Flash_load_config() == false)
     {
         Sys_config_reset();
-        Flash_store_config();
+        //Flash_store_config();
     }
-#else
-    g_rSysConfigInfo.size                = sizeof(ConfigInfo_t);
-    g_rSysConfigInfo.sensorModule[0]     = SEN_TYPE_SHT2X;
-    g_rSysConfigInfo.alarmTemp[0].high   = ALARM_TEMP_HIGH;
-    g_rSysConfigInfo.alarmTemp[0].low    = ALARM_TEMP_LOW;
-    g_rSysConfigInfo.WarningTemp[0].high = ALARM_TEMP_HIGH;
-    g_rSysConfigInfo.WarningTemp[0].low  = ALARM_TEMP_LOW;
-#endif
+
     
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     sysInfo.printRecordAddr.start = 0xffffffff;
     sysInfo.printRecordAddr.end = 0xffffffff;
-    Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
+    //Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
     Semaphore_post(spiSemHandle);
 
     if (g_rSysConfigInfo.swVersion != FW_VERSION) {
         Flash_reset_data();
         g_rSysConfigInfo.swVersion = FW_VERSION;
         Rtc_set_calendar((Calendar *)&g_rSysConfigInfo.rtc);
-        Flash_store_config();
+       // Flash_store_config();
     }
 
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-    Flash_load_sensor_ptr();
+    //Flash_load_sensor_ptr();
 
 #ifdef SUPPORT_TCP_MULTIL_LINK
     Flash_load_sensor_link2_ptr();
 #endif //SUPPORT_TCP_MULTIL_LINK
 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
-    Flash_load_deviced_state_ptr();
+    //Flash_load_deviced_state_ptr();
 #endif
 
 #ifdef SUPPORT_ALARM_RECORD_QURERY
@@ -496,7 +488,7 @@ void Flash_init(void)
     }
 
     if (ret) {
-        Flash_store_config();
+        //Flash_store_config();
     }
 
 

@@ -32,14 +32,14 @@ const ADCCC26XX_HWAttrs adcCC26xxHWAttrs[ZKS_MAX_ADC] = {
         .returnAdjustedVal   = false
     },
 
-#ifdef BOARD_S6_6
+#ifdef BOARD_S3
     {
         .adcDIO              = PREVENTIVE_INSERT_DETECT_PIN,
-        .adcCompBInput       = ADC_COMPB_IN_AUXIO7,
+        .adcCompBInput       = ADC_COMPB_IN_AUXIO1,
 // #ifdef      BATTERY_REF_FIX
 //         .refSource           = ADCCC26XX_FIXED_REFERENCE,
 // #else
-        .refSource           = ADCCC26XX_VDDS_REFERENCE,
+        .refSource           = ADCCC26XX_FIXED_REFERENCE,
 // #endif
         .samplingDuration    = ADCCC26XX_SAMPLING_DURATION_5P46_MS,
         .inputScalingEnabled = true,

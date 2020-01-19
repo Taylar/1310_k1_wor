@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-13 16:52:39
+* @Last Modified time: 2020-01-19 10:43:19
 */
 #include "../general.h"
 
@@ -34,10 +34,7 @@ uint32_t configModeTimeCnt;          // the unit is sec
 //***********************************************************************************
 void S1HwInit(void)
 {
-    
-
     KeyInit();
-
 
     Spi_init();
 
@@ -46,13 +43,21 @@ void S1HwInit(void)
     SHT3x_ResetIoInitial();
 #endif
 
+    AdcDriverInit();
+
     I2c_init();
+
+    PwmDriverInit();
 
     Flash_init();
 
-    configModeTimeCnt = 0;
-    
+    ElectricShockInit();
 
+    Battery_init();
+
+    Battery_voltage_measure();
+    
+    configModeTimeCnt = 0;
 
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
 
@@ -71,11 +76,6 @@ void S1ShortKeyApp(void)
     switch(deviceMode)
     {
         case DEVICES_ON_MODE:
-        if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
-        {
-            RadioTestEnable();
-        }
-
         break;
 
         case DEVICES_OFF_MODE:
@@ -83,10 +83,6 @@ void S1ShortKeyApp(void)
         break;
 
         case DEVICES_CONFIG_MODE:
-        // if(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST)
-        // {
-        //     Sys_event_post(SYS_EVT_CONFIG_MODE_EXIT);
-        // }
 
         break;
 
@@ -160,9 +156,7 @@ void S1DoubleKeyApp(void)
         NodeUploadOffectClear();
         //RadioModeSet(RADIOMODE_RECEIVEPORT);
         SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
-#if  defined(SUPPORT_RARIO_SPEED_SET)
-        RadioSwitchingUserRate();
-#endif
+
 
         NodeStrategyStop();
         RadioAbort();
@@ -187,47 +181,33 @@ void S1AppRtcProcess(void)
         }
     }
 
-    ElecPreventInsertMeasure();
-    if(ElecPreventInsertState()){
-        EletricPulseSetTime_S(1);
-    }
+    // ElecPreventInsertMeasure();
+    // if(ElecPreventInsertState()){
+    //     EletricPulseSetTime_S(1);
+    //     RadioCmdSetWithRespon(RADIO_CMD_INSERT_TYPE, NULL);
+    // }
 
 
-    Battery_porcess();
-    if(Battery_get_voltage() < 3600){
-        if((lowBatCnt == 0) || (lowBatCnt >= 3600)){
-            lowBatCnt = 1;
-            
-        }
-        lowBatCnt++;
-    }else{
-        lowBatCnt = 0;
-    }
+    // Battery_porcess();
+    // if(Battery_get_voltage() < 3600){
+    //     if((lowBatCnt == 0) || (lowBatCnt >= 3600)){
+    //         lowBatCnt = 1;
+    //         RadioCmdSetWithRespon(RADIO_CMD_LOW_VOL_TYPE, NULL);
+    //     }
+    //     lowBatCnt++;
+    // }else{
+    //     lowBatCnt = 0;
+    // }
 
 
     if(destroyEleShock){
         EletricPulseSetTime_S(1);
+        RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE);
+        destroyEleShock = DestroyPinRead();
     }
 
 }
 
-void NodeAppConfigModeExit(void)
-{
-    deviceMode = deviceModeTemp;
-    RadioSwitchingSettingRate();
-    NodeStrategyBuffClear();
-    RadioModeSet(RADIOMODE_SENDPORT);
-    if(deviceMode != DEVICES_OFF_MODE)
-    {
-        NodeStartBroadcast();
-        NodeBroadcasting();
-       if( g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER){
-          NodeStrategyStart();
-        }
-    }
-
-    NodeWakeup();
-}
 
 extern void WdtResetCb(uintptr_t handle);
 

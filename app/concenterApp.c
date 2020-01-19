@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-13 16:56:12
+* @Last Modified time: 2020-01-19 11:08:47
 */
 #include "../general.h"
 
@@ -63,12 +63,7 @@ void ConcenterAppInit(void)
 
     ExtflashRingQueueInit(&extflashWriteQ);
 
-#ifdef  BOARD_CONFIG_DECEIVE
 
-    SetRadioSrcAddr(CONFIG_DECEIVE_ID_DEFAULT);
-    SetRadioSubSrcAddr(CONFIG_DECEIVE_ID_DEFAULT);
-
-#else
 
 // *******************************for test*************************
     // g_rSysConfigInfo.DeviceId[0] = (uint8_t)((DECEIVE_ID_DEFAULT>>24)&0xff);
@@ -86,9 +81,10 @@ void ConcenterAppInit(void)
                      g_rSysConfigInfo.DeviceId[3]);
     SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
     SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
-#endif
 
-    // ConcenterSleep();
+    GroudAddrSet(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+
+
 }
 
 
@@ -217,7 +213,6 @@ void ConcenterUpdataNodeSetting(uint32_t srcAddr, uint32_t dstAddr)
 {
     // search the table to updata the parameter setting
     // 
-    // ConcenterRadioSendParaSet(srcAddr, dstAddr, NODE_SETTING_CMD, NODE_SETTING_CMD_LENGTH);
 }
 
 //***********************************************************************************
@@ -239,12 +234,10 @@ void ConcenterNodeSettingSuccess(uint32_t srcAddr, uint32_t dstAddr)
 //***********************************************************************************
 void ConcenterSleep(void)
 {
-#ifndef BOARD_CONFIG_DECEIVE
 
     concenterParameter.synTimeFlag  = false;
     RadioDisable();
 
-#endif // BOARD_CONFIG_DECEIVE
 }
 
 //***********************************************************************************
@@ -265,10 +258,6 @@ void ConcenterWakeup(void)
 //***********************************************************************************
 void ConcenterConfigDeceiveInit(void)
 {
-#ifdef  SUPPORT_NETWORK
-    Nwk_poweroff();
-
-#endif
 
     deviceMode = DEVICES_CONFIG_MODE;
     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
@@ -336,15 +325,7 @@ void ConcenterRtcProcess(void)
     {
         Sys_event_post(SYSTEMAPP_EVT_CONCENTER_MONITER);
     }
-    if(gatewayConfigTime)
-    {
-        gatewayConfigTime++;
-        if(gatewayConfigTime > GATEWAY_CONFIG_MODE_TIME_MAX)
-        {
-            gatewayConfigTime = 0;
-            RadioSwitchRate();
-        }
-    }
+
 }
 
 //***********************************************************************************
@@ -371,17 +352,4 @@ void ConcenterResetRadioState(void)
 }
 
 
-
-//#ifdef PERIOD_TX_ONLY_FUNC
-//=======================================================
-//ConcenterTxOnlyStart
-//=========================================================
-void ConcenterTxOnlyStart(void){
-
-    NodeStrategyBuffClear();
-    GateWakeUpSensorSend( GetRadioSrcAddr() , RADIO_BROCAST_ADDRESS );
-
-}
-
-//#endif
 

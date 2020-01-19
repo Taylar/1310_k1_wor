@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-13 17:05:36
+* @Last Modified time: 2020-01-18 18:35:38
 */
 #include "../general.h"
 
@@ -26,12 +26,12 @@
 
 
 const PIN_Config motoIntPinTable[] = {
-    MOTO_INT_PIN | PIN_INPUT_EN | PIN_IRQ_POSEDGE,       /* 马达中断          */
+    MOTO_INT_PIN | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* 马达中断          */
     PIN_TERMINATE
 };
 
 const PIN_Config destroyIntPinTable[] = {
-    DESTROY_INT_PIN | PIN_INPUT_EN | PIN_IRQ_POSEDGE,       /* 防拆中断          */
+    DESTROY_INT_PIN | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* 防拆中断          */
     PIN_TERMINATE
 };
 
@@ -85,7 +85,7 @@ Clock_Handle eleShockProcessClkHandle;
 
 PWM_Handle eletricShockPulseHandle = NULL;
 
-#define 	PWM_ELE_SHOCK_PULSE_FRQ			1
+#define 	PWM_ELE_SHOCK_PULSE_FRQ			33
 
 uint16_t    pulseTimes_sec = 0;
 
@@ -140,7 +140,7 @@ void EletricShockPulseInit(void)
 
     PWM_Params_init(&params);
     params.dutyUnits   = PWM_DUTY_US;
-    params.dutyValue   = 100L / PWM_ELE_SHOCK_PULSE_FRQ;	//100us 的脉冲
+    params.dutyValue   = 1000000L / PWM_ELE_SHOCK_PULSE_FRQ / 300;	//100us 的脉冲
     params.periodUnits = PWM_PERIOD_US;
     params.periodValue = 1000000L/ PWM_ELE_SHOCK_PULSE_FRQ;	 	//1秒的周期
     params.idleLevel   = PWM_IDLE_LOW;
@@ -162,32 +162,38 @@ void EletricPulseSetTime_S(uint16_t keepTime_S)
     }
 }
 
-#define     INSERT_DECTECT_VALUE        1000
+#define     INSERT_DECTECT_VALUE        3000
 ADC_Handle   preventInsertHandle;
 uint8_t     insertOccur = 0;
 
 
 void ElecPreventInsertInit(void)
 {
+#ifdef BOARD_S3
     ADC_Params   params;
 
     ADC_Params_init(&params);
 
     if(preventInsertHandle == NULL)
         preventInsertHandle = ADC_open(PREVENTIVE_INSERT_ADC, &params);
+#endif //BOARD_S3
 }
-
+static uint32_t volvalue;
 void ElecPreventInsertMeasure(void)
 {
     uint16_t temp;
-    uint32_t value;
 
+    eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
+    eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
     ADC_convert(preventInsertHandle, &temp);
-    value    = ADC_convertToMicroVolts(preventInsertHandle, temp);
-    if(value > INSERT_DECTECT_VALUE)
+    volvalue    = ADC_convertToMicroVolts(preventInsertHandle, temp);
+    if(volvalue > INSERT_DECTECT_VALUE)
         insertOccur = 1;
     else
         insertOccur = 0;
+
+    eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
+    eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
 }
 
 
@@ -365,6 +371,11 @@ static void MotoIsrFxn(PIN_Handle handle, PIN_Id pinId)
 static void DestroyIsrFxn(PIN_Handle handle, PIN_Id pinId)
 {
     Sys_event_post(SYS_EVT_ELE_SHOCK_DESTROY);
+}
+
+uint8_t DestroyPinRead(void)
+{
+    return PIN_getInputValue(DESTROY_INT_PIN);
 }
 
 //***********************************************************************************

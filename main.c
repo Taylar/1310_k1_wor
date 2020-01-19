@@ -61,10 +61,8 @@ int main(void)
 
     SysAppTaskCreate();
 
-#if (defined  BOARD_S6_6)
 
     InterfaceTaskCreate();
-#endif  // BOARD_S6_6
 
 #ifndef S_A//涓�浣撴満
     RadioAppTaskCreate();

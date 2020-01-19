@@ -31,16 +31,6 @@ void sys_Node_Lose_Alarm(void);
 
 void S6HwInit(void);
 
-void S6ShortKeyApp(void);
-
-void S6ConcenterLongKeyApp(void);
-
-void S6ShortKey1App(void);
-
-void S6LongKey0App(void);
-
-void S6LongKey1App(void);
-
 void S6AppBatProcess(void);
 
 void sensor_unpackage_to_memory(uint8_t *pData, uint16_t length);
@@ -50,5 +40,7 @@ void UsbIntProcess(void);
 void S6Wakeup(void);
 
 void S6Sleep(void);
+
+void S6KeyApp(void);
 
 #endif		//	__S6_APP_H__
