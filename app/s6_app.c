@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-19 11:34:16
+* @Last Modified time: 2020-01-19 11:51:55
 */
 #include "../general.h"
 
@@ -354,7 +354,7 @@ void S6Sleep(void)
 void S6KeyApp(void)
 {
     KEY_CODE_E keyCode;
-
+    RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
     keyCode = Key_get();
     switch(keyCode)
     {
