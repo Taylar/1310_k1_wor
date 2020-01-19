@@ -655,7 +655,7 @@ void RadioAppTaskFxn(void)
         {
             Radio_setRxModeRfFrequency();
 
-            if(RadioCheckRssi() > -80)
+            //if(RadioCheckRssi() > -80)
             {
                 EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(100));
                 RadioReceiveData();
