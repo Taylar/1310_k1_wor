@@ -93,13 +93,13 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr);
 
 void GroudAddrSet(uint32_t ground);
 uint32_t GroudAddrGet(void);
-void RadioCmdSetWithNoRes(uint16_t cmd);
+void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr);
 void RadioCmdClearWithNoRespon(void);
 uint16_t RadioWithNoResPack(void);
-void RadioCmdSetWithNoRes_Groud(uint16_t cmd);
+void RadioCmdSetWithNoRes_Groud(uint16_t cmd, uint32_t ground);
 void RadioCmdClearWithNoRespon_Groud(void);
 uint16_t RadioWithNoRes_GroudPack(void);
-void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr);
+void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
 void RadioCmdClearWithRespon(void);
 uint16_t RadioWithResPack(void);
 

@@ -109,6 +109,8 @@ void RadioSend(void);
 
 void RadioSingleSend(void);
 
+void RadioSendBrocast(void);
+
 void RadioUpgradeSendFile(void);
 
 void RadioUpgradeRxFileDataTimout(void);

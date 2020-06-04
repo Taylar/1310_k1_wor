@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-#define ZKS_S3_WOR
-// #define ZKS_S6_6_WOR_G
+ #define ZKS_S3_WOR
+//#define ZKS_S6_6_WOR_G
 
 //***********************************************************************************
 //
@@ -781,6 +781,7 @@ typedef struct {
 #include "flash/internalFlash.h"
 #include "key/key_proc.h"
 #include "electricshock/electricshock.h"
+#include "electricshock/sound_driver.h"
 #include "display/display.h"
 #include "display/menu.h"
 #include "battery/battery.h"

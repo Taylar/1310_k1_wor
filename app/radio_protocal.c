@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-19 11:32:06
+* @Last Modified time: 2020-06-04 17:08:56
 */
 #include "../general.h"
 
@@ -73,6 +73,8 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
             eleShock_ctrl(ELE_PREVENT_INSERT2_ENABLE, 1, 500, 1);
             eleShock_ctrl(ELE_MOTO_ENABLE, 1, 500, 1);
             break;
+
+            
 
 
 
@@ -447,10 +449,13 @@ uint32_t GroudAddrGet(void)
 }
 
 // 发送不需要回复的指令
-void RadioCmdSetWithNoRes(uint16_t cmd)
+void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 {
 	cmdType = cmd;
 	cmdEvent |= (0x1 << cmd);
+	if(dstAddr){
+		SetRadioDstAddr(dstAddr);
+	}
 	RadioSingleSend();
 }
 
@@ -461,7 +466,7 @@ void RadioCmdClearWithNoRespon(void)
 	cmdEvent &= 0xffffffff ^ (0x1 << cmdType);
 	cmdType = 0;
 	if(cmdEvent){
-		for(i = 0; i++; i < 16){
+		for(i = 0; i < 16; i++){
 			if(cmdEvent & (0x1 << i)){
 				cmdType = i;
 				break;
@@ -480,13 +485,16 @@ uint16_t RadioWithNoResPack(void)
 #ifdef BOARD_S6_6
 	ConcenterRadioSendAck(GetRadioSrcAddr(), GetRadioDstAddr(), cmdType);
 #endif //BOARD_S6_6
+
+	return cmdType;
 }
 
 
 
 // 发送不需要回复的群组指令，以广播的方式发出
-void RadioCmdSetWithNoRes_Groud(uint16_t cmd)
+void RadioCmdSetWithNoRes_Groud(uint16_t cmd, uint32_t ground)
 {
+	GroudAddrSet(ground);
 	cmdTypeGroud = cmd;
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
@@ -500,7 +508,7 @@ void RadioCmdClearWithNoRespon_Groud(void)
 	cmdEventGroud &= 0xffffffff ^ (0x1 << cmdType);
 	cmdTypeGroud = 0;
 	if(cmdEventGroud){
-		for(i = 0; i++; i < 16){
+		for(i = 0; i < 16; i++){
 			if(cmdEventGroud & (0x1 << i)){
 				cmdTypeGroud = i;
 				break;
@@ -528,8 +536,9 @@ uint16_t sendRetryTimes;
 #define 		RETRY_TIMES		3
 
 // 发送的需要回复命令
-void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr)
+void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
+	GroudAddrSet(ground);
 	cmdTypeWithRespon = cmd;
 	cmdEventWithRespon |= (0x1 << cmd);
 	if(dstAddr){

@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-19 10:43:19
+* @Last Modified time: 2020-06-02 17:58:00
 */
 #include "../general.h"
 
@@ -52,6 +52,8 @@ void S1HwInit(void)
     Flash_init();
 
     ElectricShockInit();
+
+    SoundDriverInit();
 
     Battery_init();
 
@@ -184,7 +186,7 @@ void S1AppRtcProcess(void)
     // ElecPreventInsertMeasure();
     // if(ElecPreventInsertState()){
     //     EletricPulseSetTime_S(1);
-    //     RadioCmdSetWithRespon(RADIO_CMD_INSERT_TYPE, NULL);
+    //     RadioCmdSetWithRespon(RADIO_CMD_INSERT_TYPE, NULL, NULL);
     // }
 
 
@@ -192,7 +194,7 @@ void S1AppRtcProcess(void)
     // if(Battery_get_voltage() < 3600){
     //     if((lowBatCnt == 0) || (lowBatCnt >= 3600)){
     //         lowBatCnt = 1;
-    //         RadioCmdSetWithRespon(RADIO_CMD_LOW_VOL_TYPE, NULL);
+    //         RadioCmdSetWithRespon(RADIO_CMD_LOW_VOL_TYPE, NULL, NULL);
     //     }
     //     lowBatCnt++;
     // }else{
@@ -202,7 +204,7 @@ void S1AppRtcProcess(void)
 
     if(destroyEleShock){
         EletricPulseSetTime_S(1);
-        RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE);
+        RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, NULL);
         destroyEleShock = DestroyPinRead();
     }
 
