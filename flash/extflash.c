@@ -490,7 +490,9 @@ void Flash_init(void)
     if (ret) {
         //Flash_store_config();
     }
-
+#ifdef ZKS_S6_6_WOR_G
+    g_rSysConfigInfo.module = g_rSysConfigInfo.module|MODULE_LCD;
+#endif
 
 }
 
@@ -1772,6 +1774,12 @@ bool Flash_load_config(void)
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     Flash_external_read(FLASH_SYS_CONFIG_DATA_POS, (uint8_t*)&g_rSysConfigInfo, sizeof(ConfigInfo_t));
     Semaphore_post(spiSemHandle);
+	
+#ifdef ZKS_S6_6_WOR_G
+    g_rSysConfigInfo.module|=MODULE_LCD;
+    g_rSysConfigInfo.status|=STATUS_LCD_ALWAYS_ON;
+    g_rSysConfigInfo.batLowVol = 3000;
+#endif
 
     if(g_rSysConfigInfo.size == 0 || g_rSysConfigInfo.size == 0xffff)
     {

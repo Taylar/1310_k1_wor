@@ -12,7 +12,7 @@
 #ifdef SUPPORT_DISP_SCREEN
 #include "lcd_drv.h"
 
-#define LCD_POWER_PIN               IOID_20
+#define LCD_POWER_PIN               IOID_25
 #define LCD_DATA_PIN                IOID_27
 #define LCD_CLK_PIN                 IOID_8
 #define LCD_CS_PIN                  IOID_21
@@ -35,7 +35,7 @@ const PIN_Config lcdPinTable[] = {
 
 
 
-#define Lcd_power_ctrl(on)          (!on) ? (PIN_setOutputValue(lcdPinHandle, LCD_POWER_PIN, 1)) : (PIN_setOutputValue(lcdPinHandle, LCD_POWER_PIN, 0))
+#define Lcd_power_ctrl(on)          (on) ? (PIN_setOutputValue(lcdPinHandle, LCD_POWER_PIN, 1)) : (PIN_setOutputValue(lcdPinHandle, LCD_POWER_PIN, 0))
 
 #if  defined(LCD_ST7567A) || defined(OLED_LX12864K1)
 //Use software spi
@@ -160,6 +160,140 @@ static void Lcd_reset(void)
 
 #endif
 
+
+
+//***********************************************************************************
+//
+// LCD init.
+//
+//***********************************************************************************
+void All_Screen(void);
+void cleanDDR(void)
+{
+int i,j;
+ Lcd_send_cmd(0x15);//Set column address
+ Lcd_send_cmd(0x00);//Column Start Address
+ Lcd_send_cmd(0x7f);//Column End Address
+ Lcd_send_cmd(0x75);//Set row address
+ Lcd_send_cmd(0x00);//Row Start Address
+ Lcd_send_cmd(0x7f);//Row End Address
+ for(i=0;i<128;i++)
+ {
+ for(j=0;j<64;j++)
+ {
+     Lcd_send_data(0x00);
+ }
+ }
+}
+void ALLDDR(void)
+{
+int i,j;
+ Lcd_send_cmd(0x15);//Set column address
+ Lcd_send_cmd(0x00);//Column Start Address
+ Lcd_send_cmd(0x7f);//Column End Address
+ Lcd_send_cmd(0x75);//Set row address
+ Lcd_send_cmd(0x00);//Row Start Address
+ Lcd_send_cmd(0x7f);//Row End Address
+ for(i=0;i<128;i++)
+ {
+
+     for(j=0;j<64;j++)
+     {
+         //if(i%2)
+         Lcd_send_data(0xFF);
+        // else
+        // Lcd_send_data(0x00);
+     }
+ }
+}
+void Lcd_init(void)
+{
+    Lcd_io_init();
+    Lcd_power_ctrl(1);
+
+
+    Task_sleep(1 * CLOCK_UNIT_MS);
+    Lcd_reset();
+#if 1
+    Lcd_send_cmd(0xAE);    /*display off*/
+
+          Lcd_send_cmd(0xa0);    /*set re-map*/
+          Lcd_send_cmd(0x42);     /*иж?0x42 ??0x53*/
+
+          Lcd_send_cmd(0xa1);    /*set display start line*/
+          Lcd_send_cmd(0x00);
+
+          Lcd_send_cmd(0xa2);    /*set display offset*/
+          Lcd_send_cmd(0x00);    /*иж?0x60  ??0x20*/
+
+          Lcd_send_cmd(0xa4);    /*normal display*/
+
+          Lcd_send_cmd(0xa8);    /*set multiplex ratio*/
+          Lcd_send_cmd(0x5f);
+
+          Lcd_send_cmd(0xab);    /*function selection A*/
+          Lcd_send_cmd(0x01);    /*enable internal VDD regulator*/
+
+          Lcd_send_cmd(0x81);    /*set contrast*/
+          Lcd_send_cmd(0x49);
+
+          Lcd_send_cmd(0xb1);    /*set phase length*/
+          Lcd_send_cmd(0x32);
+
+          Lcd_send_cmd(0xb3);    /*set front clock divider/oscillator frequency*/
+          Lcd_send_cmd(0x51);
+
+          Lcd_send_cmd(0xb4);    /*For brightness enhancement*/
+          Lcd_send_cmd(0xb5);
+
+          Lcd_send_cmd(0xb6);    /*Set Second pre-charge Period*/
+          Lcd_send_cmd(0X0d);
+
+          Lcd_send_cmd(0xbc);    /*Set Pre-charge voltage*/
+          Lcd_send_cmd(0x07);
+
+          Lcd_send_cmd(0xbe);    /*set vcomh*/
+          Lcd_send_cmd(0x07);
+
+          Lcd_send_cmd(0xd5);    /*Function Selection B*/
+          Lcd_send_cmd(0x02);    /*Enable second pre-charge*/
+          cleanDDR();
+          Lcd_send_cmd(0xAF);    /*display ON*/
+#else
+          Lcd_send_cmd(0xae);//Set display off
+          Lcd_send_cmd(0xa0);//Set re-map
+          Lcd_send_cmd(0x42);
+          Lcd_send_cmd(0xa1);//Set display start line
+          Lcd_send_cmd(0x00);
+          Lcd_send_cmd(0xa2);//Set display offset
+          Lcd_send_cmd(0x00);
+          Lcd_send_cmd(0xa4);//Normal Display
+          Lcd_send_cmd(0xa8);//Set multiplex ratio
+          Lcd_send_cmd(0x7f);//128MUX
+          Lcd_send_cmd(0xab);//Function Selection A
+          Lcd_send_cmd(0x01);//Enable internal VDD regulator
+          Lcd_send_cmd(0x81);//Set contrast
+          Lcd_send_cmd(0x77); //normal mode (type brightness)
+          Lcd_send_cmd(0xb1);//Set Phase Length
+          Lcd_send_cmd(0x31);
+          Lcd_send_cmd(0xb3);//Set Front Clock Divider /Oscillator Frequency
+          Lcd_send_cmd(0xb1);//105Hz
+          Lcd_send_cmd(0xb4); //For brightness enhancement
+          Lcd_send_cmd(0xb5);
+          Lcd_send_cmd(0xb6);//Set Second pre-charge Period
+          Lcd_send_cmd(0x0d);
+          Lcd_send_cmd(0xbc);//Set Pre-charge voltage
+          Lcd_send_cmd(0x07);
+          Lcd_send_cmd(0xbe);//Set VCOMH
+          Lcd_send_cmd(0x07);
+          Lcd_send_cmd(0xd5);//Function Selection B
+          Lcd_send_cmd(0x02);//Enable second pre-charge
+          cleanDDR();// clear the whole DDRAM
+          Lcd_send_cmd(0xaf);//Display on
+#endif
+//	  ALLDDR();
+//      cleanDDR();
+}
 //***********************************************************************************
 //
 // LCD set font parameters, Font Cols, Font Pages = Rows / 8, display inverse.
@@ -167,88 +301,10 @@ static void Lcd_reset(void)
 //***********************************************************************************
 void Lcd_set_font(uint8_t bFontCols, uint8_t bFontRows, uint8_t fgInverse)
 {
-	bLcdFontPages = (bFontRows + 7) / 8;
-	bLcdFontCols = bFontCols;
-	fgLcdFontInverse = fgInverse;
+    bLcdFontPages = (bFontRows + 7) / 8;
+    bLcdFontCols = bFontCols;
+    fgLcdFontInverse = fgInverse;
 }
-
-//***********************************************************************************
-//
-// LCD init.
-//
-//***********************************************************************************
-void Lcd_init(void)
-{
-    Lcd_io_init();
-    Lcd_power_ctrl(1);
-
-#ifdef LCD_ST7567A
-    Task_sleep(1 * CLOCK_UNIT_MS);
-    Lcd_reset();
-
-    Lcd_send_cmd(0x40);
-    Lcd_send_cmd(0xa2);
-//    Lcd_send_cmd(0xa6);
-    Lcd_send_cmd(0xa0);
-    Lcd_send_cmd(0xc8);
-//    Lcd_send_cmd(0x2c);
-//    Delay_ms(200);
-//    Lcd_send_cmd(0x2e);
-//    Delay_ms(100);
-    Lcd_send_cmd(0x2f);
-//    Delay_ms(100);
-    Lcd_send_cmd(0x25);
-    Lcd_send_cmd(0x81);
-    Lcd_send_cmd(0x17);
-
-    Lcd_send_cmd(0xf8);
-    Lcd_send_cmd(0x00);
-
-	Lcd_clear_screen();
-	Lcd_refresh();
-
-    Lcd_send_cmd(0xaf);
-#endif
-
-#ifdef EPD_GDE0213B1
-    EPD_init(1);
-    EPD_clearScreen();
-    EPD_update(1);
-/*    Delay_ms(4000);
-    EPD_init(0);
-    EPD_clearScreen();
-    EPD_update(0);
-    EPD_clearScreen();
-    Delay_ms(300);*/
-#endif
-
-#ifdef OLED_LX12864K1
-    Task_sleep(1 * CLOCK_UNIT_MS);
-    Lcd_reset();
-
-    Lcd_send_cmd(0xE3);
-    Lcd_send_cmd(0xA3);
-    Lcd_send_cmd(0xA0);
-    Lcd_send_cmd(0xC8);
-    Lcd_send_cmd(0x2f);
-    Lcd_send_cmd(0x24);
-    Lcd_send_cmd(0x81);
-    Lcd_send_cmd(75);
-    Lcd_send_cmd(0xf8);
-    Lcd_send_cmd(0x08);
-    Lcd_send_cmd(0xb0);
-    Lcd_send_cmd(0x10);
-    Lcd_send_cmd(0x00);
-
-    Lcd_clear_screen();
-
-    Lcd_send_cmd(0xAF);
-    //Task_sleep(200 * CLOCK_UNIT_MS);
-
-
-#endif // OLED_LX12864K1
-}
-
 //***********************************************************************************
 //
 // LCD write character.
@@ -257,31 +313,103 @@ void Lcd_init(void)
 void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
 {
 #ifdef LCD_ST7567A
-    uint8_t bLowCol, bHiCol;
-    uint8_t page, col;
-
+    uint8_t page, col,nextrow;
+    uint8_t nextCharFlag,dotValue_;
     // Offset from left edge of display.
     xStart += LCD_START_COL;
 
     // Add the command to page address.
-    bLowCol = xStart & 0x0f;
-    bHiCol = (xStart >> 4) & 0x0f;
-
+    //bLowCol = xStart & 0x0f;
+    //bHiCol = (xStart >> 4) & 0x0f;
+#if 0
     for (page = 0; page < bLcdFontPages; page++) {
-        Lcd_send_cmd(LCD_CMD_PSA + yStart);			// set the page start address
-        Lcd_send_cmd(LCD_CMD_LOWER_SCA + bLowCol);		// set the lower start column address
-        Lcd_send_cmd(LCD_CMD_UPPER_SCA + bHiCol);		// set the upper start column address
+        //Lcd_send_cmd(LCD_CMD_PSA + yStart);			// set the page start address
+        //Lcd_send_cmd(LCD_CMD_LOWER_SCA + bLowCol);    // set the lower start column address
+        //Lcd_send_cmd(LCD_CMD_UPPER_SCA + bHiCol);		// set the upper start column address
+        Lcd_send_cmd(0x15);//Set column address
+        Lcd_send_cmd(xStart);//Column Start Address
+        Lcd_send_cmd(xStart+bLcdFontCols);//Column End Address
+        Lcd_send_cmd(0x75);//Set row address
+        Lcd_send_cmd(bLcdFontPages*yStart*8);//Row Start Address
+        Lcd_send_cmd(bLcdFontPages*yStart*8 + page*8);//Row End Address
 
         for (col = 0; col < bLcdFontCols; col++) {
             // check inverse flag bit.
             if (fgLcdFontInverse)
+            {
                 Lcd_send_data(*pChar ^ 0xff);
+            }
             else
                 Lcd_send_data(*pChar);
             pChar++;
         }
         yStart++;
     }
+#else
+    //ALLDDR();
+    //Lcd_clear_screen();
+    nextCharFlag = 0;
+    nextrow = bLcdFontPages*yStart*8;
+
+
+    Lcd_send_cmd(0x15);//Set column address
+    Lcd_send_cmd(xStart);//Column Start Address
+    Lcd_send_cmd(xStart+bLcdFontCols/2-1);//Column End Address
+
+    Lcd_send_cmd(0x75);//Set row address
+    Lcd_send_cmd(nextrow);//Row Start Address
+    Lcd_send_cmd(nextrow+bLcdFontPages*8-1);//Row End Address
+
+    for (page = 0; page < bLcdFontPages*8; page++)
+    {
+
+        for (col = 0; col < bLcdFontCols/2; col++)
+        {
+            // check inverse flag bit.
+            if (fgLcdFontInverse)
+            {
+                if((*pChar)&(1<<nextCharFlag))
+                {
+                    dotValue_ = 0xf0;
+                }
+                else
+                {
+                    dotValue_ = 0x00;
+                }
+
+                if((*pChar)&(1<<(nextCharFlag+1)))
+                {
+                    dotValue_ |= 0x0f;
+                }
+                else
+                {
+                    dotValue_ |= 0x00;
+                }
+
+                Lcd_send_data(dotValue_);
+            }
+            else
+                Lcd_send_data(0x00);
+
+            nextCharFlag+=2;
+            if(nextCharFlag==8)
+            {
+                nextCharFlag=0;
+                pChar++;
+            }
+
+        }
+        if((bLcdFontCols%8)!=0)
+        {
+            nextCharFlag=0;
+            pChar++;
+        }
+
+
+        nextrow++;
+    }
+#endif
+
 #endif
 
 #ifdef EPD_GDE0213B1
@@ -331,21 +459,23 @@ void Lcd_clear_area(uint8_t xStart, uint8_t yStart)
     // Offset from left edge of display.
     xStart += LCD_START_COL;
 
-    // Add the command to page address.
-    bLowCol = xStart & 0x0f;
-    bHiCol = (xStart >> 4) & 0x0f;
+    for (page = 0; page < bLcdFontPages*8; page++) {
 
-    for (page = 0; page < bLcdFontPages; page++) {
-        Lcd_send_cmd(LCD_CMD_PSA + yStart);			// set the page start address
-        Lcd_send_cmd(LCD_CMD_LOWER_SCA + bLowCol);		// set the lower start column address
-        Lcd_send_cmd(LCD_CMD_UPPER_SCA + bHiCol);		// set the upper start column address
+        Lcd_send_cmd(0x75);//Set row address
+        Lcd_send_cmd(bLcdFontPages*yStart*8+page);//Row Start Address
+        Lcd_send_cmd(bLcdFontPages*yStart*8+page);//Row End Address
 
-        for (col = 0; col < bLcdFontCols; col++) {
+        for (col = 0; col < bLcdFontCols; col++)
+        {
+
             // check inverse flag bit.
-            if (fgLcdFontInverse)
-                Lcd_send_data(0xff);
-            else
-                Lcd_send_data(0);
+            Lcd_send_cmd(0x15);//Set column address
+            Lcd_send_cmd(xStart+col);//Column Start Address
+            Lcd_send_cmd(xStart+bLcdFontCols);//Column End Address
+
+           Lcd_send_data(0x00);
+
+
         }
         yStart++;
     }
@@ -407,15 +537,24 @@ void Lcd_clear_page(uint8_t page)
 void Lcd_clear_screen(void)
 {
 #ifdef LCD_ST7567A
-	uint8_t page, col;
+    uint8_t i,j;
+    Lcd_send_cmd(0x15);//Set column address
+    Lcd_send_cmd(0x00);//Column Start Address
+    Lcd_send_cmd(0x7f);//Column End Address
+    Lcd_send_cmd(0x75);//Set row address
+    Lcd_send_cmd(0x10);//Row Start Address
+    Lcd_send_cmd(0x7f);//Row End Address
+    for(i=0;i<128;i++)
+    {
 
-	for(page = 0; page < LCD_MAX_PAGE; page++) {
-		Lcd_send_cmd(LCD_CMD_PSA + page);					// set the page start address
-		Lcd_send_cmd(LCD_CMD_LOWER_SCA + LCD_START_COL);	// set the lower start column address
-		Lcd_send_cmd(LCD_CMD_UPPER_SCA);					// set the upper start column address
-		for(col = 0; col < LCD_TOTAL_COL; col++)
-			Lcd_send_data(0x00);
-	}
+        for(j=0;j<64;j++)
+        {
+            //if(i%2)
+            Lcd_send_data(0x00);
+           // else
+           // Lcd_send_data(0x00);
+        }
+    }
 #endif
 
 #ifdef EPD_GDE0213B1
@@ -433,6 +572,27 @@ void Lcd_clear_screen(void)
             Lcd_send_data(0x00);
     }
 #endif  // OLED_LX12864K1
+}
+void All_Screen(void)
+{
+     uint8_t i,j;
+     Lcd_send_cmd(0x15);//Set column address
+     Lcd_send_cmd(0x00);//Column Start Address
+     Lcd_send_cmd(0x7f);//Column End Address
+     Lcd_send_cmd(0x75);//Set row address
+     Lcd_send_cmd(0x00);//Row Start Address
+     Lcd_send_cmd(0x7f);//Row End Address
+     for(i=0;i<128;i++)
+     {
+
+         for(j=0;j<64;j++)
+         {
+             //if(i%2)
+             Lcd_send_data(0xff);
+            // else
+            // Lcd_send_data(0x00);
+         }
+     }
 }
 
 //***********************************************************************************
@@ -476,5 +636,10 @@ void Lcd_poweroff(void)
     Lcd_power_ctrl(0);
 }
 
+void display_char_A()
+{
+
+
+}
 #endif  /* SUPPORT_DISP_SCREEN */
 

@@ -14,7 +14,11 @@
 // };
 
 const uint8_t font8x16[]= {
-    #include "font\font8x16.txt"
+    #include "font\font8X16_.txt"
+};
+
+const uint8_t font6x8[]= {
+    #include "font\font6X8.txt"
 };
 
 // const uint8_t font12x24[]= {
@@ -29,37 +33,27 @@ const uint8_t icon16x16[]= {
     #include "font\icon16x16.txt"
 };
 
-const uint8_t icon9x24[]= {
-    #include "font\icon9x24.txt"
+
+
+const uint8_t font12x24[]= {
+    #include "font\font12x24.txt"
 };
 
 const uint8_t icon12x24[]= {
     #include "font\icon12x24.txt"
 };
 
-const uint8_t icon7x32[]= {
-    #include "font\icon7x32.txt"
-};
-
-const uint8_t icon14x32[]= {
-    #include "font\icon14x32.txt"
-};
 
 const uint8_t icon16x32[]= {
     #include "font\icon16x32.txt"
 };
-
-#ifdef S_G
-const uint8_t icon13x8[]= {
-    #include "font\icon13x8.txt"
+const uint8_t menu72x24[]= {
+    #include "font\menu72x24.txt"
 };
-// const uint8_t icon14x24[]= {
-//     #include "font\icon14x24.txt"
-// };
-// const uint8_t icon7x24[]= {
-//     #include "font\icon7x24.txt"
-// };
-#endif
+const uint8_t menu36x24[]= {
+    #include "font\menu36x24.txt"
+};
+
 //Calendar icon gap
 #define CAICON_GAP              1
 //Calendar icon digit wide and high
@@ -162,36 +156,36 @@ static void Disp_character(uint8_t bColStart, uint8_t bPageStart, uint8_t bChar,
     }
 
     if (bFont & 0x80)
-        fgInv = 1;
-    else
         fgInv = 0;
+    else
+        fgInv = 1;
 
     switch (bFont & 0x7f) {
-//         case FONT_5X8:
-//             bColStart *= 6;
-//             bColStart += LCD_FONT5X8_START_COL;
-//             Lcd_set_font(5, 8, fgInv);
-// //            Lcd_write_character(bColStart, bPageStart, &font5x8[bChar * 5]);
-//             // We use font 5x8, there are one space between char, so need clear the space.
-//             Lcd_set_font(1, 8, fgInv);
-// //            Lcd_write_character(bColStart + 5, bPageStart, &font5x8[0]);
-        // break;
+         case FONT_5X8:
+             bColStart *= 3;
+             bColStart += LCD_FONT5X8_START_COL;
+             Lcd_set_font(6, 8, fgInv);
+             Lcd_write_character(bColStart, bPageStart, &font6x8[bChar * 8]);
+             // We use font 5x8, there are one space between char, so need clear the space.
+           //Lcd_set_font(1, 8, fgInv);
+           //Lcd_write_character(bColStart + 5, bPageStart, &font5x8[0]);
+            break;
 
         case FONT_8X16:
-            bColStart *= 8;
+            bColStart *= 4;
             bColStart += LCD_FONT8X16_START_COL;
 //            bPageStart *= 2;
             Lcd_set_font(8, 16, fgInv);
             Lcd_write_character(bColStart, bPageStart, &font8x16[bChar * 16]);
         break;
 
-        // case FONT_12X24:
-        //     bColStart *= 12;
-        //     bColStart += LCD_FONT12X24_START_COL;
-        //     Lcd_set_font(12, 24, fgInv);
-        //    // bPageStart = bPageStart * 3 + 2;
-        //     Lcd_write_character(bColStart, bPageStart, &font12x24[bChar * 36]);
-        // break;
+        case FONT_12X24:
+             bColStart *= 6;
+             bColStart += LCD_FONT12X24_START_COL;
+             Lcd_set_font(12, 24, fgInv);
+            // bPageStart = bPageStart * 3 + 2;
+             Lcd_write_character(bColStart, bPageStart, &font12x24[bChar * 48]);
+         break;
 
        //  case FONT_16X32:
        //      bColStart *= 16;
@@ -245,13 +239,6 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
             }
             break;
 #endif
-        case ICON_9X24_DIGIT_0 ... ICON_9X24_SUB:
-            if (light) {
-                Lcd_write_character(col, row, &icon9x24[(icon - ICON_9X24_DIGIT_0) * FONT_9X24_OFS]);
-            } else {
-                Lcd_clear_area(col, row);
-            }
-            break;
 
         case ICON_12X24_DIGIT_0 ... ICON_12X24_PERCENT:
             if (light) {
@@ -261,21 +248,8 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
             }
             break;
 
-        case ICON_7X32_DOT:
-            if (light) {
-                Lcd_write_character(col, row, &icon7x32[(icon - ICON_7X32_DOT) * FONT_7X32_OFS]);
-            } else {
-                Lcd_clear_area(col, row);
-            }
-            break;
 
-        case ICON_14X32_TC:
-            if (light) {
-                Lcd_write_character(col, row, &icon14x32[(icon - ICON_14X32_TC) * FONT_14X32_OFS]);
-            } else {
-                Lcd_clear_area(col, row);
-            }
-            break;
+
 
         case ICON_16X32_DIGIT_0 ... ICON_16X32_SUB:
             if (light) {
@@ -284,30 +258,20 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
-#ifdef S_G
-        case ICON_13X8_SIGNAL_0 ... ICOM_13X8_BAT_FLIGHT:
+        case ICON_72X24_ADD_ARR ... ICON_72X24_GROUP_SUBDUE:
             if (light) {
-                Lcd_write_character(col, row, &icon13x8[(icon - ICON_13X8_SIGNAL_0) * FONT_13X8_OFS]);
+                Lcd_write_character(col, row, &menu72x24[(icon - ICON_72X24_ADD_ARR) * FONT_72X24_OFS]);
             } else {
                 Lcd_clear_area(col, row);
             }
             break;
-        // case ICON_14X24_TC:
-        //     if (light) {
-        //         Lcd_write_character(col, row, &icon14x24[(icon - ICON_14X24_TC) * FONT_14X24_OFS]);
-        //     } else {
-        //         Lcd_clear_area(col, row);
-        //     }
-        //      break;
-        // case ICON_7X24_DOT:
-        //     if (light) {
-        //         Lcd_write_character(col, row, &icon7x24[(icon - ICON_7X24_DOT) * FONT_7X24_OFS]);
-        //     } else {
-        //         Lcd_clear_area(col, row);
-        //     }
-        //      break;
-
-#endif
+        case ICON_36X24_COMPLETE...ICON_36X24_CLEAR:
+            if (light) {
+                Lcd_write_character(col, row, &menu36x24[(icon - ICON_36X24_COMPLETE) * FONT_36X24_OFS]);
+            } else {
+                Lcd_clear_area(col, row);
+            }
+             break;
     }
 
     rDispObject.refresh = 1;
@@ -471,27 +435,10 @@ static void Disp_calendar(void)
     col += CAICON_W + 2*CAICON_GAP;
 
 #endif
-#if defined(SUPPORT_BATTERY) && defined(S_G)
+
 //Display battery
 
-#ifdef SUPPORT_CHARGE_DECT
-    if(Get_Charge_plug() == CHARGEING)
-     {
-        Disp_icon(col, row, ICOM_13X8_CHAGER_STATE, 1);
-     }else
-#endif
-     {
-    value = Battery_get_voltage();
-    if (value >= BAT_VOLTAGE_L3)
-        Disp_icon(col, row, ICOM_13X8_BAT_FULL, 1);
-    else if (value >= BAT_VOLTAGE_L2)
-        Disp_icon(col, row, ICOM_13X8_BAT_70, 1);
-    else if (value >= BAT_VOLTAGE_L1)
-        Disp_icon(col, row, ICOM_13X8_BAT_40, 1);
-    else
-        Disp_icon(col, row, ICOM_13X8_BAT_10, 1);
-     }
-#endif
+
 }
 
 #if 1
@@ -675,8 +622,11 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
             sprintf((char *)buff, "Klx");
         }else
         sprintf((char *)buff, "Lx");
-
+#ifdef S_G
         Disp_msg(col, row+1, buff, FONT_8X16);
+#else
+        Disp_msg(col, row+2, buff, FONT_8X16);
+#endif
 /*    uint8_t buff[21];
 
     sprintf((char *)buff, "%ld.%dLx", (uint32_t)(value/100), (uint16_t)round(((value%100))/10));
@@ -756,115 +706,12 @@ void Disp_sensor_set(uint8_t index)
 //***********************************************************************************
 static void Disp_status_bar(void)
 {
-    uint8_t col = STATUSB_COL_POS, row = STATUSB_ROW_POS;
-#ifndef S_G
-    uint16_t value;
-#endif
-    Lcd_clear_area(0, 4);
 
-	Lcd_set_font(SBICON_W, SBICON_H, 0);
 
-    col += SBICON_W;
-
-#ifdef SUPPORT_MENU
-//Display record flag
-    if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_TEST))
-    if (Menu_is_record()) {
-        Disp_icon(col, row, ICON_16X16_RECORD, 1);
-    } else {
-        Disp_icon(col, row, ICON_16X16_RECORD, 0);
-    }
-#endif
-
-//Diaplay Alarm flag
-    col += SBICON_W;
-    if (g_bAlarmSensorFlag & (1 << rDispObject.sensorIndex))
-        Disp_icon(col, row, ICON_16X16_ALARM, 1);
-    else
-        Disp_icon(col, row, ICON_16X16_ALARM, 0);
-    col += SBICON_W * 4;
-
-#ifndef S_G
-//Display signal    or flight
-
-    col += SBICON_W;
-
-#ifdef SUPPORT_BATTERY
-//Display battery
-#ifdef SUPPORT_CHARGE_DECT
-    if(Get_Charge_plug() == CHARGEING)
-     {
-        Disp_icon(col, row, ICON_16X16_BATCHRG, 1);
-     }else
-#endif
-    {
-    value = Battery_get_voltage();
-    if (value >= BAT_VOLTAGE_L3)
-        Disp_icon(col, row, ICON_16X16_BATTERY3, 1);
-    else if (value >= BAT_VOLTAGE_L2)
-        Disp_icon(col, row, ICON_16X16_BATTERY2, 1);
-    else if (value >= BAT_VOLTAGE_L1)
-        Disp_icon(col, row, ICON_16X16_BATTERY1, 1);
-    else
-        Disp_icon(col, row, ICON_16X16_BATTERY0, 1);
-    }
-#endif
-#else
-    uint8_t buff[13] = {0};
-    Lcd_set_font(132, 16, 0);
-
-    if(starBarDeviceid!=0x00){
-
-        Lcd_set_font(CAICON_W, CAICON_H, 0);
-        col  = SBICON_W*2;
-        row  = 7;
-        Disp_icon(col, row, ICON_5X8_SUB, 1);
-        col += CAICON_W + CAICON_GAP;
-        if(starBarRssi/100 != 0)
-        {
-            Disp_icon(col, row, CAICON_DIGIT + (starBarRssi/100), 1);
-            col += CAICON_W + CAICON_GAP;
-        }
-        else
-        {
-            Lcd_set_font((CAICON_W+CAICON_GAP)*3, CAICON_H, 0);
-            Lcd_clear_area(col,row);
-            Lcd_set_font(CAICON_W, CAICON_H, 0);
-        }
-        Disp_icon(col, row, CAICON_DIGIT + (starBarRssi/10%10), 1);
-        col += CAICON_W + CAICON_GAP;
-        Disp_icon(col, row, CAICON_DIGIT + (starBarRssi%10), 1);
-
-        sprintf((char*)buff, "%08lx", starBarDeviceid);
-        Disp_msg(8, 6, buff, FONT_8X16);
-    }
-#endif
 }
 
 
-#ifdef RECORD_DISPLAY
-#define DISPLAY_PAGE_MAX_INDEX 5
-#define DISPLAY_PAGE_RECORD_INFO_INDEX 1
-#define DISPLAY_PAGE_ID_INFO_INDEX 2
-#define DISPLAY_PAGE_PERIOD_INDEX 3
-#define DISPLAY_PAGE_SOFTVERSION_INDEX 4
-#define DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE 5 ... 8
 
-#else
-
-#define DISPLAY_PAGE_MAX_INDEX 4
-//#define DISPLAY_PAGE_RECORD_INFO_INDEX 1
-#define DISPLAY_PAGE_ID_INFO_INDEX 1
-#define DISPLAY_PAGE_PERIOD_INDEX 2
-#define DISPLAY_PAGE_SOFTVERSION_INDEX 3
-#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
-/*add display net work state */
-#define DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE 4 ... 8
-#else
-#define DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE 4 ... 7
-#endif
-
-#endif
 
 //***********************************************************************************
 //
@@ -873,33 +720,17 @@ static void Disp_status_bar(void)
 //***********************************************************************************
 void Disp_info_switch(void)
 {
-    uint8_t info_num = DISPLAY_PAGE_MAX_INDEX; //4;
-    uint8_t sensor_num = 0;
-    uint8_t i;
 
-    if (rDispObject.init == 0)
-        return;
-
-    
-
-
-    info_num +=(sensor_num/2);//  info  5 , 6, 7 ,8
-
-        
-    if (++rDispObject.infoIndex >= info_num) {
-        rDispObject.infoIndex = 0;
-    }
-    Disp_clear_all();
 }
 
 void Disp_info_reset(void)
 {
-    rDispObject.infoIndex = 1;
+
 }
 
 void Disp_info_exit(void)
 {
-    rDispObject.infoIndex = 0;
+
 }
 
 
@@ -925,199 +756,12 @@ extern void Disp_info_record(void);
 
 void Disp_info(void)
 {
-    uint8_t temp, buff[21],i,j;
-#ifdef SUPPORT_LORA
-    uint8_t *gateid;
-#endif
-
-#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
-    uint8_t  temp_wan;
-#endif
-    switch (rDispObject.infoIndex) {
-
-#ifdef RECORD_DISPLAY
-    case DISPLAY_PAGE_RECORD_INFO_INDEX:
-        Disp_info_record();
-        break;
-#endif
-
-        case DISPLAY_PAGE_ID_INFO_INDEX: //1:
-#if 1
-            //MAC ID
-            sprintf((char *)buff, "DEID: %02x%02x%02x%02x", g_rSysConfigInfo.DeviceId[0], g_rSysConfigInfo.DeviceId[1],
-                                                            g_rSysConfigInfo.DeviceId[2], g_rSysConfigInfo.DeviceId[3]);
-            Disp_msg(0, 0, buff, FONT_8X16);
-
-            //CUSTOM ID
-            sprintf((char *)buff, "CUID: %02x%02x", g_rSysConfigInfo.customId[0], g_rSysConfigInfo.customId[1]);
-            Disp_msg(0, 2, buff, FONT_8X16);
-
-
-#ifdef S_C
-			
-			if (*(uint32_t*)g_rSysConfigInfo.BindGateway  != 0 ){
-
-				sprintf((char *)buff, "BGID: %02x%02x%02x%02x", g_rSysConfigInfo.BindGateway[0], g_rSysConfigInfo.BindGateway[1],
-																g_rSysConfigInfo.BindGateway[2], g_rSysConfigInfo.BindGateway[3]);
-				Disp_msg(0, 4, buff, FONT_8X16);
-			}else{
-				Disp_msg(0, 4, "BGID: ", FONT_8X16);
-				memset(buff, 0 ,21);
-			}
-#endif
-
-#else
-
-			Disp_info_record();
-#endif
-            break;
-
-        case DISPLAY_PAGE_PERIOD_INDEX: //2:
-            //Collect period.
-            sprintf((char *)buff, "CLPD: %lds", g_rSysConfigInfo.collectPeriod);
-            Disp_msg(0, 0, buff, FONT_8X16);
-            //upload period.
-            sprintf((char *)buff, "ULPD: %lds", g_rSysConfigInfo.uploadPeriod);
-
-            Disp_msg(0, 2, buff, FONT_8X16);
-#ifdef FLASH_EXTERNAL
-            //Collect period.
-            memset(buff, 0 ,21);
-#ifdef  SUPPORT_TCP_MULTIL_LINK
-            sprintf((char *)buff, "RMIT: %ld", Flash_get_unupload_link2_items());
-#else
-            sprintf((char *)buff, "RMIT: %ld", Flash_get_unupload_items());
-#endif
-            Lcd_set_font(132, 16, 0);
-            Lcd_clear_area(0,4);
-            Disp_msg(0, 4, buff, FONT_8X16);
-
-            //upload period.
-            memset(buff, 0 ,21);
-            sprintf((char *)buff, "RCIT: %ld", Flash_get_record_items());
-            Lcd_set_font(132, 16, 0);
-            Lcd_clear_area(0,6);
-            Disp_msg(0, 6, buff, FONT_8X16);
-#endif
-            break;
-
-        case DISPLAY_PAGE_SOFTVERSION_INDEX://3:
-            //Software version.
-            sprintf((char *)buff, "FW:  %x.%x.%x", FW_VERSION >> 12, (FW_VERSION >> 8) & 0x0f, FW_VERSION & 0xff);
-            Disp_msg(0, 0, buff, FONT_8X16);
-
-                if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
-                {
-                    sprintf((char *)buff, "F&N:%ldK-%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
-                                                        LinkNum);
-                }
-                else
-                {
-                    sprintf((char *)buff, "F&N:%ldK-F%d", (RADIO_BASE_FREQ + (g_rSysConfigInfo.rfBW >> 4)*RADIO_BASE_UNIT_FREQ)/1000,
-                                                        LinkNum);
-                }
-                Disp_msg(0, 2, buff, FONT_8X16);
-                sprintf((char *)buff, "RATE: ");
-                switch(g_rSysConfigInfo.rfSF >> 4)
-                {
-                    case EasyLink_Phy_Custom:
-                    sprintf((char *)buff+6, "5K Bps");
-                    break;
-
-                    case EasyLink_Phy_50K_GPSK:
-                    sprintf((char *)buff+6, "50K Bps");
-                    break;
-
-                    case EasyLink_Phy_625bpsLrm:
-                    sprintf((char *)buff+6, "625 Bps");
-                    break;
-
-                    case EasyLink_Phy_2_4_200kbps2gfsk:
-                    sprintf((char *)buff+6, "2.4K Bps");
-                    break;
-
-                    case EasyLink_Phy_Custom_s1_old:
-                    sprintf((char *)buff+6, "38.4K Bps");
-                    break;
-                }
-                Disp_msg(0, 4, buff, FONT_8X16);
-
-#ifdef SUPPORT_DISPLAY_GSM_REGISTER_STATE
-		#ifdef SUPPORT_NETWORK
-        if(g_rSysConfigInfo.module & MODULE_NWK){
-			temp_wan = Nwk_get_wan();
-
-            if(temp_wan == 7 || temp_wan == 100 ){
-
-               sprintf((char *)buff, "WAN:4G");
-                          Disp_msg(0, 2, buff, FONT_8X16);
-                          }else if(temp_wan != 0 ){
-
-                            sprintf((char *)buff, "WAN:2/3G");
-                            Disp_msg(0, 2, buff, FONT_8X16);
-                          }else{
-
-                            sprintf((char *)buff, "WAN:unknow");
-                            Disp_msg(0, 2, buff, FONT_8X16);
-                          }
-                  }
-		#endif
-#else
-/*
-            for(i =0; i< MODULE_SENSOR_MAX; ++i){
-                if((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) &&
-					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)&&
-					(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_OPT3001)) {
-					
-                    if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "TA%02d:    ", i);
-                    else if(g_rSysConfigInfo.alarmTemp[i].high == ALARM_TEMP_HIGH)
-                        sprintf((char *)buff, "TA%02d:%d~ ", i, g_rSysConfigInfo.alarmTemp[i].low/100);
-                    else if(g_rSysConfigInfo.alarmTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "TA%02d: ~%d", i,g_rSysConfigInfo.alarmTemp[i].high/100);
-                    else                        
-                        sprintf((char *)buff, "TA%02d:%d~%d", i, g_rSysConfigInfo.alarmTemp[i].low/100,g_rSysConfigInfo.alarmTemp[i].high/100);
-                    
-                    Disp_msg(0, 2*2, buff, FONT_8X16);     
-                    
-                    if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH && g_rSysConfigInfo.WarningTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "PA%02d:    ", i);
-                    else if(g_rSysConfigInfo.WarningTemp[i].high == ALARM_TEMP_HIGH)
-                        sprintf((char *)buff, "PA%02d:%d~ ", i, g_rSysConfigInfo.WarningTemp[i].low/100);
-                    else if(g_rSysConfigInfo.WarningTemp[i].low == ALARM_TEMP_LOW)
-                        sprintf((char *)buff, "PA%02d: ~%d", i,g_rSysConfigInfo.WarningTemp[i].high/100);
-                    else                        
-                        sprintf((char *)buff, "PA%02d:%d~%d", i, g_rSysConfigInfo.WarningTemp[i].low/100,g_rSysConfigInfo.WarningTemp[i].high/100);
-                    
-                    Disp_msg(0, 2*3, buff, FONT_8X16);                    
-
-                    break;//只显示第一个通道的报警和预警信息
-                }
-
-            }
-            */
-#endif
-            break;
-            
-        case DISPLAY_PAGE_CHANNEL_INFO_INDEX_RANGE : // 4 ... 7:
-
-            break;
-    }
 
 }
 
 void TempToDisplayBuff(int32_t value,uint8_t *buff,uint8_t ch)
 {
 
-    value = (int32_t)round( value / 10.0);
-    if(value < 0){
-
-       sprintf((char*)buff, "%d -%2d.%dc", ch, (uint16_t)(-value/10), (uint16_t)(-value %10));
-    }
-    else{
-       sprintf((char*)buff, "%d %2d.%dc",ch, (uint16_t)(value/10), (uint16_t)(value %10));
-
-    }
 }
 //***********************************************************************************
 //
@@ -1132,7 +776,30 @@ void Disp_picture(uint8_t col, uint8_t row, uint8_t wide, uint8_t high, const ui
 	Lcd_set_font(wide, high, 0);
     Lcd_write_character(col, row, picture);
 }
+void display_star_mssage(void)
+{
+    uint8_t time_buff[20]={0};
+    Calendar calendar;
+    uint8_t batValue = 0,index =0;
+    batValue = ((Battery_get_voltage()-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
+    calendar = Rtc_get_calendar();
+    //sprintf(time_buff,"%02d",(calendar.Year-2000));
+    //time_buff[2] ='-';
+    sprintf(time_buff,"%02d",calendar.Month);
+    time_buff[2] ='-';
+    sprintf(time_buff+3,"%02d",calendar.DayOfMonth);
+    time_buff[5] =' ';
+    sprintf(time_buff+6,"%02d",calendar.Hours);
+    time_buff[8] =':';
+    sprintf(time_buff+9,"%02d",calendar.Minutes);
 
+
+    time_buff[11] = ' ';
+    time_buff[12] = '9';
+    time_buff[13] = '8';
+    time_buff[14] = '%';
+    Disp_msg(0,0,time_buff,FONT_8X16);
+}
 //***********************************************************************************
 //
 // Display process.
@@ -1142,7 +809,16 @@ void Disp_proc(void)
 {
     if (rDispObject.init == 0)
         return;
-
+    //Lcd_clear_screen();
+    //Disp_msg(0, 0, "01234", FONT_5X8);
+    //Disp_msg(0, 1, "01234", FONT_8X16);
+    //Disp_msg(0, 0, "01234", FONT_8X16);
+    display_star_mssage();
+    //Lcd_set_font(60, 24, 1);
+    //Disp_icon(0,1,ICON_60X24_DEVICES_NUM,1);
+    //Disp_icon(0,2,ICON_60X24_DIVI_NUM,1);
+    //Disp_icon(0,3,ICON_60X24_ADD_ARR,1);
+#if 0
     if(gatewayConfigTime)
     {
         Disp_clear_all();
@@ -1168,10 +844,34 @@ void Disp_proc(void)
         Disp_info();
     } else {
         Disp_calendar();
-
+#if 1//def SUPPORT_SENSOR
+        Disp_sensor_data();
+#endif
         Disp_status_bar();
 
+
+       if(!(g_rSysConfigInfo.rfStatus & STATUS_LORA_CHANGE_FREQ))
+       {
+           if(AutoFreqStateRead() == false)
+           {
+                Disp_msg(3, 6, "Register", FONT_8X16);//display
+           }
+       }
+
     }
+
+#ifdef SUPPORT_LORA
+    //增加采集?网关显示注册信息
+   if( g_rSysConfigInfo.module & MODULE_RADIO ) {
+      if(Lora_get_ntp()== 0){
+          if(*(uint32_t*)g_rSysConfigInfo.DeviceId != 0)
+            Disp_msg(0, 6, "Registering...", FONT_8X16);//display
+          else
+            Disp_msg(0, 6, "NO DEID", FONT_8X16);//display
+      }
+   }
+#endif
+#endif
 
 }
 
@@ -1203,6 +903,21 @@ bool Disp_poweron(void)
         rDispObject.infoIndex = 0;
         ret = true;
         
+#ifdef SUPPORT_SENSOR
+        uint8_t i;
+        for (i = 0; i < MODULE_SENSOR_MAX; i++) {
+            if ((g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_NONE) && 
+			   (g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_GSENSOR)) {
+                if((g_rSysConfigInfo.status & STATUS_HIDE_SHT_SENSOR) && (g_rSysConfigInfo.sensorModule[i] == SEN_TYPE_SHT2X)){
+                    continue;//hide sht20 sensor
+                }								
+				rDispObject.sensorIndex = i;//remember the current sensor index.				
+				if(g_rSysConfigInfo.sensorModule[i] != SEN_TYPE_SHT2X )				
+	                break;//remember the first sensor index,whitch is not sht20
+		    }
+        }        
+        
+#endif
 
 #ifdef SUPPORT_NETGATE_DISP_NODE    
         if(g_rSysConfigInfo.module & MODULE_NWK && g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, display  node  sensor??don't display local sensor data

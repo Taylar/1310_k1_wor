@@ -52,11 +52,32 @@
 #define     RADIO_PRO_CMD_GROUD_STOP_EVT            0XC9
 
 
+#define     RADIO_PRO_CMD_TERM_ADD_TO_GROUP         0xD1              //????¨¬¨ª?¨®¦Ì?¡Á¨¦
+#define     RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP    0xD2               //¡ä¨®¡Á¨¦¨¦?3y
+#define     RADIO_PRO_CMD_TERM_TEST                 0xD3               //????2a¨º?
+#define     RADIO_PRO_CMD_GROUP_TEST                0xD4              //¨¨o¡Á¨¦2a¨º?
+#define     RADIO_PRO_CMD_TERM_CLOSE_CTROL          0xD5              //1?¡À???¡¤t
+#define     RADIO_PRO_CMD_TERM_OPEN_CTROL           0xD6              //¡ä¨°?a??¡¤t
+#define     RADIO_PRO_CMD_GROUP_CLOSE_CTROL         0xD7                //1?¡Á¨¦??¡¤t
+#define     RADIO_PRO_CMD_GROUP_OPEN_CTROL          0xD8            //?a¡Á¨¦??¡¤t
+#define     RADIO_PRO_CMD_TERM_UNLOCKING            0xD9              //?????a??
+#define     RADIO_PRO_CMD_GROUP_UNLOCKING           0xDA               //¨¨o¡Á¨¦?a??
 
+#define     RADIO_PRO_CMD_GROUP_POWER_HIGH          0xDB                //¨¨o¡Á¨¦¦Ì??1??
+#define     RADIO_PRO_CMD_GROUP_POWER_MID           0xDC              //¨¨o¡Á¨¦¦Ì??1?D
+#define     RADIO_PRO_CMD_GROUP_POWER_LOW           0xDD              //¨¨o¡Á¨¦¦Ì??1¦Ì¨ª
+#define     RADIO_PRO_CMD_TERM_POWER_HIGH           0xDE              //????¦Ì??1??
+#define     RADIO_PRO_CMD_TERM_POWER_MID            0xDF               //????¦Ì??1?D
+#define     RADIO_PRO_CMD_TERM_POWER_LOW            0xE1              //????¦Ì??1¦Ì¨ª
 
+#define     RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START   0xE2              //?¡§?¡À??¡¤t
+#define     RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP    0xE3              //?¡§?¡À¨ª¡ê?1
 
+#define     RADIO_PRO_CMD_GROUP_SUBDUE_START        0xE4               //¨¨o¡Á¨¦??¡¤t
+#define     RADIO_PRO_CMD_GROUP_SUBDUE_STOP         0xE5            //¨¨o¡Á¨¦¨ª¡ê?1
 
-
+#define     RADIO_PRO_CMD_ALL_SUBDUE_START          0xE6             //¨¨??¡À??¡¤t
+//#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                        //?¡§?¡À¨ª¡ê?1
 
 uint8_t     concenterRemainderCache;
 
@@ -100,6 +121,7 @@ void RadioCmdSetWithNoRes_Groud(uint16_t cmd, uint32_t ground);
 void RadioCmdClearWithNoRespon_Groud(void);
 uint16_t RadioWithNoRes_GroudPack(void);
 void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
+void RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
 void RadioCmdClearWithRespon(void);
 uint16_t RadioWithResPack(void);
 

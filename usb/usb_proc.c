@@ -534,17 +534,7 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 #ifdef FLASH_EXTERNAL
         case EV_Get_Device_Data://len(2B) cmd(1B) deviceid(4B)  startdate(6B):ymdhm 201801011259 enddate(6B)   mode(1B)
 #ifdef  BOARD_S6_6
-            if(Menu_is_record())
-            {
-                Menu_set_record(0);
-                Flash_store_record_addr(0);
-#ifdef  G7_PROJECT                
-                BlePrintRecordStopNotify();
-            }
-            BlePrintingRecordNotify();
-#else
-            }
-#endif  // G7_PROJECT
+
 #endif  // BOARD_S6_6
            
             memcpy(tmpData,&pData[3], 16);//deviceid(4B)  startdate(6B) enddate(6B)
