@@ -141,6 +141,7 @@ uint32_t RandomDataGenerate_Software(void)
 
 
 //#define BOARD_S6_6
+static uint8_t g_firstStartFlag = 0;
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
@@ -315,6 +316,11 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_DISP)
 		{
         	Disp_proc();
+        	if(!g_firstStartFlag)
+        	{
+        	   g_firstStartFlag=!g_firstStartFlag;
+        	   menuc_main(_VK_COMMAND);
+        	}
 		}
 #endif
 

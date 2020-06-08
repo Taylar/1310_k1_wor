@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
- #define ZKS_S3_WOR
-//#define ZKS_S6_6_WOR_G
+//#define ZKS_S3_WOR
+#define ZKS_S6_6_WOR_G
 
 //***********************************************************************************
 //
@@ -252,7 +252,7 @@ error type define
 
 #define LCD_ST7567A
 // #define OLED_LX12864K1
-#define SUPPORT_MENU
+//#define SUPPORT_MENU
 
 #define SUPPORT_NETGATE_DISP_NODE   //
 #define SUPPORT_NETGATE_BIND_NODE   //
@@ -260,7 +260,7 @@ error type define
 #endif
 
 //Led define
-#define SUPPORT_LED
+//#define SUPPORT_LED
 
 //Battery function define.
 #define SUPPORT_BATTERY
@@ -784,6 +784,7 @@ typedef struct {
 #include "electricshock/sound_driver.h"
 #include "display/display.h"
 #include "display/menu.h"
+#include "display/menu_k1.h"
 #include "battery/battery.h"
 #include "easylink/EasyLink.h"
 #include "radio_app/radio_app.h"
@@ -806,7 +807,7 @@ typedef struct {
 #include "engmode/engmode.h"
 #include "usb/usb_bsl.h"
 
-
+#include "app/radio_protocal.h"
 //***********************************************************************************
 //
 //	Global variable define

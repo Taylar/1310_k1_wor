@@ -12,7 +12,7 @@
 #define __ZKSIOT_MENU_H__
 
 #ifdef SUPPORT_MENU
-
+#ifdef 0
 typedef enum {
     MENU_AC_ENTER = 0,
     MENU_AC_UP,
@@ -60,7 +60,7 @@ extern void Menu_set_record(uint8_t flag);
 extern void PoweroffMenu_init(void);
 extern int Record_get_status(void);
 
-
+#endif
 #endif  /* SUPPORT_MENU */
 
 #endif  /* __ZKSIOT_MENU_H__ */

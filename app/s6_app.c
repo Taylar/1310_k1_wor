@@ -178,7 +178,7 @@ void Sys_lcdShutFxn(UArg arg0)
     if (!(g_rSysConfigInfo.status & STATUS_LCD_ALWAYS_ON))
     {
         deviceMode = DEVICES_SLEEP_MODE;
-        Disp_poweroff();
+        //Disp_poweroff();
     }
 }
 
@@ -257,7 +257,7 @@ void S6HwInit(void)
 
 
     Flash_init();
-    Menu_init_byflash();
+    //Menu_init_byflash();
     PwmDriverInit();
     Sys_buzzer_init();
 
@@ -301,7 +301,7 @@ void S6AppBatProcess(void)
     }
     if(testRadio){
         // testRadio = 0;
-        RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
+        //RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
     }
 }
 
@@ -354,69 +354,11 @@ void S6Sleep(void)
 void S6KeyApp(void)
 {
     KEY_CODE_E keyCode;
-    RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
+    //RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
     keyCode = Key_get();
-    switch(keyCode)
-    {
-        case _VK_COMMAND:
-        break;
+    menuc_main(keyCode);
 
 
-        case _VK_ACTIVE:
-        break;
-
-
-        case _VK_DELETE:
-        break;
-
-
-        case _VK_NUM1:
-        break;
-
-
-        case _VK_NUM2:
-        break;
-
-
-        case _VK_NUM3:
-        break;
-
-
-        case _VK_NUM4:
-        break;
-
-
-        case _VK_NUM5:
-        break;
-
-
-        case _VK_NUM6:
-        break;
-
-
-        case _VK_NUM7:
-        break;
-
-
-        case _VK_NUM8:
-        break;
-
-
-        case _VK_NUM9:
-        break;
-
-
-        case _VK_MODE:
-        break;
-
-
-        case _VK_NUM0:
-        break;
-
-
-        case _VK_OK:
-        break;
-    }
 }
 
 

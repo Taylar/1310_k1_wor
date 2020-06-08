@@ -52,11 +52,32 @@
 #define     RADIO_PRO_CMD_GROUD_STOP_EVT            0XC9
 
 
+#define     RADIO_PRO_CMD_TERM_ADD_TO_GROUP         0xD1              //终端添加到组
+#define     RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP    0xD2               //从组删除
+#define     RADIO_PRO_CMD_TERM_TEST                 0xD3               //终端测试
+#define     RADIO_PRO_CMD_GROUP_TEST                0xD4              //群组测试
+#define     RADIO_PRO_CMD_TERM_CLOSE_CTROL          0xD5              //关闭制服
+#define     RADIO_PRO_CMD_TERM_OPEN_CTROL           0xD6              //打开制服
+#define     RADIO_PRO_CMD_GROUP_CLOSE_CTROL         0xD7                //关组制服
+#define     RADIO_PRO_CMD_GROUP_OPEN_CTROL          0xD8            //开组制服
+#define     RADIO_PRO_CMD_TERM_UNLOCKING            0xD9              //终端解锁
+#define     RADIO_PRO_CMD_GROUP_UNLOCKING           0xDA               //群组解锁
 
+#define     RADIO_PRO_CMD_GROUP_POWER_HIGH          0xDB                //群组电压高
+#define     RADIO_PRO_CMD_GROUP_POWER_MID           0xDC              //群组电压中
+#define     RADIO_PRO_CMD_GROUP_POWER_LOW           0xDD              //群组电压低
+#define     RADIO_PRO_CMD_TERM_POWER_HIGH           0xDE              //终端电压高
+#define     RADIO_PRO_CMD_TERM_POWER_MID            0xDF               //终端电压中
+#define     RADIO_PRO_CMD_TERM_POWER_LOW            0xE1              //终端电压低
 
+#define     RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START   0xE2              //定员制服
+#define     RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP    0xE3              //定员停止
 
+#define     RADIO_PRO_CMD_GROUP_SUBDUE_START        0xE4               //群组制服
+#define     RADIO_PRO_CMD_GROUP_SUBDUE_STOP         0xE5            //群组停止
 
-
+#define     RADIO_PRO_CMD_ALL_SUBDUE_START          0xE6             //全员制服
+//#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                        //定员停止
 
 uint8_t     concenterRemainderCache;
 
@@ -100,6 +121,7 @@ void RadioCmdSetWithNoRes_Groud(uint16_t cmd, uint32_t ground);
 void RadioCmdClearWithNoRespon_Groud(void);
 uint16_t RadioWithNoRes_GroudPack(void);
 void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
+void RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
 void RadioCmdClearWithRespon(void);
 uint16_t RadioWithResPack(void);
 

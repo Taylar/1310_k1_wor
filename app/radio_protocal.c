@@ -547,8 +547,12 @@ void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	sendRetryTimes = RETRY_TIMES;
 	RadioSend();
 }
+void RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
+{
 
-// 清除需要回复的指令
+
+}
+// 娓呴櫎闇�瑕佸洖澶嶇殑鎸囦护
 void RadioCmdClearWithRespon(void)
 {
 	uint8_t i;
