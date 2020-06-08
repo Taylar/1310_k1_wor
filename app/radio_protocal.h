@@ -52,6 +52,7 @@
 #define     RADIO_PRO_CMD_GROUD_STOP_EVT            0XC9
 
 
+
 #define     RADIO_PRO_CMD_TERM_ADD_TO_GROUP         0xD1              //终端添加到组
 #define     RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP    0xD2               //从组删除
 #define     RADIO_PRO_CMD_TERM_TEST                 0xD3               //终端测试
@@ -78,6 +79,7 @@
 
 #define     RADIO_PRO_CMD_ALL_SUBDUE_START          0xE6             //全员制服
 //#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                        //定员停止
+
 
 uint8_t     concenterRemainderCache;
 
