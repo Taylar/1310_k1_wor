@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 16:17:13
+* @Last Modified time: 2020-06-09 14:53:13
 */
 #include "../general.h"
 
@@ -252,7 +252,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_GROUND:
 				RadioCmdProcess(cmdType, bufTemp->srcAddr, gourndTemp);
 				if(bufTemp->srcAddr == GetRadioSrcAddr()){
-					RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
+					RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
 				}
 			break;
 
@@ -562,7 +562,7 @@ uint32_t GroudAddrGet(void)
 	return groundAddr;
 }
 
-// 发送不需要回复的指令,单次发送
+// 鍙戦�佷笉闇�瑕佸洖澶嶇殑鎸囦护,鍗曟鍙戦��
 void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 {
 	cmdType = cmd;
@@ -573,20 +573,7 @@ void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 	RadioSingleSend();
 }
 
-bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
-{
-	if(dstAddr){
-		SetRadioDstAddr(dstAddr);
-	}
-	cmdTypeGroud = cmd;
-	cmdEventGroud |= (0x1 << cmd);
-	RadioSendBrocast();
-
-	return true;
-}
-
-
-// 清除不需要回复的指令
+// 娓呴櫎涓嶉渶瑕佸洖澶嶇殑鎸囦护
 void RadioCmdClearWithNoRespon(void)
 {
 	uint8_t i;
@@ -609,7 +596,6 @@ uint32_t RadioWithNoResPack(void)
 	return cmdType;
 }
 
-// 发送不需要回复的群组指令，以广播的方式发出
 bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
 	dstAddr = IntToHex(dstAddr);
@@ -619,11 +605,9 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	cmdTypeGroud = cmd;
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
-
 	return true;
 }
 
-// 清除不需要回复的群组指令
 void RadioCmdClearWithNoRespon_Groud(void)
 {
 	uint8_t i;
@@ -649,7 +633,7 @@ uint32_t RadioWithNoRes_GroudPack(void)
 
 
 
-// 发送的需要回复命令
+// 鍙戦�佺殑闇�瑕佸洖澶嶅懡浠�
 bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
 	dstAddr = IntToHex(dstAddr);
