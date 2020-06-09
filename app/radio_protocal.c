@@ -596,7 +596,6 @@ uint32_t RadioWithNoResPack(void)
 	return cmdType;
 }
 
-// 鍙戦�佷笉闇�瑕佸洖澶嶇殑缇ょ粍鎸囦护锛屼互骞挎挱鐨勬柟寮忓彂鍑�
 bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
 	dstAddr = IntToHex(dstAddr);
@@ -606,11 +605,9 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	cmdTypeGroud = cmd;
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
-    Task_sleep(1000*CLOCK_UNIT_MS);
 	return true;
 }
 
-// 娓呴櫎涓嶉渶瑕佸洖澶嶇殑缇ょ粍鎸囦护
 void RadioCmdClearWithNoRespon_Groud(void)
 {
 	uint8_t i;
