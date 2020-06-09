@@ -126,6 +126,7 @@ void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr);
 void GroudAddrSet(uint32_t ground);
 uint32_t GroudAddrGet(void);
 
+bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr);
 void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr);
 void RadioCmdClearWithNoRespon(void);
 uint32_t RadioWithNoResPack(void);

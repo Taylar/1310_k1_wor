@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 14:53:13
+* @Last Modified time: 2020-06-09 16:17:13
 */
 #include "../general.h"
 
@@ -252,7 +252,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_GROUND:
 				RadioCmdProcess(cmdType, bufTemp->srcAddr, gourndTemp);
 				if(bufTemp->srcAddr == GetRadioSrcAddr()){
-					RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
+					RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
 				}
 			break;
 
@@ -572,6 +572,19 @@ void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 	}
 	RadioSingleSend();
 }
+
+bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
+{
+	if(dstAddr){
+		SetRadioDstAddr(dstAddr);
+	}
+	cmdTypeGroud = cmd;
+	cmdEventGroud |= (0x1 << cmd);
+	RadioSendBrocast();
+
+	return true;
+}
+
 
 // 清除不需要回复的指令
 void RadioCmdClearWithNoRespon(void)
