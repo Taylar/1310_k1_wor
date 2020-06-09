@@ -1,8 +1,8 @@
 /*
-* @Author: zxt
+* @Author: justfortest
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-19 11:08:47
+* @Last Modified time: 2020-06-08 19:04:37
 */
 #include "../general.h"
 
@@ -79,10 +79,10 @@ void ConcenterAppInit(void)
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
                      g_rSysConfigInfo.DeviceId[3]);
-    SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+    SetRadioSubSrcAddr(0x00000000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
     SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
 
-    GroudAddrSet(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+    GroudAddrSet(0x00000000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
 
 
 }
