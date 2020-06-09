@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 13:58:02
+* @Last Modified time: 2020-06-09 16:17:13
 */
 #include "../general.h"
 
@@ -13,6 +13,7 @@
 #include "../radio_app/node_strategy.h"
 #include "../radio_app/radio_app.h"
 
+extern Semaphore_Handle recAckSemHandle;
 
 radio_protocal_t   protocalTxBuf;
 
@@ -251,7 +252,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_GROUND:
 				RadioCmdProcess(cmdType, bufTemp->srcAddr, gourndTemp);
 				if(bufTemp->srcAddr == GetRadioSrcAddr()){
-					RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
+					RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
 				}
 			break;
 
@@ -572,6 +573,19 @@ void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 	RadioSingleSend();
 }
 
+bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
+{
+	if(dstAddr){
+		SetRadioDstAddr(dstAddr);
+	}
+	cmdTypeGroud = cmd;
+	cmdEventGroud |= (0x1 << cmd);
+	RadioSendBrocast();
+
+	return true;
+}
+
+
 // 清除不需要回复的指令
 void RadioCmdClearWithNoRespon(void)
 {
@@ -596,9 +610,8 @@ uint32_t RadioWithNoResPack(void)
 }
 
 // 发送不需要回复的群组指令，以广播的方式发出
-void RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
+bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
-
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
 	GroudAddrSet(ground);
@@ -606,6 +619,8 @@ void RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	cmdTypeGroud = cmd;
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
+
+	return true;
 }
 
 // 清除不需要回复的群组指令
@@ -635,7 +650,7 @@ uint32_t RadioWithNoRes_GroudPack(void)
 
 
 // 发送的需要回复命令
-void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
+bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
@@ -647,7 +662,11 @@ void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	}
 	sendRetryTimes = RETRY_TIMES;
 #ifdef S_G
+
 	RadioSendBrocast();
+	Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
+	WdtClear();
+	return Semaphore_pend(recAckSemHandle, 7 * CLOCK_UNIT_S);
 #else
 	RadioSend();
 #endif
