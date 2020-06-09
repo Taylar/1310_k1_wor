@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 11:46:00
+* @Last Modified time: 2020-06-09 14:43:22
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -12,6 +12,10 @@
 #include "../app/radio_protocal.h"
 #include "../app/concenterApp.h"
 #include "../app/nodeApp.h"
+
+Semaphore_Struct recAckSemStruct;
+Semaphore_Handle recAckSemHandle;
+
 
 
 /***** Defines *****/
@@ -338,6 +342,14 @@ void RadioAppTaskCreate(void)
     Semaphore_Params_init(&semParam);
     Semaphore_construct(&radioAccessSem, 1, &semParam);
     radioAccessSemHandle = Semaphore_handle(&radioAccessSem); 
+
+
+
+    Semaphore_Params_init(&semParam);
+    Semaphore_construct(&recAckSemStruct, 1, &semParam);
+    recAckSemHandle = Semaphore_handle(&recAckSemStruct); 
+
+
     
 
     /* Create event used internally for state changes */
@@ -657,10 +669,10 @@ void RadioAppTaskFxn(void)
 
             //if(RadioCheckRssi() > -80)
             {
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(100));
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(120));
                 RadioReceiveData();
                 // 防止有其他指令打断该接收，使其不能完整接收一个数据包
-                Task_sleep(102*CLOCK_UNIT_MS);
+                Task_sleep(122*CLOCK_UNIT_MS);
             }
         }
 
@@ -689,7 +701,7 @@ void RadioAppTaskFxn(void)
                 RadioCmdClearWithRespon();
 
             }
-            
+
 
 #ifdef BOARD_S6_6
             Radio_setRxModeRfFrequency();

@@ -130,11 +130,11 @@ void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr);
 void RadioCmdClearWithNoRespon(void);
 uint32_t RadioWithNoResPack(void);
 
-void RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
+bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
 void RadioCmdClearWithNoRespon_Groud(void);
 uint32_t RadioWithNoRes_GroudPack(void);
 
-void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
+bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
 void RadioCmdClearWithRespon(void);
 uint32_t RadioWithResPack(void);
 
