@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 16:31:41
+* @Last Modified time: 2020-06-09 17:59:47
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -709,7 +709,7 @@ void RadioAppTaskFxn(void)
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
             radioStatus = RADIOSTATUS_RECEIVING;
             RadioReceiveData();
-            Task_sleep(102*CLOCK_UNIT_MS);
+            Task_sleep(240*CLOCK_UNIT_MS);
             
 #endif //BOARD_S6_6
         }

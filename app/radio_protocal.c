@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 16:17:13
+* @Last Modified time: 2020-06-09 18:09:45
 */
 #include "../general.h"
 
@@ -183,6 +183,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_ALL_RESP:
 
+		Semaphore_post(recAckSemHandle);
 		sendRetryTimes = 0;
 		RadioCmdClearWithRespon();
 		break;

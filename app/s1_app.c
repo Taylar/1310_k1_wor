@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 17:07:05
+* @Last Modified time: 2020-06-09 17:47:09
 */
 #include "../general.h"
 
@@ -183,23 +183,23 @@ void S1AppRtcProcess(void)
         }
     }
 
-    ElecPreventInsertMeasure();
-    if(ElecPreventInsertState()){
-        EletricPulseSetTime_S(1);
-        RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-    }
+    // ElecPreventInsertMeasure();
+    // if(ElecPreventInsertState()){
+    //     EletricPulseSetTime_S(1);
+    //     RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+    // }
 
 
-    Battery_porcess();
-    if(Battery_get_voltage() < 3600){
-        if((lowBatCnt == 0) || (lowBatCnt >= 3600)){
-            lowBatCnt = 1;
-            RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-        }
-        lowBatCnt++;
-    }else{
-        lowBatCnt = 0;
-    }
+    // Battery_porcess();
+    // if(Battery_get_voltage() < 3600){
+    //     if((lowBatCnt == 0) || (lowBatCnt >= 3600)){
+    //         lowBatCnt = 1;
+    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+    //     }
+    //     lowBatCnt++;
+    // }else{
+    //     lowBatCnt = 0;
+    // }
 
 
     if(destroyEleShock){

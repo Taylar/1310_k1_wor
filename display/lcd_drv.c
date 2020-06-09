@@ -155,7 +155,7 @@ static void Lcd_reset(void)
     Lcd_reset_ctrl(1);
     Task_sleep(200 * CLOCK_UNIT_MS);
     Lcd_reset_ctrl(0);
-    Task_sleep(50 * CLOCK_UNIT_MS);
+    Task_sleep(200 * CLOCK_UNIT_MS);
 }
 
 #endif
