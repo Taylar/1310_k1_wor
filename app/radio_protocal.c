@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 11:46:33
+* @Last Modified time: 2020-06-09 13:58:02
 */
 #include "../general.h"
 
@@ -22,12 +22,16 @@ bool nodeParaSetting = 0;
 uint32_t cmdType, cmdTypeWithRespon, cmdTypeGroud;
 uint32_t cmdEvent, cmdEventWithRespon, cmdEventGroud;
 uint32_t groundAddr;
-#ifdef S_C
 
+uint16_t sendRetryTimes;
+#define         RETRY_TIMES     3
 
 void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 {
 	switch(cmdType){
+
+#ifdef S_C
+
 		case RADIO_PRO_CMD_TERM_ADD_TO_GROUP:
 			if(dstDev == GetRadioSrcAddr()){
 				GroudAddrSet(ground);
@@ -58,104 +62,105 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_TERM_CLOSE_CTROL:
 			if(dstDev == GetRadioSrcAddr()){
-
+				EletricPulseSetTime_S(0);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_OPEN_CTROL:
 			if(ground == GroudAddrGet()){
-				
+				EletricPulseSetTime_S(3600);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_CLOSE_CTROL:
 			if(ground == GroudAddrGet()){
-
+				EletricPulseSetTime_S(0);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_OPEN_CTROL:
 			if(ground == GroudAddrGet()){
-
+				EletricPulseSetTime_S(3600);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_UNLOCKING:
 			if(ground == GroudAddrGet()){
-				
+				eleShock_set(ELE_MOTO_ENABLE, 1);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_UNLOCKING:
 			if(ground == GroudAddrGet()){
-
+				eleShock_set(ELE_MOTO_ENABLE, 1);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_POWER_HIGH:
 			if(ground == GroudAddrGet()){
-
+				ElectricShockLevelSet(ELECTRIC_HIGH_LEVEL);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_POWER_MID:
 			if(ground == GroudAddrGet()){
-
+				ElectricShockLevelSet(ELECTRIC_MID_LEVEL);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_POWER_LOW:
 			if(ground == GroudAddrGet()){
-
+				ElectricShockLevelSet(ELECTRIC_LOW_LEVEL);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_POWER_HIGH:
 			if(ground == GroudAddrGet()){
-				
+				ElectricShockLevelSet(ELECTRIC_HIGH_LEVEL);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_POWER_MID:
 			if(ground == GroudAddrGet()){
-				
+				ElectricShockLevelSet(ELECTRIC_MID_LEVEL);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_POWER_LOW:
 			if(ground == GroudAddrGet()){
-				
+				ElectricShockLevelSet(ELECTRIC_LOW_LEVEL);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START:
-			if(ground == GroudAddrGet()){
-				
+			if(ground == GetRadioSrcAddr()){
+				EletricPulseSetTime_S(3600);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP:
-			if(ground == GroudAddrGet()){
-				
+			if(ground == GetRadioSrcAddr()){
+				EletricPulseSetTime_S(0);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_SUBDUE_START:
 			if(ground == GroudAddrGet()){
+				EletricPulseSetTime_S(3600);
 
 			}
 		break;
@@ -163,13 +168,17 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_GROUP_SUBDUE_STOP:
 			if(ground == GroudAddrGet()){
+				EletricPulseSetTime_S(0);
 
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_ALL_SUBDUE_START:
+			EletricPulseSetTime_S(3600);
 		break;
+#endif //S_C
+
 
 		case RADIO_PRO_CMD_ALL_RESP:
 
@@ -178,6 +187,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 		break;
 	}
 }
+#ifdef S_C
 
 //***********************************************************************************
 // brief:   analysis the node protocal 
@@ -426,6 +436,8 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	uint8_t len;
 	radio_protocal_t	*bufTemp;
+    uint32_t cmdType;
+    uint32_t gourndTemp;
 
 
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
@@ -438,7 +450,15 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	SetRadioDstAddr(bufTemp->srcAddr);
 
+	HIBYTE_ZKS(HIWORD_ZKS(cmdType)) = bufTemp->load[0];
+    LOBYTE_ZKS(HIWORD_ZKS(cmdType)) = bufTemp->load[1];
+    HIBYTE_ZKS(LOWORD_ZKS(cmdType)) = bufTemp->load[2];
+    LOBYTE_ZKS(LOWORD_ZKS(cmdType)) = bufTemp->load[3];
 
+    HIBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[4];
+    LOBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[5];
+    HIBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[6];
+    LOBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[7];
 
 	while(len)
 	{
@@ -450,23 +470,16 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		switch(bufTemp->command)
 		{
 			case RADIO_PRO_CMD_SINGLE:
-			break;
-
-
 			case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
-			break;
-
-
 			case RADIO_PRO_CMD_GROUND:
-			break;
-
-
 			case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
+				RadioCmdProcess(cmdType, bufTemp->srcAddr, gourndTemp);
 			break;
 
 
 
 			default:
+
 		    Sys_event_post(SYSTEMAPP_EVT_DISP);
 		    return;
 
@@ -619,8 +632,7 @@ uint32_t RadioWithNoRes_GroudPack(void)
 	return cmdTypeGroud;
 }
 
-uint16_t sendRetryTimes;
-#define 		RETRY_TIMES		3
+
 
 // 发送的需要回复命令
 void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)

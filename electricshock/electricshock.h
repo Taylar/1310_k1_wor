@@ -47,7 +47,7 @@ extern void ElectricShockInit(void);
 extern uint8_t DestroyPinRead(void);
 
 
-
+void ElectricShockLevelSet(uint8_t level);
 
 #endif //ELECTRIC_SHOCK
 
