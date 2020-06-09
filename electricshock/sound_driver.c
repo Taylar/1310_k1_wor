@@ -45,14 +45,14 @@ void SoundDriverSet(uint8_t soundType)
 	for(i = 0; i < 8; i++){
 		if(soundType & (0x80>>i)){
 			PIN_setOutputValue(soundDriverHandle, SOUND_DATA_PIN, 1);
-			delay_us(500);
-			PIN_setOutputValue(soundDriverHandle, SOUND_DATA_PIN, 0);
 			delay_us(1500);
+			PIN_setOutputValue(soundDriverHandle, SOUND_DATA_PIN, 0);
+			delay_us(500);
 		}else{
 			PIN_setOutputValue(soundDriverHandle, SOUND_DATA_PIN, 1);
-			delay_us(1500);
-			PIN_setOutputValue(soundDriverHandle, SOUND_DATA_PIN, 0);
 			delay_us(500);
+			PIN_setOutputValue(soundDriverHandle, SOUND_DATA_PIN, 0);
+			delay_us(1500);
 		}
 	}
 
