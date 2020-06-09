@@ -27,6 +27,7 @@
 #define FONT_7X24_OFS               21
 #define FONT_72X24_OFS              216
 #define FONT_36X24_OFS              120
+#define FONT_8X24_OFS               24
 
 #ifdef SUPPORT_SFKJ_UI
 #define FONT_23X24_OFS              69
@@ -152,6 +153,8 @@ typedef enum {
     ICON_36X24_SUBDUE,
     ICON_36X24_CLEAR,
 
+    ICON_8X24_ARROW,
+    ICON_8X24_DISPLAY_CLEAR,
     ICON_MAX
 } DISP_ICON;
 

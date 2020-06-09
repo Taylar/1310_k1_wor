@@ -10,7 +10,7 @@
 #define FONT_72X24_OFS_              216
 #define START_X_LINE 0
 #define START_X_NUM  5
-#define START_X_XIN  9
+#define START_X_XIN  120
 #define START_X_TIP  108
 
 
@@ -240,12 +240,14 @@ TAB_REPEAT_ADD_ARR:
              sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -260,15 +262,17 @@ TAB_REPEAT_ADD_ARR:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -281,18 +285,20 @@ TAB_REPEAT_ADD_ARR:
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                mMenuModeObject.selectIndex =1;
-               Lcd_set_font(12, 24, 1);
-               Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               Disp_msg(START_X_XIN,2,"*",FONT_12X24);
 
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               Lcd_set_font(12, 24, 1);
 
            }
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                Lcd_set_font(12, 24, 1);
-               Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               Disp_msg(START_X_XIN,2,"*",FONT_12X24);
                //调用发射窗口
                //display complete
                RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_ADD_TO_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //添加群组
@@ -338,15 +344,17 @@ TAB_REPEAT_ADD_ARR1:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -361,15 +369,17 @@ TAB_REPEAT_ADD_ARR1:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -382,18 +392,20 @@ TAB_REPEAT_ADD_ARR1:
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                mMenuModeObject.selectIndex =1;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                Lcd_set_font(12, 24, 1);
-               Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               Disp_msg(START_X_XIN,2,"*",FONT_12X24);
 
 
            }
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                Lcd_set_font(12, 24, 1);
-               Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               Disp_msg(START_X_XIN,2,"*",FONT_12X24);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -437,15 +449,17 @@ TAB_REPEAT_ADD_ARR2:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -460,15 +474,17 @@ TAB_REPEAT_ADD_ARR2:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -482,8 +498,8 @@ TAB_REPEAT_ADD_ARR2:
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                mMenuModeObject.selectIndex =2;
                Lcd_set_font(12, 24, 1);
-               //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_TEST,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
@@ -494,9 +510,10 @@ TAB_REPEAT_ADD_ARR2:
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                Lcd_set_font(12, 24, 1);
-               Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               Disp_msg(START_X_XIN,2,"*",FONT_12X24);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -538,15 +555,17 @@ TAB_REPEAT_ADD_ARR3:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -597,15 +616,17 @@ TAB_REPEAT_ADD_ARR4:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -656,15 +677,17 @@ TAB_REPEAT_ADD_ARR5:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -716,15 +739,17 @@ TAB_REPEAT_ADD_ARR6:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -775,15 +800,17 @@ TAB_REPEAT_ADD_ARR7:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -798,15 +825,17 @@ TAB_REPEAT_ADD_ARR7:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -820,8 +849,8 @@ TAB_REPEAT_ADD_ARR7:
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                //mMenuModeObject.selectIndex =1;
                //Lcd_set_font(12, 24, 1);
-               //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -844,8 +873,8 @@ TAB_REPEAT_ADD_ARR7:
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(12, 24, 1);
-               //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -899,15 +928,17 @@ TAB_REPEAT_ADD_ARR8:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -922,15 +953,17 @@ TAB_REPEAT_ADD_ARR8:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -944,8 +977,8 @@ TAB_REPEAT_ADD_ARR8:
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                //mMenuModeObject.selectIndex =1;
                //Lcd_set_font(12, 24, 1);
-               //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -968,8 +1001,8 @@ TAB_REPEAT_ADD_ARR8:
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(12, 24, 1);
-               //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -1022,15 +1055,17 @@ TAB_REPEAT_ADD_ARR9:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -1045,15 +1080,17 @@ TAB_REPEAT_ADD_ARR9:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -1067,8 +1104,8 @@ TAB_REPEAT_ADD_ARR9:
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                //mMenuModeObject.selectIndex =1;
                //Lcd_set_font(12, 24, 1);
-               //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -1091,8 +1128,8 @@ TAB_REPEAT_ADD_ARR9:
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(12, 24, 1);
-               //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-               //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
@@ -1145,15 +1182,17 @@ static void menu_power_select_low()
             Lcd_set_font(12, 24, 1);
             if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
             {
-                sprintf(numbuff,"%s","    ");
+                sprintf((char*)numbuff,"%s","    ");
               Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
             }
-            Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-            Disp_msg(START_X_XIN,2," ",FONT_12X24);
+            Lcd_set_font(8, 24, 1);
+            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+            Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+            Lcd_set_font(12, 24, 1);
             if(mMenuModeObject.numEnter != 0)
             {
 
-                sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                 Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
             }
         }
@@ -1168,15 +1207,17 @@ static void menu_power_select_low()
             Lcd_set_font(12, 24, 1);
             if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
             {
-                sprintf(numbuff,"%s","    ");
+                sprintf((char*)numbuff,"%s","    ");
               Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
             }
-            Disp_msg(START_X_XIN,1," ",FONT_12X24);
-            Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+            Lcd_set_font(8, 24, 1);
+            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+            Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+            Lcd_set_font(12, 24, 1);
             if(mMenuModeObject.numEnter != 0)
             {
 
-                sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                 Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
             }
         }
@@ -1190,8 +1231,8 @@ static void menu_power_select_low()
                 mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                 //mMenuModeObject.selectIndex =1;
                 //Lcd_set_font(12, 24, 1);
-                //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-                //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+                //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+                //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                 //调用发射窗口
                 //display complete
                 //Lcd_clear_screen();
@@ -1214,8 +1255,8 @@ static void menu_power_select_low()
             {
                 mMenuModeObject.groudId = mMenuModeObject.numEnter;
                 Lcd_set_font(12, 24, 1);
-                //Disp_msg(START_X_XIN,1," ",FONT_12X24);
-                //Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+                //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
+                //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                 //调用发射窗口
                 //display complete
                 //Lcd_clear_screen();
@@ -1257,7 +1298,7 @@ static void menu_tik_fixed_number_subdue()
 
     uint8_t numbuff[10] = {0};
 
-TAB_REPEAT_ADD_ARR11:
+//TAB_REPEAT_ADD_ARR11:
    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
    {
 
@@ -1271,15 +1312,17 @@ TAB_REPEAT_ADD_ARR11:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1,"*",FONT_12X24);
-           Disp_msg(START_X_XIN,2," ",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
        }
@@ -1329,7 +1372,7 @@ static void menu_tik_arr_subdue()
 {
     uint8_t numbuff[10] = {0};
 
-TAB_REPEAT_ADD_ARR12:
+//TAB_REPEAT_ADD_ARR12:
    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
    {
 
@@ -1343,15 +1386,17 @@ TAB_REPEAT_ADD_ARR12:
            Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf(numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","    ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_12X24);
            }
-           Disp_msg(START_X_XIN,1," ",FONT_12X24);
-           Disp_msg(START_X_XIN,2,"*",FONT_12X24);
+           Lcd_set_font(8, 24, 1);
+           Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+           Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+           Lcd_set_font(12, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
 
-               sprintf(numbuff,"%d",mMenuModeObject.numEnter);
+               sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_12X24);
            }
        }
@@ -1399,9 +1444,9 @@ TAB_REPEAT_ADD_ARR12:
 }
 static void menu_tik_group_subdue()
 {
-    uint8_t numbuff[10] = {0};
+    //uint8_t numbuff[10] = {0};
 
-TAB_REPEAT_ADD_ARR13:
+//TAB_REPEAT_ADD_ARR13:
    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
    {
 

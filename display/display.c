@@ -54,6 +54,9 @@ const uint8_t menu36x24[]= {
     #include "font\menu36x24.txt"
 };
 
+const uint8_t menu8x24[]= {
+    #include "font\menu8x24.txt"
+};
 //Calendar icon gap
 #define CAICON_GAP              1
 //Calendar icon digit wide and high
@@ -272,6 +275,13 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
              break;
+        case ICON_8X24_ARROW...ICON_8X24_DISPLAY_CLEAR:
+            if (light) {
+                Lcd_write_character(col, row, &menu8x24[(icon - ICON_8X24_ARROW) * FONT_8X24_OFS]);
+            } else {
+                Lcd_clear_area(col, row);
+            }
+             break;
     }
 
     rDispObject.refresh = 1;
@@ -357,285 +367,9 @@ void Disp_refresh(void)
     }
 }
 
-//***********************************************************************************
-//
-// Display calendar.
-//
-//***********************************************************************************
-static void Disp_calendar(void)
-{
-    Calendar calendar;
-    uint16_t value;
-    uint8_t col = CALD_COL_POS, row = CALD_ROW_POS;
-
-    calendar = Rtc_get_calendar();
-    calendar.Year       = TransHexToBcd((uint8_t)(calendar.Year - 2000)) + 0x2000;
-    calendar.Month      = TransHexToBcd((uint8_t)(calendar.Month));
-    calendar.DayOfMonth = TransHexToBcd((uint8_t)(calendar.DayOfMonth));
-    calendar.Hours      = TransHexToBcd((uint8_t)(calendar.Hours));
-    calendar.Minutes    = TransHexToBcd((uint8_t)(calendar.Minutes));
-    calendar.Seconds    = TransHexToBcd((uint8_t)(calendar.Seconds));
-
-	Lcd_set_font(CAICON_W, CAICON_H, 0);
-    value = (calendar.Year >> 12) & 0x000f;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-    value = (calendar.Year >> 8) & 0x000f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-    value = (calendar.Year >> 4) & 0x000f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-    value = calendar.Year & 0x000f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, ICON_5X8_SUB, 1);
-
-    value = (calendar.Month >> 4) & 0x0f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-    value = calendar.Month & 0x0f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_SUB, 1);
-
-    value = (calendar.DayOfMonth >> 4) & 0x0f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-    value = calendar.DayOfMonth & 0x0f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-
-    value = (calendar.Hours >> 4) & 0x0f;
-#ifdef S_G
-    col += 5;
-#else
-    col += 10;
-#endif
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-    value = calendar.Hours & 0x0f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_COL, 1);
-
-    value = (calendar.Minutes >> 4) & 0x0f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-    value = calendar.Minutes & 0x0f;
-    col += CAICON_W + CAICON_GAP;
-    Disp_icon(col, row, CAICON_DIGIT + value, 1);
-#if defined(S_G)
-    Lcd_set_font(SIGNAL_W, SIGNAL_H, 0);
-    col += CAICON_W + 2*CAICON_GAP;
-
-#endif
-
-//Display battery
 
 
-}
 
-#if 1
-//***********************************************************************************
-//
-// Display temperature.
-//
-//***********************************************************************************
-static void Disp_temperature(uint8_t col, uint8_t row, int32_t value, bool deep)
-{
-    uint8_t thousand,hundreds,integer, decimal;
-
-
-    Lcd_set_font(128, 8, 0);
-    Lcd_clear_area(0,2);
-    Lcd_clear_area(0,3);
-    Lcd_clear_area(0,4);
-    Lcd_clear_area(0,5);
-
-	Lcd_set_font(TPICON_W, TPICON_H, 0);
-    
-
-
-    value = (int32_t)round((float)value / 10.0);
-    if (value < 0) {
-        value = -value;
-        Disp_icon(col, row, TPICON_SUB, 1);
-    } else {
-        Disp_icon(col, row, TPICON_SUB, 0);
-    }
-    col += TPICON_W + TPICON_GAP;
-    thousand = value / 10000;
-    if (thousand !=0 ) {
-        Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
-        col += TPICON_W + TPICON_GAP;
-
-        hundreds = (value % 10000) / 1000;
-        Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
-        col += TPICON_W + TPICON_GAP;
-
-        value = (value % 1000);
-    } else {
-        hundreds = value / 1000;
-        if ( hundreds !=0 ){
-            Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
-            col += TPICON_W + TPICON_GAP;
-            value = value%1000;
-        }
-    }
-    integer = value / 10;
-    decimal = value % 10;
-    if (integer >= 10) {
-        Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
-    } else {
-        Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 0);
-    }
-    col += TPICON_W + TPICON_GAP;
-    Disp_icon(col, row, TPICON_DIGIT + integer % 10, 1);
-    col += TPICON_W + TPICON_GAP;
-	Lcd_set_font(TPICON_DOT_W, TPICON_DOT_H, 0);
-    Disp_icon(col, row, TPICON_DOT, 1);
-    col += TPICON_DOT_W + TPICON_GAP;
-	Lcd_set_font(TPICON_W, TPICON_H, 0);
-    Disp_icon(col, row, TPICON_DIGIT + decimal % 10, 1);
-    col += TPICON_W + TPICON_GAP;
-	Lcd_set_font(TPICON_DC_W, TPICON_DC_H, 0);
-    Disp_icon(col, row, TPICON_DC, 1);
-}
-
-//***********************************************************************************
-//
-// Display humidty.
-//
-//***********************************************************************************
-static void Disp_humidty(uint8_t col, uint8_t row, uint16_t value)
-{
-	Lcd_set_font(HUICON_W, HUICON_H, 0);
-
-
-    value /= 100;
-    if (value >= 99) {
-        Disp_icon(col, row, HUICON_DIGIT, 0);
-        col += HUICON_W + HUICON_GAP;
-        Disp_icon(col, row, HUICON_DIGIT + 9, 1);
-        col += HUICON_W + HUICON_GAP;
-        Disp_icon(col, row, HUICON_DIGIT + 9, 1);
-    } else {
-        Disp_icon(col, row, HUICON_DIGIT, 0);
-        col += HUICON_W + HUICON_GAP;
-        if (value >= 10) {
-            Disp_icon(col, row, HUICON_DIGIT + (value / 10) % 10, 1);
-        } else {
-            Disp_icon(col, row, HUICON_DIGIT + (value / 10) % 10, 0);
-        }
-        col += HUICON_W + HUICON_GAP;
-        Disp_icon(col, row, HUICON_DIGIT + value % 10, 1);
-    }
-    col += HUICON_W + HUICON_GAP;
-	Lcd_set_font(HUICON_PCT_W, HUICON_PCT_H, 0);
-    Disp_icon(col, row, HUICON_PCT, 1);
-}
-//***********************************************************************************
-//
-// Display lux data.
-//
-//***********************************************************************************
-static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
-{
-
-    uint8_t thousand,hundreds,integer, decimal,flag = 0;
-#ifdef S_G
-    Lcd_set_font(128, 8, 0);
-    Lcd_clear_area(0,2);
-    Lcd_clear_area(0,3);
-#else
-    Lcd_set_font(128, 32, 0);
-    Lcd_clear_area(0, 2);
-#endif
-    Lcd_set_font(132, 32, 0);
-    Lcd_clear_area(0, 2);
-
-
-        uint8_t buff[21];
-        memset(buff,0x00,21);
-        if(value > 999999)
-        {
-            flag = 1;
-            value = value / 1000;
-        }
-
-        Lcd_set_font(TPICON_W, TPICON_H, 0);
-        value = value / 10;
-
-        col += TPICON_W + TPICON_GAP;
-        thousand = value / 10000;
-        if(thousand > 9)
-        {
-            value    = 99999;
-            thousand = value / 10000;
-        }
-
-        if (thousand !=0 ) {
-            Disp_icon(col, row, TPICON_DIGIT + thousand, 1);
-            col += TPICON_W + TPICON_GAP;
-
-            hundreds = (value % 10000) / 1000;
-            Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
-            col += TPICON_W + TPICON_GAP;
-
-            value = (value % 1000);
-        } else {
-            hundreds = value / 1000;
-            if ( hundreds !=0 ){
-                Disp_icon(col, row, TPICON_DIGIT + hundreds, 1);
-                col += TPICON_W + TPICON_GAP;
-                value = value%1000;
-            }
-        }
-        integer = value / 10;
-        decimal = value % 10;
-        if (integer >= 10) {
-            Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
-        } else {
-            if(hundreds !=0){
-                Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 1);
-            }else{
-                Disp_icon(col, row, TPICON_DIGIT + (integer / 10) % 10, 0);
-            }
-        }
-        col += TPICON_W + TPICON_GAP;
-        Disp_icon(col, row, TPICON_DIGIT + integer % 10, 1);
-        col += TPICON_W + TPICON_GAP;
-        Lcd_set_font(TPICON_DOT_W, TPICON_DOT_H, 0);
-        Disp_icon(col, row, TPICON_DOT, 1);
-        col += TPICON_DOT_W + TPICON_GAP;
-        Lcd_set_font(TPICON_W, TPICON_H, 0);
-        Disp_icon(col, row, TPICON_DIGIT + decimal % 10, 1);
-        col += TPICON_W + TPICON_GAP;
-        col = (col + 7) / 8;
-        if(flag){
-            sprintf((char *)buff, "Klx");
-        }else
-        sprintf((char *)buff, "Lx");
-#ifdef S_G
-        Disp_msg(col, row+1, buff, FONT_8X16);
-#else
-        Disp_msg(col, row+2, buff, FONT_8X16);
-#endif
-/*    uint8_t buff[21];
-
-    sprintf((char *)buff, "%ld.%dLx", (uint32_t)(value/100), (uint16_t)round(((value%100))/10));
-    Lcd_clear_area(1, 4);
-    Disp_msg(1, 2, buff, FONT_12X24);*/
-
-}
-
-#endif  /* SUPPORT_SENSOR */
 
 //***********************************************************************************
 //
@@ -647,7 +381,7 @@ static void Disp_Lux(uint8_t col, uint8_t row, uint32_t value)
 #define  DEVIDCOL               8
 #define  DEVIDROW               6
 uint32_t starBarDeviceid = 0x00;
-static uint8_t  starBarRssi = 0;
+
 #endif
 
 void Disp_sensor_data(void)
@@ -662,36 +396,9 @@ void Disp_sensor_data(void)
 //***********************************************************************************
 void Disp_sensor_switch(void)
 {
-    uint8_t i, num, oldNum;
 
-    if (rDispObject.init == 0)
-        return;
 
-    if (rDispObject.infoIndex) {
-        rDispObject.infoIndex = 0;
-        Disp_clear_all();
-        return;
-    }
 
-#ifdef SUPPORT_NETGATE_DISP_NODE    
-    if(g_rSysConfigInfo.module & MODULE_NWK && 
-       g_rSysConfigInfo.module & MODULE_RADIO ) {//is netgate, only display  node  sensor
-        //If exist more than 2 type temperature, should switch display.
-    	Lcd_set_font(128, 32, 0);
-        Lcd_clear_area(0, 2);
-        rDispObject.sensorIndex = MODULE_SENSOR_MAX;  //don't display local sensor data
-
-        return;        
-    }            
-#endif
-
-    oldNum = rDispObject.sensorIndex;
-
-    if (oldNum != num && g_rSysConfigInfo.sensorModule[oldNum] != g_rSysConfigInfo.sensorModule[num]) {
-        //If exist more than 2 type temperature, should switch display.
-    	Lcd_set_font(128, 32, 0);
-        Lcd_clear_area(0, 2);
-    }
 
 }
 
@@ -704,11 +411,7 @@ void Disp_sensor_set(uint8_t index)
 // Display status bar.
 //
 //***********************************************************************************
-static void Disp_status_bar(void)
-{
 
-
-}
 
 
 
@@ -780,18 +483,18 @@ void display_star_mssage(void)
 {
     uint8_t time_buff[20]={0};
     Calendar calendar;
-    uint8_t batValue = 0,index =0;
+    uint8_t batValue = 0;
     batValue = ((Battery_get_voltage()-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
     calendar = Rtc_get_calendar();
     //sprintf(time_buff,"%02d",(calendar.Year-2000));
     //time_buff[2] ='-';
-    sprintf(time_buff,"%02d",calendar.Month);
+    sprintf((char*)time_buff,"%02d",calendar.Month);
     time_buff[2] ='-';
-    sprintf(time_buff+3,"%02d",calendar.DayOfMonth);
+    sprintf((char*)(time_buff+3),"%02d",calendar.DayOfMonth);
     time_buff[5] =' ';
-    sprintf(time_buff+6,"%02d",calendar.Hours);
+    sprintf((char*)(time_buff+6),"%02d",calendar.Hours);
     time_buff[8] =':';
-    sprintf(time_buff+9,"%02d",calendar.Minutes);
+    sprintf((char*)(time_buff+9),"%02d",calendar.Minutes);
 
 
     time_buff[11] = ' ';

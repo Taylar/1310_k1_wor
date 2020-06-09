@@ -145,9 +145,7 @@ static uint8_t g_firstStartFlag = 0;
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
-#ifdef SUPPORT_ENGMODE
-    uint8_t     engmodeFlag = 0;
-#endif // SUPPORT_ENGMODE
+
     // uint32_t	voltageTemp;
     Semaphore_Params semParam;
     Semaphore_Params_init(&semParam);

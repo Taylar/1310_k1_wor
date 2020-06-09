@@ -1823,7 +1823,7 @@ void Sys_config_reset(void)
 
 
 #ifdef      BOARD_S6_6
-    uint8_t i;
+    //uint8_t i;
 
     g_rSysConfigInfo.module          = MODULE_GSM | MODULE_CC1310 | MODULE_LCD;
     g_rSysConfigInfo.serverIpAddr[0] = 114;
