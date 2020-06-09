@@ -1,8 +1,8 @@
 /*
-* @Author: zxt
+* @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-19 11:00:47
+* @Last Modified time: 2020-06-09 11:46:00
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -419,9 +419,9 @@ void RadioAppTaskFxn(void)
 
 
 #ifdef SUPPORT_RARIO_SPEED_SET
-    if((g_rSysConfigInfo.rfSF >> 4) > RADIO_EASYLINK_MODULATION_S1_OLD)
-        g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
-    easyLink_params.ui32ModType = (EasyLink_PhyType)(g_rSysConfigInfo.rfSF >> 4);
+    // if((g_rSysConfigInfo.rfSF >> 4) > RADIO_EASYLINK_MODULATION_S1_OLD)
+    //     g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
+    // easyLink_params.ui32ModType = (EasyLink_PhyType)(g_rSysConfigInfo.rfSF >> 4);
 #endif // SUPPORT_RARIO_SPEED_SET
 
     if((g_rSysConfigInfo.rfPA >> 4) < RADIO_MIN_POWER)
@@ -679,6 +679,18 @@ void RadioAppTaskFxn(void)
 
             }
 
+            ClearRadioSendBuf();
+            if(RadioWithResPack() != 0){
+                brocastTimes = 20;
+                while(brocastTimes){
+                    brocastTimes--;
+                    RadioSendData();
+                }
+                RadioCmdClearWithRespon();
+
+            }
+            
+
 #ifdef BOARD_S6_6
             Radio_setRxModeRfFrequency();
 
@@ -702,6 +714,7 @@ void RadioAppTaskFxn(void)
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
             radioStatus = RADIOSTATUS_RECEIVING;
             RadioReceiveData();
+            Task_sleep(102*CLOCK_UNIT_MS);
 #endif //BOARD_S6_6
 
         }

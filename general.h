@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-//#define ZKS_S3_WOR
-#define ZKS_S6_6_WOR_G
+#define ZKS_S3_WOR
+//#define ZKS_S6_6_WOR_G
 
 //***********************************************************************************
 //
@@ -485,9 +485,9 @@ error
 #define RADIO_UPGRADE_ADDRESS           0x99999999
 #define RADIO_BROCAST_ADDRESS           0x00000000
 
-#define DECEIVE_ID_DEFAULT              0X88888886
+#define DECEIVE_ID_DEFAULT              0X00008886
 
-#define CUSTOM_ID_DEFAULT               0X0000
+#define CUSTOM_ID_DEFAULT               0XFFFF
 
 #define UPLOAD_PERIOD_DEFAULT           1
 
