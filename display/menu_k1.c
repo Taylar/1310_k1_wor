@@ -6,6 +6,9 @@
  */
 #include "../general.h"
 #include "menu_k1.h"
+
+
+
 #ifdef BOARD_S6_6
 #define FONT_72X24_OFS_              216
 #define START_X_LINE 0
@@ -301,10 +304,12 @@ TAB_REPEAT_ADD_ARR:
                Lcd_set_font(12, 24, 1);
                //调用发射窗口
                //display complete
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_ADD_TO_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //添加群组
-               //Lcd_clear_screen();
                Lcd_set_font(36, 24, 1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_ADD_TO_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+               //Lcd_clear_screen();
                //
                mMenuModeObject.selectIndex = 2;
            }
@@ -409,9 +414,11 @@ TAB_REPEAT_ADD_ARR1:
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
                Lcd_set_font(36, 24, 1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                //
                mMenuModeObject.selectIndex = 2;
            }
@@ -500,9 +507,11 @@ TAB_REPEAT_ADD_ARR2:
                Lcd_set_font(12, 24, 1);
                //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
                //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_TEST,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
                Lcd_set_font(36, 24, 1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_TEST,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                               //
                mMenuModeObject.selectIndex = 2;
 
@@ -517,6 +526,8 @@ TAB_REPEAT_ADD_ARR2:
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
+               RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_TEST,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+               Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                //
@@ -578,9 +589,11 @@ TAB_REPEAT_ADD_ARR3:
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
-               //send data to devices
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_CLOSE_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
+               Lcd_set_font(36, 24, 1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_CLOSE_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                mMenuModeObject.selectIndex = 2;
            }
            else if(mMenuModeObject.selectIndex == 2)
@@ -700,9 +713,10 @@ TAB_REPEAT_ADD_ARR5:
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
-               //send data to devices
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_OPEN_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_OPEN_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                mMenuModeObject.selectIndex = 2;
            }
            else if(mMenuModeObject.selectIndex == 2)
@@ -764,6 +778,7 @@ TAB_REPEAT_ADD_ARR6:
                Lcd_set_font(36, 24, 1);
                //send data to devices
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_OPEN_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
+               //Task_sleep(1000*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                mMenuModeObject.selectIndex = 2;
            }
@@ -854,9 +869,11 @@ TAB_REPEAT_ADD_ARR7:
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
                Lcd_set_font(36, 24, 1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                mMenuModeObject.selectIndex = 2;
 
            }
@@ -879,6 +896,7 @@ TAB_REPEAT_ADD_ARR7:
                //display complete
                //Lcd_clear_screen();
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
+               //Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                //
@@ -982,9 +1000,11 @@ TAB_REPEAT_ADD_ARR8:
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_HIGH,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                Lcd_set_font(36, 24, 1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_HIGH,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                mMenuModeObject.selectIndex = 2;
 
            }
@@ -1007,6 +1027,7 @@ TAB_REPEAT_ADD_ARR8:
                //display complete
                //Lcd_clear_screen();
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_POWER_HIGH,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+               //Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                //
@@ -1109,9 +1130,14 @@ TAB_REPEAT_ADD_ARR9:
                //调用发射窗口
                //display complete
                //Lcd_clear_screen();
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_MID,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                Lcd_set_font(36, 24, 1);
-               Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_MID,mMenuModeObject.devicesId, mMenuModeObject.groudId))
+                  Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               else
+                   Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+
+
+
                mMenuModeObject.selectIndex = 2;
 
            }
@@ -1134,6 +1160,7 @@ TAB_REPEAT_ADD_ARR9:
                //display complete
                //Lcd_clear_screen();
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_POWER_MID,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                //
@@ -1238,7 +1265,10 @@ static void menu_power_select_low()
                 //Lcd_clear_screen();
                // RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                 Lcd_set_font(36, 24, 1);
+                if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                 Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+                else
+                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                 mMenuModeObject.selectIndex = 2;
 
             }
@@ -1261,6 +1291,7 @@ static void menu_power_select_low()
                 //display complete
                 //Lcd_clear_screen();
                 RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+
                 Lcd_set_font(36, 24, 1);
                 Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                 //
@@ -1336,8 +1367,11 @@ static void menu_tik_fixed_number_subdue()
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
                //send data to devices
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_SUBDUE,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+
                Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(72, 24, 1);
                Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
@@ -1350,9 +1384,12 @@ static void menu_tik_fixed_number_subdue()
                Lcd_set_font(72, 24, 1);
                Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
                //send data to devices
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                Lcd_set_font(36, 24, 1);
+               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId))
                Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
+               else
+               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+
                Task_sleep(1000*CLOCK_UNIT_MS);
 
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
