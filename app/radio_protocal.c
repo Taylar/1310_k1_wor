@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 14:53:13
+* @Last Modified time: 2020-06-09 13:58:02
 */
 #include "../general.h"
 
@@ -13,7 +13,6 @@
 #include "../radio_app/node_strategy.h"
 #include "../radio_app/radio_app.h"
 
-extern Semaphore_Handle recAckSemHandle;
 
 radio_protocal_t   protocalTxBuf;
 
@@ -562,7 +561,7 @@ uint32_t GroudAddrGet(void)
 	return groundAddr;
 }
 
-// 鍙戦�佷笉闇�瑕佸洖澶嶇殑鎸囦护,鍗曟鍙戦��
+// 发送不需要回复的指令,单次发送
 void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 {
 	cmdType = cmd;
@@ -573,7 +572,7 @@ void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 	RadioSingleSend();
 }
 
-// 娓呴櫎涓嶉渶瑕佸洖澶嶇殑鎸囦护
+// 清除不需要回复的指令
 void RadioCmdClearWithNoRespon(void)
 {
 	uint8_t i;
@@ -596,8 +595,10 @@ uint32_t RadioWithNoResPack(void)
 	return cmdType;
 }
 
-bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
+// 发送不需要回复的群组指令，以广播的方式发出
+void RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
+
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
 	GroudAddrSet(ground);
@@ -605,9 +606,9 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	cmdTypeGroud = cmd;
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
-	return true;
 }
 
+// 清除不需要回复的群组指令
 void RadioCmdClearWithNoRespon_Groud(void)
 {
 	uint8_t i;
@@ -633,8 +634,8 @@ uint32_t RadioWithNoRes_GroudPack(void)
 
 
 
-// 鍙戦�佺殑闇�瑕佸洖澶嶅懡浠�
-bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
+// 发送的需要回复命令
+void RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
@@ -646,11 +647,7 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	}
 	sendRetryTimes = RETRY_TIMES;
 #ifdef S_G
-
 	RadioSendBrocast();
-	Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
-	WdtClear();
-	return Semaphore_pend(recAckSemHandle, 7 * CLOCK_UNIT_S);
 #else
 	RadioSend();
 #endif
