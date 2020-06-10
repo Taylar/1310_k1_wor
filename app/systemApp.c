@@ -294,6 +294,7 @@ void SystemAppTaskFxn(void)
 
 		if(SYS_EVT_ELE_SHOCK_DESTROY & eventId){
 			destroyEleShock = 1;
+			SoundEventSet(SOUND_TYPE_DESTROYED);
 		}
 
 
@@ -304,9 +305,14 @@ void SystemAppTaskFxn(void)
 
 		if(eventId & SYS_EVT_MOTO_INT_REC){
 			eleShock_set(ELE_MOTO_ENABLE, 1);
-			Task_sleep(100 * CLOCK_UNIT_MS);
+			Task_sleep(300 * CLOCK_UNIT_MS);
 			eleShock_set(ELE_MOTO_ENABLE, 0);
 		}
+
+
+		if(eventId & SYS_EVT_SOUND_PLAY){
+			SoundDriverSet(soundEventType);
+		}		
 
 
 

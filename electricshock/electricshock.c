@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-08 16:52:12
+* @Last Modified time: 2020-06-10 15:43:44
 */
 #include "../general.h"
 
@@ -152,6 +152,11 @@ void EletricPulseSetTime_S(uint16_t keepTime_S)
 {
     pulseTimes_sec = keepTime_S;
 
+    if(electricshockEnable == 0){
+        EletricShockPulseDisable();
+        Clock_stop(pulseClkHandle);
+        return;
+    }
     if(pulseTimes_sec == 0){
         EletricShockPulseDisable();
         Clock_stop(pulseClkHandle);

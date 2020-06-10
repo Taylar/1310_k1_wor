@@ -846,6 +846,8 @@ EXTERN_ATTR uint16_t brocastTimes;
 
 EXTERN_ATTR uint8_t destroyEleShock;
 
+EXTERN_ATTR uint8_t electricshockEnable;
+
 extern uint8_t deviceMode;
 
 #endif	/* __ZKSIOT_GENERAL_H__ */

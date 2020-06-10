@@ -18,6 +18,9 @@ typedef enum {
 #define 		ELECTRIC_MID_LEVEL		1
 #define 		ELECTRIC_HIGH_LEVEL		2
 
+
+#define         ELECTRIC_SHOCK_TIME     10
+
 // variable typedef
 typedef struct 
 {
@@ -29,6 +32,7 @@ typedef struct
 	uint8_t periodT1;
 	uint8_t periodT2;
 } singleport_drive_t;
+
 
 extern void EletricShockPulseEnable(void);
 extern void EletricShockPulseDisable(void);

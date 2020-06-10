@@ -9,6 +9,7 @@
 #define SOUND_STATE_IDLE							0
 
 
+
 static PIN_State   soundDriverState;
 static PIN_Handle  soundDriverHandle;
 
@@ -17,6 +18,14 @@ const PIN_Config soundPinTable[] = {
     SOUND_BUSY_PIN | PIN_INPUT_EN | PIN_PULLDOWN,
     PIN_TERMINATE
 };
+
+uint8_t soundEventType;
+
+void SoundEventSet(uint8_t event)
+{
+	soundEventType = event;
+	Sys_event_post(SYS_EVT_SOUND_PLAY);
+}
 
 void SoundDriverInit(void)
 {
@@ -56,6 +65,5 @@ void SoundDriverSet(uint8_t soundType)
 		}
 	}
 
-	IntMasterEnable();
-	
+	IntMasterEnable();	
 }

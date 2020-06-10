@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-10 10:40:32
+* @Last Modified time: 2020-06-10 16:11:25
 */
 #include "../general.h"
 
@@ -36,33 +36,43 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 		case RADIO_PRO_CMD_TERM_ADD_TO_GROUP:
 			if(dstDev == GetRadioSrcAddr()){
 				GroudAddrSet(ground);
+				g_rSysConfigInfo.customId[0] = (uint8_t)(ground >> 8);
+				g_rSysConfigInfo.customId[1] = (uint8_t)(ground);
+				SoundEventSet(SOUND_TYPE_SET_GROUND_SUSCESS);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP:
 			if(dstDev == GetRadioSrcAddr()){
+				SoundEventSet(SOUND_TYPE_DI);
 				GroudAddrSet(INVALID_GROUND);
+				g_rSysConfigInfo.customId[0] = (uint8_t)(INVALID_GROUND >> 8);
+				g_rSysConfigInfo.customId[1] = (uint8_t)(INVALID_GROUND);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_TEST:
 			if(dstDev == GetRadioSrcAddr()){
-				
+				SoundEventSet(SOUND_TYPE_SINGLE_TEST);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_TEST:
 			if(ground == GroudAddrGet()){
-
+				SoundEventSet(SOUND_TYPE_SINGLE_TEST);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_CLOSE_CTROL:
 			if(dstDev == GetRadioSrcAddr()){
+				SoundEventSet(SOUND_TYPE_DI);
+				electricshockEnable = 0;
 				EletricPulseSetTime_S(0);
 			}
 		break;
@@ -70,13 +80,16 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_TERM_OPEN_CTROL:
 			if(ground == GroudAddrGet()){
-				EletricPulseSetTime_S(3600);
+				SoundEventSet(SOUND_TYPE_CONTROL_ENABLE);
+				electricshockEnable = 1;
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_CLOSE_CTROL:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_DI);
+				electricshockEnable = 0;
 				EletricPulseSetTime_S(0);
 			}
 		break;
@@ -84,13 +97,15 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_GROUP_OPEN_CTROL:
 			if(ground == GroudAddrGet()){
-				EletricPulseSetTime_S(3600);
+				SoundEventSet(SOUND_TYPE_CONTROL_ENABLE);
+				electricshockEnable = 1;
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_UNLOCKING:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_DI);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
 			}
 		break;
@@ -98,6 +113,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_GROUP_UNLOCKING:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_DI);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
 			}
 		break;
@@ -105,6 +121,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_GROUP_POWER_HIGH:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_HIGH_LEVEL);
 			}
 		break;
@@ -112,6 +129,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_GROUP_POWER_MID:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_MID_LEVEL);
 			}
 		break;
@@ -119,6 +137,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_GROUP_POWER_LOW:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_LOW_LEVEL);
 			}
 		break;
@@ -126,6 +145,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_TERM_POWER_HIGH:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_HIGH_LEVEL);
 			}
 		break;
@@ -133,6 +153,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_TERM_POWER_MID:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_MID_LEVEL);
 			}
 		break;
@@ -140,6 +161,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_TERM_POWER_LOW:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_LOW_LEVEL);
 			}
 		break;
@@ -147,13 +169,15 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START:
 			if(ground == GetRadioSrcAddr()){
-				EletricPulseSetTime_S(3600);
+				SoundEventSet(SOUND_TYPE_DI_DI);
+				EletricPulseSetTime_S(ELECTRIC_SHOCK_TIME);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP:
 			if(ground == GetRadioSrcAddr()){
+				SoundEventSet(SOUND_TYPE_DI_DI);
 				EletricPulseSetTime_S(0);
 			}
 		break;
@@ -161,22 +185,23 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 
 		case RADIO_PRO_CMD_GROUP_SUBDUE_START:
 			if(ground == GroudAddrGet()){
-				EletricPulseSetTime_S(3600);
-
+				SoundEventSet(SOUND_TYPE_DI_DI);
+				EletricPulseSetTime_S(ELECTRIC_SHOCK_TIME);
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_GROUP_SUBDUE_STOP:
 			if(ground == GroudAddrGet()){
+				SoundEventSet(SOUND_TYPE_DI_DI);
 				EletricPulseSetTime_S(0);
-
 			}
 		break;
 
 
 		case RADIO_PRO_CMD_ALL_SUBDUE_START:
-			EletricPulseSetTime_S(3600);
+			EletricPulseSetTime_S(ELECTRIC_SHOCK_TIME);
+			SoundEventSet(SOUND_TYPE_DI_DI_DI);
 		break;
 #endif //S_C
 
@@ -254,8 +279,8 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_GROUND:
 				RadioCmdProcess(cmdType, bufTemp->dstAddr, gourndTemp);
 				if(bufTemp->dstAddr == GetRadioSrcAddr()){
-					Task_sleep(remaindTimes*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-					RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
+					// Task_sleep(remaindTimes*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+					// RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
 				}
 			break;
 
@@ -669,9 +694,10 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 #ifdef S_G
 
 	RadioSendBrocast();
-	Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
-	WdtClear();
-	return Semaphore_pend(recAckSemHandle, 7 * CLOCK_UNIT_S);
+	// Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
+	// WdtClear();
+	// return Semaphore_pend(recAckSemHandle, 7 * CLOCK_UNIT_S);
+	return true;
 #else
 	RadioSend();
 	return true;

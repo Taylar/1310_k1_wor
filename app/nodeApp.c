@@ -77,6 +77,7 @@ void NodeAppInit(void)
                      (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
                      g_rSysConfigInfo.DeviceId[3]);
 
+    GroudAddrSet(nodeParameter.customId);
     SetRadioSubSrcAddr(nodeParameter.customId );
     SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
 
