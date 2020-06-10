@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-08 19:04:37
+* @Last Modified time: 2020-06-10 14:24:26
 */
 #include "../general.h"
 
@@ -75,16 +75,7 @@ void ConcenterAppInit(void)
     // g_rSysConfigInfo.customId[1] = (uint8_t)(CUSTOM_ID_DEFAULT);
 // *******************************
 
-    SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
-                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
-                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
-                     g_rSysConfigInfo.DeviceId[3]);
-    SetRadioSubSrcAddr(0x00000000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-    SetRadioBrocastSrcAddr(RADIO_BROCAST_ADDRESS);
-
-    GroudAddrSet(0x00000000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-
-
+    SetRadioSrcAddr(RADIO_CONTROLER_ADDRESS);
 }
 
 

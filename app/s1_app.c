@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 17:47:09
+* @Last Modified time: 2020-06-10 14:27:57
 */
 #include "../general.h"
 
@@ -208,6 +208,8 @@ void S1AppRtcProcess(void)
         destroyEleShock = DestroyPinRead();
     }
 
+    // for test
+    // RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);
 }
 
 

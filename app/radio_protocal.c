@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 18:09:45
+* @Last Modified time: 2020-06-10 10:40:32
 */
 #include "../general.h"
 
@@ -20,7 +20,7 @@ radio_protocal_t   protocalTxBuf;
 uint8_t     concenterRemainderCache;
 bool nodeParaSetting = 0;
 
-uint32_t cmdType, cmdTypeWithRespon, cmdTypeGroud;
+uint16_t cmdType, cmdTypeWithRespon, cmdTypeGroud;
 uint32_t cmdEvent, cmdEventWithRespon, cmdEventGroud;
 uint32_t groundAddr;
 
@@ -201,7 +201,8 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	uint8_t len;
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
-    uint32_t cmdType;
+    uint16_t cmdType;
+    uint16_t remaindTimes;
     uint32_t gourndTemp;
 
 
@@ -217,10 +218,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	// SetRadioDstAddr(bufTemp->srcAddr);
 
-	HIBYTE_ZKS(HIWORD_ZKS(cmdType)) = bufTemp->load[0];
-    LOBYTE_ZKS(HIWORD_ZKS(cmdType)) = bufTemp->load[1];
-    HIBYTE_ZKS(LOWORD_ZKS(cmdType)) = bufTemp->load[2];
-    LOBYTE_ZKS(LOWORD_ZKS(cmdType)) = bufTemp->load[3];
+	HIBYTE_ZKS(remaindTimes) = bufTemp->load[0];
+	LOBYTE_ZKS(remaindTimes) = bufTemp->load[1];
+	HIBYTE_ZKS(cmdType)      = bufTemp->load[2];
+	LOBYTE_ZKS(cmdType)      = bufTemp->load[3];
 
     HIBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[4];
     LOBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[5];
@@ -251,16 +252,17 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			case RADIO_PRO_CMD_SINGLE:
 			case RADIO_PRO_CMD_GROUND:
-				RadioCmdProcess(cmdType, bufTemp->srcAddr, gourndTemp);
-				if(bufTemp->srcAddr == GetRadioSrcAddr()){
-					RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
+				RadioCmdProcess(cmdType, bufTemp->dstAddr, gourndTemp);
+				if(bufTemp->dstAddr == GetRadioSrcAddr()){
+					Task_sleep(remaindTimes*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+					RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
 				}
 			break;
 
 			
 			case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
 			case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
-				RadioCmdProcess(cmdType, bufTemp->srcAddr, gourndTemp);
+				RadioCmdProcess(cmdType, bufTemp->dstAddr, gourndTemp);
 			break;
 
 			default:
@@ -302,7 +304,7 @@ void NodeRadioSendSynReq(void)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendWithResp(uint32_t cmdType)
+void RadioSendWithResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
 
@@ -313,10 +315,10 @@ void RadioSendWithResp(uint32_t cmdType)
 
 	SetRadioDstAddr(protocalTxBuf.dstAddr);
 
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(LOWORD_ZKS(cmdType));
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(LOWORD_ZKS(cmdType)); 
+	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
+    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
@@ -336,7 +338,7 @@ void RadioSendWithResp(uint32_t cmdType)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendWithNoResp(uint32_t cmdType)
+void RadioSendWithNoResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
 
@@ -347,10 +349,10 @@ void RadioSendWithNoResp(uint32_t cmdType)
 
 	SetRadioDstAddr(protocalTxBuf.dstAddr);
 
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(LOWORD_ZKS(cmdType));
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(LOWORD_ZKS(cmdType)); 
+	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
+    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
@@ -369,7 +371,7 @@ void RadioSendWithNoResp(uint32_t cmdType)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendGroundWithResp(uint32_t cmdType)
+void RadioSendGroundWithResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
 
@@ -380,10 +382,10 @@ void RadioSendGroundWithResp(uint32_t cmdType)
 
 	SetRadioDstAddr(protocalTxBuf.dstAddr);
 
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(LOWORD_ZKS(cmdType));
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(LOWORD_ZKS(cmdType)); 
+	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
+    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
@@ -403,7 +405,7 @@ void RadioSendGroundWithResp(uint32_t cmdType)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendGroundWithNoResp(uint32_t cmdType)
+void RadioSendGroundWithNoResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
 
@@ -414,10 +416,10 @@ void RadioSendGroundWithNoResp(uint32_t cmdType)
 
 	SetRadioDstAddr(protocalTxBuf.dstAddr);
 
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(HIWORD_ZKS(cmdType));
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(LOWORD_ZKS(cmdType));
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(LOWORD_ZKS(cmdType)); 
+	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
+    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
+    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
@@ -438,8 +440,10 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	uint8_t len;
 	radio_protocal_t	*bufTemp;
-    uint32_t cmdType;
+    uint16_t cmdType;
+    uint16_t remaindTimes;
     uint32_t gourndTemp;
+
 
 
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
@@ -451,11 +455,11 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	ClearRadioSendBuf();
 
 	SetRadioDstAddr(bufTemp->srcAddr);
-
-	HIBYTE_ZKS(HIWORD_ZKS(cmdType)) = bufTemp->load[0];
-    LOBYTE_ZKS(HIWORD_ZKS(cmdType)) = bufTemp->load[1];
-    HIBYTE_ZKS(LOWORD_ZKS(cmdType)) = bufTemp->load[2];
-    LOBYTE_ZKS(LOWORD_ZKS(cmdType)) = bufTemp->load[3];
+	
+	HIBYTE_ZKS(remaindTimes) = bufTemp->load[0];
+	LOBYTE_ZKS(remaindTimes) = bufTemp->load[1];
+	HIBYTE_ZKS(cmdType)      = bufTemp->load[2];
+	LOBYTE_ZKS(cmdType)      = bufTemp->load[3];
 
     HIBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[4];
     LOBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[5];
@@ -670,7 +674,9 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	return Semaphore_pend(recAckSemHandle, 7 * CLOCK_UNIT_S);
 #else
 	RadioSend();
+	return true;
 #endif
+
 }
 
 

@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 17:59:47
+* @Last Modified time: 2020-06-10 14:13:07
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -428,16 +428,9 @@ void RadioAppTaskFxn(void)
 
     
     easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    g_rSysConfigInfo.rfBW            = FREQ_434_50;
 
-
-#ifdef SUPPORT_RARIO_SPEED_SET
-    // if((g_rSysConfigInfo.rfSF >> 4) > RADIO_EASYLINK_MODULATION_S1_OLD)
-    //     g_rSysConfigInfo.rfSF = RADIO_EASYLINK_MODULATION << 4;
-    // easyLink_params.ui32ModType = (EasyLink_PhyType)(g_rSysConfigInfo.rfSF >> 4);
-#endif // SUPPORT_RARIO_SPEED_SET
-
-    if((g_rSysConfigInfo.rfPA >> 4) < RADIO_MIN_POWER)
-        g_rSysConfigInfo.rfPA = RADIO_MIN_POWER << 4;
+    g_rSysConfigInfo.rfPA = (14 << 4);;
 
     if(EasyLink_init(&easyLink_params) != EasyLink_Status_Success){ 
         System_abort("EasyLink_init failed");
@@ -456,11 +449,6 @@ void RadioAppTaskFxn(void)
     g_rSysConfigInfo.rfStatus &= STATUS_1310_MASTER^0xFFFF;
 #endif // S_G//网关
 
-#ifdef S_C //节点
-// #if !defined(SUPPORT_BOARD_OLD_S2S_1)
-//             g_rSysConfigInfo.rfStatus &= ~STATUS_1310_MASTER;
-// #endif //!defined(SUPPORT_BOARD_OLD_S2S_1)
-#endif // S_C //节点
 
     if(g_rSysConfigInfo.rfStatus & STATUS_1310_MASTER)
     {
@@ -496,6 +484,8 @@ void RadioAppTaskFxn(void)
         ConcenterAppInit();
     }
 
+    // 等待射频内核初始化完成
+    Task_sleep(100 * CLOCK_UNIT_MS);
 
 
 
@@ -581,10 +571,10 @@ void RadioAppTaskFxn(void)
             Radio_setRxModeRfFrequency();
 
             radioStatus = RADIOSTATUS_RECEIVING;
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(100));
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(BROCAST_TIME_MS*2));
             RadioReceiveData();
             // 防止有其他指令打断该接收，使其产生不了超时中断
-            Task_sleep(102*CLOCK_UNIT_MS);
+            Task_sleep(BROCAST_TIME_MS*CLOCK_UNIT_MS);
 
         }
 
@@ -669,10 +659,10 @@ void RadioAppTaskFxn(void)
 
             //if(RadioCheckRssi() > -80)
             {
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(120));
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(2*BROCAST_TIME_MS));
                 RadioReceiveData();
                 // 防止有其他指令打断该接收，使其不能完整接收一个数据包
-                Task_sleep(122*CLOCK_UNIT_MS);
+                Task_sleep(2*BROCAST_TIME_MS*CLOCK_UNIT_MS);
             }
         }
 
@@ -680,25 +670,27 @@ void RadioAppTaskFxn(void)
 
         if(events & RADIO_EVT_WAKEUP_SEND)
         {
-            ClearRadioSendBuf();
+            
             if(RadioWithNoRes_GroudPack() != 0){
-                brocastTimes = 20;
+                brocastTimes = MAX_BROCAST_TIMES;
                 while(brocastTimes){
                     brocastTimes--;
+                    ClearRadioSendBuf();
+                    RadioWithNoRes_GroudPack();
                     RadioSendData();
                 }
                 RadioCmdClearWithNoRespon_Groud();
 
             }
-
-            ClearRadioSendBuf();
+            
             if(RadioWithResPack() != 0){
-                brocastTimes = 20;
+                brocastTimes = MAX_BROCAST_TIMES;
                 while(brocastTimes){
                     brocastTimes--;
+                    ClearRadioSendBuf();
+                    RadioWithResPack();
                     RadioSendData();
                 }
-                RadioCmdClearWithRespon();
 
             }
 
@@ -706,10 +698,9 @@ void RadioAppTaskFxn(void)
 #ifdef BOARD_S6_6
             Radio_setRxModeRfFrequency();
 
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 2*BROCAST_TIME_MS*CLOCK_UNIT_MS);
             radioStatus = RADIOSTATUS_RECEIVING;
             RadioReceiveData();
-            Task_sleep(240*CLOCK_UNIT_MS);
             
 #endif //BOARD_S6_6
         }
@@ -728,7 +719,6 @@ void RadioAppTaskFxn(void)
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
             radioStatus = RADIOSTATUS_RECEIVING;
             RadioReceiveData();
-            Task_sleep(102*CLOCK_UNIT_MS);
 #endif //BOARD_S6_6
 
         }

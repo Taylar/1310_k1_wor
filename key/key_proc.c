@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-01-10 14:38:28
+* @Last Modified time: 2020-06-09 18:38:15
 */
 
 #include "../general.h"
@@ -139,8 +139,10 @@ void KeySetP1InP0Out(void)
 static void KeyIcInit(void)
 {
     uint8_t controlReg;
-    PIN_setOutputValue(keyResHandle, Board_BUTTON_RES, 1);
+    PIN_setOutputValue(keyResHandle, Board_BUTTON_RES, 0);
     Task_sleep(10 * CLOCK_UNIT_MS);
+    PIN_setOutputValue(keyResHandle, Board_BUTTON_RES, 1);
+    Task_sleep(100 * CLOCK_UNIT_MS);
 
     I2C_bytewrite(KEY_IC_ADDR << 1, 0x12, 0XFF); //设置P0口为gpio模式
     I2C_bytewrite(KEY_IC_ADDR << 1, 0x13, 0XFF); //设置P1口为gpio模式

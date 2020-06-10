@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-//#define ZKS_S3_WOR
-#define ZKS_S6_6_WOR_G
+#define ZKS_S3_WOR
+// #define ZKS_S6_6_WOR_G
 
 //***********************************************************************************
 //
@@ -484,6 +484,7 @@ error
 #define CONFIG_DECEIVE_ID_DEFAULT       0XFFFFFFFA
 #define RADIO_UPGRADE_ADDRESS           0x99999999
 #define RADIO_BROCAST_ADDRESS           0x00000000
+#define RADIO_CONTROLER_ADDRESS           0x0000FFDD
 
 #define DECEIVE_ID_DEFAULT              0X00008886
 
@@ -841,7 +842,7 @@ EXTERN_ATTR uint8_t openBoxOccur;
 
 EXTERN_ATTR uint8_t gatewayConfigTime;
 
-EXTERN_ATTR uint8_t brocastTimes;
+EXTERN_ATTR uint16_t brocastTimes;
 
 EXTERN_ATTR uint8_t destroyEleShock;
 
