@@ -106,9 +106,9 @@
 
 
 #define FLASH_LOG_POS               (FLASH_SYS_CONFIG_BAK_INFO_POS + FLASH_SYS_CONFIG_BAK_AREA_SIZE)
-#define FLASH_LOG_SIZE              (32)
+#define FLASH_LOG_SIZE              (64)
 #ifdef SUPPORT_FLASH_LOG
-#define FLASH_LOG_AREA_SIZE         (FLASH_SECTOR_SIZE*2)           //8KB
+#define FLASH_LOG_AREA_SIZE         (FLASH_SECTOR_SIZE*2*8)           //8KB
 #else
 #define FLASH_LOG_AREA_SIZE         (0)
 #endif
@@ -119,7 +119,7 @@
 #define FLASH_ALARM_RECODRD_POS               (FLASH_LOG_POS + FLASH_LOG_AREA_SIZE)
 #define FLASH_ALARM_RECODRD_SIZE              (16)
 #ifdef SUPPORT_ALARM_RECORD_QURERY
-#define FLASH_ALARM_RECODRD_AREA_SIZE         (FLASH_SECTOR_SIZE*2)           //8KB
+#define FLASH_ALARM_RECODRD_AREA_SIZE         (FLASH_SECTOR_SIZE*2*8)           //8KB
 #else
 #define FLASH_ALARM_RECODRD_AREA_SIZE         (0)
 #endif

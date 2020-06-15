@@ -320,6 +320,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_DISP)
 		{
         	Disp_proc();
+        	KeyIcInit();
         	if(!g_firstStartFlag)
         	{
         	   g_firstStartFlag=!g_firstStartFlag;

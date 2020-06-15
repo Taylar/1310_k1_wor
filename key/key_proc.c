@@ -136,7 +136,7 @@ void KeySetP1InP0Out(void)
 }
 
 
-static void KeyIcInit(void)
+void KeyIcInit(void)
 {
     uint8_t controlReg;
     PIN_setOutputValue(keyResHandle, Board_BUTTON_RES, 0);
