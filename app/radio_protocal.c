@@ -27,6 +27,100 @@ uint32_t groundAddr;
 uint16_t sendRetryTimes;
 #define         RETRY_TIMES     3
 
+#ifdef ZKS_S6_6_WOR_G
+#define ADD_TO_GROUP      "Add group"
+#define DELETE_FROM_GROUP "Delete group"
+#define TERM_TEST         "Term test"
+#define GROUP_TEST        "Group test"
+#define TERM_CLOSE         ""
+static void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
+{
+    uint8_t buff[32] = {0},index = 0;
+   switch(cmd)
+   {
+      case RADIO_PRO_CMD_TERM_ADD_TO_GROUP:
+           sprintf((char*)buff,"%s","Add group ");
+           break;
+      case RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP:
+          sprintf((char*)buff,"%s","Delete group ");
+          break;
+      case RADIO_PRO_CMD_TERM_TEST:
+          sprintf((char*)buff,"%s","Term test ");
+          break;
+      case RADIO_PRO_CMD_GROUP_TEST:
+          sprintf((char*)buff,"%s","Group test ");
+          break;
+      case RADIO_PRO_CMD_TERM_CLOSE_CTROL:
+          sprintf((char*)buff,"%s","Term close ");
+          break;
+      case RADIO_PRO_CMD_TERM_OPEN_CTROL:
+          sprintf((char*)buff,"%s","Term open ");
+          break;
+      case RADIO_PRO_CMD_GROUP_CLOSE_CTROL:
+          sprintf((char*)buff,"%s","Group close ");
+          break;
+      case RADIO_PRO_CMD_GROUP_OPEN_CTROL:
+          sprintf((char*)buff,"%s","Group open ");
+          break;
+      case RADIO_PRO_CMD_TERM_UNLOCKING:
+          sprintf((char*)buff,"%s","Term unlock ");
+          break;
+      case RADIO_PRO_CMD_GROUP_UNLOCKING:
+          sprintf((char*)buff,"%s","Group unlock ");
+          break;
+      case RADIO_PRO_CMD_GROUP_POWER_HIGH:
+          sprintf((char*)buff,"%s","G Power high ");
+          break;
+      case RADIO_PRO_CMD_GROUP_POWER_MID:
+          sprintf((char*)buff,"%s","G Power mid ");
+          break;
+      case RADIO_PRO_CMD_GROUP_POWER_LOW:
+          sprintf((char*)buff,"%s","G Power low ");
+          break;
+      case RADIO_PRO_CMD_TERM_POWER_HIGH:
+          sprintf((char*)buff,"%s","T Power high ");
+          break;
+      case RADIO_PRO_CMD_TERM_POWER_MID:
+          sprintf((char*)buff,"%s","T Power mid ");
+          break;
+      case RADIO_PRO_CMD_TERM_POWER_LOW:
+          sprintf((char*)buff,"%s","T Power low ");
+          break;
+
+      case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START:
+           sprintf((char*)buff,"%s","Term subdue start ");
+          break;
+      case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP:
+           sprintf((char*)buff,"%s","Term subdue stop ");
+          break;
+
+      case RADIO_PRO_CMD_GROUP_SUBDUE_START:
+          sprintf((char*)buff,"%s","group subdue start ");
+          break;
+      case RADIO_PRO_CMD_GROUP_SUBDUE_STOP:
+          sprintf((char*)buff,"%s","group subdue stop ");
+          break;
+      case RADIO_PRO_CMD_ALL_SUBDUE_START:
+          sprintf((char*)buff,"%s","All subdue 制服所有");
+          break;
+
+   }
+   index = strlen((char*)buff);
+   buff[index++] =  'T';
+   buff[index++] =   deviceId/1000+0x30;
+   buff[index++]  =  deviceId%1000/100+0x30;
+   buff[index++]  =  deviceId%100/10+0x30;
+   buff[index++]  =  deviceId%10 + 0x30;
+   buff[index++] =  'G';
+   buff[index++] =   groupId/1000+0x30;
+   buff[index++]  =  groupId%1000/100+0x30;
+   buff[index++]  =  groupId%100/10+0x30;
+   buff[index++]  =  groupId%10 + 0x30;
+   buff[index++]  =  '\n';
+   Flash_log(buff);
+}
+#endif
+
 void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground)
 {
 	switch(cmdType){
@@ -650,6 +744,10 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
 
+#ifdef ZKS_S6_6_WOR_G
+    log_opration_record(cmd,dstAddr,ground);
+#endif
+
 	return true;
 }
 
@@ -697,6 +795,9 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	// Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
 	// WdtClear();
 	// return Semaphore_pend(recAckSemHandle, 7 * CLOCK_UNIT_S);
+#ifdef ZKS_S6_6_WOR_G
+    log_opration_record(cmd,dstAddr,ground);
+#endif
 	return true;
 #else
 	RadioSend();

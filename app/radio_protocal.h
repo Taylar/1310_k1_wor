@@ -44,6 +44,14 @@
 
 #define     RADIO_PRO_CMD_ALL_SUBDUE_START          25             //全员制服
 //#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                        //定员停止
+#define     RADIO_PRO_CMD_TERM_CLOSE_BLOCKING       26             //关闭防塞
+#define     RADIO_PRO_CMD_TERM_OPEN_BLOCKING        27             //打开防塞
+
+#define     RADIO_PRO_CMD_TERM_CLOSE_BLOCKING       26             //关闭防塞
+#define     RADIO_PRO_CMD_TERM_OPEN_BLOCKING        27             //打开防塞
+
+#define     RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE        28             //打开防塞
+#define     RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE       29             //打开防塞
 
 
 #define     RADIO_PRO_CMD_ALL_RESP          		31             //命令应答

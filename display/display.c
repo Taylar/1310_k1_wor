@@ -261,7 +261,7 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
-        case ICON_72X24_ADD_ARR ... ICON_72X24_GROUP_SUBDUE:
+        case ICON_72X24_ADD_ARR ... ICON_72X24_NOT_NEED_INPUT:
             if (light) {
                 Lcd_write_character(col, row, &menu72x24[(icon - ICON_72X24_ADD_ARR) * FONT_72X24_OFS]);
             } else {

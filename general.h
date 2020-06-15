@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-#define ZKS_S3_WOR
-// #define ZKS_S6_6_WOR_G
+// #define ZKS_S3_WOR
+ #define ZKS_S6_6_WOR_G
 
 //***********************************************************************************
 //

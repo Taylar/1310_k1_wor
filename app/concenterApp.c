@@ -327,7 +327,7 @@ void ConcenterRtcProcess(void)
 void ConcenterResetRadioState(void)
 {
     concenterParameter.noRecCnt++;
-    Flash_log("NoRec\n");
+    //Flash_log("NoRec\n");
     if(concenterParameter.noRecCnt > 3){
         SystemResetAndSaveRtc();
         concenterParameter.noRecCnt = 0;
