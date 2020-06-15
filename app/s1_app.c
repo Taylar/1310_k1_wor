@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-10 15:55:18
+* @Last Modified time: 2020-06-14 15:47:50
 */
 #include "../general.h"
 
@@ -193,22 +193,25 @@ void S1AppRtcProcess(void)
 
 
     Battery_porcess();
-    // if(Battery_get_voltage() < 3600){
-    //     if((lowBatCnt == 0) || (lowBatCnt >= 3600)){
-    //         SoundEventSet(SOUND_TYPE_LOW_BAT);
-    //         lowBatCnt = 1;
-    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-    //     }
-    //     lowBatCnt++;
-    // }else{
-    //     lowBatCnt = 0;
-    // }
+    if(Battery_get_voltage() < 3600){
+        if((lowBatCnt == 0) || (lowBatCnt >= 30)){
+            SoundEventSet(SOUND_TYPE_LOW_BAT);
+            lowBatCnt = 1;
+            RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+        }
+        lowBatCnt++;
+    }else{
+        lowBatCnt = 0;
+    }
 
 
+    destroyEleShock = DestroyPinRead();
     if(destroyEleShock){
-        EletricPulseSetTime_S(1);
-        RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, NULL);
-        destroyEleShock = DestroyPinRead();
+        if(destroyEleShock){
+            EletricPulseSetTime_S(1);
+            RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, NULL);
+            SoundEventSet(SOUND_TYPE_DESTROYED);
+        } 
     }
 
     // for test

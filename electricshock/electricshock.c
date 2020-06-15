@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-10 15:43:44
+* @Last Modified time: 2020-06-14 15:45:39
 */
 #include "../general.h"
 
@@ -167,7 +167,7 @@ void EletricPulseSetTime_S(uint16_t keepTime_S)
     }
 }
 
-#define     INSERT_DECTECT_VALUE        3000
+#define     INSERT_DECTECT_VALUE        2700
 ADC_Handle   preventInsertHandle;
 uint8_t     insertOccur = 0;
 
@@ -190,6 +190,7 @@ void ElecPreventInsertMeasure(void)
 
     eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
     eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
+    Task_sleep(100 * CLOCK_UNIT_MS);
     ADC_convert(preventInsertHandle, &temp);
     volvalue    = ADC_convertToMicroVolts(preventInsertHandle, temp);
     if(volvalue > INSERT_DECTECT_VALUE)
@@ -197,8 +198,8 @@ void ElecPreventInsertMeasure(void)
     else
         insertOccur = 0;
 
-    eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
-    eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+    // eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
+    // eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
 }
 
 
@@ -420,6 +421,8 @@ void ElectricShockInit(void)
     eleShockProcessClkHandle = Clock_handle(&eleShockProcessClk);
     Clock_setTimeout(eleShockProcessClkHandle, LED_PERIOD_CLOCK_TIME_MS * CLOCK_UNIT_MS);
     Clock_setPeriod(eleShockProcessClkHandle, LED_PERIOD_CLOCK_TIME_MS * CLOCK_UNIT_MS);
+
+    destroyEleShock = 1;
 }
 
 
