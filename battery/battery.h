@@ -14,15 +14,7 @@
 #ifdef SUPPORT_BATTERY
 
 //Battery voltage (mV)
-#ifdef  BOARD_S3
 
-#define BAT_VOLTAGE_LOW             2150
-#define BAT_VOLTAGE_L1              2500
-#define BAT_VOLTAGE_L2              2800
-#define BAT_VOLTAGE_L3              3050
-#define BAT_VOLTAGE_FULL            3100
-
-#else
 
 #define BAT_VOLTAGE_LOW             3600
 #define BAT_VOLTAGE_L1              3750
@@ -30,7 +22,6 @@
 #define BAT_VOLTAGE_L3              4050
 #define BAT_VOLTAGE_FULL            4200
 
-#endif
 
 extern void Battery_init(void);
 extern void Battery_voltage_measure(void);
