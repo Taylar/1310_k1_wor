@@ -119,6 +119,7 @@ KEY_CODE_E Key_get(void);
 #ifdef BOARD_S6_6
 void KeyScanFxn(void);
 void KeyIcInit(void);
+void gpio_power_en_config(void);
 #endif //BOARD_S6_6
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */

@@ -261,14 +261,14 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
-        case ICON_72X24_ADD_ARR ... ICON_72X24_NOT_NEED_INPUT:
+        case ICON_72X24_ADD_ARR ... ICON_72X24_TIME_SETTING:
             if (light) {
                 Lcd_write_character(col, row, &menu72x24[(icon - ICON_72X24_ADD_ARR) * FONT_72X24_OFS]);
             } else {
                 Lcd_clear_area(col, row);
             }
             break;
-        case ICON_36X24_COMPLETE...ICON_36X24_CLEAR:
+        case ICON_36X24_COMPLETE...ICON_36X24_SECOND:
             if (light) {
                 Lcd_write_character(col, row, &menu36x24[(icon - ICON_36X24_COMPLETE) * FONT_36X24_OFS]);
             } else {
