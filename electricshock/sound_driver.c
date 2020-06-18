@@ -3,7 +3,7 @@
 
 #define SOUND_DATA_PIN                                IOID_25     //澹伴煶鏁版嵁绾�
 
-#define SOUND_BUSY_PIN                             	  IOID_25      //澹伴煶鐘舵�佺嚎
+#define SOUND_BUSY_PIN                             	  IOID_24      //澹伴煶鐘舵�佺嚎
 
 #define SOUND_STATE_BUSY							1
 #define SOUND_STATE_IDLE							0

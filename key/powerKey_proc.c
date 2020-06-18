@@ -16,7 +16,7 @@ static PIN_State   PwrkeyState;
 static PIN_Handle  PwrkeyHandle;
 
 #define Board_BUTTON_POWER_EN       IOID_1
-#define Board_BUTTON_POWER_INIT IOID_24
+#define Board_BUTTON_POWER_INIT     IOID_24
 
 const PIN_Config keyPinTable1[] = {
      Board_BUTTON_POWER_INIT | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* key isr enable          */

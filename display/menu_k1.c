@@ -1766,7 +1766,19 @@ void Menu_not_wearing_well_display(uint32_t devicesId)
 
 }
 
+void Menu_term_is_destroyed(uint32_t devicesId)
+{
+    uint8_t numbuff[10] = {0};
+    Lcd_clear_screen();
+    Lcd_set_font(72, 24, 1);
+    Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+    Lcd_set_font(8, 16, 1);
+    sprintf((char*)numbuff,"%d",devicesId);
+    Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+    Lcd_set_font(72, 24, 1);
+    Disp_icon(START_X_LINE,2,ICON_72X24_DESTORYED,1);
 
+}
 
 static void menu_setting_time( )
 {
