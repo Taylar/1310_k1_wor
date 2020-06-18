@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-10 14:24:26
+* @Last Modified time: 2020-06-16 16:19:08
 */
 #include "../general.h"
 
@@ -45,7 +45,14 @@ extflash_queue_s extflashWriteQ;
 
 /***** Function definitions *****/
 
+Clock_Struct periodWakeupClock;     /* not static so you can see in ROV */
 
+Clock_Handle periodWakeupClockHandle;
+
+void PeridoWakeupCb(UArg arg0)
+{
+    RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_WAKEUP,NULL,RADIO_CONTROLER_ADDRESS);
+}
 
 //***********************************************************************************
 // brief:   init the concenter upload timer
@@ -54,6 +61,14 @@ extflash_queue_s extflashWriteQ;
 //***********************************************************************************
 void ConcenterAppInit(void)
 {
+    Clock_Params clkParams;
+    Clock_Params_init(&clkParams);
+    clkParams.period = 5000 * CLOCK_UNIT_MS;
+    clkParams.startFlag = TRUE;
+    Clock_construct(&periodWakeupClock, PeridoWakeupCb, 5000 * CLOCK_UNIT_MS, &clkParams);
+    periodWakeupClockHandle = Clock_handle(&periodWakeupClock);
+
+
 
     concenterParameter.channelDispath = 0;
     concenterParameter.monitorCnt     = 0;
@@ -70,9 +85,6 @@ void ConcenterAppInit(void)
     // g_rSysConfigInfo.DeviceId[1] = (uint8_t)((DECEIVE_ID_DEFAULT>>16)&0xff);
     // g_rSysConfigInfo.DeviceId[2] = (uint8_t)((DECEIVE_ID_DEFAULT>>8)&0xff);
     // g_rSysConfigInfo.DeviceId[3] = (uint8_t)((DECEIVE_ID_DEFAULT)&0xff);;
-
-    // g_rSysConfigInfo.customId[0] = (uint8_t)(CUSTOM_ID_DEFAULT >> 8);
-    // g_rSysConfigInfo.customId[1] = (uint8_t)(CUSTOM_ID_DEFAULT);
 // *******************************
 
     SetRadioSrcAddr(RADIO_CONTROLER_ADDRESS);
@@ -290,20 +302,7 @@ uint8_t ConcenterReadSynTimeFlag(void)
     return concenterParameter.synTimeFlag;
 }
 
-
-
-//***********************************************************************************
-// brief:
-// 
-// parameter: 
-//***********************************************************************************
-void ConcenterRadioMonitorClear(void)
-{
-    concenterParameter.monitorCnt = 0;
-    concenterParameter.noRecCnt   = 0;
-}
-
-
+uint8_t   rtcReadCnt;
 //***********************************************************************************
 // brief:the concenter rtc process
 // 
@@ -311,12 +310,11 @@ void ConcenterRadioMonitorClear(void)
 //***********************************************************************************
 void ConcenterRtcProcess(void)
 {
-    concenterParameter.monitorCnt++;
-    if(concenterParameter.monitorCnt >= g_rSysConfigInfo.uploadPeriod+10)
-    {
-        Sys_event_post(SYSTEMAPP_EVT_CONCENTER_MONITER);
+    rtcReadCnt++;
+    if(rtcReadCnt >= 60){
+        rtcReadCnt = 0;
+        Sys_event_post(SYSTEMAPP_EVT_RTC_READ);
     }
-
 }
 
 //***********************************************************************************
@@ -324,22 +322,11 @@ void ConcenterRtcProcess(void)
 // 
 // parameter: 
 //***********************************************************************************
-void ConcenterResetRadioState(void)
+void ConcenterRtcRead(void)
 {
-    concenterParameter.noRecCnt++;
-    //Flash_log("NoRec\n");
-    if(concenterParameter.noRecCnt > 3){
-        SystemResetAndSaveRtc();
-        concenterParameter.noRecCnt = 0;
-    }
-
-    ConcenterRadioMonitorClear();
-    RadioAbort();
-    // RadioSetRxMode();
-    SetRadioDstAddr(0xdadadada);
-    g_rSysConfigInfo.sysState.lora_send_errors ++;
-    Flash_store_config();
-    RadioEventPost(RADIO_EVT_SEND_CONFIG);
+    Calendar calendarTemp;
+    calendarTemp = read_time_from_sd30xx();
+    Rtc_set_calendar(&calendarTemp);
 }
 
 

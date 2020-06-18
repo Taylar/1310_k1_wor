@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-//#define ZKS_S3_WOR
-#define ZKS_S6_6_WOR_G
+#define ZKS_S3_WOR
+// #define ZKS_S6_6_WOR_G
 
 
 //***********************************************************************************
@@ -95,7 +95,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0001
+#define FW_VERSION              0x0002
 
 //***********************************************************************************
 //
@@ -137,18 +137,18 @@
 #define  ZKS_PROJECT              //ZKS
 
 #ifdef ZKS_PROJECT
-#define         COMPANY_NAME                "ZKS"
+#define         COMPANY_NAME                "NONE"
 #elif defined( HAIER_PROJECT)
-#define         COMPANY_NAME                "HAIER"
+#define         COMPANY_NAME                ""
 #else
 error project name
 #endif
 
 
 #ifdef BOARD_S6_6
-#define         BOARD_NAME              "_S6_6"
+#define         BOARD_NAME              "_K1"
 #elif defined( BOARD_S3)
-#define         BOARD_NAME              "_S3"
+#define         BOARD_NAME              "_K1"
 #else
 error borad name
 #endif
@@ -394,9 +394,9 @@ error
 #define CONCENTER_MAX_CHANNEL       100
 
 #ifdef  SUPPORT_SHT2X
-#define SENSOR_TYPE_NAME                    "_SHT20"
+#define SENSOR_TYPE_NAME                    ""
 #else
-#define SENSOR_TYPE_NAME                    "_SHT30"
+#define SENSOR_TYPE_NAME                    ""
 #endif  // SUPPORT_SHT2X
 
 #undef  PROJECT_NAME
@@ -451,7 +451,7 @@ error
 #endif // ZKS_S6_6_CONFIG
 
 #ifdef SUPPORT_CHARGE_DECT
-#define         CHARGE_FUNC                 "_CHR"
+#define         CHARGE_FUNC                 ""
 #else
 #define         CHARGE_FUNC                 ""
 #endif //  SUPPORT_CHARGE_DECT
@@ -624,6 +624,14 @@ error
 #define         RADIO_ABORT_ERROR               0X0010
 #define         RADIO_FREQ_SWITCH_ERROR         0X0020
 
+
+//***********************************************************************************
+//electric function define.
+//***********************************************************************************
+#define 		ELE_FUNC_ENABLE_PREVENT_INSERT          		0X00000001
+#define 		ELE_FUNC_ENABLE_PREVENT_ESCAPE	         		0X00000002
+#define 		ELE_FUNC_ENABLE_SHOCK			         		0X00000004
+
 //***********************************************************************************
 //
 //system event define.
@@ -682,8 +690,9 @@ typedef struct {
 	uint16_t size;
 	uint16_t swVersion;
 	uint8_t DeviceId[4];
-	uint8_t customId[2];
-
+	uint8_t customId[4];
+	uint8_t electricLevel;
+	uint32_t electricFunc;
     //Status Flag
 	uint16_t status;
     //Module config
@@ -769,6 +778,7 @@ typedef struct {
 
 #ifdef   SOFT_I2C_BUS
 #include "driver/soft_i2c_drv.h"
+#include "driver/soft_i2c_drv_2.h"
 #else
 #include "driver/i2c_drv.h"
 #endif
@@ -784,6 +794,7 @@ typedef struct {
 #include "key/key_proc.h"
 #include "electricshock/electricshock.h"
 #include "electricshock/sound_driver.h"
+#include "electricshock/rtc_sd3078.h"
 #include "display/display.h"
 #include "display/menu.h"
 #include "display/menu_k1.h"
@@ -848,6 +859,8 @@ EXTERN_ATTR uint16_t brocastTimes;
 EXTERN_ATTR uint8_t destroyEleShock;
 
 EXTERN_ATTR uint8_t electricshockEnable;
+
+EXTERN_ATTR uint16_t escapeTimeCnt;
 
 extern uint8_t deviceMode;
 

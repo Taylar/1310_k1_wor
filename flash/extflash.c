@@ -432,10 +432,10 @@ void Flash_init(void)
     Semaphore_post(spiSemHandle);
 
     // Init the config
-    //if(Flash_load_config() == false)
+    if(Flash_load_config() == false)
     {
         Sys_config_reset();
-        //Flash_store_config();
+        Flash_store_config();
     }
 
     
@@ -567,7 +567,7 @@ static void Flash_store_sensor_link2_ptr(void)
 // Flash load sensor data pointer.
 //
 //***********************************************************************************
-static void Flash_load_sensor_ptr(void)
+void Flash_load_sensor_ptr(void)
 {
     uint8_t ret;
     uint32_t i;
@@ -1038,7 +1038,7 @@ static void Flash_store_deviced_state_ptr(void)
 // Flash load sensor data pointer.
 //
 //***********************************************************************************
-static void Flash_load_deviced_state_ptr(void)
+void Flash_load_deviced_state_ptr(void)
 {
     uint8_t ret;
     uint32_t i;

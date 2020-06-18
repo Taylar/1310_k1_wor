@@ -7,7 +7,7 @@
 #define         SYSTEMAPP_EVT_KEY                       Event_Id_00
 #define         SYSTEMAPP_EVT_KEY_LONG                  Event_Id_01
 #define         SYSTEMAPP_EVT_KEY_DOUBLE                Event_Id_02
-#define         SYSTEMAPP_EVT_CONCENTER_MONITER         Event_Id_03
+#define         SYSTEMAPP_EVT_RTC_READ         			Event_Id_03
 #define         SYSTEMAPP_EVT_STORE_CONCENTER           Event_Id_04
 #define         SYSTEMAPP_EVT_USBINT                    Event_Id_05
 #define         SYSTEMAPP_EVT_RADIO_ABORT				Event_Id_06

@@ -63,7 +63,10 @@ void NodeAppInit(void)
     offsetUnit                   = 0;
 
 
-    nodeParameter.customId       = 0x00000000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1];
+    nodeParameter.customId       = (((uint32_t)(g_rSysConfigInfo.customId[0])) << 24) |
+                                    (((uint32_t)(g_rSysConfigInfo.customId[1])) << 16) |
+                                    (((uint32_t)(g_rSysConfigInfo.customId[2])) << 8) |
+                                    g_rSysConfigInfo.customId[3];
 
 
     Semaphore_Params semParams;

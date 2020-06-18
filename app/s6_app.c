@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-08 16:52:42
+* @Last Modified time: 2020-06-16 11:34:01
 */
 #include "../general.h"
 
@@ -246,6 +246,7 @@ void S6HwInit(void)
     BatAlarmClkHandle = Clock_handle(&BatAlarmClkStruct);
 
     I2c_init();
+    I2c_init_2();
 
 	KeyInit();
 

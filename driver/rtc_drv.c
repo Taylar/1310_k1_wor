@@ -154,8 +154,10 @@ void RtcInit(void (*Cb)(void))
     clkParams.startFlag = FALSE;
     Clock_construct(&rtcSecondsClock, RtcSecondsIsrCb, 1, &clkParams);
     rtcSecondsClockHandle = Clock_handle(&rtcSecondsClock);
-    
-    rtc = g_rSysConfigInfo.rtc;
+
+#ifdef S_G
+    rtc = read_time_from_sd30xx();
+#endif //S_G
     /*
     rtc.Year       = g_rSysConfigInfo.rtc.Year;
     rtc.Month      = 1;
@@ -203,12 +205,12 @@ void RtcStop(void)
 void Rtc_set_calendar(Calendar *currentTime)
 {
     UInt key;
-
     key = Hwi_disable();
     memcpy(&rtc, currentTime, sizeof(Calendar));
+#ifdef S_G
+    write_time_to_sd30xx(rtc);
+#endif //S_G
     Hwi_restore(key);
-
-
 }
 
 //***********************************************************************************

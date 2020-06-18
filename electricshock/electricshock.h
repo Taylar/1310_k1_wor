@@ -50,6 +50,9 @@ extern void eleShock_toggle(uint8_t ledId);
 extern void ElectricShockInit(void);
 extern uint8_t DestroyPinRead(void);
 
+extern void ElectricShockPowerEnable(void);
+
+extern void ElectricShockPowerDisable(void);
 
 void ElectricShockLevelSet(uint8_t level);
 

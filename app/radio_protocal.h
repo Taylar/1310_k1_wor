@@ -47,14 +47,14 @@
 #define     RADIO_PRO_CMD_TERM_CLOSE_BLOCKING       26             //关闭防塞
 #define     RADIO_PRO_CMD_TERM_OPEN_BLOCKING        27             //打开防塞
 
-#define     RADIO_PRO_CMD_TERM_CLOSE_BLOCKING       26             //关闭防塞
-#define     RADIO_PRO_CMD_TERM_OPEN_BLOCKING        27             //打开防塞
-
-#define     RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE        28             //打开防塞
-#define     RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE       29             //打开防塞
+#define     RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE        28             //打开防逃
+#define     RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE       29             //关闭防逃
 
 
-#define     RADIO_PRO_CMD_ALL_RESP          		31             //命令应答
+#define     RADIO_PRO_CMD_ALL_WAKEUP          		30             //唤醒设备，用于防逃的
+
+
+#define     RADIO_PRO_CMD_ALL_RESP          		63             //命令应答
 
 // radio protocal cmd
 #define     RADIO_PRO_CMD_SYN_TIME_REQ              0XB1

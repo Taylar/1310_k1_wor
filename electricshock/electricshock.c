@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-14 15:45:39
+* @Last Modified time: 2020-06-16 17:06:21
 */
 #include "../general.h"
 
@@ -423,6 +423,17 @@ void ElectricShockInit(void)
     Clock_setPeriod(eleShockProcessClkHandle, LED_PERIOD_CLOCK_TIME_MS * CLOCK_UNIT_MS);
 
     destroyEleShock = 1;
+
+    
+    ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
+    if(g_rSysConfigInfo.electricFunc | ELE_FUNC_ENABLE_SHOCK){
+        electricshockEnable = 1;
+        ElectricShockPowerEnable();
+    }
+    else{
+        electricshockEnable = 0;
+        ElectricShockPowerDisable();
+    }
 }
 
 

@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-08 16:52:16
+* @Last Modified time: 2020-06-18 16:37:56
 */
 #include "../general.h"
 //#include "../radio_app/radio_app.h"
@@ -190,7 +190,8 @@ void InterfaceTaskFxn(void)
     Task_sleep(10 * CLOCK_UNIT_MS);
 
     interfaceFlag       = FALSE;
-
+    uart0RxData.buff[0]  = (uint8_t)PROJECT_INFO_NAME[0];
+    uart0RxData.buff[0]  = (uint8_t)PROJECT_INFO_VERSION;
     for(;;)
     {
         eventId = Event_pend(interfaceEvtHandle, 0, INTERFACE_EVT_ALL, BIOS_WAIT_FOREVER);

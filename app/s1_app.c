@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-14 15:47:50
+* @Last Modified time: 2020-06-18 16:07:46
 */
 #include "../general.h"
 
@@ -67,111 +67,6 @@ void S1HwInit(void)
 }
 
 
-
-
-//***********************************************************************************
-// brief:the node short key application
-// 
-// parameter: 
-//***********************************************************************************
-void S1ShortKeyApp(void)
-{
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        break;
-
-        case DEVICES_OFF_MODE:
-
-        break;
-
-        case DEVICES_CONFIG_MODE:
-
-        break;
-
-    }
-}
-
-//***********************************************************************************
-// brief:the node long key application
-// 
-// parameter: 
-//***********************************************************************************
-void S1LongKeyApp(void)
-{
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        case DEVICES_CONFIG_MODE:
-        if(!(g_rSysConfigInfo.status & STATUS_HIDE_PWOF_MENU))
-        {
-            g_rSysConfigInfo.sysState.wtd_restarts &= (0xFFFF^STATUS_POWERON);
-        }
-        S1Sleep();
-
-        g_rSysConfigInfo.rtc = Rtc_get_calendar();
-        Flash_store_config();
-        Task_sleep(3000 * CLOCK_UNIT_MS);
-        if(STATUS_POWERON_RESET_DATA & g_rSysConfigInfo.status)
-            Flash_reset_all();
-        SysCtrlSystemReset();
-        break;
-
-        case DEVICES_OFF_MODE:
-        if(Battery_get_voltage() <= g_rSysConfigInfo.batLowVol)
-        {
-
-        }
-        else
-        {
-
-            g_rSysConfigInfo.sysState.wtd_restarts |= STATUS_POWERON;
-            S1Wakeup();
-            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
-        }
-        break;
-    }
-}
-
-
-//***********************************************************************************
-// brief:the node long key application
-// 
-// parameter: 
-//***********************************************************************************
-void S1DoubleKeyApp(void)
-{
-    switch(deviceMode)
-    {
-        case DEVICES_ON_MODE:
-        case DEVICES_CONFIG_MODE:
-        case DEVICES_OFF_MODE:
-        if(DEVICES_CONFIG_MODE != deviceMode)
-            deviceModeTemp = deviceMode;
-
-
-        // enter DEVICES_CONFIG_MODE, clear radio tx buf and send the config parameter to config deceive
-        // if(RadioStatueRead() == RADIOSTATUS_TRANSMITTING)
-        NodeStrategyReset();
-        NodeResetAPC();
-        deviceMode                      = DEVICES_CONFIG_MODE;
-        configModeTimeCnt = 0;
-        NodeUploadOffectClear();
-        //RadioModeSet(RADIOMODE_RECEIVEPORT);
-        SetRadioDstAddr(CONFIG_DECEIVE_ID_DEFAULT);
-
-
-        NodeStrategyStop();
-        RadioAbort();
-        EasyLink_setRfPower(7);
-        RadioSetRxMode();
-
-        RadioEventPost(RADIO_EVT_SEND_CONFIG);
-
-        break;
-    }
-}
-
 uint32_t lowBatCnt = 0;
 void S1AppRtcProcess(void)
 {
@@ -184,12 +79,32 @@ void S1AppRtcProcess(void)
         }
     }
 
-    // ElecPreventInsertMeasure();
-    // if(ElecPreventInsertState()){
-    //     EletricPulseSetTime_S(1);
-    //     RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
-    //     SoundEventSet(SOUND_TYPE_INSERT);
+    // if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT){
+    //     ElecPreventInsertMeasure();
+    //     if(ElecPreventInsertState()){
+    //         EletricPulseSetTime_S(1);
+    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+    //         SoundEventSet(SOUND_TYPE_INSERT);
+    //     }
     // }
+
+    if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
+        escapeTimeCnt++;
+        if(escapeTimeCnt == 10){
+            SoundEventSet(SOUND_TYPE_DI_DI_DI);
+        }
+        if(escapeTimeCnt == 20){
+            EletricPulseSetTime_S(2);
+            SoundEventSet(SOUND_TYPE_DI_DI_DI);
+        }
+        if(escapeTimeCnt == 30){
+            EletricPulseSetTime_S(6);
+            SoundEventSet(SOUND_TYPE_DI_DI_DI);
+        }
+        if(escapeTimeCnt > 36){
+            SoundEventSet(SOUND_TYPE_DI_DI_DI);
+        }
+    }
 
 
     Battery_porcess();
@@ -197,7 +112,7 @@ void S1AppRtcProcess(void)
         if((lowBatCnt == 0) || (lowBatCnt >= 30)){
             SoundEventSet(SOUND_TYPE_LOW_BAT);
             lowBatCnt = 1;
-            RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+            RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
         }
         lowBatCnt++;
     }else{
@@ -209,13 +124,16 @@ void S1AppRtcProcess(void)
     if(destroyEleShock){
         if(destroyEleShock){
             EletricPulseSetTime_S(1);
-            RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, NULL);
+            RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
             SoundEventSet(SOUND_TYPE_DESTROYED);
         } 
     }
 
     // for test
     // RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);
+    ElectricShockLevelSet(0);
+    ElectricShockLevelSet(1);
+    ElectricShockLevelSet(2);
 }
 
 

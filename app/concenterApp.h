@@ -52,11 +52,9 @@ void ConcenterTimeSychronization(Calendar *currentTime);
 
 uint8_t ConcenterReadSynTimeFlag(void);
 
-void ConcenterRadioMonitorClear(void);
-
 void ConcenterRtcProcess(void);
 
-void ConcenterResetRadioState(void);
+void ConcenterRtcRead(void);
 
 void ConcenterCollectStart(void);
 

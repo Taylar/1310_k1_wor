@@ -230,9 +230,6 @@ void SystemAppTaskFxn(void)
 // the config deceive key is disable
 		if(eventId &SYSTEMAPP_EVT_KEY)
 		{
-#ifdef BOARD_S3
-			S1ShortKeyApp();
-#endif
 
 #ifdef BOARD_S6_6
 			S6KeyApp();
@@ -241,9 +238,9 @@ void SystemAppTaskFxn(void)
 
 
 
-		if((eventId & SYSTEMAPP_EVT_CONCENTER_MONITER))
+		if((eventId & SYSTEMAPP_EVT_RTC_READ))
 		{
-			ConcenterResetRadioState();
+			ConcenterRtcRead();
 		}
 
 		if((eventId & SYSTEMAPP_EVT_STORE_CONCENTER))
@@ -263,7 +260,7 @@ void SystemAppTaskFxn(void)
 		S6AppBatProcess();
 
 #ifdef SUPPORT_ALARM_RECORD_QURERY
-      	if(eventId & SYS_EVT_ALARM_SAVE)
+    	if(eventId & SYS_EVT_ALARM_SAVE)
       	{
           	Flash_store_alarm_record((uint8_t*)(&g_AlarmSensor),sizeof(Alarmdata_t));
         }
