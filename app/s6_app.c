@@ -249,7 +249,7 @@ void S6HwInit(void)
     I2c_init_2();
 
 	KeyInit();
-
+	power_Key_init();
 	AdcDriverInit();
 
     Disp_init();

@@ -34,7 +34,7 @@ uint32_t configModeTimeCnt;          // the unit is sec
 //***********************************************************************************
 void S1HwInit(void)
 {
-    KeyInit();
+    //-----KeyInit();
 
     Spi_init();
 

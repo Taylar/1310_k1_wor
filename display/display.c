@@ -17,6 +17,10 @@ const uint8_t font8x16[]= {
     #include "font\font8X16_.txt"
 };
 
+const uint8_t font8x24[]= {
+    #include "font\font8X24.txt"
+};
+
 const uint8_t font6x8[]= {
     #include "font\font6X8.txt"
 };
@@ -181,7 +185,13 @@ static void Disp_character(uint8_t bColStart, uint8_t bPageStart, uint8_t bChar,
             Lcd_set_font(8, 16, fgInv);
             Lcd_write_character(bColStart, bPageStart, &font8x16[bChar * 16]);
         break;
-
+        case FONT_8X24:
+            bColStart *= 4;
+            bColStart += LCD_FONT8X16_START_COL;
+//            bPageStart *= 2;
+            Lcd_set_font(8, 24, fgInv);
+            Lcd_write_character(bColStart, bPageStart, &font8x24[bChar * 24]);
+        break;
         case FONT_12X24:
              bColStart *= 6;
              bColStart += LCD_FONT12X24_START_COL;
@@ -261,14 +271,14 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
                 Lcd_clear_area(col, row);
             }
             break;
-        case ICON_72X24_ADD_ARR ... ICON_72X24_NOT_NEED_INPUT:
+        case ICON_72X24_ADD_ARR ... ICON_72X24_DESTORYED:
             if (light) {
                 Lcd_write_character(col, row, &menu72x24[(icon - ICON_72X24_ADD_ARR) * FONT_72X24_OFS]);
             } else {
                 Lcd_clear_area(col, row);
             }
             break;
-        case ICON_36X24_COMPLETE...ICON_36X24_CLEAR:
+        case ICON_36X24_COMPLETE...ICON_36X24_SECOND:
             if (light) {
                 Lcd_write_character(col, row, &menu36x24[(icon - ICON_36X24_COMPLETE) * FONT_36X24_OFS]);
             } else {
@@ -496,11 +506,11 @@ void display_star_mssage(void)
     time_buff[8] =':';
     sprintf((char*)(time_buff+9),"%02d",calendar.Minutes);
 
-
-    time_buff[11] = ' ';
-    time_buff[12] = '9';
-    time_buff[13] = '8';
-    time_buff[14] = '%';
+    sprintf(time_buff+11," %02d%%",batValue);
+    //time_buff[11] = ' ';
+    //time_buff[12] = '9';
+    //time_buff[13] = '8';
+    //time_buff[14] = '%';
     Disp_msg(0,0,time_buff,FONT_8X16);
 }
 //***********************************************************************************

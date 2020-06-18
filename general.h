@@ -71,6 +71,7 @@
 // #define ZKS_S6_6_WOR_G
 
 
+
 //***********************************************************************************
 //
 // HW version define.
@@ -111,7 +112,7 @@
 //***********************************************************************************
 
 #if defined(ZKS_S6_6_G) || defined(ZKS_S6_6_CONFIG) || defined(ZKS_S6_6_WOR_G)
-#define S_G //缂傚啯鍨甸崣锟�
+#define S_G //缂傚倸鍟崹鐢稿矗閿燂拷
 #endif
 
 #if defined(BOARD_S3)
@@ -308,7 +309,7 @@ error type define
 #define SUPPORT_DEVICED_STATE_UPLOAD
 
 
-#ifdef S_A//娑擄拷娴ｆ挻婧�
+#ifdef S_A//濞戞搫鎷峰ù锝嗘尰濠э拷
 
 
 #undef  SUPPORT_LORA
@@ -379,8 +380,8 @@ error
 #undef SUPPORT_MENU
 #undef SUPPORT_DEVICED_STATE_UPLOAD
 
-#undef SUPPORT_NETGATE_DISP_NODE   //缂冩垵鍙ч弰鍓с仛閺�璺哄煂閻ㄥ嫯濡悙瑙勬殶閹癸拷
-#undef SUPPORT_NETGATE_BIND_NODE   //缂冩垵鍙х紒鎴濈暰閻ㄥ嫯濡悙鐧哥礉闂囷拷鐟曚焦鏁归崚鐗堟殶閹诡喖鎮楅崚銈嗘焽閺勵垰鎯佺搾鍛刊
+#undef SUPPORT_NETGATE_DISP_NODE   //缂傚啯鍨甸崣褔寮伴崜褋浠涢柡锟界捄鍝勭厒闁汇劌瀚俊顓㈡倷鐟欏嫭娈堕柟鐧告嫹
+#undef SUPPORT_NETGATE_BIND_NODE   //缂傚啯鍨甸崣褏绱掗幋婵堟毎闁汇劌瀚俊顓㈡倷閻у摜绀夐梻鍥锋嫹閻熸洑鐒﹂弫褰掑礆閻楀牊娈堕柟璇″枛閹宕氶妶鍡樼劷闁哄嫷鍨伴幆浣烘惥閸涱喕鍒�
 //#undef NETGATE_BIND_NODE_MAX
 #endif // SUPPORT_DISP_SCREEN
 
@@ -536,31 +537,31 @@ error
 //Status define.
 //
 //***********************************************************************************
-#define STATUS_LCD_ALWAYS_ON        0x0001//lcd鐢绱�
-#define STATUS_GSM_TEST             0x0002//gsm濞村鐦Ο鈥崇础
-#define STATUS_KEY_LED_ON           0x0004//閹稿鏁悘顖欏瘨閻忥拷
-#define STATUS_ALARM_OFF            0x0008//閺堫剙婀撮幎銉劅瀵拷閸忥拷
-#define STATUS_SENSOR_NAME_ON       0x0010//缂冩垵鍙ч弰鍓с仛闁插洭娉﹂崳銊ユ倳鐎涙绱戦崗锟�
-#define STATUS_DISP_BIND_ONLY       0x0020//缂冩垵鍙ч崣顏呮▔缁�铏圭拨鐎规俺顔曟径鍥╂畱娣団剝浼呭锟介崗锟�
+#define STATUS_LCD_ALWAYS_ON        0x0001//lcd閻㈩垳顭堢槐锟�
+#define STATUS_GSM_TEST             0x0002//gsm婵炴潙顑堥惁顖毼熼垾宕囩
+#define STATUS_KEY_LED_ON           0x0004//闁圭顦甸弫顓㈡倶椤栨瑥鐦ㄩ柣蹇ユ嫹
+#define STATUS_ALARM_OFF            0x0008//闁哄牜鍓欏﹢鎾箮閵夘煈鍔呯�殿噯鎷烽柛蹇ユ嫹
+#define STATUS_SENSOR_NAME_ON       0x0010//缂傚啯鍨甸崣褔寮伴崜褋浠涢梺鎻掓喘濞夛箓宕抽妸銉﹀�抽悗娑欘殔缁辨垿宕楅敓锟�
+#define STATUS_DISP_BIND_ONLY       0x0020//缂傚啯鍨甸崣褔宕ｉ鍛枖缂侊拷閾忓湱鎷ㄩ悗瑙勪亢椤旀洘寰勯崶鈺傜暠濞ｅ洠鍓濇导鍛嚕閿熶粙宕楅敓锟�
 #define STATUS_HIDE_PWOF_MENU       0x0040//hide power off menu 
 #define STATUS_HIDE_SHT_SENSOR      0x0080//dont display sht20 sensor
 #define STATUS_ALARM_SWITCH_ON      0x0100//alarm upload period switch on
 #define STATUS_CHAGE_ALARM_SWITCH_ON    0x0200//charge check alarm switch on
-//0x0400 0x0800 瀹歌尙绮＄悮顐ゆ暏娴滐拷
+//0x0400 0x0800 鐎规瓕灏欑划锛勬偖椤愩倖鏆忓ù婊愭嫹
 #define STATUS_TX_ONLY_GATE_ON       0x1000
 #define STATUS_ALARM_GATE_ON         0x2000
 #define STATUS_POWERON_RESET_DATA    0x4000
 
-#define STATUS_LORA_MASTER      0x0001//lora閸嬫aster閹存潩laver
-#define STATUS_LORA_TEST      	0x0002//LORA 濞村鐦Ο鈥崇础
-#define STATUS_LORA_APC      	0x0004//闁插洭娉﹂崳銊ㄥ殰閸斻劌顤冮惄濠冨付閸掞拷
-#define STATUS_LORA_ALARM      	0x0008//闁插洭娉﹂崳銊ュ絺闁焦濮ょ拃锔夸繆閹垰鍩岀純鎴濆彠
-#define STATUS_LORA_CHANGE_FREQ 0x0010//LORA閻ㄥ嫪鑵戣箛鍐暥閺嶈宓佺�广垺鍩涢惍浣稿綁閸栵拷
-#define STATUS_1310_MASTER      0x0020//1310閸嬫aster閹存潩laver
+#define STATUS_LORA_MASTER      0x0001//lora闁稿顒ster闁瑰瓨娼﹍aver
+#define STATUS_LORA_TEST      	0x0002//LORA 婵炴潙顑堥惁顖毼熼垾宕囩
+#define STATUS_LORA_APC      	0x0004//闂佹彃娲▔锕傚闯閵娿劌娈伴柛鏂诲妼椤ゅ啴鎯勬繝鍐ㄤ粯闁告帪鎷�
+#define STATUS_LORA_ALARM      	0x0008//闂佹彃娲▔锕傚闯閵娿儱绲洪梺顐＄劍婵倗鎷冮敂澶哥箚闁诡収鍨伴崺宀�绱旈幋婵嗗綘
+#define STATUS_LORA_CHANGE_FREQ 0x0010//LORA闁汇劌瀚懙鎴ｇ疀閸愵噮鏆ラ柡宥堫潐瀹撲胶锟藉箍鍨洪崺娑㈡儘娴ｇ缍侀柛鏍垫嫹
+#define STATUS_1310_MASTER      0x0020//1310闁稿顒ster闁瑰瓨娼﹍aver
 
 
-#define ALARM_RX_EXTERNAL_ALARM      0x100  //閹恒儲鏁归崚鏉款樆闁劍濮ょ拃锟�
-#define ALARM_CHARGE_DECT_ALARM      0x200 //閺傤厾鏁搁幎銉劅
+#define ALARM_RX_EXTERNAL_ALARM      0x100  //闁规亽鍎查弫褰掑礆閺夋妯嗛梺顔哄妽婵倗鎷冮敓锟�
+#define ALARM_CHARGE_DECT_ALARM      0x200 //闁哄偆鍘鹃弫鎼佸箮閵夘煈鍔�
 #define ALARM_NODE_LOSE_ALARM       0x400 // node lose alarm
 //***********************************************************************************
 //
