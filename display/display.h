@@ -39,6 +39,7 @@
 typedef enum {
     FONT_5X8 = 0,
     FONT_8X16,
+    FONT_8X24,
     FONT_12X24,
     FONT_16X32,
     FONT_24X48,

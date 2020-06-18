@@ -142,6 +142,7 @@ uint32_t RandomDataGenerate_Software(void)
 
 //#define BOARD_S6_6
 static uint8_t g_firstStartFlag = 0;
+static uint8_t lcd_power_state = 0;
 void SystemAppTaskFxn(void)
 {
     uint32_t    eventId;
@@ -210,7 +211,7 @@ void SystemAppTaskFxn(void)
  //    RestStatus = SysCtrlResetSourceGet();
  //    sprintf((char*)logtest, "R%2ld\n",RestStatus);
  //    Flash_log((uint8_t*)logtest);
-
+    lcd_power_state = 1;
 	for(;;)
 	{
         eventId = Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_ALL, BIOS_WAIT_FOREVER);
@@ -235,7 +236,8 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef BOARD_S6_6
-			S6KeyApp();
+			if(lcd_power_state== 1)
+			    S6KeyApp();
 #endif
 		}
 
@@ -303,6 +305,24 @@ void SystemAppTaskFxn(void)
 			S1AppRtcProcess();
 		}
 
+        if(eventId & SYS_EVT_KEY){
+            //S1AppRtcProcess();
+            //Menu_low_power_display(1234);
+            if(lcd_power_state)
+            {
+                Lcd_poweroff();
+                lcd_power_state = 0;
+            }
+            else
+            {
+                lcd_power_state = 1;
+                Disp_init();
+                Disp_poweron();
+                Sys_event_post(SYSTEMAPP_EVT_DISP);
+                g_firstStartFlag = 0;
+            }
+
+        }
 		if(eventId & SYS_EVT_MOTO_INT_REC){
 			eleShock_set(ELE_MOTO_ENABLE, 1);
 			Task_sleep(300 * CLOCK_UNIT_MS);
@@ -317,7 +337,7 @@ void SystemAppTaskFxn(void)
 
 
 #ifdef SUPPORT_DISP_SCREEN
-		if(eventId & SYSTEMAPP_EVT_DISP)
+		if(eventId & SYSTEMAPP_EVT_DISP && lcd_power_state == 1)
 		{
         	Disp_proc();
         	KeyIcInit();
@@ -326,6 +346,7 @@ void SystemAppTaskFxn(void)
         	   g_firstStartFlag=!g_firstStartFlag;
         	   gpio_power_en_config();
         	   menuc_main(_VK_COMMAND);
+        	   lcd_power_state = 1;
         	}
 		}
 #endif

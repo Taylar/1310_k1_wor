@@ -7,25 +7,20 @@
 // Project:
 // File name: key_proc.c
 // Description: key process routine.
-//***********************************************************************************
-#include "../general.h"
-
-
-
 
 #ifdef BOARD_B1S
 #define Board_BUTTON0                            IOID_1
 #endif //BOARD_B1S
 #if 1
-static PIN_State   keyState;
-static PIN_Handle  keyHandle;
+static PIN_State   PwrkeyState;
+static PIN_Handle  PwrkeyHandle;
 
 #define Board_BUTTON_POWER_EN       IOID_1
-#define Board_BUTTON_POWER_KEY_INIT IOID_24
+#define Board_BUTTON_POWER_INIT IOID_24
 
 const PIN_Config keyPinTable1[] = {
-   Board_BUTTON_POWER_KEY_INIT | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* key isr enable          */
-
+     Board_BUTTON_POWER_INIT | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* key isr enable          */
+     PIN_TERMINATE
 };
 
 
@@ -40,7 +35,7 @@ const PIN_Config POWER_ENTABLE[] = {
 static Clock_Struct keyClkStruct;
 static Clock_Handle keyClkHandle;
 
-static KeyTask_t rKeyTask;
+static KeyTask_t rKeyTaskPower;
 
 void gpio_power_en_config(void)
 {
@@ -49,9 +44,9 @@ void gpio_power_en_config(void)
 }
 
 
-static const uint8_t key_pin_id[KEY_MAX_NUM] =
+static const uint8_t key_pin_id_X[KEY_MAX_NUM] =
 {
- //Board_BUTTON_POWER_KEY_INIT,
+ Board_BUTTON_POWER_INIT,
 };
 
 static const uint16_t KEY_LONG_TIME[KEY_MAX_NUM] =
@@ -72,8 +67,8 @@ static AppKeyIsrCb_t   AppKeyIsrCb[KEY_ACTION_MAX];
 //***********************************************************************************
 void KeyIoInit1(PIN_IntCb pCb)
 {
-    keyHandle = PIN_open(&keyState, keyPinTable1);
-    PIN_registerIntCb(keyHandle, pCb);
+    PwrkeyHandle = PIN_open(&PwrkeyState, keyPinTable1);
+    PIN_registerIntCb(PwrkeyHandle, pCb);
 }
 
 
@@ -85,15 +80,15 @@ void KeyIoInit1(PIN_IntCb pCb)
 //***********************************************************************************
 static void Key_scan_stop(void)
 {
-    rKeyTask.holdTime        = 0;
-    rKeyTask.doublePressTime = 0;
-    rKeyTask.holdPress       = 0;
-    rKeyTask.doublePress     = 0;
+    rKeyTaskPower.holdTime        = 0;
+    rKeyTaskPower.doublePressTime = 0;
+    rKeyTaskPower.holdPress       = 0;
+    rKeyTaskPower.doublePress     = 0;
 
     Clock_stop(keyClkHandle);
 }
 
-
+void KeyRegister1(void (*Cb)(void), KEY_ACTION action);
 //***********************************************************************************
 //
 // Key scan callback function, use 10ms clock.
@@ -101,58 +96,58 @@ static void Key_scan_stop(void)
 //***********************************************************************************
 static void Key_scanFxn(UArg arg0)
 {
-    if(KeyReadState1((KEY_NUM_E)rKeyTask.keyNum) == KEY_PRESSED)
+    if(!PowerKeyReadState((KEY_NUM_E)rKeyTaskPower.keyNum) == KEY_PRESSED)
     {
 #ifdef  SUPPORT_DOUBLE_CLICK
-        if(rKeyTask.doublePress)
+        if(rKeyTaskPower.doublePress)
         {
             Key_scan_stop();
-            if(AppKeyIsrCb[KEY_0_DOUBLE_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
-                AppKeyIsrCb[KEY_0_DOUBLE_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
+            if(AppKeyIsrCb[KEY_0_DOUBLE_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX])
+                AppKeyIsrCb[KEY_0_DOUBLE_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX]();
         }
 #endif  // SUPPORT_DOUBLE_CLICK
 
-        if(rKeyTask.holdPress == 0)
+        if(rKeyTaskPower.holdPress == 0)
         {
-            rKeyTask.holdPress       = 1;
-            rKeyTask.holdTime        = 0;
+            rKeyTaskPower.holdPress       = 1;
+            rKeyTaskPower.holdTime        = 0;
         }
         else
         {
-            rKeyTask.holdTime++;
-            if(rKeyTask.holdTime >= KEY_LONG_TIME[rKeyTask.keyNum])
+            rKeyTaskPower.holdTime++;
+            if(rKeyTaskPower.holdTime >= KEY_LONG_TIME[rKeyTaskPower.keyNum])
             {
                 Key_scan_stop();
-                if(AppKeyIsrCb[KEY_0_LONG_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
-                    AppKeyIsrCb[KEY_0_LONG_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
+                if(AppKeyIsrCb[KEY_0_LONG_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX])
+                    AppKeyIsrCb[KEY_0_LONG_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX]();
             }
         }
     }
     else
     {
-        if(rKeyTask.doublePress)
+        if(rKeyTaskPower.doublePress)
         {
 #ifdef  SUPPORT_DOUBLE_CLICK
-            rKeyTask.doublePressTime++;
+            rKeyTaskPower.doublePressTime++;
 
-            if(rKeyTask.doublePressTime > TIME_KEY_DOUBLE)
+            if(rKeyTaskPower.doublePressTime > TIME_KEY_DOUBLE)
             {
                 Key_scan_stop();
-                if(AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX])
-                    AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
+                if(AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX])
+                    AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX]();
             }
 #else
-            if((AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]) && (rKeyTask.holdTime > TIME_KEY_NEW))
-                AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTask.keyNum * KEY_ACTION_TYPE_MAX]();
+            if((AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX]) && (rKeyTaskPower.holdTime > TIME_KEY_NEW))
+                AppKeyIsrCb[KEY_0_SHORT_PRESS + rKeyTaskPower.keyNum * KEY_ACTION_TYPE_MAX]();
             Key_scan_stop();
 #endif  // SUPPORT_DOUBLE_CLICK
         }
         else
         {
-            rKeyTask.doublePress     = 1;
-            rKeyTask.doublePressTime = 0;
+            rKeyTaskPower.doublePress     = 1;
+            rKeyTaskPower.doublePressTime = 0;
 #ifdef  SUPPORT_DOUBLE_CLICK
-            rKeyTask.holdTime        = 0;
+            rKeyTaskPower.holdTime        = 0;
 #endif  // SUPPORT_DOUBLE_CLICK
         }
     }
@@ -163,11 +158,11 @@ static void Key_scanFxn(UArg arg0)
 // Key gpio hwi callback function.
 //
 //***********************************************************************************
-static void Key0_isrFxn(UInt index)
+static void KeyPower_isrFxn(UInt index)
 {
     if (Clock_isActive(keyClkHandle) == FALSE)
     {
-        rKeyTask.keyNum = KEY0_NUM;
+        rKeyTaskPower.keyNum = KEY0_NUM;
         Clock_start(keyClkHandle);
     }
 }
@@ -176,6 +171,7 @@ static void Key0_isrFxn(UInt index)
 void Boutton0ShortPressCb(void);
 void Boutton0LongPressCb(void);
 void Boutton0DoublePressCb(void);
+
 //***********************************************************************************
 //
 // Key init.
@@ -184,11 +180,11 @@ void Boutton0DoublePressCb(void);
 void power_Key_init(void)
 {
     uint8_t i;
-    rKeyTask.holdTime        = 0;
-    rKeyTask.doublePressTime = 0;
-    rKeyTask.shortPress      = 0;
-    rKeyTask.doublePress     = 0;
-    //rKeyTask.code            = _VK_NULL;
+    rKeyTaskPower.holdTime        = 0;
+    rKeyTaskPower.doublePressTime = 0;
+    rKeyTaskPower.shortPress      = 0;
+    rKeyTaskPower.doublePress     = 0;
+    rKeyTaskPower.code            = _VK_NULL;
 
     /* Construct a 10ms periodic Clock Instance to scan key */
     Clock_Params clkParams;
@@ -204,13 +200,13 @@ void power_Key_init(void)
         AppKeyIsrCb[i] = NULL;
     }
     /* install Button callback */
-    KeyIoInit1((PIN_IntCb)Key0_isrFxn);
+    KeyIoInit1((PIN_IntCb)KeyPower_isrFxn);
 
     KeyRegister1(Boutton0ShortPressCb, KEY_0_SHORT_PRESS);
-    KeyRegister1(Boutton0LongPressCb, KEY_0_LONG_PRESS);
-    KeyRegister1(Boutton0DoublePressCb, KEY_0_DOUBLE_PRESS);
+    //KeyRegister1(Boutton0LongPressCb, KEY_0_LONG_PRESS);
+    //KeyRegister1(Boutton0DoublePressCb, KEY_0_DOUBLE_PRESS);
 
-    gpio_power_en_config();
+    //gpio_power_en_config();
 }
 
 //***********************************************************************************
@@ -220,7 +216,7 @@ void power_Key_init(void)
 //***********************************************************************************
 uint8_t power_Key_get(void)
 {
-    return 1;//rKeyTask.code;
+    return rKeyTaskPower.code;
 }
 
 //***********************************************************************************
@@ -228,10 +224,11 @@ uint8_t power_Key_get(void)
 // Key read state.
 //
 //***********************************************************************************
-uint8_t KeyReadState1(KEY_NUM_E key)
+
+uint8_t PowerKeyReadState(KEY_NUM_E key)
 {
     if(key < KEY_MAX_NUM)
-        return(PIN_getInputValue(key_pin_id[key]));
+        return(PIN_getInputValue(key_pin_id_X[key]));
 
     return KEY_RELEASE;
 }
@@ -256,8 +253,8 @@ void KeyRegister1(void (*Cb)(void), KEY_ACTION action)
 //***********************************************************************************
 void Boutton0ShortPressCb(void)
 {
-   // rKeyTask.code = _VK_SELECT;
-    //Sys_event_post(SYS_EVT_KEY);
+     rKeyTaskPower.code = _VK_SELECT;
+     Sys_event_post(SYS_EVT_KEY);
 #ifdef LORA_OOK_TEST
     g_rSysConfigInfo.rfPA++;
     if(g_rSysConfigInfo.rfPA > 15)
@@ -284,7 +281,7 @@ void Boutton0LongPressCb(void)
 //***********************************************************************************
 void Boutton0DoublePressCb(void)
 {
-    //rKeyTask.code = _VK_DOUBLE_KEY;
+    //rKeyTaskPower.code = _VK_DOUBLE_KEY;
    // Sys_event_post(SYS_EVT_KEY);
 }
 #endif

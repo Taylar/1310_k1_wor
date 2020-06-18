@@ -80,6 +80,7 @@ typedef enum name
     _VK_MODE    = 0x7E,
     _VK_NUM0    = 0x7D,
     _VK_OK      = 0x7B,
+    _VK_SELECT  = 0x01,
 }KEY_CODE_E;
 
 
@@ -102,6 +103,7 @@ typedef struct {
     KEY_CODE_E keyCode;       //
     // key num
     uint8_t keyNum;
+    uint8_t code;
 } KeyTask_t;
 
 
@@ -120,6 +122,8 @@ KEY_CODE_E Key_get(void);
 void KeyScanFxn(void);
 void KeyIcInit(void);
 void gpio_power_en_config(void);
+void power_Key_init(void);
+uint8_t PowerKeyReadState(KEY_NUM_E key);
 #endif //BOARD_S6_6
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */

@@ -1,9 +1,9 @@
 #include "../general.h"
 
 
-#define SOUND_DATA_PIN                                IOID_25     //声音数据线
+#define SOUND_DATA_PIN                                IOID_25     //澹伴煶鏁版嵁绾�
 
-#define SOUND_BUSY_PIN                             	  IOID_24      //声音状态线
+#define SOUND_BUSY_PIN                             	  IOID_25      //澹伴煶鐘舵�佺嚎
 
 #define SOUND_STATE_BUSY							1
 #define SOUND_STATE_IDLE							0
@@ -14,7 +14,7 @@ static PIN_State   soundDriverState;
 static PIN_Handle  soundDriverHandle;
 
 const PIN_Config soundPinTable[] = {
-    SOUND_DATA_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 低档电压档位         */
+    SOUND_DATA_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 浣庢。鐢靛帇妗ｄ綅         */
     SOUND_BUSY_PIN | PIN_INPUT_EN | PIN_PULLDOWN,
     PIN_TERMINATE
 };

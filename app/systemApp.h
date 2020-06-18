@@ -11,7 +11,7 @@
 #define         SYSTEMAPP_EVT_STORE_CONCENTER           Event_Id_04
 #define         SYSTEMAPP_EVT_USBINT                    Event_Id_05
 #define         SYSTEMAPP_EVT_RADIO_ABORT				Event_Id_06
-#define         SYS_EVT_ALARM_SAVE                      Event_Id_07
+#define         SYS_EVT_KEY                             Event_Id_07
 #define         SYSTEMAPP_EVT_STORE_SYS_CONFIG			Event_Id_08
 #define         SYSTEMAPP_EVT_DISP                      Event_Id_09
 #define         SYS_EVT_ALARM                      		Event_Id_10
