@@ -301,7 +301,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYS_EVT_RTC){
 			S1AppRtcProcess();
 		}
-
+#ifdef S_G
         if(eventId & SYS_EVT_KEY){
             //S1AppRtcProcess();
             //Menu_low_power_display(1234);
@@ -320,6 +320,7 @@ void SystemAppTaskFxn(void)
             }
 
         }
+#endif //S_G
 		if(eventId & SYS_EVT_MOTO_INT_REC){
 			eleShock_set(ELE_MOTO_ENABLE, 1);
 			Task_sleep(300 * CLOCK_UNIT_MS);
