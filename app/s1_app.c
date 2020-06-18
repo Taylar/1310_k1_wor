@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-18 16:07:46
+* @Last Modified time: 2020-06-18 18:37:17
 */
 #include "../general.h"
 
@@ -63,7 +63,7 @@ void S1HwInit(void)
 
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
 
-    SoundDriverSet(SOUND_TYPE_VOLUME_MAX);
+    SoundEventSet(SOUND_TYPE_VOLUME_MAX);
 }
 
 
@@ -107,33 +107,33 @@ void S1AppRtcProcess(void)
     }
 
 
-    Battery_porcess();
-    if(Battery_get_voltage() < 3600){
-        if((lowBatCnt == 0) || (lowBatCnt >= 30)){
-            SoundEventSet(SOUND_TYPE_LOW_BAT);
-            lowBatCnt = 1;
-            RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
-        }
-        lowBatCnt++;
-    }else{
-        lowBatCnt = 0;
-    }
+    // Battery_porcess();
+    // if(Battery_get_voltage() < 3600){
+    //     if((lowBatCnt == 0) || (lowBatCnt >= 30)){
+    //         SoundEventSet(SOUND_TYPE_LOW_BAT);
+    //         lowBatCnt = 1;
+    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
+    //     }
+    //     lowBatCnt++;
+    // }else{
+    //     lowBatCnt = 0;
+    // }
 
 
-    destroyEleShock = DestroyPinRead();
-    if(destroyEleShock){
-        if(destroyEleShock){
-            EletricPulseSetTime_S(1);
-            RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
-            SoundEventSet(SOUND_TYPE_DESTROYED);
-        } 
-    }
+    // destroyEleShock = DestroyPinRead();
+    // if(destroyEleShock){
+    //     if(destroyEleShock){
+    //         EletricPulseSetTime_S(1);
+    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
+    //         SoundEventSet(SOUND_TYPE_DESTROYED);
+    //     } 
+    // }
 
     // for test
     // RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);
-    ElectricShockLevelSet(0);
-    ElectricShockLevelSet(1);
-    ElectricShockLevelSet(2);
+    // ElectricShockLevelSet(0);
+    // ElectricShockLevelSet(1);
+    // ElectricShockLevelSet(2);
 }
 
 
