@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-19 09:51:35
+* @Last Modified time: 2020-06-19 13:55:55
 */
 #include "../general.h"
 
@@ -185,7 +185,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_TERM_OPEN_CTROL:
-			if(ground == GroudAddrGet()){
+			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_CONTROL_ENABLE);
 				electricshockEnable = 1;
 				ElectricShockPowerEnable();
@@ -219,7 +219,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_TERM_UNLOCKING:
-			if(ground == GroudAddrGet()){
+			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_DI);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
 			}
@@ -265,7 +265,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_TERM_POWER_HIGH:
-			if(ground == GroudAddrGet()){
+			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_HIGH_LEVEL);
 				g_rSysConfigInfo.electricLevel = ELECTRIC_HIGH_LEVEL;
@@ -275,7 +275,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_TERM_POWER_MID:
-			if(ground == GroudAddrGet()){
+			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_MID_LEVEL);
 				g_rSysConfigInfo.electricLevel = ELECTRIC_MID_LEVEL;
@@ -285,7 +285,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_TERM_POWER_LOW:
-			if(ground == GroudAddrGet()){
+			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_SET_POWER_SUSCESS);
 				ElectricShockLevelSet(ELECTRIC_LOW_LEVEL);
 				g_rSysConfigInfo.electricLevel = ELECTRIC_LOW_LEVEL;
@@ -295,7 +295,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START:
-			if(ground == GetRadioSrcAddr()){
+			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_DI_DI);
 				EletricPulseSetTime_S(ELECTRIC_SHOCK_TIME);
 			}
@@ -303,7 +303,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP:
-			if(ground == GetRadioSrcAddr()){
+			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_DI_DI);
 				EletricPulseSetTime_S(0);
 			}
@@ -332,16 +332,20 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 		break;
 
 		case RADIO_PRO_CMD_TERM_CLOSE_BLOCKING:
-			g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_INSERT;
-			SoundEventSet(SOUND_TYPE_DI_DI_DI);
-			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			if(dstDev == GetRadioSrcAddr()){
+				g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_INSERT;
+				SoundEventSet(SOUND_TYPE_DI_DI_DI);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			}
 		break;
 
 
 		case RADIO_PRO_CMD_TERM_OPEN_BLOCKING:
-			g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_INSERT;
-			SoundEventSet(SOUND_TYPE_DI_DI_DI);
-			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			if(dstDev == GetRadioSrcAddr()){
+				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_INSERT;
+				SoundEventSet(SOUND_TYPE_DI_DI_DI);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			}
 		break;
 
 
