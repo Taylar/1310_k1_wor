@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-16 17:06:21
+* @Last Modified time: 2020-06-19 11:58:18
 */
 #include "../general.h"
 
@@ -424,9 +424,11 @@ void ElectricShockInit(void)
 
     destroyEleShock = 1;
 
+    if(g_rSysConfigInfo.electricLevel > ELECTRIC_HIGH_LEVEL)
+        g_rSysConfigInfo.electricLevel = ELECTRIC_HIGH_LEVEL;
     
-    ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
-    if(g_rSysConfigInfo.electricFunc | ELE_FUNC_ENABLE_SHOCK){
+    // ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
+    if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_SHOCK){
         electricshockEnable = 1;
         ElectricShockPowerEnable();
     }
