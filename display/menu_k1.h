@@ -19,11 +19,11 @@ typedef struct _MenuMode {
 typedef struct _MenuModeObject {
    uint8_t index;
    MenuMode_t item;
-   uint16_t numEnter;
+   uint32_t numEnter;
    uint8_t keyDoing;
    uint8_t selectIndex;
-   uint16_t devicesId;
-   uint16_t groudId;
+   uint32_t devicesId;
+   uint32_t groudId;
 } MenuModeObject;
 extern void menuc_main(KEY_CODE_E keyCode);
 void Menu_low_power_display(uint32_t devicesId);
