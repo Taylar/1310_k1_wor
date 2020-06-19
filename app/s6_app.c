@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-16 11:34:01
+* @Last Modified time: 2020-06-19 10:37:09
 */
 #include "../general.h"
 
@@ -268,6 +268,7 @@ void S6HwInit(void)
     Battery_voltage_measure();
 
     g_rSysConfigInfo.module |= MODULE_CC1310;
+    g_rSysConfigInfo.rfBW   = FREQ_434_50;
 
     if(!(g_rSysConfigInfo.module & MODULE_LCD)){//
         Clock_setPeriod(sysLcdShutClkHandle, 60*CLOCK_UNIT_S);

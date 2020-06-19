@@ -89,7 +89,7 @@ void NodeAppInit(void)
 
     NodeStrategyInit(NodeStrategyTimeoutProcess);
     
-    NodeStrategySetPeriod(g_rSysConfigInfo.collectPeriod);
+    NodeStrategySetPeriod(1);
     NodeResetAPC();
     // NodeWakeup();
 }

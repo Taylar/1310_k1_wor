@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-18 16:13:57
+* @Last Modified time: 2020-06-19 09:51:35
 */
 #include "../general.h"
 
@@ -908,12 +908,14 @@ void RadioCmdClearWithRespon(void)
 		}
 	}
 	else{
-	    sendRetryTimes--;
+		if(cmdEventWithRespon){
+		    sendRetryTimes--;
 #ifdef S_G
-		RadioSendBrocast();
+			RadioSendBrocast();
 #else
-		RadioSend();
+			RadioSend();
 #endif
+		}
 	}
 	
 }

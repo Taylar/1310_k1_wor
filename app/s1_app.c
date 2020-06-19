@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-18 18:37:17
+* @Last Modified time: 2020-06-19 10:34:25
 */
 #include "../general.h"
 
@@ -62,6 +62,7 @@ void S1HwInit(void)
     configModeTimeCnt = 0;
 
     g_rSysConfigInfo.rfStatus       |= STATUS_1310_MASTER;
+    g_rSysConfigInfo.rfBW            = FREQ_434_50;
 
     SoundEventSet(SOUND_TYPE_VOLUME_MAX);
 }

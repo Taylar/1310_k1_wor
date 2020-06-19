@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-10 14:13:07
+* @Last Modified time: 2020-06-19 09:59:56
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -680,7 +680,6 @@ void RadioAppTaskFxn(void)
                     RadioSendData();
                 }
                 RadioCmdClearWithNoRespon_Groud();
-
             }
             
             if(RadioWithResPack() != 0){

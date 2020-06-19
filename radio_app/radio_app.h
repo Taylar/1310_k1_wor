@@ -33,7 +33,7 @@
 #define RADIO_EASYLINK_MODULATION_50K  EasyLink_Phy_50K_GPSK
 #define RADIO_EASYLINK_MODULATION_S1_OLD EasyLink_Phy_Custom_s1_old
 
-#define RADIO_BASE_FREQ                   473000000
+#define RADIO_BASE_FREQ                   443000000
 #define RADIO_WAKEUP_FREQ                  436125000
 #define RADIO_DIFF_UNIT_FREQ             125000
 #define RADIO_BASE_UNIT_FREQ             250000
