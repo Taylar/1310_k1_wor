@@ -6,9 +6,6 @@
  */
 #include "../general.h"
 #include "menu_k1.h"
-
-
-
 #ifdef BOARD_S6_6
 #define FONT_72X24_OFS_              216
 #define START_X_LINE 0
