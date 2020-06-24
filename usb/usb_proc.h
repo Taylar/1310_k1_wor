@@ -23,20 +23,22 @@ typedef enum {
 	EV_Get_Bluetooth_Name = 0x08,
 	EV_Set_Bluetooth_Name,
 	EV_Usb_Upgrade,	
-	EV_Get_History_Data   = 0x0B,  //根据编号获取历史数据
-    EV_Reset_Data         = 0x0C,  //清除所有数据
+	EV_Get_History_Data   = 0x0B,  //鏍规嵁缂栧彿鑾峰彇鍘嗗彶鏁版嵁
+    EV_Reset_Data         = 0x0C,  //娓呴櫎鎵�鏈夋暟鎹�
     
-    EV_Get_DevicePara    = 0x0F, //查询设备参数
-    EV_Set_DevicePara    = 0x10, //设置设备参数
-    EV_Get_Device_Data   = 0x11, //获取指定时间段数据
-    EV_Get_Unupload_Data = 0x12,//获取未上传数据
-    EV_Get_Record_Data   = 0x13,//获取开始记录的数据
-    EV_Verify_Code       = 0x14,//验证设备密码
+    EV_Get_DevicePara    = 0x0F, //鏌ヨ璁惧鍙傛暟
+    EV_Set_DevicePara    = 0x10, //璁剧疆璁惧鍙傛暟
+    EV_Get_Device_Data   = 0x11, //鑾峰彇鎸囧畾鏃堕棿娈垫暟鎹�
+    EV_Get_Unupload_Data = 0x12,//鑾峰彇鏈笂浼犳暟鎹�
+    EV_Get_Record_Data   = 0x13,//鑾峰彇寮�濮嬭褰曠殑鏁版嵁
+    EV_Verify_Code       = 0x14,//楠岃瘉璁惧瀵嗙爜
 	EV_Get_SIM_CCID		 = 0x15,//get sim ccid
 	EV_Get_Cur_Vol		 = 0x16,//get current volatge
-	EV_Get_SensorData		 = 0x18,//get sendor data
+	EV_Get_SensorData    = 0x18,//get sendor data
 
-    EV_Upgrade_BSL = 0x20,  // Upgrade BSL
+
+    EV_Upgrade_BSL      = 0x20,  // Upgrade BSL
+    EV_Set_DevicesId    = 0x21,
 	
 	EV_Get_ReadFlash    = 0x71,
 } USB_RX_MSG_ID;
@@ -53,18 +55,18 @@ typedef enum {
 	AC_Send_Calendar    = 0x86,
 	AC_Send_Bluetooth_Name = 0x88,
 	
-	AC_Send_History_Data  = 0x8B,// 根据编号获取历史数据,0.0.48版本之前误写成了8A,需要工具兼容
+	AC_Send_History_Data  = 0x8B,// 鏍规嵁缂栧彿鑾峰彇鍘嗗彶鏁版嵁,0.0.48鐗堟湰涔嬪墠璇啓鎴愪簡8A,闇�瑕佸伐鍏峰吋瀹�
 	
-    AC_Send_DevicePara    = 0x8F, //返回设备参数
+    AC_Send_DevicePara    = 0x8F, //杩斿洖璁惧鍙傛暟
 
-    AC_Send_Device_Data  = 0x91,//获取指定时间段数据
-    AC_Send_Unupload_Data = 0x92,//获取未上传数据
-    AC_Send_Record_Data   = 0x93,//获取开始记录的数据
+    AC_Send_Device_Data  = 0x91,//鑾峰彇鎸囧畾鏃堕棿娈垫暟鎹�
+    AC_Send_Unupload_Data = 0x92,//鑾峰彇鏈笂浼犳暟鎹�
+    AC_Send_Record_Data   = 0x93,//鑾峰彇寮�濮嬭褰曠殑鏁版嵁
 
     AC_Send_Upgrade_Success = 0x94,
-    AC_Send_Voltage = 0x95,//上发当前电压
+    AC_Send_Voltage = 0x95,//涓婂彂褰撳墠鐢靛帇
 
-    AC_Send_SensorData = 0x98,//上发sensor 数据
+    AC_Send_SensorData = 0x98,//涓婂彂sensor 鏁版嵁
 
     
     EV_Send_ReadFlash = 0xF1,

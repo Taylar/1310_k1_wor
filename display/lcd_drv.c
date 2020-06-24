@@ -209,11 +209,11 @@ int i,j;
 void Lcd_init(void)
 {
     Lcd_io_init();
+    Task_sleep(1 * CLOCK_UNIT_MS);
     Lcd_power_ctrl(1);
-
-
     Task_sleep(1 * CLOCK_UNIT_MS);
     Lcd_reset();
+
 #if 1
     Lcd_send_cmd(0xAE);    /*display off*/
 
@@ -229,7 +229,7 @@ void Lcd_init(void)
           Lcd_send_cmd(0xa4);    /*normal display*/
 
           Lcd_send_cmd(0xa8);    /*set multiplex ratio*/
-          Lcd_send_cmd(0x5f);
+          Lcd_send_cmd(0x7f);
 
           Lcd_send_cmd(0xab);    /*function selection A*/
           Lcd_send_cmd(0x01);    /*enable internal VDD regulator*/
@@ -299,8 +299,13 @@ void Lcd_init(void)
 // LCD set font parameters, Font Cols, Font Pages = Rows / 8, display inverse.
 //
 //***********************************************************************************
+static uint8_t retpChar[256] = {0};
+static uint8_t W_th = 0,H_th= 0;
+static uint8_t inXstart = 0,inYstart = 0;
 void Lcd_set_font(uint8_t bFontCols, uint8_t bFontRows, uint8_t fgInverse)
 {
+    W_th = bFontCols;
+    H_th = bFontRows;
     bLcdFontPages = (bFontRows + 7) / 8;
     bLcdFontCols = bFontCols;
     fgLcdFontInverse = fgInverse;
@@ -310,17 +315,82 @@ void Lcd_set_font(uint8_t bFontCols, uint8_t bFontRows, uint8_t fgInverse)
 // LCD write character.
 //
 //***********************************************************************************
+
+uint8_t bitChange(uint8_t *byte)
+{
+  uint8_t ret = 0,i = 8;
+
+
+      for(i=0;i<8;i++)
+      {
+          ret=((*byte>>i)&0x01)|ret;
+          if(i<7)
+              ret=ret<<1;
+      }
+      return ret;
+}
+void buffcharChange(uint8_t *pChar,uint8_t w,int8_t h,uint8_t xStart,uint8_t yStart)
+{
+  uint8_t i = 0,j = 0,W_bytes = 0;
+  uint8_t bytefornt = 0,byteEnd = 0;
+  uint8_t temp = 0;
+  memset(retpChar,0x00,256);
+  W_bytes = w/8;
+
+  if(w%8 != 0)
+  {
+
+      W_bytes++;
+
+  }
+  //else
+  {
+      for(i = 0 ; i < h;i++)
+      {
+          for(j = 0 ; j <W_bytes;j++)
+          {
+              retpChar[(W_bytes)*i + j] = *(pChar+((h-i-1)*(W_bytes)+j));
+          }
+      }
+  }
+  for(i = 0 ; i < h ; i++)
+  {
+      if(W_bytes%2 != 0)
+      {
+          bytefornt = retpChar[i*W_bytes + W_bytes/2];
+          temp = bitChange(&bytefornt);
+          retpChar[i*W_bytes + W_bytes/2] = temp;
+      }
+     for(j = 0 ; j < W_bytes/2;j++)
+     {
+         bytefornt = retpChar[i*W_bytes + j];
+         byteEnd   =  retpChar[i*W_bytes + (W_bytes-j-1)];
+         temp = bitChange(&byteEnd);
+         retpChar[i*W_bytes + j] =temp;
+         temp = bitChange(&bytefornt);
+         retpChar[i*W_bytes + (W_bytes-j-1)] = temp;
+     }
+
+
+  }
+
+  //inXstart = 127 - W_th*(xStart+1);
+  //inYstart = 127 - (H_th*(yStart+1));
+
+}
 void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
 {
 #ifdef LCD_ST7567A
     uint8_t page, col,nextrow;
     uint8_t nextCharFlag,dotValue_;
+    uint8_t *tempChar;
     // Offset from left edge of display.
     xStart += LCD_START_COL;
 
     // Add the command to page address.
     //bLowCol = xStart & 0x0f;
     //bHiCol = (xStart >> 4) & 0x0f;
+
 #if 0
     for (page = 0; page < bLcdFontPages; page++) {
         //Lcd_send_cmd(LCD_CMD_PSA + yStart);			// set the page start address
@@ -348,18 +418,24 @@ void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
 #else
     //ALLDDR();
     //Lcd_clear_screen();
+    inXstart =  (128-((xStart+1)*W_th))/2;
+    inYstart = yStart;
+    //inXstart = 0;
+    buffcharChange(pChar,W_th,H_th,xStart,yStart);
+
+    //inXstart = 128-(W_th+xStart*W_th);
     nextCharFlag = 0;
-    nextrow = bLcdFontPages*yStart*8;
+    nextrow =128-(bLcdFontPages*(inYstart+1)*8)-H_th;
 
 
     Lcd_send_cmd(0x15);//Set column address
-    Lcd_send_cmd(xStart);//Column Start Address
-    Lcd_send_cmd(xStart+bLcdFontCols/2-1);//Column End Address
+    Lcd_send_cmd(inXstart);//Column Start Address
+    Lcd_send_cmd(inXstart+bLcdFontCols/2-1);//Column End Address
 
     Lcd_send_cmd(0x75);//Set row address
     Lcd_send_cmd(nextrow);//Row Start Address
     Lcd_send_cmd(nextrow+bLcdFontPages*8-1);//Row End Address
-
+    tempChar = retpChar;
     for (page = 0; page < bLcdFontPages*8; page++)
     {
 
@@ -368,7 +444,7 @@ void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
             // check inverse flag bit.
             if (fgLcdFontInverse)
             {
-                if((*pChar)&(1<<nextCharFlag))
+                if((*tempChar)&(1<<nextCharFlag))
                 {
                     dotValue_ = 0xf0;
                 }
@@ -377,7 +453,7 @@ void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
                     dotValue_ = 0x00;
                 }
 
-                if((*pChar)&(1<<(nextCharFlag+1)))
+                if((*tempChar)&(1<<(nextCharFlag+1)))
                 {
                     dotValue_ |= 0x0f;
                 }
@@ -386,6 +462,7 @@ void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
                     dotValue_ |= 0x00;
                 }
 
+                //Lcd_send_data(dotValue_);
                 Lcd_send_data(dotValue_);
             }
             else
@@ -395,18 +472,15 @@ void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
             if(nextCharFlag==8)
             {
                 nextCharFlag=0;
-                pChar++;
+                tempChar = tempChar +1;
             }
 
         }
         if((bLcdFontCols%8)!=0)
         {
             nextCharFlag=0;
-            pChar++;
+            tempChar++;
         }
-
-
-        nextrow++;
     }
 #endif
 
@@ -473,7 +547,7 @@ void Lcd_clear_area(uint8_t xStart, uint8_t yStart)
             Lcd_send_cmd(xStart+col);//Column Start Address
             Lcd_send_cmd(xStart+bLcdFontCols);//Column End Address
 
-           Lcd_send_data(0x00);
+            Lcd_send_data(0x00);
 
 
         }
@@ -542,8 +616,8 @@ void Lcd_clear_screen(void)
     Lcd_send_cmd(0x00);//Column Start Address
     Lcd_send_cmd(0x7f);//Column End Address
     Lcd_send_cmd(0x75);//Set row address
-    Lcd_send_cmd(0x10);//Row Start Address
-    Lcd_send_cmd(0x7f);//Row End Address
+    Lcd_send_cmd(0x00);//Row Start Address
+    Lcd_send_cmd(0x6f);//Row End Address
     for(i=0;i<128;i++)
     {
 
@@ -555,6 +629,7 @@ void Lcd_clear_screen(void)
            // Lcd_send_data(0x00);
         }
     }
+    display_star_mssage();
 #endif
 
 #ifdef EPD_GDE0213B1

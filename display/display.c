@@ -174,26 +174,26 @@ static void Disp_character(uint8_t bColStart, uint8_t bPageStart, uint8_t bChar,
              Lcd_set_font(6, 8, fgInv);
              Lcd_write_character(bColStart, bPageStart, &font6x8[bChar * 8]);
              // We use font 5x8, there are one space between char, so need clear the space.
-           //Lcd_set_font(1, 8, fgInv);
-           //Lcd_write_character(bColStart + 5, bPageStart, &font5x8[0]);
+             //Lcd_set_font(1, 8, fgInv);
+             //Lcd_write_character(bColStart + 5, bPageStart, &font5x8[0]);
             break;
 
         case FONT_8X16:
-            bColStart *= 4;
+            //bColStart *= 4;
             bColStart += LCD_FONT8X16_START_COL;
 //            bPageStart *= 2;
             Lcd_set_font(8, 16, fgInv);
             Lcd_write_character(bColStart, bPageStart, &font8x16[bChar * 16]);
         break;
         case FONT_8X24:
-            bColStart *= 4;
+            //bColStart *= 8;
             bColStart += LCD_FONT8X16_START_COL;
 //            bPageStart *= 2;
             Lcd_set_font(8, 24, fgInv);
             Lcd_write_character(bColStart, bPageStart, &font8x24[bChar * 24]);
         break;
         case FONT_12X24:
-             bColStart *= 6;
+             //bColStart *= 6;
              bColStart += LCD_FONT12X24_START_COL;
              Lcd_set_font(12, 24, fgInv);
             // bPageStart = bPageStart * 3 + 2;
@@ -511,7 +511,7 @@ void display_star_mssage(void)
     //time_buff[12] = '9';
     //time_buff[13] = '8';
     //time_buff[14] = '%';
-    Disp_msg(0,0,time_buff,FONT_8X16);
+    Disp_msg(0,0,time_buff,FONT_8X24);
 }
 //***********************************************************************************
 //
@@ -523,14 +523,9 @@ void Disp_proc(void)
     if (rDispObject.init == 0)
         return;
     //Lcd_clear_screen();
-    //Disp_msg(0, 0, "01234", FONT_5X8);
-    //Disp_msg(0, 1, "01234", FONT_8X16);
-    //Disp_msg(0, 0, "01234", FONT_8X16);
+
     display_star_mssage();
-    //Lcd_set_font(60, 24, 1);
-    //Disp_icon(0,1,ICON_60X24_DEVICES_NUM,1);
-    //Disp_icon(0,2,ICON_60X24_DIVI_NUM,1);
-    //Disp_icon(0,3,ICON_60X24_ADD_ARR,1);
+
 #if 0
     if(gatewayConfigTime)
     {
@@ -611,6 +606,7 @@ bool Disp_poweron(void)
        return false;//no lcd
 
     if (rDispObject.init == 0) {
+        gpio_power_en_config();
         Lcd_init();
         rDispObject.init = 1;
         rDispObject.infoIndex = 0;

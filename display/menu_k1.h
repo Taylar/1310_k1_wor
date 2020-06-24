@@ -8,8 +8,6 @@
 #ifndef ZKS_DISPLAY_MENU_K1_H_
 #define ZKS_DISPLAY_MENU_K1_H_
 #ifdef BOARD_S6_6
-
-
 typedef struct _MenuMode {
     uint8_t count;                  //¦Ì¡À?¡ã2??¨²¦Ì?¨ºy
     const uint8_t *string;          //2?¦Ì£¤¡À¨º¨¬a

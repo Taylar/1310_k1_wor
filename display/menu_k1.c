@@ -9,10 +9,10 @@
 #ifdef BOARD_S6_6
 #define FONT_72X24_OFS_              216
 #define START_X_LINE 0
-#define START_X_NUM  8
-#define START_X_XIN  120
-#define START_X_TIP  108
-
+#define START_X_NUM  9
+#define START_X_XIN  15
+#define START_X_TIP  2
+#define DELAY_COMPLETE 2000
 typedef enum {
     MENU_ITEN_NULL=0,
     MENU_ITEN_ADD_GROUP,
@@ -96,16 +96,56 @@ MenuModeObject mMenuModeObject;
 static Calendar calendar;
 static void menuModeObject_data_reinit(void)
 {
-    mMenuModeObject.devicesId = 0;
-    mMenuModeObject.groudId = 0;
+    //mMenuModeObject.devicesId = 0;
+    //mMenuModeObject.groudId = 0;
     mMenuModeObject.keyDoing = KEY_DOING_NULL;
     mMenuModeObject.selectIndex = 0;
-    mMenuModeObject.numEnter = 0;
-    Lcd_clear_screen();
+
+    //Lcd_clear_screen();
+
+    switch(mMenuModeObject.index)
+    {
+    case MENU_ITEN_SETTING_TIME:
+         Lcd_clear_screen();
+         break;
+    case MENU_ITEN_DELETE_GROUP:
+    case MENU_ITEN_TERMINAL_TEST:
+    case MENU_ITEN_CLOSE_CTROL:
+    case MENU_ITEN_OPEN_CTROL:
+    case MENU_ITEN_TERMINAL_UNLOCKING:
+    case MENU_ITEN_CTROL_CLOSE_BLOCKING:
+    case MENU_ITEN_CTROL_OPEN_BLOCKING:
+    case MENU_ITEN_CTROL_POWER_SELECT_HIGH:
+    case MENU_ITEN_CTROL_POWER_SELECT_MID:
+    case MENU_ITEN_CTROL_POWER_SELECT_LOW:
+        if(!mMenuModeObject.devicesId)
+        {
+            mMenuModeObject.devicesId = mMenuModeObject.numEnter;
+        }
+        mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+         break;
+
+    case MENU_ITEN_CLOSE_CTROL_GROUP:
+    case MENU_ITEN_OPEN_CTROL_GROUP:
+        {
+            if(!mMenuModeObject.groudId)
+            {
+                mMenuModeObject.groudId = mMenuModeObject.numEnter;
+            }
+            mMenuModeObject.numEnter = mMenuModeObject.groudId;
+        }
+         break;
+    case MENU_ITEN_CTROL_OPEN_PREVENT_ESCAPE:
+         Lcd_clear_screen();
+         break;
+
+    }
+    Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 }
 void menuc_main(KEY_CODE_E keyCode)
 {
     KEY_CODE_E keyCodeIn = keyCode;
+    //Disp_proc();
     switch(keyCodeIn)
     {
         case _VK_COMMAND://命令
@@ -210,6 +250,9 @@ void menuc_main(KEY_CODE_E keyCode)
 
 
         case _VK_MODE://模式
+            if(MENU_ITEN_SETTING_TIME == mMenuModeObject.index)
+                Lcd_clear_screen();
+
             mMenuModeObject.index++;
           if(mMenuModeObject.index >= MENU_ITEM_TIK_GROUP_SUBDUE)
              mMenuModeObject.index= (MENU_ITEN_NULL+1);
@@ -254,13 +297,15 @@ TAB_REPEAT_ADD_ARR:
        {
            //numToBuff(numbuff,mMenuModeObject.numEnter);
            Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+#if 1
            Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
            Disp_icon(START_X_LINE,3,ICON_72X24_ADD_ARR,1);
            Lcd_set_font(8, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-             sprintf((char*)numbuff,"%s","    ");
+             sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -272,6 +317,14 @@ TAB_REPEAT_ADD_ARR:
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+           }
+#endif
        }
        else if(mMenuModeObject.selectIndex == 1)
        {
@@ -284,8 +337,9 @@ TAB_REPEAT_ADD_ARR:
            Lcd_set_font(8, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -293,7 +347,6 @@ TAB_REPEAT_ADD_ARR:
            Lcd_set_font(8, 24, 1);
            if(mMenuModeObject.numEnter != 0)
            {
-
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
@@ -312,7 +365,7 @@ TAB_REPEAT_ADD_ARR:
                Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
                Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                Lcd_set_font(8, 16, 1);
-
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
            }
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
            {
@@ -328,21 +381,29 @@ TAB_REPEAT_ADD_ARR:
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-               //Lcd_clear_screen();
-               //
-               mMenuModeObject.selectIndex = 2;
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+               goto TAB_REPEAT_ADD_ARR;
+
+
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
-               mMenuModeObject.groudId =   0;
-               mMenuModeObject.numEnter =  0;
-               mMenuModeObject.devicesId = 0;
+               //mMenuModeObject.groudId =   0;
+               //mMenuModeObject.numEnter =  0;
+               //mMenuModeObject.devicesId = 0;
                mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               Lcd_clear_screen();
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
                goto TAB_REPEAT_ADD_ARR;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -368,8 +429,9 @@ TAB_REPEAT_ADD_ARR1:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -381,6 +443,15 @@ TAB_REPEAT_ADD_ARR1:
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+           }
+
+
        }
        else if(mMenuModeObject.selectIndex == 1)
        {
@@ -393,8 +464,9 @@ TAB_REPEAT_ADD_ARR1:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -420,7 +492,7 @@ TAB_REPEAT_ADD_ARR1:
                Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
                Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                Lcd_set_font(8, 16, 1);
-
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
 
            }
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
@@ -439,19 +511,24 @@ TAB_REPEAT_ADD_ARR1:
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                //
-               mMenuModeObject.selectIndex = 2;
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+               goto TAB_REPEAT_ADD_ARR1;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
-               mMenuModeObject.groudId =   0;
-               mMenuModeObject.numEnter =  0;
-               mMenuModeObject.devicesId = 0;
+               //mMenuModeObject.groudId =   0;
+               //mMenuModeObject.numEnter =  0;
+               //mMenuModeObject.devicesId = 0;
                mMenuModeObject.selectIndex = 0;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
                Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR1;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -475,8 +552,9 @@ TAB_REPEAT_ADD_ARR2:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -488,20 +566,28 @@ TAB_REPEAT_ADD_ARR2:
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+           }
        }
        else if(mMenuModeObject.selectIndex == 1)
        {
            //numToBuff(numbuff,mMenuModeObject.numEnter);
 
            //Disp_icon(0,1,ICON_72X24_TERMINAL_NUM,1);
-           Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
-           Disp_icon(START_X_LINE,3,ICON_72X24_TERMINAL_TEST,1);
+           //Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
+           //Disp_icon(START_X_LINE,3,ICON_72X24_TERMINAL_TEST,1);
 
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -522,7 +608,7 @@ TAB_REPEAT_ADD_ARR2:
            if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
-               mMenuModeObject.selectIndex =2;
+
                Lcd_set_font(8, 16, 1);
                //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
                //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
@@ -531,8 +617,17 @@ TAB_REPEAT_ADD_ARR2:
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-                              //
-               mMenuModeObject.selectIndex = 2;
+
+
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+              //mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+               goto TAB_REPEAT_ADD_ARR2;
 
            }
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
@@ -549,8 +644,15 @@ TAB_REPEAT_ADD_ARR2:
                Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-               //
-               mMenuModeObject.selectIndex = 2;
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+               goto TAB_REPEAT_ADD_ARR2;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
@@ -562,7 +664,7 @@ TAB_REPEAT_ADD_ARR2:
                Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR2;
            }
-           mMenuModeObject.numEnter = 0;
+          // mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -585,8 +687,9 @@ TAB_REPEAT_ADD_ARR3:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -598,6 +701,13 @@ TAB_REPEAT_ADD_ARR3:
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+           }
        }
    }
    else
@@ -608,12 +718,18 @@ TAB_REPEAT_ADD_ARR3:
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
-               Lcd_set_font(36, 24, 1);
                if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_CLOSE_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-               mMenuModeObject.selectIndex = 2;
+
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+               goto TAB_REPEAT_ADD_ARR3;
+
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
@@ -648,16 +764,23 @@ TAB_REPEAT_ADD_ARR4:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
            Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+
            Lcd_set_font(8, 16, 1);
+           if(mMenuModeObject.devicesId != 0)
+           {
+               sprintf((char*)numbuff,"%d",mMenuModeObject.devicesId);
+               Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+           }
+
            if(mMenuModeObject.numEnter != 0)
            {
-
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
@@ -674,7 +797,14 @@ TAB_REPEAT_ADD_ARR4:
                //send data to devices
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_CLOSE_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-               mMenuModeObject.selectIndex = 2;
+
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+               goto TAB_REPEAT_ADD_ARR4;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
@@ -686,7 +816,7 @@ TAB_REPEAT_ADD_ARR4:
                Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR4;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -709,8 +839,9 @@ TAB_REPEAT_ADD_ARR5:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -721,6 +852,13 @@ TAB_REPEAT_ADD_ARR5:
 
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+           }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
        }
    }
@@ -736,7 +874,14 @@ TAB_REPEAT_ADD_ARR5:
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-               mMenuModeObject.selectIndex = 2;
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+               goto TAB_REPEAT_ADD_ARR5;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
@@ -748,7 +893,7 @@ TAB_REPEAT_ADD_ARR5:
                Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR5;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -772,8 +917,9 @@ TAB_REPEAT_ADD_ARR6:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -784,6 +930,13 @@ TAB_REPEAT_ADD_ARR6:
 
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+           }
+
+           if(mMenuModeObject.devicesId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.devicesId);
+               Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
        }
    }
@@ -799,7 +952,16 @@ TAB_REPEAT_ADD_ARR6:
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_OPEN_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
                //Task_sleep(1000*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-               mMenuModeObject.selectIndex = 2;
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+
+               goto TAB_REPEAT_ADD_ARR6;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
@@ -811,7 +973,7 @@ TAB_REPEAT_ADD_ARR6:
                Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR6;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -834,8 +996,9 @@ TAB_REPEAT_ADD_ARR7:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -846,6 +1009,13 @@ TAB_REPEAT_ADD_ARR7:
 
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+           }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
        }
        else if(mMenuModeObject.selectIndex == 1)
@@ -859,8 +1029,9 @@ TAB_REPEAT_ADD_ARR7:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -872,75 +1043,60 @@ TAB_REPEAT_ADD_ARR7:
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
+
+           if(mMenuModeObject.devicesId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.devicesId);
+               Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+           }
        }
    }
    else
    {
        if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
        {
-           if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
+           if(mMenuModeObject.selectIndex == 0)
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
-               //mMenuModeObject.selectIndex =1;
-               //Lcd_set_font(8, 16, 1);
-               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
-               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               //调用发射窗口
-               //display complete
-               //Lcd_clear_screen();
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
-               Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-               else
-               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-               mMenuModeObject.selectIndex = 2;
+               if(mMenuModeObject.devicesId != 0)
+               {
+                   if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+                   Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+                   else
+                   Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
 
-           }
-           else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter ==0)
-           {
-               mMenuModeObject.selectIndex =1;
-               mMenuModeObject.devicesId = 0;
-               mMenuModeObject.groudId = 0;
-               Lcd_clear_screen();
+                   Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                   Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+               }
+
+
+
+               mMenuModeObject.selectIndex = 1;
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
                goto TAB_REPEAT_ADD_ARR7;
            }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
+           else if(mMenuModeObject.selectIndex == 1 )
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(8, 16, 1);
-               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
-               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               //调用发射窗口
-               //display complete
-               //Lcd_clear_screen();
-               RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
-               //Task_sleep(1000*CLOCK_UNIT_MS);
-               Lcd_set_font(36, 24, 1);
-               Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-               //
-               mMenuModeObject.selectIndex = 2;
-           }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter ==0)
-           {
-               mMenuModeObject.selectIndex =0;
-               mMenuModeObject.devicesId = 0;
-               mMenuModeObject.groudId = 0;
-               Lcd_clear_screen();
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               goto TAB_REPEAT_ADD_ARR7;
-           }
-           else if(mMenuModeObject.selectIndex == 2)
-           {
-               mMenuModeObject.groudId =   0;
-               mMenuModeObject.numEnter =  0;
-               mMenuModeObject.devicesId = 0;
+
+               if(mMenuModeObject.groudId != 0)
+               {
+                   RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //群组
+                   //Task_sleep(1000*CLOCK_UNIT_MS);
+                   Lcd_set_font(36, 24, 1);
+                   Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+
+                   Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                   Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+               }
                mMenuModeObject.selectIndex = 0;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR7;
            }
-           mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -966,8 +1122,9 @@ TAB_REPEAT_ADD_ARR21:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -978,6 +1135,14 @@ TAB_REPEAT_ADD_ARR21:
 
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+           }
+
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
        }
    }
@@ -993,7 +1158,14 @@ TAB_REPEAT_ADD_ARR21:
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-               mMenuModeObject.selectIndex = 2;
+
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+               goto TAB_REPEAT_ADD_ARR21;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
@@ -1005,7 +1177,7 @@ TAB_REPEAT_ADD_ARR21:
                Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR21;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -1033,8 +1205,9 @@ TAB_REPEAT_ADD_ARR20:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -1046,21 +1219,36 @@ TAB_REPEAT_ADD_ARR20:
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+           }
        }
    }
    else
    {
        if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
        {
-           if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
+           if(mMenuModeObject.selectIndex == 0)
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_OPEN_BLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
-               Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-               else
-               Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-               mMenuModeObject.selectIndex = 2;
+               if(mMenuModeObject.numEnter != 0)
+               {
+                   if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_OPEN_BLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+                   Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+                   else
+                   Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+
+                   Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                   Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+               }
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+               mMenuModeObject.selectIndex = 0;
+               goto TAB_REPEAT_ADD_ARR20;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
@@ -1072,7 +1260,7 @@ TAB_REPEAT_ADD_ARR20:
                Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR20;
            }
-           mMenuModeObject.numEnter = 0;
+          // mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -1105,9 +1293,15 @@ static void menu_open_prevent_escape( )
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
-               mMenuModeObject.selectIndex = 2;
+
            }
+
+           Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+           Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
            mMenuModeObject.numEnter = 0;
+           mMenuModeObject.groudId = 0;
+           mMenuModeObject.devicesId = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -1141,7 +1335,13 @@ static void menu_close_prevent_escape( )
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
                mMenuModeObject.selectIndex = 2;
            }
+
+           Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+           Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
            mMenuModeObject.numEnter = 0;
+           mMenuModeObject.groudId = 0;
+           mMenuModeObject.devicesId = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -1165,8 +1365,9 @@ TAB_REPEAT_ADD_ARR8:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -1177,6 +1378,12 @@ TAB_REPEAT_ADD_ARR8:
 
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+           }
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
        }
        else if(mMenuModeObject.selectIndex == 1)
@@ -1190,8 +1397,9 @@ TAB_REPEAT_ADD_ARR8:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -1212,27 +1420,24 @@ TAB_REPEAT_ADD_ARR8:
            if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
-               //mMenuModeObject.selectIndex =1;
-               //Lcd_set_font(8, 16, 1);
-               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
-               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               //调用发射窗口
-               //display complete
-               //Lcd_clear_screen();
                Lcd_set_font(36, 24, 1);
                if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_HIGH,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
                mMenuModeObject.selectIndex = 2;
 
            }
            else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter ==0)
            {
                mMenuModeObject.selectIndex =1;
-               mMenuModeObject.devicesId = 0;
-               mMenuModeObject.groudId = 0;
-               Lcd_clear_screen();
+               //mMenuModeObject.devicesId = 0;
+               //mMenuModeObject.groudId = 0;
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
                goto TAB_REPEAT_ADD_ARR8;
            }
@@ -1249,29 +1454,33 @@ TAB_REPEAT_ADD_ARR8:
                //Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
                //
                mMenuModeObject.selectIndex = 2;
            }
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter ==0)
            {
                mMenuModeObject.selectIndex =0;
-               mMenuModeObject.devicesId = 0;
-               mMenuModeObject.groudId = 0;
-               Lcd_clear_screen();
+               //mMenuModeObject.devicesId = 0;
+               //mMenuModeObject.groudId = 0;
+               //Lcd_clear_screen();
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
                goto TAB_REPEAT_ADD_ARR8;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
-               mMenuModeObject.groudId =   0;
-               mMenuModeObject.numEnter =  0;
-               mMenuModeObject.devicesId = 0;
+              //mMenuModeObject.groudId =   0;
+               //mMenuModeObject.numEnter =  0;
+               //mMenuModeObject.devicesId = 0;
                mMenuModeObject.selectIndex = 0;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               Lcd_clear_screen();
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
                goto TAB_REPEAT_ADD_ARR8;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -1295,8 +1504,9 @@ TAB_REPEAT_ADD_ARR9:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+             mMenuModeObject.devicesId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -1307,6 +1517,13 @@ TAB_REPEAT_ADD_ARR9:
 
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+           }
+
+           if(mMenuModeObject.groudId != 0)
+           {
+
+               sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
        }
        else if(mMenuModeObject.selectIndex == 1)
@@ -1320,8 +1537,9 @@ TAB_REPEAT_ADD_ARR9:
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+             mMenuModeObject.groudId = mMenuModeObject.numEnter;
            }
            Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -1355,7 +1573,8 @@ TAB_REPEAT_ADD_ARR9:
                else
                    Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
 
-
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 
                mMenuModeObject.selectIndex = 2;
 
@@ -1363,9 +1582,10 @@ TAB_REPEAT_ADD_ARR9:
            else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter ==0)
            {
                mMenuModeObject.selectIndex =1;
-               mMenuModeObject.devicesId = 0;
-               mMenuModeObject.groudId = 0;
-               Lcd_clear_screen();
+               //mMenuModeObject.devicesId = 0;
+              // mMenuModeObject.groudId = 0;
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+               //Lcd_clear_screen();
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
                goto TAB_REPEAT_ADD_ARR9;
            }
@@ -1373,38 +1593,34 @@ TAB_REPEAT_ADD_ARR9:
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(8, 16, 1);
-               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
-               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               //调用发射窗口
-               //display complete
-               //Lcd_clear_screen();
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_POWER_MID,mMenuModeObject.devicesId, mMenuModeObject.groudId);
 
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-               //
+
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
                mMenuModeObject.selectIndex = 2;
            }
            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter ==0)
            {
                mMenuModeObject.selectIndex =0;
-               mMenuModeObject.devicesId = 0;
-               mMenuModeObject.groudId = 0;
-               Lcd_clear_screen();
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
                goto TAB_REPEAT_ADD_ARR9;
            }
            else if(mMenuModeObject.selectIndex == 2)
            {
-               mMenuModeObject.groudId =   0;
-               mMenuModeObject.numEnter =  0;
-               mMenuModeObject.devicesId = 0;
+               //mMenuModeObject.groudId =   0;
+              mMenuModeObject.numEnter =  mMenuModeObject.devicesId;
+               //mMenuModeObject.devicesId = 0;
                mMenuModeObject.selectIndex = 0;
+               //mMenuModeObject.keyDoing = KEY_DOING_NULL;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               Lcd_clear_screen();
+               //Lcd_clear_screen();
                goto TAB_REPEAT_ADD_ARR9;
            }
-           mMenuModeObject.numEnter = 0;
+           //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
@@ -1428,8 +1644,9 @@ static void menu_power_select_low()
             Lcd_set_font(8, 16, 1);
             if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
             {
-                sprintf((char*)numbuff,"%s","    ");
+                sprintf((char*)numbuff,"%s","     ");
               Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+              mMenuModeObject.devicesId = mMenuModeObject.numEnter;
             }
             Lcd_set_font(8, 24, 1);
             Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -1440,6 +1657,12 @@ static void menu_power_select_low()
 
                 sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                 Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+            }
+            if(mMenuModeObject.groudId != 0)
+            {
+
+                sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
             }
         }
         else if(mMenuModeObject.selectIndex == 1)
@@ -1453,8 +1676,9 @@ static void menu_power_select_low()
             Lcd_set_font(8, 16, 1);
             if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
             {
-                sprintf((char*)numbuff,"%s","    ");
+                sprintf((char*)numbuff,"%s","     ");
               Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+              mMenuModeObject.groudId = mMenuModeObject.numEnter;
             }
             Lcd_set_font(8, 24, 1);
             Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
@@ -1475,28 +1699,26 @@ static void menu_power_select_low()
             if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
             {
                 mMenuModeObject.devicesId = mMenuModeObject.numEnter;
-                //mMenuModeObject.selectIndex =1;
-                //Lcd_set_font(8, 16, 1);
-                //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
-                //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-                //调用发射窗口
-                //display complete
-                //Lcd_clear_screen();
-               // RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                 Lcd_set_font(36, 24, 1);
                 if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                 Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                 else
                 Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+
+
+                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
                 mMenuModeObject.selectIndex = 2;
 
             }
             else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter ==0)
             {
                 mMenuModeObject.selectIndex =1;
-                mMenuModeObject.devicesId = 0;
-                mMenuModeObject.groudId = 0;
-                Lcd_clear_screen();
+               // mMenuModeObject.devicesId = 0;
+               // mMenuModeObject.groudId = 0;
+                //Lcd_clear_screen();
+                mMenuModeObject.numEnter = mMenuModeObject.groudId;
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR10;
             }
@@ -1504,38 +1726,43 @@ static void menu_power_select_low()
             {
                 mMenuModeObject.groudId = mMenuModeObject.numEnter;
                 Lcd_set_font(8, 16, 1);
-                //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
-                //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-                //调用发射窗口
-                //display complete
-                //Lcd_clear_screen();
                 RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId);
 
                 Lcd_set_font(36, 24, 1);
                 Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+
+                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+
                 //
                 mMenuModeObject.selectIndex = 2;
             }
             else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter ==0)
             {
                 mMenuModeObject.selectIndex =0;
-                mMenuModeObject.devicesId = 0;
-                mMenuModeObject.groudId = 0;
-                Lcd_clear_screen();
+                //mMenuModeObject.devicesId = 0;
+                //mMenuModeObject.groudId = 0;
+                //Lcd_clear_screen();
+                mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR10;
             }
             else if(mMenuModeObject.selectIndex == 2)
             {
-                mMenuModeObject.groudId =   0;
-                mMenuModeObject.numEnter =  0;
-                mMenuModeObject.devicesId = 0;
+                //mMenuModeObject.groudId =   0;
+               // mMenuModeObject.numEnter =  0;
+                //mMenuModeObject.devicesId = 0;
+
+                mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+
                 mMenuModeObject.selectIndex = 0;
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
-                Lcd_clear_screen();
+                //Lcd_clear_screen();
                 goto TAB_REPEAT_ADD_ARR10;
             }
-            mMenuModeObject.numEnter = 0;
+            //mMenuModeObject.numEnter = 0;
             mMenuModeObject.keyDoing = KEY_DOING_NULL;
         }
     }
@@ -1562,7 +1789,7 @@ static void menu_tik_fixed_number_subdue()
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
            Lcd_set_font(8, 24, 1);
@@ -1642,7 +1869,7 @@ static void menu_tik_arr_subdue()
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
-               sprintf((char*)numbuff,"%s","    ");
+               sprintf((char*)numbuff,"%s","     ");
              Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
            }
            Lcd_set_font(8, 24, 1);
@@ -1846,7 +2073,7 @@ static void menu_setting_time( )
         Lcd_set_font(8, 16, 1);
         if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
         {
-          sprintf((char*)numbuff,"%s","    ");
+          sprintf((char*)numbuff,"%s","     ");
           Disp_msg(START_X_NUM,mMenuModeObject.selectIndex%2+1,numbuff,FONT_8X24);
         }
 
