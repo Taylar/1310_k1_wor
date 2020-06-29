@@ -77,8 +77,8 @@ typedef enum name
     _VK_NUM8    = 0xBB,
     _VK_NUM9    = 0xB7,
     
-    _VK_MODE    = 0x7E,
-    _VK_NUM0    = 0x7D,
+    _VK_MODE    = 0x7D,
+    _VK_NUM0    = 0x7E,
     _VK_OK      = 0x7B,
     _VK_SELECT  = 0x01,
 }KEY_CODE_E;
@@ -124,6 +124,7 @@ void KeyIcInit(void);
 void gpio_power_en_config(void);
 void power_Key_init(void);
 uint8_t PowerKeyReadState(KEY_NUM_E key);
+void power_on_init_key_code(void);
 #endif //BOARD_S6_6
 
 #endif	/* __ZKSIOT_KEY_PROC_H__ */

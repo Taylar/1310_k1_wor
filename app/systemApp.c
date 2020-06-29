@@ -343,7 +343,8 @@ void SystemAppTaskFxn(void)
         	{
         	   g_firstStartFlag=!g_firstStartFlag;
         	   //gpio_power_en_config();
-        	   menuc_main(_VK_MODE);
+        	   power_on_init_key_code();
+        	   menuc_main(_VK_COMMAND);
         	   lcd_power_state = 1;
         	}
 		}

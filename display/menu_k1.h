@@ -23,9 +23,13 @@ typedef struct _MenuModeObject {
    uint32_t devicesId;
    uint32_t groudId;
 } MenuModeObject;
+
+
 extern void menuc_main(KEY_CODE_E keyCode);
 void Menu_low_power_display(uint32_t devicesId);
 void Menu_not_wearing_well_display(uint32_t devicesId);
 void Menu_term_is_destroyed(uint32_t devicesId);
+void power_on_init_key_code(void);
+
 #endif
 #endif /* ZKS_DISPLAY_MENU_K1_H_ */
