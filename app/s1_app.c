@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-19 10:34:25
+* @Last Modified time: 2020-06-29 15:10:56
 */
 #include "../general.h"
 
@@ -80,14 +80,15 @@ void S1AppRtcProcess(void)
         }
     }
 
-    // if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT){
-    //     ElecPreventInsertMeasure();
-    //     if(ElecPreventInsertState()){
-    //         EletricPulseSetTime_S(1);
-    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
-    //         SoundEventSet(SOUND_TYPE_INSERT);
-    //     }
-    // }
+    if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT){
+        ElecPreventInsertMeasure();
+        if(ElecPreventInsertState()){
+            EletricPulseSetTime_S(1);
+            // RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+            RadioCmdSetWithNoRes(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+            SoundEventSet(SOUND_TYPE_INSERT);
+        }
+    }
 
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
         escapeTimeCnt++;
@@ -108,27 +109,29 @@ void S1AppRtcProcess(void)
     }
 
 
-    // Battery_porcess();
-    // if(Battery_get_voltage() < 3600){
-    //     if((lowBatCnt == 0) || (lowBatCnt >= 30)){
-    //         SoundEventSet(SOUND_TYPE_LOW_BAT);
-    //         lowBatCnt = 1;
-    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
-    //     }
-    //     lowBatCnt++;
-    // }else{
-    //     lowBatCnt = 0;
-    // }
+    Battery_porcess();
+    if(Battery_get_voltage() < 3600){
+        if((lowBatCnt == 0) || (lowBatCnt >= 30)){
+            SoundEventSet(SOUND_TYPE_LOW_BAT);
+            lowBatCnt = 1;
+            // RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
+            RadioCmdSetWithNoRes(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
+        }
+        lowBatCnt++;
+    }else{
+        lowBatCnt = 0;
+    }
 
 
-    // destroyEleShock = DestroyPinRead();
-    // if(destroyEleShock){
-    //     if(destroyEleShock){
-    //         EletricPulseSetTime_S(1);
-    //         RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
-    //         SoundEventSet(SOUND_TYPE_DESTROYED);
-    //     } 
-    // }
+    destroyEleShock = DestroyPinRead();
+    if(destroyEleShock){
+        if(destroyEleShock){
+            EletricPulseSetTime_S(1);
+            // RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
+            RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
+            SoundEventSet(SOUND_TYPE_DESTROYED);
+        } 
+    }
 
     // for test
     // RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);

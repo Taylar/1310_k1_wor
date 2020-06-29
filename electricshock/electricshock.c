@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-19 11:58:18
+* @Last Modified time: 2020-06-24 19:08:20
 */
 #include "../general.h"
 
@@ -53,7 +53,7 @@ const PIN_Config eleShockPinTable[] = {
     HIGH_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 高压档位         */
     MID_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 中档电压档位         */
     LOW_LEVEL_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 低档电压档位         */
-    SHOCK_CTR_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 电击功能总开关使能脚          */
+    SHOCK_CTR_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 电击功能总开关使能脚          */
     MOTO_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 马达使能脚         */
     PREVENTIVE_INSERT_ENABLE_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 防塞检测开启          */
     PREVENTIVE_INSERT_ENABLE_PIN2 | PIN_GPIO_OUTPUT_EN | PIN_GPIO_LOW | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /* 防塞检测开启          */
@@ -93,6 +93,7 @@ uint16_t    pulseTimes_sec = 0;
 void PulseFxn(UArg arg0)
 {
     if(pulseTimes_sec == 0){
+        ElectricShockPowerDisable();
         EletricShockPulseDisable();
         Clock_stop(pulseClkHandle);
     }else{
@@ -163,6 +164,7 @@ void EletricPulseSetTime_S(uint16_t keepTime_S)
     }
     else{
         Clock_start(pulseClkHandle);
+        ElectricShockPowerEnable();
         EletricShockPulseEnable();
     }
 }
@@ -430,7 +432,7 @@ void ElectricShockInit(void)
     // ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_SHOCK){
         electricshockEnable = 1;
-        ElectricShockPowerEnable();
+        // ElectricShockPowerEnable();
     }
     else{
         electricshockEnable = 0;
@@ -469,13 +471,13 @@ void ElectricShockLevelSet(uint8_t level)
 
 void ElectricShockPowerEnable(void)
 {
-    eleShock_set(ELE_SHOCK_POWER_ENABLE, 1);
+    eleShock_set(ELE_SHOCK_POWER_ENABLE, 0);
 }
 
 
 void ElectricShockPowerDisable(void)
 {
-    eleShock_set(ELE_SHOCK_POWER_ENABLE, 0);
+    eleShock_set(ELE_SHOCK_POWER_ENABLE, 1);
 }
 
 

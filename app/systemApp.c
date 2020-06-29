@@ -78,7 +78,7 @@ void RtcEventSet(void)
 #endif // S_G//网关
 
 #ifdef  SUPPORT_CHARGE_DECT_ALARM
-    Sys_chagre_alarm_timer_isr();
+SYS_EVT_MOTO_INT_REC    Sys_chagre_alarm_timer_isr();
 #endif
 }
 
@@ -323,7 +323,7 @@ void SystemAppTaskFxn(void)
 #endif //S_G
 		if(eventId & SYS_EVT_MOTO_INT_REC){
 			eleShock_set(ELE_MOTO_ENABLE, 1);
-			Task_sleep(300 * CLOCK_UNIT_MS);
+			Task_sleep(1000 * CLOCK_UNIT_MS);
 			eleShock_set(ELE_MOTO_ENABLE, 0);
 		}
 

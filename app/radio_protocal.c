@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-19 13:55:55
+* @Last Modified time: 2020-06-24 19:13:58
 */
 #include "../general.h"
 
@@ -188,7 +188,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_CONTROL_ENABLE);
 				electricshockEnable = 1;
-				ElectricShockPowerEnable();
+				// ElectricShockPowerEnable();
 				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_SHOCK;
 				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			}
@@ -211,7 +211,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 			if(ground == GroudAddrGet()){
 				SoundEventSet(SOUND_TYPE_CONTROL_ENABLE);
 				electricshockEnable = 1;
-				ElectricShockPowerEnable();
+				// ElectricShockPowerEnable();
 				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_SHOCK;
 				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			}
@@ -222,6 +222,8 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_DI);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
+				Task_sleep(3000 * CLOCK_UNIT_MS);
+				eleShock_set(ELE_MOTO_ENABLE, 0);
 			}
 		break;
 
@@ -230,6 +232,8 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 			if(ground == GroudAddrGet()){
 				SoundEventSet(SOUND_TYPE_DI);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
+				Task_sleep(3000 * CLOCK_UNIT_MS);
+				eleShock_set(ELE_MOTO_ENABLE, 0);
 			}
 		break;
 
@@ -350,14 +354,14 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 
 		case RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE:
-			g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_ESCAPE;
+			g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 			SoundEventSet(SOUND_TYPE_DI_DI_DI);
 			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 		break;
 
 
 		case RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE:
-			g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
+			g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 			SoundEventSet(SOUND_TYPE_DI_DI_DI);
 			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 		break;
@@ -389,7 +393,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 }
 #ifdef S_C
 
-#define ESCAPE_RSSI		(-100)
+#define ESCAPE_RSSI		(-60)
 //***********************************************************************************
 // brief:   analysis the node protocal 
 // 

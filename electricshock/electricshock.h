@@ -19,7 +19,7 @@ typedef enum {
 #define 		ELECTRIC_HIGH_LEVEL		2
 
 
-#define         ELECTRIC_SHOCK_TIME     10
+#define         ELECTRIC_SHOCK_TIME     8
 
 // variable typedef
 typedef struct 
