@@ -13,6 +13,7 @@
 #define START_X_XIN  15
 #define START_X_TIP  2
 #define DELAY_COMPLETE 500
+#define ALARM_COUNT_MAX 10
 typedef enum {
     MENU_ITEN_NULL=0,
     MENU_ITEN_ADD_GROUP,
@@ -47,6 +48,8 @@ typedef enum {
     KEY_DOING_TICK=0x03,
     KEY_DOING_MAX
 } KEY_DOING;
+
+
 
 #define MENU_TIEM_NUM_MAX  MENU_ITEN_MAX
 static void menu_add_group( );
@@ -106,12 +109,44 @@ MenuMode_t MenuMode[]=
 };
 
 MenuModeObject mMenuModeObject;
+MenuAlarmObject mMenuAlarmObject[ALARM_COUNT_MAX];
 static Calendar calendar;
+
+void insertAlarm(uint32_t devicesId,uint8_t Alarmtype)
+{
+    uint8_t i = 0;
+   for(i = 0 ; i < ALARM_COUNT_MAX;i++)
+   {
+       if(mMenuAlarmObject[i].alarmType == Alarmtype && mMenuAlarmObject[i].devicesId == devicesId)
+           goto INSET_RET_TAB;
+
+   }
+
+   for(i = 0; i < ALARM_COUNT_MAX;i++)
+   {
+     if(mMenuAlarmObject[i].devicesId == 0)
+     {
+         mMenuAlarmObject[i].alarmType =   Alarmtype;
+         mMenuAlarmObject[i].devicesId =   devicesId;
+         goto INSET_RET_TAB;
+     }
+   }
+
+   mMenuAlarmObject[0].alarmType =   Alarmtype;
+   mMenuAlarmObject[0].devicesId =   devicesId;
+
+INSET_RET_TAB:
+   Sys_event_post(SYS_EVT_ALARM);
+}
+
 void power_on_init_key_code(void)
 {
     mMenuModeObject.index =    MENU_ITEN_NULL;
     mMenuModeObject.keyDoing = KEY_DOING_NULL;
     mMenuModeObject.selectIndex = 0;
+    mMenuModeObject.numEnter = 0;
+    mMenuModeObject.devicesId = 0;
+    mMenuModeObject.groudId = 0;
 
 }
 static void menuModeObject_data_reinit(void)
@@ -126,7 +161,9 @@ static void menuModeObject_data_reinit(void)
     switch(mMenuModeObject.index)
     {
     case MENU_ITEN_SETTING_TIME:
-         Lcd_clear_screen();
+         //Lcd_clear_screen();
+         mMenuModeObject.numEnter = 0;
+         mMenuModeObject.timerefesh = 0;
          break;
     case MENU_ITEN_DELETE_GROUP:
     case MENU_ITEN_TERMINAL_TEST:
@@ -138,22 +175,24 @@ static void menuModeObject_data_reinit(void)
     case MENU_ITEN_CTROL_POWER_SELECT_HIGH:
     case MENU_ITEN_CTROL_POWER_SELECT_MID:
     case MENU_ITEN_CTROL_POWER_SELECT_LOW:
+    case MENU_ITEN_OPEN_TERMINQL_PREVENT_ESCAPE:
+    case MENU_ITEN_CLOSE_TERMINQL_PREVENT_ESCAPE:
         if(!mMenuModeObject.devicesId)
         {
-            mMenuModeObject.devicesId = mMenuModeObject.numEnter;
+            //mMenuModeObject.devicesId = mMenuModeObject.numEnter;
         }
         mMenuModeObject.numEnter = mMenuModeObject.devicesId;
          break;
 
     case MENU_ITEN_CLOSE_CTROL_GROUP:
     case MENU_ITEN_OPEN_CTROL_GROUP:
-        {
-            if(!mMenuModeObject.groudId)
-            {
-                mMenuModeObject.groudId = mMenuModeObject.numEnter;
-            }
-            mMenuModeObject.numEnter = mMenuModeObject.groudId;
-        }
+    case MENU_ITEN_OPEN_GROUP_PREVENT_ESCAPE:
+    case MENU_ITEN_CLOSE_GROUP_PREVENT_ESCAPE:
+         if(!mMenuModeObject.groudId)
+           {
+                //mMenuModeObject.groudId = mMenuModeObject.numEnter;
+           }
+           mMenuModeObject.numEnter = mMenuModeObject.groudId;
          break;
     //case MENU_ITEN_CTROL_OPEN_PREVENT_ESCAPE:
          //Lcd_clear_screen();
@@ -348,12 +387,6 @@ TAB_REPEAT_ADD_ARR:
        }
        else if(mMenuModeObject.selectIndex == 1)
        {
-           //numToBuff(numbuff,mMenuModeObject.numEnter);
-
-           //Disp_icon(0,1,ICON_72X24_TERMINAL_NUM,1);
-             //Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
-             //Disp_icon(START_X_LINE,3,ICON_72X24_ADD_ARR,1);
-
            Lcd_set_font(8, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
@@ -442,9 +475,7 @@ TAB_REPEAT_ADD_ARR1:
        Lcd_set_font(72, 24, 1);
        if(mMenuModeObject.selectIndex == 0)
        {
-           //numToBuff(numbuff,mMenuModeObject.numEnter);
-           //Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
-           //Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
+
            Disp_icon(START_X_LINE,3,ICON_72X24_DELETE_ARR,1);
            Lcd_set_font(8, 16, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
@@ -2320,45 +2351,108 @@ static void menu_setting_time( )
 
 
 
+
         switch(mMenuModeObject.selectIndex)
         {
         case 0:
-            Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_LINE,1,ICON_36X24_YEAR,1);
-            Disp_icon(START_X_LINE,2,ICON_36X24_MOTH,1);
+            if(!mMenuModeObject.timerefesh)
+            {
+                Lcd_set_font(72, 24, 1);
+                Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_LINE,1,ICON_36X24_YEAR,1);
+                Lcd_set_font(72, 24, 1);
+                Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_LINE,2,ICON_36X24_MOTH,1);
+                sprintf((char*)numbuff,"%s","     ");
+                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+
+                Lcd_set_font(72, 24, 1);
+                Disp_icon(START_X_LINE,3,ICON_72X24_TIME_SETTING,1);
+
+                mMenuModeObject.timerefesh = 1;
+            }
             break;
         case 1:
-            Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_LINE,1,ICON_36X24_YEAR,1);
-            Disp_icon(START_X_LINE,2,ICON_36X24_MOTH,1);
+            //Lcd_set_font(72, 24, 1);
+            //Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
+            //Lcd_set_font(36, 24, 1);
+            //Disp_icon(START_X_LINE,1,ICON_36X24_YEAR,1);
+            //Lcd_set_font(72, 24, 1);
+            //Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+            //Lcd_set_font(36, 24, 1);
+            //Disp_icon(START_X_LINE,2,ICON_36X24_MOTH,1);
 
             Lcd_set_font(8, 16, 1);
             sprintf((char*)numbuff,"%d",calendar.Year);
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
             break;
         case 2:
-            Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_LINE,1,ICON_36X24_DATE,1);
-            Disp_icon(START_X_LINE,2,ICON_36X24_HONOR,1);
+            if(!mMenuModeObject.timerefesh)
+            {
+                Lcd_set_font(72, 24, 1);
+                Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_LINE,1,ICON_36X24_DATE,1);
+                Lcd_set_font(72, 24, 1);
+                Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_LINE,2,ICON_36X24_HONOR,1);
+                sprintf((char*)numbuff,"%s","     ");
+                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+
+
+                mMenuModeObject.timerefesh = 1;
+            }
             break;
         case 3:
-            Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_LINE,1,ICON_36X24_DATE,1);
-            Disp_icon(START_X_LINE,2,ICON_36X24_HONOR,1);
+
+            //Lcd_set_font(72, 24, 1);
+            //Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
+            //Lcd_set_font(36, 24, 1);
+            //Disp_icon(START_X_LINE,1,ICON_36X24_DATE,1);
+            //Lcd_set_font(72, 24, 1);
+            //Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+            //Lcd_set_font(36, 24, 1);
+            //Disp_icon(START_X_LINE,2,ICON_36X24_HONOR,1);
+
 
             Lcd_set_font(8, 16, 1);
             sprintf((char*)numbuff,"%d",calendar.DayOfMonth);
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
             break;
         case 4:
-            Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_LINE,1,ICON_36X24_MINUTE,1);
-            Disp_icon(START_X_LINE,2,ICON_36X24_SECOND,1);
+            if(!mMenuModeObject.timerefesh)
+            {
+                Lcd_set_font(72, 24, 1);
+                Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_LINE,1,ICON_36X24_MINUTE,1);
+                Lcd_set_font(72, 24, 1);
+                Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_LINE,2,ICON_36X24_SECOND,1);
+                sprintf((char*)numbuff,"%s","     ");
+                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+
+
+                mMenuModeObject.timerefesh = 1;
+            }
             break;
         case 5:
-            Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_LINE,1,ICON_36X24_MINUTE,1);
-            Disp_icon(START_X_LINE,2,ICON_36X24_SECOND,1);
+            //Lcd_set_font(72, 24, 1);
+            //Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
+            //Lcd_set_font(36, 24, 1);
+            //Disp_icon(START_X_LINE,1,ICON_36X24_MINUTE,1);
+            //Lcd_set_font(72, 24, 1);
+            //Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+            //Lcd_set_font(36, 24, 1);
+            //Disp_icon(START_X_LINE,2,ICON_36X24_SECOND,1);
+
             Lcd_set_font(8, 16, 1);
             sprintf((char*)numbuff,"%d",calendar.Minutes);
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
@@ -2381,8 +2475,7 @@ static void menu_setting_time( )
 
         }
 
-        Lcd_set_font(72, 24, 1);
-        Disp_icon(START_X_LINE,3,ICON_72X24_TIME_SETTING,1);
+
 
     }
     else
@@ -2395,7 +2488,8 @@ static void menu_setting_time( )
                 Lcd_set_font(36, 24, 1);
                 mMenuModeObject.selectIndex = 1;
                 mMenuModeObject.numEnter = 0;
-                Lcd_clear_screen();
+                //Lcd_clear_screen();
+
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR30;
 
@@ -2405,7 +2499,9 @@ static void menu_setting_time( )
                 calendar.Month = mMenuModeObject.numEnter;
                 mMenuModeObject.numEnter = 0;
                 mMenuModeObject.selectIndex =2;
-                Lcd_clear_screen();
+                //Lcd_clear_screen();
+
+                mMenuModeObject.timerefesh = 0;
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR30;
             }
@@ -2414,7 +2510,7 @@ static void menu_setting_time( )
                 calendar.DayOfMonth = mMenuModeObject.numEnter;
                 mMenuModeObject.numEnter = 0;
                 mMenuModeObject.selectIndex =3;
-                Lcd_clear_screen();
+                //Lcd_clear_screen();
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR30;
             }
@@ -2423,7 +2519,9 @@ static void menu_setting_time( )
                 calendar.Hours = mMenuModeObject.numEnter;
                 mMenuModeObject.numEnter = 0;
                 mMenuModeObject.selectIndex =4;
-                Lcd_clear_screen();
+                //Lcd_clear_screen();
+
+                mMenuModeObject.timerefesh = 0;
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR30;
             }
@@ -2433,7 +2531,7 @@ static void menu_setting_time( )
 
                 mMenuModeObject.numEnter = 0;
                 mMenuModeObject.selectIndex =5;
-                Lcd_clear_screen();
+                //Lcd_clear_screen();
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR30;
             }
@@ -2447,13 +2545,17 @@ static void menu_setting_time( )
                 Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                 //µ÷ÓÃÉèÖÃ
                 //goto TAB_REPEAT_ADD_ARR30;
+
                 Rtc_set_calendar(&calendar);
+                Disp_proc();
+                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
             }
             else if(mMenuModeObject.selectIndex == 6)
             {
                 mMenuModeObject.selectIndex =0;
                 mMenuModeObject.numEnter = 0;
-                Lcd_clear_screen();
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
                 goto TAB_REPEAT_ADD_ARR30;
             }
@@ -2464,5 +2566,8 @@ static void menu_setting_time( )
 
 }
 
+void menuc_alarm_main(KEY_CODE_E keyCode)
+{
 
+}
 #endif
