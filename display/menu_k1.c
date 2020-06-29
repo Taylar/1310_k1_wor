@@ -164,6 +164,8 @@ static void menuModeObject_data_reinit(void)
          //Lcd_clear_screen();
          mMenuModeObject.numEnter = 0;
          mMenuModeObject.timerefesh = 0;
+         mMenuModeObject.devicesId = 0;
+         mMenuModeObject.groudId = 0;
          break;
     case MENU_ITEN_DELETE_GROUP:
     case MENU_ITEN_TERMINAL_TEST:
@@ -309,10 +311,7 @@ void menuc_main(KEY_CODE_E keyCode)
 
 
         case _VK_MODE://ģʽ
-            if(MENU_ITEN_SETTING_TIME == mMenuModeObject.index)
-                Lcd_clear_screen();
-
-            mMenuModeObject.index++;
+           mMenuModeObject.index++;
           if(mMenuModeObject.index >= MENU_ITEM_TIK_GROUP_SUBDUE)
              mMenuModeObject.index= (MENU_ITEN_NULL+1);
 
@@ -379,7 +378,6 @@ TAB_REPEAT_ADD_ARR:
 
            if(mMenuModeObject.groudId != 0)
            {
-
                sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
