@@ -53,6 +53,11 @@
 
 #define     RADIO_PRO_CMD_ALL_WAKEUP          		30             //唤醒设备，用于防逃的
 
+#define     RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE        31   //开终端防逃
+#define     RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE       32   //关终端防逃
+#define     RADIO_PRO_CMD_OPEN_GROUP_PREVENT_ESCAPE           33   //开组防逃
+#define     RADIO_PRO_CMD_CLOSE_GROUP_PREVENT_ESCAPE          34   //关组防逃
+
 
 #define     RADIO_PRO_CMD_ALL_RESP          		63             //命令应答
 

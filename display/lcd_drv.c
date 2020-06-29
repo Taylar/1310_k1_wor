@@ -620,7 +620,6 @@ void Lcd_clear_screen(void)
     Lcd_send_cmd(0x6f);//Row End Address
     for(i=0;i<128;i++)
     {
-
         for(j=0;j<64;j++)
         {
             //if(i%2)
