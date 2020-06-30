@@ -2517,17 +2517,6 @@ static void menu_setting_time( )
             }
             break;
         case 3:
-
-            //Lcd_set_font(72, 24, 1);
-            //Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
-            //Lcd_set_font(36, 24, 1);
-            //Disp_icon(START_X_LINE,1,ICON_36X24_DATE,1);
-            //Lcd_set_font(72, 24, 1);
-            //Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
-            //Lcd_set_font(36, 24, 1);
-            //Disp_icon(START_X_LINE,2,ICON_36X24_HONOR,1);
-
-
             Lcd_set_font(8, 16, 1);
             sprintf((char*)numbuff,"%d",calendar.DayOfMonth);
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
