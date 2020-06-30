@@ -333,12 +333,13 @@ void SystemAppTaskFxn(void)
 		}		
 
 
+#ifdef SUPPORT_DISP_SCREEN
 		if(eventId & SYS_EVT_ALARM && lcd_power_state == 1)
 		{
 		    set_meun_alarmOrSetting(1);
 		    menuc_alarm_main(_VK_OK);
 		}
-#ifdef SUPPORT_DISP_SCREEN
+        
 		if(eventId & SYSTEMAPP_EVT_DISP && lcd_power_state == 1)
 		{
         	Disp_proc();

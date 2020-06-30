@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-30 17:12:24
+* @Last Modified time: 2020-06-30 17:23:52
 */
 
 #include "../general.h"
@@ -91,6 +91,19 @@ void Key1IoInit(void)
 }
 #endif
 
+
+void KeyIntEnable(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x06, 0); //设置P0口作为输入
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x07, 0); //设置P0口作为输入
+}
+
+void KeyIntDisable(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x06, 0XFF); //设置P0口作为输入
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x07, 0XFF); //设置P0口作为输入
+}
+
 //***********************************************************************************
 //
 // Key stop scan.
@@ -116,17 +129,7 @@ KEY_CODE_E Key_get(void)
     return rKeyTask.keyCode;
 }
 
-void KeyIntEnable(void)
-{
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x06, 0); //设置P0口作为输入
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x07, 0); //设置P0口作为输入
-}
 
-void KeyIntDisable(void)
-{
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x06, 0XFF); //设置P0口作为输入
-    I2C_bytewrite(KEY_IC_ADDR << 1, 0x07, 0XFF); //设置P0口作为输入
-}
 
 void KeySetP0InP1Out(void)
 {

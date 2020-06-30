@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-29 15:46:55
+* @Last Modified time: 2020-06-30 17:21:32
 */
 #include "../general.h"
 
@@ -405,14 +405,17 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 
 #ifdef S_G
 		case RADIO_CMD_DESTROY_TYPE:
+		insertAlarm(srcDev, ALARM_TYPE_DESTORY);
 		break;
 
 		case RADIO_CMD_LOW_VOL_TYPE:
-		Menu_low_power_display(srcDev);
+		insertAlarm(srcDev, ALARM_TYPE_LOW_POWER);
+		// Menu_low_power_display(srcDev);
 		break;
 
 		case RADIO_CMD_INSERT_TYPE:
-		Menu_not_wearing_well_display(srcDev);
+		insertAlarm(srcDev, ALARM_TYPE_UNWEAR);
+		// Menu_not_wearing_well_display(srcDev);
 		break;
 
 

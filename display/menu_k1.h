@@ -39,6 +39,8 @@ typedef enum {
     ALARM_TYPE_MAX
 } ALARM_TYPE;
 
+uint8_t set_meun_alarmOrSetting(uint8_t flag);
+void insertAlarm(uint32_t devicesId,uint8_t Alarmtype);
 extern void menuc_main(KEY_CODE_E keyCode);
 void Menu_low_power_display(uint32_t devicesId);
 void Menu_not_wearing_well_display(uint32_t devicesId);
