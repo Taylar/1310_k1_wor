@@ -23,6 +23,7 @@ typedef struct _MenuModeObject {
    uint32_t devicesId;
    uint32_t groudId;
    uint8_t  timerefesh;
+   uint8_t  alarmOrSetting;
 } MenuModeObject;
 
 typedef struct _MenuAlarmObject {
@@ -32,8 +33,9 @@ typedef struct _MenuAlarmObject {
 
 typedef enum {
     ALARM_TYPE_NULL=0,
-    ALARM_TYPE_LOW_POWER=0x01,
-    ALARM_TYPE_UNWEAR=0x02,
+    ALARM_TYPE_LOW_POWER,
+    ALARM_TYPE_UNWEAR,
+    ALARM_TYPE_DESTORY,
     ALARM_TYPE_MAX
 } ALARM_TYPE;
 
@@ -43,5 +45,6 @@ void Menu_not_wearing_well_display(uint32_t devicesId);
 void Menu_term_is_destroyed(uint32_t devicesId);
 void power_on_init_key_code(void);
 extern void menuc_alarm_main(KEY_CODE_E keyCode);
+uint8_t get_menu_alarmOrSetting(void);
 #endif
 #endif /* ZKS_DISPLAY_MENU_K1_H_ */

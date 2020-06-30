@@ -46,6 +46,7 @@ typedef enum {
     KEY_DOING_ACK=0x01,
     KEY_DOING_DELETE=0x02,
     KEY_DOING_TICK=0x03,
+    KEY_DOING_SWITCH=0x04,
     KEY_DOING_MAX
 } KEY_DOING;
 
@@ -111,7 +112,7 @@ MenuMode_t MenuMode[]=
 MenuModeObject mMenuModeObject;
 MenuAlarmObject mMenuAlarmObject[ALARM_COUNT_MAX];
 static Calendar calendar;
-
+void power_on_init_key_code(void);
 void insertAlarm(uint32_t devicesId,uint8_t Alarmtype)
 {
     uint8_t i = 0;
@@ -139,6 +140,125 @@ INSET_RET_TAB:
    Sys_event_post(SYS_EVT_ALARM);
 }
 
+static int8_t alarmNum = 0;
+void set_alarm_init(void)
+{
+    alarmNum = 0;
+}
+uint8_t get_menu_alarmOrSetting(void)
+{
+  return  mMenuModeObject.alarmOrSetting;
+}
+uint8_t set_meun_alarmOrSetting(uint8_t flag)
+{
+    mMenuModeObject.alarmOrSetting = flag;
+    if(flag != 0)
+        set_alarm_init();
+}
+
+void menuc_alarm_main(KEY_CODE_E keyCode)
+{
+   int8_t i = alarmNum;
+   MenuAlarmObject MenuAlarmObjectTemp;
+   MenuAlarmObjectTemp.alarmType = 0;
+   MenuAlarmObjectTemp.devicesId = 0;
+   switch(keyCode)
+   {
+      case _VK_MODE:
+          set_meun_alarmOrSetting(0);
+          power_on_init_key_code();
+          menuc_main(_VK_MODE);
+          break;
+      case _VK_OK:
+          while( alarmNum < ALARM_COUNT_MAX )
+          {
+
+              if(mMenuAlarmObject[alarmNum].alarmType != 0 && mMenuAlarmObject[alarmNum].devicesId != 0)
+              {
+                  MenuAlarmObjectTemp.alarmType = mMenuAlarmObject[alarmNum].alarmType;
+                  MenuAlarmObjectTemp.devicesId = mMenuAlarmObject[alarmNum].devicesId;
+                  alarmNum ++ ;
+                  break;
+              }
+
+          }
+
+          if(alarmNum >= ALARM_COUNT_MAX)
+          {
+              alarmNum = 0;
+              if(mMenuAlarmObject[alarmNum].alarmType != 0 && mMenuAlarmObject[alarmNum].devicesId != 0)
+              {
+                  MenuAlarmObjectTemp.alarmType = mMenuAlarmObject[alarmNum].alarmType;
+                  MenuAlarmObjectTemp.devicesId = mMenuAlarmObject[alarmNum].devicesId;
+                  alarmNum++;
+                  break;
+              }
+              else
+                  alarmNum = -1;
+          }
+          if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
+          {
+              switch(MenuAlarmObjectTemp.alarmType)
+              {
+                  case ALARM_TYPE_LOW_POWER:
+                       Menu_low_power_display(MenuAlarmObjectTemp.devicesId);
+                       break;
+                  case ALARM_TYPE_UNWEAR:
+                       Menu_not_wearing_well_display(MenuAlarmObjectTemp.devicesId);
+                       break;
+                  case ALARM_TYPE_DESTORY:
+                      Menu_term_is_destroyed(MenuAlarmObjectTemp.devicesId);
+                       break;
+              }
+          }
+          break;
+      case _VK_DELETE:
+           if(alarmNum != -1)
+           {
+               for(i = 0 ; i < ALARM_COUNT_MAX;i++)
+               {
+                   if(mMenuAlarmObject[i].alarmType == MenuAlarmObjectTemp.alarmType && mMenuAlarmObject[i].devicesId == MenuAlarmObjectTemp.devicesId)
+                   {
+                       mMenuAlarmObject[i].alarmType = 0;
+                       mMenuAlarmObject[i].devicesId = 0;
+                       break;
+                   }
+               }
+
+               for(;(i+1) < ALARM_COUNT_MAX;i++)
+               {
+                   mMenuAlarmObject[i].alarmType = mMenuAlarmObject[i+1].alarmType ;
+                   mMenuAlarmObject[i].devicesId = mMenuAlarmObject[i+1].devicesId ;
+               }
+
+               Lcd_set_font(36, 24, 1);
+               Disp_icon(START_X_TIP,2,ICON_36X24_COMPLETE,1);
+               Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+               Disp_icon(START_X_TIP,2,ICON_36X24_CLEAR,1);
+           }
+
+          break;
+      case _VK_COMMAND:
+           power_on_init_key_code();
+           set_meun_alarmOrSetting(0);
+           menuc_main(_VK_COMMAND);
+          break;
+
+   }
+
+   for(; i < ALARM_COUNT_MAX;i++)
+   {
+       if(mMenuAlarmObject[i].alarmType != 0 && mMenuAlarmObject[i].devicesId != 0)
+       {
+           MenuAlarmObjectTemp.alarmType = mMenuAlarmObject[i].alarmType;
+           MenuAlarmObjectTemp.devicesId = mMenuAlarmObject[i].devicesId;
+           alarmNum = i;
+           break;
+       }
+   }
+
+}
+
 void power_on_init_key_code(void)
 {
     mMenuModeObject.index =    MENU_ITEN_NULL;
@@ -147,6 +267,7 @@ void power_on_init_key_code(void)
     mMenuModeObject.numEnter = 0;
     mMenuModeObject.devicesId = 0;
     mMenuModeObject.groudId = 0;
+    mMenuModeObject.alarmOrSetting = 0;
 
 }
 static void menuModeObject_data_reinit(void)
@@ -226,6 +347,8 @@ void menuc_main(KEY_CODE_E keyCode)
         case _VK_ACTIVE://电击
             if(mMenuModeObject.index >=MENU_ITEM_TIK_GROUP_SUBDUE && mMenuModeObject.index < MENU_ITEN_MAX)
                 mMenuModeObject.keyDoing = KEY_DOING_TICK;
+            else if(mMenuModeObject.index >=MENU_ITEN_ADD_GROUP && mMenuModeObject.index <= MENU_ITEN_SETTING_TIME )
+                mMenuModeObject.keyDoing = KEY_DOING_SWITCH;
         break;
 
 
@@ -407,18 +530,7 @@ TAB_REPEAT_ADD_ARR:
    {
        if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
        {
-           if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
-           {
-               mMenuModeObject.devicesId = mMenuModeObject.numEnter;
-               mMenuModeObject.selectIndex =1;
-
-               Lcd_set_font(8, 24, 1);
-               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
-               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               Lcd_set_font(8, 16, 1);
-               mMenuModeObject.numEnter = mMenuModeObject.groudId;
-           }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
+          if(mMenuModeObject.selectIndex == 1)
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(8, 24, 1);
@@ -439,27 +551,39 @@ TAB_REPEAT_ADD_ARR:
                mMenuModeObject.selectIndex = 0;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
                goto TAB_REPEAT_ADD_ARR;
-
-
            }
-           else if(mMenuModeObject.selectIndex == 2)
-           {
-               //mMenuModeObject.groudId =   0;
-               //mMenuModeObject.numEnter =  0;
-               //mMenuModeObject.devicesId = 0;
-               mMenuModeObject.selectIndex = 0;
-               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 
-               goto TAB_REPEAT_ADD_ARR;
-           }
            //mMenuModeObject.numEnter = 0;
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
        }
+       else if(mMenuModeObject.keyDoing == KEY_DOING_SWITCH)
+       {
+           if(mMenuModeObject.selectIndex == 0)
+           {
+               mMenuModeObject.devicesId = mMenuModeObject.numEnter;
+               mMenuModeObject.selectIndex =1;
+
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               Lcd_set_font(8, 16, 1);
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+           }
+           else if(mMenuModeObject.selectIndex == 1)
+           {
+               mMenuModeObject.groudId = mMenuModeObject.numEnter;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               Lcd_set_font(8, 16, 1);
+
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+           }
+       }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
-
-
 }
 
 static void menu_delete_group( )
@@ -533,18 +657,8 @@ TAB_REPEAT_ADD_ARR1:
    {
        if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
        {
-           if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
-           {
-               mMenuModeObject.devicesId = mMenuModeObject.numEnter;
-               mMenuModeObject.selectIndex =1;
-               Lcd_set_font(8, 24, 1);
-               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
-               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               Lcd_set_font(8, 16, 1);
-               mMenuModeObject.numEnter = mMenuModeObject.groudId;
 
-           }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
+           if(mMenuModeObject.selectIndex == 1)
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(8, 24, 1);
@@ -567,18 +681,35 @@ TAB_REPEAT_ADD_ARR1:
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
                goto TAB_REPEAT_ADD_ARR1;
            }
-           else if(mMenuModeObject.selectIndex == 2)
-           {
-               //mMenuModeObject.groudId =   0;
-               //mMenuModeObject.numEnter =  0;
-               //mMenuModeObject.devicesId = 0;
-               mMenuModeObject.selectIndex = 0;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               Lcd_clear_screen();
-               goto TAB_REPEAT_ADD_ARR1;
-           }
            //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
+       }
+       else if(mMenuModeObject.keyDoing == KEY_DOING_SWITCH )
+       {
+           if(mMenuModeObject.selectIndex == 0)
+           {
+               mMenuModeObject.devicesId = mMenuModeObject.numEnter;
+               mMenuModeObject.selectIndex =1;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               Lcd_set_font(8, 16, 1);
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+
+           }
+           else if(mMenuModeObject.selectIndex == 1)
+           {
+               mMenuModeObject.groudId = mMenuModeObject.numEnter;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+               Lcd_set_font(8, 16, 1);
+
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.keyDoing = KEY_DOING_NULL;
+           }
+
        }
    }
 
@@ -714,8 +845,9 @@ TAB_REPEAT_ADD_ARR2:
                goto TAB_REPEAT_ADD_ARR2;
            }
           // mMenuModeObject.numEnter = 0;
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
        }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 }
 static void menu_close_ctrol()//关闭制服
@@ -791,8 +923,9 @@ TAB_REPEAT_ADD_ARR3:
                goto TAB_REPEAT_ADD_ARR3;
            }
            mMenuModeObject.numEnter = 0;
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
        }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 }
 static void menu_close_ctrol_group( )//关组制服
@@ -866,8 +999,9 @@ TAB_REPEAT_ADD_ARR4:
                goto TAB_REPEAT_ADD_ARR4;
            }
            //mMenuModeObject.numEnter = 0;
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
        }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 }
 static void menu_open_ctrol( )
@@ -943,8 +1077,8 @@ TAB_REPEAT_ADD_ARR5:
                goto TAB_REPEAT_ADD_ARR5;
            }
            //mMenuModeObject.numEnter = 0;
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 
 }
@@ -1023,8 +1157,9 @@ TAB_REPEAT_ADD_ARR6:
                goto TAB_REPEAT_ADD_ARR6;
            }
            //mMenuModeObject.numEnter = 0;
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
        }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 }
 static void menu_terminal_unlocking()
@@ -1120,12 +1255,6 @@ TAB_REPEAT_ADD_ARR7:
                    Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
                }
 
-
-
-               mMenuModeObject.selectIndex = 1;
-               mMenuModeObject.numEnter = mMenuModeObject.groudId;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               goto TAB_REPEAT_ADD_ARR7;
            }
            else if(mMenuModeObject.selectIndex == 1 )
            {
@@ -1142,12 +1271,35 @@ TAB_REPEAT_ADD_ARR7:
                    Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                    Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
                }
-               mMenuModeObject.selectIndex = 0;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               goto TAB_REPEAT_ADD_ARR7;
            }
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
        }
+       else if(mMenuModeObject.keyDoing == KEY_DOING_SWITCH)
+       {
+           if(mMenuModeObject.selectIndex == 0)
+           {
+               mMenuModeObject.devicesId = mMenuModeObject.numEnter;
+               Lcd_set_font(36, 24, 1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+
+               mMenuModeObject.selectIndex = 1;
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+
+
+           }
+           else if(mMenuModeObject.selectIndex == 1 )
+           {
+               mMenuModeObject.groudId = mMenuModeObject.numEnter;
+               Lcd_set_font(8, 16, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+               mMenuModeObject.selectIndex = 0;
+
+
+           }
+       }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 
 
@@ -1358,6 +1510,7 @@ static void menu_open_prevent_escape( )
            mMenuModeObject.devicesId = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 
 }
@@ -1404,6 +1557,7 @@ static void menu_close_prevent_escape( )
            mMenuModeObject.devicesId = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
+       mMenuModeObject.keyDoing = KEY_DOING_NULL;
    }
 
 }
@@ -1477,7 +1631,7 @@ TAB_REPEAT_ADD_ARR8:
    {
        if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
        {
-           if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
+           if(mMenuModeObject.selectIndex == 0)
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
@@ -1489,59 +1643,42 @@ TAB_REPEAT_ADD_ARR8:
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 
-               mMenuModeObject.selectIndex = 2;
-
            }
-           else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter ==0)
-           {
-               mMenuModeObject.selectIndex =1;
-               //mMenuModeObject.devicesId = 0;
-               //mMenuModeObject.groudId = 0;
-               mMenuModeObject.numEnter = mMenuModeObject.groudId;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               goto TAB_REPEAT_ADD_ARR8;
-           }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
+           else if(mMenuModeObject.selectIndex == 1)
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
-               Lcd_set_font(8, 16, 1);
-               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1)
-               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-               //调用发射窗口
-               //display complete
-               //Lcd_clear_screen();
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_POWER_HIGH,mMenuModeObject.devicesId, mMenuModeObject.groudId);
-               //Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
 
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
-
-               //
-               mMenuModeObject.selectIndex = 2;
            }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter ==0)
+
+           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+       }
+       else if(mMenuModeObject.keyDoing == KEY_DOING_SWITCH)
+       {
+
+           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+           if(mMenuModeObject.selectIndex == 0)
+           {
+               mMenuModeObject.selectIndex =1;
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+
+           }
+           else if(mMenuModeObject.selectIndex == 1)
            {
                mMenuModeObject.selectIndex =0;
-               //mMenuModeObject.devicesId = 0;
-               //mMenuModeObject.groudId = 0;
-               //Lcd_clear_screen();
                mMenuModeObject.numEnter = mMenuModeObject.devicesId;
-               goto TAB_REPEAT_ADD_ARR8;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+
            }
-           else if(mMenuModeObject.selectIndex == 2)
-           {
-              //mMenuModeObject.groudId =   0;
-               //mMenuModeObject.numEnter =  0;
-               //mMenuModeObject.devicesId = 0;
-               mMenuModeObject.selectIndex = 0;
-               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               goto TAB_REPEAT_ADD_ARR8;
-           }
-           //mMenuModeObject.numEnter = 0;
-           mMenuModeObject.keyDoing = KEY_DOING_NULL;
        }
    }
 
@@ -1617,7 +1754,7 @@ TAB_REPEAT_ADD_ARR9:
    {
        if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
        {
-           if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
+           if(mMenuModeObject.selectIndex == 0)
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                //mMenuModeObject.selectIndex =1;
@@ -1636,20 +1773,8 @@ TAB_REPEAT_ADD_ARR9:
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 
-               mMenuModeObject.selectIndex = 2;
-
            }
-           else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter ==0)
-           {
-               mMenuModeObject.selectIndex =1;
-               //mMenuModeObject.devicesId = 0;
-              // mMenuModeObject.groudId = 0;
-               mMenuModeObject.numEnter = mMenuModeObject.groudId;
-               //Lcd_clear_screen();
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               goto TAB_REPEAT_ADD_ARR9;
-           }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
+           else if(mMenuModeObject.selectIndex == 1)
            {
                mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(8, 16, 1);
@@ -1660,28 +1785,32 @@ TAB_REPEAT_ADD_ARR9:
 
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
-
-               mMenuModeObject.selectIndex = 2;
-           }
-           else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter ==0)
-           {
-               mMenuModeObject.selectIndex =0;
-               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
-               goto TAB_REPEAT_ADD_ARR9;
-           }
-           else if(mMenuModeObject.selectIndex == 2)
-           {
-               //mMenuModeObject.groudId =   0;
-              mMenuModeObject.numEnter =  mMenuModeObject.devicesId;
-               //mMenuModeObject.devicesId = 0;
-               mMenuModeObject.selectIndex = 0;
-               //mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               mMenuModeObject.keyDoing = KEY_DOING_NULL;
-               //Lcd_clear_screen();
-               goto TAB_REPEAT_ADD_ARR9;
            }
            //mMenuModeObject.numEnter = 0;
            mMenuModeObject.keyDoing = KEY_DOING_NULL;
+       }
+       else if(mMenuModeObject.keyDoing == KEY_DOING_SWITCH)
+       {
+
+           mMenuModeObject.keyDoing = KEY_DOING_NULL;
+           if(mMenuModeObject.selectIndex == 0)
+           {
+               mMenuModeObject.selectIndex =1;
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+
+           }
+           else if(mMenuModeObject.selectIndex == 1)
+           {
+               mMenuModeObject.selectIndex =0;
+               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
+
+           }
        }
    }
 
@@ -1756,7 +1885,7 @@ static void menu_power_select_low()
     {
         if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
         {
-            if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter !=0)
+            if(mMenuModeObject.selectIndex == 0)
             {
                 mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                 Lcd_set_font(36, 24, 1);
@@ -1768,19 +1897,6 @@ static void menu_power_select_low()
 
                 Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                 Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
-
-                mMenuModeObject.selectIndex = 2;
-
-            }
-            else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.numEnter ==0)
-            {
-                mMenuModeObject.selectIndex =1;
-               // mMenuModeObject.devicesId = 0;
-               // mMenuModeObject.groudId = 0;
-                //Lcd_clear_screen();
-                mMenuModeObject.numEnter = mMenuModeObject.groudId;
-                mMenuModeObject.keyDoing = KEY_DOING_NULL;
-                goto TAB_REPEAT_ADD_ARR10;
             }
             else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter !=0)
             {
@@ -1793,37 +1909,31 @@ static void menu_power_select_low()
 
                 Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                 Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
-
-
-                //
-                mMenuModeObject.selectIndex = 2;
             }
-            else if(mMenuModeObject.selectIndex == 1 && mMenuModeObject.numEnter ==0)
+            mMenuModeObject.keyDoing = KEY_DOING_NULL;
+        }
+        else if(mMenuModeObject.keyDoing == KEY_DOING_SWITCH)
+        {
+
+            mMenuModeObject.keyDoing = KEY_DOING_NULL;
+            if(mMenuModeObject.selectIndex == 0)
+            {
+                mMenuModeObject.selectIndex =1;
+                mMenuModeObject.numEnter = mMenuModeObject.groudId;
+                Lcd_set_font(8, 24, 1);
+                Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+                Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+
+            }
+            else if(mMenuModeObject.selectIndex == 1)
             {
                 mMenuModeObject.selectIndex =0;
-                //mMenuModeObject.devicesId = 0;
-                //mMenuModeObject.groudId = 0;
-                //Lcd_clear_screen();
                 mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+                Lcd_set_font(8, 24, 1);
+                Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+                Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
 
-                mMenuModeObject.keyDoing = KEY_DOING_NULL;
-                goto TAB_REPEAT_ADD_ARR10;
             }
-            else if(mMenuModeObject.selectIndex == 2)
-            {
-                //mMenuModeObject.groudId =   0;
-               // mMenuModeObject.numEnter =  0;
-                //mMenuModeObject.devicesId = 0;
-
-                mMenuModeObject.numEnter = mMenuModeObject.devicesId;
-
-                mMenuModeObject.selectIndex = 0;
-                mMenuModeObject.keyDoing = KEY_DOING_NULL;
-                //Lcd_clear_screen();
-                goto TAB_REPEAT_ADD_ARR10;
-            }
-            //mMenuModeObject.numEnter = 0;
-            mMenuModeObject.keyDoing = KEY_DOING_NULL;
         }
     }
 
@@ -2564,8 +2674,4 @@ static void menu_setting_time( )
 
 }
 
-void menuc_alarm_main(KEY_CODE_E keyCode)
-{
-
-}
 #endif

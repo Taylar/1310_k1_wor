@@ -333,7 +333,11 @@ void SystemAppTaskFxn(void)
 		}		
 
 
-
+		if(eventId & SYS_EVT_ALARM && lcd_power_state == 1)
+		{
+		    set_meun_alarmOrSetting(1);
+		    menuc_alarm_main(_VK_OK);
+		}
 #ifdef SUPPORT_DISP_SCREEN
 		if(eventId & SYSTEMAPP_EVT_DISP && lcd_power_state == 1)
 		{
@@ -343,6 +347,7 @@ void SystemAppTaskFxn(void)
         	{
         	   g_firstStartFlag=!g_firstStartFlag;
         	   //gpio_power_en_config();
+        	   set_meun_alarmOrSetting(0);
         	   power_on_init_key_code();
         	   menuc_main(_VK_COMMAND);
         	   lcd_power_state = 1;
