@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-09 18:38:15
+* @Last Modified time: 2020-06-30 17:12:24
 */
 
 #include "../general.h"
@@ -105,7 +105,8 @@ static void KeyScanStop(void)
     rKeyTask.scanPort        = 0;
     rKeyTask.scanState       = 0;
 
-    Clock_stop(keyClkHandle);
+    KeyIntEnable();
+    // Clock_stop(keyClkHandle);
 }
 
 #ifdef BOARD_S6_6
@@ -115,6 +116,17 @@ KEY_CODE_E Key_get(void)
     return rKeyTask.keyCode;
 }
 
+void KeyIntEnable(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x06, 0); //设置P0口作为输入
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x07, 0); //设置P0口作为输入
+}
+
+void KeyIntDisable(void)
+{
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x06, 0XFF); //设置P0口作为输入
+    I2C_bytewrite(KEY_IC_ADDR << 1, 0x07, 0XFF); //设置P0口作为输入
+}
 
 void KeySetP0InP1Out(void)
 {
@@ -151,8 +163,8 @@ void KeyIcInit(void)
     I2C_bytewrite(KEY_IC_ADDR << 1, 0x11, controlReg | (0x01 << 4)); //设置P0口为推挽式输出
     controlReg = I2C_byteread(KEY_IC_ADDR << 1, 0x11);
 
-    if(controlReg == (0x01 << 4))
-        KeySetP0InP1Out();
+    // if(controlReg == (0x01 << 4))
+    KeySetP0InP1Out();
 }
 
 uint8_t KeyReadP0(void)
@@ -177,31 +189,28 @@ void KeyScanCbEvent(UArg arg0)
 void KeyScanFxn(void)
 {
     uint8_t portState;
-    if(rKeyTask.scanPort == 0){
-        portState = KeyReadP0();
-        if(portState == KEY_IC_P0_INVALID){
-            KeyScanStop();
-            return; 
-        }
-        rKeyTask.scanState = portState;
-        rKeyTask.scanPort = 1;
-        KeySetP1InP0Out();
-    }else if(rKeyTask.scanPort){
-        portState = KeyReadP1();
-        if(portState == KEY_IC_P1_INVALID){
-            KeyScanStop();
-            return; 
-        }
-        rKeyTask.scanState |= portState;
-        rKeyTask.keyCode = rKeyTask.scanState;
-        KeySetP0InP1Out();
-        // 延迟一段时间，等待中断产生，并读取IO口状态，清除中断标志
-        Task_sleep(2 * CLOCK_UNIT_MS);
-        KeyReadP0();
-        KeyReadP1();
+    
+    KeyIntDisable();
+
+    portState = KeyReadP0();
+    if((portState == KEY_IC_P0_INVALID)){
         KeyScanStop();
-        Sys_event_post(SYSTEMAPP_EVT_KEY);
+        return; 
     }
+    rKeyTask.scanState = portState;
+    KeySetP1InP0Out();
+    __delay_cycles(100);
+    portState = KeyReadP1();
+    if((portState == KEY_IC_P1_INVALID)){
+        KeySetP0InP1Out();
+        KeyScanStop();
+        return; 
+    }
+    rKeyTask.scanState |= portState;
+    rKeyTask.keyCode = rKeyTask.scanState;
+    Sys_event_post(SYSTEMAPP_EVT_KEY);
+    KeySetP0InP1Out();
+    KeyScanStop();
 }
 #else
 //***********************************************************************************
@@ -272,11 +281,12 @@ static void KeyScanFxn(UArg arg0)
 //***********************************************************************************
 static void KeyIsrFxn(UInt index)
 {
-    if (Clock_isActive(keyClkHandle) == FALSE)
-    {
-        rKeyTask.keyNum = KEY0_NUM;
-        Clock_start(keyClkHandle);
-    }
+    // if (Clock_isActive(keyClkHandle) == FALSE)
+    // {
+    //     rKeyTask.keyNum = KEY0_NUM;
+    //     Clock_start(keyClkHandle);
+    // }
+    Sys_event_post(SYS_EVT_KEY_SCAN);
 }
 
 

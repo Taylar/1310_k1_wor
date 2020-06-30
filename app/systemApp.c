@@ -78,7 +78,7 @@ void RtcEventSet(void)
 #endif // S_G//网关
 
 #ifdef  SUPPORT_CHARGE_DECT_ALARM
-SYS_EVT_MOTO_INT_REC    Sys_chagre_alarm_timer_isr();
+    Sys_chagre_alarm_timer_isr();
 #endif
 }
 
@@ -338,7 +338,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYSTEMAPP_EVT_DISP && lcd_power_state == 1)
 		{
         	Disp_proc();
-        	KeyIcInit();
+        	// KeyIcInit();
         	if(!g_firstStartFlag)
         	{
         	   g_firstStartFlag=!g_firstStartFlag;

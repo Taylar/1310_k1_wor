@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-24 19:13:58
+* @Last Modified time: 2020-06-29 15:46:55
 */
 #include "../general.h"
 
@@ -364,6 +364,40 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 			g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 			SoundEventSet(SOUND_TYPE_DI_DI_DI);
 			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+		break;
+
+		case RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE:
+			if(dstDev == GetRadioSrcAddr()){
+				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
+				SoundEventSet(SOUND_TYPE_DI_DI_DI);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			}
+		break;
+
+
+		case RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE:
+			if(dstDev == GetRadioSrcAddr()){
+				g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_ESCAPE;
+				SoundEventSet(SOUND_TYPE_DI_DI_DI);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			}
+		break;
+
+		case RADIO_PRO_CMD_OPEN_GROUP_PREVENT_ESCAPE:
+			if(ground == GroudAddrGet()){
+				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
+				SoundEventSet(SOUND_TYPE_DI_DI_DI);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			}
+		break;
+
+
+		case RADIO_PRO_CMD_CLOSE_GROUP_PREVENT_ESCAPE:
+			if(ground == GroudAddrGet()){
+				g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_ESCAPE;
+				SoundEventSet(SOUND_TYPE_DI_DI_DI);
+				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+			}
 		break;
 
 
