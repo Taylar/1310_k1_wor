@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-29 15:10:56
+* @Last Modified time: 2020-07-01 10:26:15
 */
 #include "../general.h"
 
@@ -69,6 +69,8 @@ void S1HwInit(void)
 
 
 uint32_t lowBatCnt = 0;
+uint32_t  insertCnt = 0;
+uint32_t  destroyCnt = 0;
 void S1AppRtcProcess(void)
 {
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
@@ -83,40 +85,50 @@ void S1AppRtcProcess(void)
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT){
         ElecPreventInsertMeasure();
         if(ElecPreventInsertState()){
-            EletricPulseSetTime_S(1);
-            // RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
-            RadioCmdSetWithNoRes(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
-            SoundEventSet(SOUND_TYPE_INSERT);
+            if(insertCnt%(15*60) == 0){
+                SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
+            }
+
+            if(insertCnt%(60) == 0){
+                RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+                // RadioCmdSetWithNoRes(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+            }
+            insertCnt++;
+        }else{
+            if(insertCnt){
+                SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
+            }
+            insertCnt = 0;
         }
     }
 
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
         escapeTimeCnt++;
         if(escapeTimeCnt == 10){
-            SoundEventSet(SOUND_TYPE_DI_DI_DI);
+            SoundEventSet(SOUND_TYPE_ESCAPE_ALARM1);
         }
         if(escapeTimeCnt == 20){
             EletricPulseSetTime_S(2);
-            SoundEventSet(SOUND_TYPE_DI_DI_DI);
+            SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
         }
-        if(escapeTimeCnt == 30){
-            EletricPulseSetTime_S(6);
-            SoundEventSet(SOUND_TYPE_DI_DI_DI);
+        if((escapeTimeCnt > 30) && ( ( (escapeTimeCnt-30) % 13) == 0) ){
+            EletricPulseSetTime_S(8);
         }
-        if(escapeTimeCnt > 36){
-            SoundEventSet(SOUND_TYPE_DI_DI_DI);
-        }
+        if(escapeTimeCnt > 30)
+            SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
     }
 
 
     Battery_porcess();
     if(Battery_get_voltage() < 3600){
-        if((lowBatCnt == 0) || (lowBatCnt >= 30)){
-            SoundEventSet(SOUND_TYPE_LOW_BAT);
-            lowBatCnt = 1;
-            // RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
-            RadioCmdSetWithNoRes(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
-        }
+        if(insertCnt%(15*60) == 0){
+                SoundEventSet(SOUND_TYPE_LOW_BAT);
+            }
+
+            if(insertCnt%(60) == 0){
+                RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
+                // RadioCmdSetWithNoRes(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
+            }
         lowBatCnt++;
     }else{
         lowBatCnt = 0;
@@ -126,7 +138,10 @@ void S1AppRtcProcess(void)
     destroyEleShock = DestroyPinRead();
     if(destroyEleShock){
         if(destroyEleShock){
-            EletricPulseSetTime_S(1);
+            destroyCnt++;
+            if(destroyCnt%13 == 0){
+                EletricPulseSetTime_S(8);
+            }
             // RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
             RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
             SoundEventSet(SOUND_TYPE_DESTROYED);
