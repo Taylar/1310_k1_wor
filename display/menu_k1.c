@@ -34,6 +34,7 @@ typedef enum {
     MENU_ITEN_CLOSE_GROUP_PREVENT_ESCAPE,
     MENU_ITEN_OPEN_TERMINQL_PREVENT_ESCAPE,
     MENU_ITEN_CLOSE_TERMINQL_PREVENT_ESCAPE,
+    MENU_ITEN_QUERY_ALARM_INFO,
     MENU_ITEN_SETTING_TIME,
     MENU_ITEM_TIK_GROUP_SUBDUE,
     MENU_ITEM_TIK_FIXED_NUMBER_SUBDUE,
@@ -70,6 +71,7 @@ static void menu_open_blocking( );
 static void menu_power_select_high( );
 static void menu_power_select_mid( );
 static void menu_power_select_low( );
+static void menu_query_alarm_info();
 static void menu_setting_time( );
 
 static void menu_open_group_prevent_escape();
@@ -104,6 +106,7 @@ MenuMode_t MenuMode[]=
     {MENU_ITEN_CLOSE_GROUP_PREVENT_ESCAPE,NULL,menu_close_group_prevent_escape},
     {MENU_ITEN_OPEN_TERMINQL_PREVENT_ESCAPE,NULL,menu_open_terminal_prevent_escape},
     {MENU_ITEN_CLOSE_TERMINQL_PREVENT_ESCAPE,NULL,menu_close_terminal_prevent_escape},
+    {MENU_ITEN_QUERY_ALARM_INFO,NULL,menu_query_alarm_info},
 
     {MENU_ITEN_SETTING_TIME,NULL,menu_setting_time},
     {MENU_ITEM_TIK_GROUP_SUBDUE,NULL,menu_tik_group_subdue},
@@ -144,9 +147,11 @@ INSET_RET_TAB:
 }
 
 static int8_t alarmNum = 0;
+static uint8_t havefindAlarm = 0;
 void set_alarm_init(void)
 {
-    alarmNum = 0;
+    //alarmNum = 0;
+    havefindAlarm = 0;
 }
 uint8_t get_menu_alarmOrSetting(void)
 {
@@ -159,13 +164,13 @@ void set_meun_alarmOrSetting(uint8_t flag)
     if(flag != 0)
         set_alarm_init();
 }
+MenuAlarmObject MenuAlarmObjectTemp;
 
 void menuc_alarm_main(KEY_CODE_E keyCode)
 {
    int8_t i = alarmNum;
-   MenuAlarmObject MenuAlarmObjectTemp;
-   MenuAlarmObjectTemp.alarmType = 0;
-   MenuAlarmObjectTemp.devicesId = 0;
+
+   uint32_t deviceIdHex = 0;
    switch(keyCode)
    {
       case _VK_MODE:
@@ -174,50 +179,78 @@ void menuc_alarm_main(KEY_CODE_E keyCode)
           menuc_main(_VK_MODE);
           break;
       case _VK_OK:
-          while( alarmNum < ALARM_COUNT_MAX )
+          if(MenuAlarmObjectTemp.alarmType != 0 && MenuAlarmObjectTemp.devicesId != 0)
           {
+              MenuAlarmObjectTemp.alarmType = 0;
+              MenuAlarmObjectTemp.devicesId  = 0;
 
-              if(mMenuAlarmObject[alarmNum].alarmType != 0 && mMenuAlarmObject[alarmNum].devicesId != 0)
+              mMenuAlarmObject[0].alarmType = 0;
+              mMenuAlarmObject[0].devicesId = 0;
+
+              for(i = 0 ; i < ALARM_COUNT_MAX-1;i++)
               {
-                  MenuAlarmObjectTemp.alarmType = mMenuAlarmObject[alarmNum].alarmType;
-                  MenuAlarmObjectTemp.devicesId = mMenuAlarmObject[alarmNum].devicesId;
-                  alarmNum ++ ;
-                  break;
+                  mMenuAlarmObject[i].alarmType = mMenuAlarmObject[i+1].alarmType;
+                  mMenuAlarmObject[i].devicesId = mMenuAlarmObject[i+1].devicesId;
               }
 
+              MenuAlarmObjectTemp.alarmType =   mMenuAlarmObject[0].alarmType;
+              MenuAlarmObjectTemp.devicesId =   mMenuAlarmObject[0].devicesId;
           }
 
-          if(alarmNum >= ALARM_COUNT_MAX)
-          {
-              alarmNum = 0;
-              if(mMenuAlarmObject[alarmNum].alarmType != 0 && mMenuAlarmObject[alarmNum].devicesId != 0)
-              {
-                  MenuAlarmObjectTemp.alarmType = mMenuAlarmObject[alarmNum].alarmType;
-                  MenuAlarmObjectTemp.devicesId = mMenuAlarmObject[alarmNum].devicesId;
-                  alarmNum++;
-                  break;
-              }
-              else
-                  alarmNum = -1;
-          }
+
           if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
           {
+              deviceIdHex = TransHexToInt(MenuAlarmObjectTemp.devicesId);
               switch(MenuAlarmObjectTemp.alarmType)
               {
                   case ALARM_TYPE_LOW_POWER:
-                       Menu_low_power_display(MenuAlarmObjectTemp.devicesId);
+                       Menu_low_power_display(deviceIdHex);
                        break;
                   case ALARM_TYPE_UNWEAR:
-                       Menu_not_wearing_well_display(MenuAlarmObjectTemp.devicesId);
+                       Menu_not_wearing_well_display(deviceIdHex);
                        break;
                   case ALARM_TYPE_DESTORY:
-                      Menu_term_is_destroyed(MenuAlarmObjectTemp.devicesId);
+                      Menu_term_is_destroyed(deviceIdHex);
                        break;
               }
           }
+          else
+          {
+               Menu_term_is_no_arm();
+          }
+
           break;
+      case _VK_DISPLAY:
+          MenuAlarmObjectTemp.alarmType = 0;
+          MenuAlarmObjectTemp.devicesId = 0;
+
+          MenuAlarmObjectTemp.alarmType =   mMenuAlarmObject[0].alarmType;
+          MenuAlarmObjectTemp.devicesId =   mMenuAlarmObject[0].devicesId;
+
+          if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
+          {
+              deviceIdHex = TransHexToInt(MenuAlarmObjectTemp.devicesId);
+              switch(MenuAlarmObjectTemp.alarmType)
+              {
+                  case ALARM_TYPE_LOW_POWER:
+                       Menu_low_power_display(deviceIdHex);
+                       break;
+                  case ALARM_TYPE_UNWEAR:
+                       Menu_not_wearing_well_display(deviceIdHex);
+                       break;
+                  case ALARM_TYPE_DESTORY:
+                      Menu_term_is_destroyed(deviceIdHex);
+                       break;
+              }
+          }
+          else
+          {
+               Menu_term_is_no_arm();
+          }
+           break;
       case _VK_DELETE:
-           if(alarmNum != -1)
+#if 0
+           if(havefindAlarm)
            {
                for(i = 0 ; i < ALARM_COUNT_MAX;i++)
                {
@@ -239,8 +272,16 @@ void menuc_alarm_main(KEY_CODE_E keyCode)
                Disp_icon(START_X_TIP,2,ICON_36X24_COMPLETE,1);
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP,2,ICON_36X24_CLEAR,1);
-           }
 
+               if(mMenuAlarmObject[0].alarmType == 0 && mMenuAlarmObject[0].devicesId == 0)
+               {
+                   power_on_init_key_code();
+                   set_meun_alarmOrSetting(0);
+                   menuc_main(_VK_COMMAND);
+               }
+
+           }
+#endif
           break;
       case _VK_COMMAND:
            power_on_init_key_code();
@@ -250,6 +291,7 @@ void menuc_alarm_main(KEY_CODE_E keyCode)
 
    }
 
+#if 0
    for(; i < ALARM_COUNT_MAX;i++)
    {
        if(mMenuAlarmObject[i].alarmType != 0 && mMenuAlarmObject[i].devicesId != 0)
@@ -260,7 +302,7 @@ void menuc_alarm_main(KEY_CODE_E keyCode)
            break;
        }
    }
-
+#endif
 }
 
 void power_on_init_key_code(void)
@@ -455,8 +497,8 @@ void menuc_main(KEY_CODE_E keyCode)
     }
     if(mMenuModeObject.index !=MENU_ITEN_NULL)
     {
-        if(mMenuModeObject.index == MENU_ITEN_SETTING_TIME && keyCodeIn == _VK_MODE)
-           memset((char*)&calendar,0x00,sizeof(Calendar));
+        //if(mMenuModeObject.index == MENU_ITEN_SETTING_TIME && keyCodeIn == _VK_MODE)
+           //memset((char*)&calendar,0x00,sizeof(Calendar));
 
            MenuMode[mMenuModeObject.index-1].func();
     }
@@ -1987,41 +2029,102 @@ static void menu_tik_group_subdue()
 void Menu_low_power_display(uint32_t devicesId)
 {
     uint8_t numbuff[10] = {0};
-    Lcd_clear_screen();
     Lcd_set_font(72, 24, 1);
     Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
-    Lcd_set_font(8, 16, 1);
+    Lcd_set_font(8, 24, 1);
+    Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_msg(START_X_NUM,1,"     ",FONT_8X24);
+    Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
     sprintf((char*)numbuff,"%d",devicesId);
     Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
     Lcd_set_font(72, 24, 1);
     Disp_icon(START_X_LINE,2,ICON_72X24_LOW_POWER,1);
-
+    Disp_icon(START_X_LINE,3,ICON_72X24_CLEAR,1);
 }
 void Menu_not_wearing_well_display(uint32_t devicesId)
 {
     uint8_t numbuff[10] = {0};
-    Lcd_clear_screen();
     Lcd_set_font(72, 24, 1);
     Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
-    Lcd_set_font(8, 16, 1);
+    Lcd_set_font(8, 24, 1);
+    Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_msg(START_X_NUM,1,"     ",FONT_8X24);
+    Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
     sprintf((char*)numbuff,"%d",devicesId);
     Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
     Lcd_set_font(72, 24, 1);
     Disp_icon(START_X_LINE,2,ICON_72X24_NOT_WEARING_WELL,1);
+    Disp_icon(START_X_LINE,3,ICON_72X24_CLEAR,1);
 
 }
 
 void Menu_term_is_destroyed(uint32_t devicesId)
 {
     uint8_t numbuff[10] = {0};
-    Lcd_clear_screen();
+    //Lcd_clear_screen();
     Lcd_set_font(72, 24, 1);
     Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
-    Lcd_set_font(8, 16, 1);
+    Lcd_set_font(8, 24, 1);
+    Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_msg(START_X_NUM,1,"     ",FONT_8X24);
+    Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
     sprintf((char*)numbuff,"%d",devicesId);
     Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
     Lcd_set_font(72, 24, 1);
     Disp_icon(START_X_LINE,2,ICON_72X24_DESTORYED,1);
+    Disp_icon(START_X_LINE,3,ICON_72X24_CLEAR,1);
+
+}
+
+void Menu_term_is_no_arm()
+{
+
+    //Lcd_clear_screen();
+    Lcd_set_font(72, 24, 1);
+    Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+    Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+    Lcd_set_font(8, 24, 1);
+    Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_msg(START_X_NUM,1,"no A!",FONT_8X24);
+    Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
+
+
+    Lcd_set_font(72, 24, 1);
+
+    Disp_icon(START_X_LINE,3,ICON_72X24_CLEAR,1);
+
+}
+
+static void menu_query_alarm_info()
+{
+    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
+    {
+
+        Lcd_set_font(72, 24, 1);
+        if(mMenuModeObject.selectIndex == 0)
+        {
+            Disp_icon(START_X_LINE,3,ICON_72X24_QUERY_ALARM_INFO,1);
+            Lcd_set_font(8, 24, 1);
+
+            Disp_msg(START_X_NUM,1,"-----",FONT_8X24);
+            Disp_msg(START_X_NUM,2,"-----",FONT_8X24);
+            Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+        }
+    }
+    else
+    {
+        if(mMenuModeObject.keyDoing == KEY_DOING_ACK )
+        {
+            set_meun_alarmOrSetting(1);
+            menuc_alarm_main(_VK_DISPLAY);
+        }
+        mMenuModeObject.keyDoing = KEY_DOING_NULL;
+    }
 
 }
 
@@ -2066,7 +2169,7 @@ static void menu_setting_time( )
 
                 mMenuModeObject.timerefesh = 1;
             }
-            if(mMenuModeObject.numEnter > 9999)
+            if(mMenuModeObject.numEnter > 2100 && mMenuModeObject.numEnter < 2010)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
             break;
         case 1:
@@ -2167,7 +2270,7 @@ static void menu_setting_time( )
                 calendar.Year = mMenuModeObject.numEnter;
                 Lcd_set_font(36, 24, 1);
                 mMenuModeObject.selectIndex = 1;
-                mMenuModeObject.numEnter = calendar.DayOfMonth;
+                mMenuModeObject.numEnter = calendar.Month;
                 //Lcd_clear_screen();
 
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
@@ -2237,6 +2340,7 @@ static void menu_setting_time( )
             Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
             Rtc_set_calendar(&calendar);
             Disp_proc();
+            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
             Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
             Lcd_set_font(36, 24, 1);
             Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);

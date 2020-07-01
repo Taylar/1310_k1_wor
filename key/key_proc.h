@@ -81,6 +81,7 @@ typedef enum name
     _VK_NUM0    = 0x7E,
     _VK_OK      = 0x7B,
     _VK_SELECT  = 0x01,
+    _VK_DISPLAY = 0x88,
 }KEY_CODE_E;
 
 
