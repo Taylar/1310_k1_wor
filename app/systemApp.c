@@ -337,7 +337,7 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYS_EVT_ALARM && lcd_power_state == 1)
 		{
 		    set_meun_alarmOrSetting(1);
-		    menuc_alarm_main(_VK_OK);
+		    menuc_alarm_main(_VK_DISPLAY);
 		}
         
 		if(eventId & SYSTEMAPP_EVT_DISP && lcd_power_state == 1)

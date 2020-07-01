@@ -348,6 +348,24 @@ uint8_t TransHexToBcd(uint8_t hex)
     return temp;
 }
 
+uint32_t TransHexToInt(uint32_t hex)
+{
+  uint8_t i = 0;
+  uint32_t hexTemp = 0;
+  uint32_t extendBase = 1;
+  for(i = 0 ; i < 8;i++)
+  {
+      if(i!=0)
+      {
+        extendBase*=10;
+        hexTemp += (((hex>>(i*4))&0x0000000f)*extendBase);
+      }
+      else
+        hexTemp = ((hex>>(i*4))&0x0000000f);
+
+  }
+  return hexTemp;
+}
 //***********************************************************************************
 // 
 // brief: transform bcd to hex

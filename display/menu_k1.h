@@ -45,6 +45,7 @@ void Menu_low_power_display(uint32_t devicesId);
 void Menu_not_wearing_well_display(uint32_t devicesId);
 void Menu_term_is_destroyed(uint32_t devicesId);
 void power_on_init_key_code(void);
+void Menu_term_is_no_arm(void);
 extern void menuc_alarm_main(KEY_CODE_E keyCode);
 uint8_t get_menu_alarmOrSetting(void);
 #endif
