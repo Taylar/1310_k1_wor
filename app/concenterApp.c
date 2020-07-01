@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-16 16:19:08
+* @Last Modified time: 2020-07-01 15:39:44
 */
 #include "../general.h"
 
@@ -303,6 +303,7 @@ uint8_t ConcenterReadSynTimeFlag(void)
 }
 
 uint8_t   rtcReadCnt;
+uint32_t   rtcSaveCnt;
 //***********************************************************************************
 // brief:the concenter rtc process
 // 
@@ -314,6 +315,10 @@ void ConcenterRtcProcess(void)
     if(rtcReadCnt >= 60){
         rtcReadCnt = 0;
         Sys_event_post(SYSTEMAPP_EVT_RTC_READ);
+    }
+    rtcSaveCnt++;
+    if(rtcSaveCnt > 3600){
+        Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
     }
 }
 

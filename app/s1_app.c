@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-01 10:26:15
+* @Last Modified time: 2020-07-01 19:35:15
 */
 #include "../general.h"
 
@@ -70,6 +70,7 @@ void S1HwInit(void)
 
 uint32_t lowBatCnt = 0;
 uint32_t  insertCnt = 0;
+uint32_t  insertMeasureCnt = 0;
 uint32_t  destroyCnt = 0;
 void S1AppRtcProcess(void)
 {
@@ -83,7 +84,16 @@ void S1AppRtcProcess(void)
     }
 
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT){
-        ElecPreventInsertMeasure();
+        
+        if((insertMeasureCnt % 10) == 0){
+            eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
+            eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
+        }
+        if((insertMeasureCnt % 10) == 3){
+            ElecPreventInsertMeasure();
+        }
+
+
         if(ElecPreventInsertState()){
             if(insertCnt%(15*60) == 0){
                 SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
@@ -100,6 +110,9 @@ void S1AppRtcProcess(void)
             }
             insertCnt = 0;
         }
+
+
+        insertMeasureCnt++;
     }
 
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
