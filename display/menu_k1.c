@@ -2102,15 +2102,16 @@ void Menu_term_is_no_arm()
 
     //Lcd_clear_screen();
     Lcd_set_font(72, 24, 1);
-    Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+    Disp_icon(START_X_LINE,1,ICON_72X24_CLEAR,1);
     Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
     Lcd_set_font(8, 24, 1);
     Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
     Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
-    Disp_msg(START_X_NUM,1,"no A!",FONT_8X24);
+    Disp_msg(START_X_NUM,1,"     ",FONT_8X24);
     Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
 
-
+    Lcd_set_font(36, 24, 1);
+    Disp_icon(START_X_LINE,1,ICON_36X24_NO_ALARM,1);
     Lcd_set_font(72, 24, 1);
 
     //Disp_icon(START_X_LINE,3,ICON_72X24_CLEAR,1);
