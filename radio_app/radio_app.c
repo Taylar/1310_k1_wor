@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-19 09:59:56
+* @Last Modified time: 2020-07-01 19:10:34
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -676,8 +676,11 @@ void RadioAppTaskFxn(void)
                 while(brocastTimes){
                     brocastTimes--;
                     ClearRadioSendBuf();
-                    RadioWithNoRes_GroudPack();
+                    if(RadioWithNoRes_GroudPack() == RADIO_PRO_CMD_GROUP_SUBDUE_START){
+                        RadioSetRfPower(0);
+                    }
                     RadioSendData();
+                    RadioSetRfPower(14);
                 }
                 RadioCmdClearWithNoRespon_Groud();
             }
@@ -687,8 +690,10 @@ void RadioAppTaskFxn(void)
                 while(brocastTimes){
                     brocastTimes--;
                     ClearRadioSendBuf();
-                    RadioWithResPack();
+                    if(RadioWithResPack() == RADIO_PRO_CMD_GROUP_SUBDUE_START)
+                        RadioSetRfPower(0);
                     RadioSendData();
+                    RadioSetRfPower(14);
                 }
 
             }

@@ -23,7 +23,7 @@ static const PIN_Config soft_i2c_sda_output_config_2[] = {
     PIN_TERMINATE
 };
 
-static const PIN_Config soft_i2c_scl_input_config_2[] = {
+const PIN_Config soft_i2c_scl_input_config_2[] = {
     SOFT_I2C_SCL_PIN_2   | PIN_INPUT_EN | PIN_PULLUP,      /*          */
     PIN_TERMINATE
 };

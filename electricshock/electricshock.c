@@ -2,17 +2,17 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-24 19:08:20
+* @Last Modified time: 2020-07-02 11:07:25
 */
 #include "../general.h"
 
 
 
 // board node
-#define HIGH_LEVEL_ENABLE_PIN                       IOID_14		//高压档位
-#define MID_LEVEL_ENABLE_PIN                        IOID_27		//中档电压档位
-#define LOW_LEVEL_ENABLE_PIN                        IOID_28		//低档电压档位
-#define SHOCK_CTR_ENABLE_PIN                        IOID_15		//电击功能总开关使能脚
+#define HIGH_LEVEL_ENABLE_PIN                       IOID_14     //高压档位
+#define MID_LEVEL_ENABLE_PIN                        IOID_27     //中档电压档位
+#define LOW_LEVEL_ENABLE_PIN                        IOID_28     //低档电压档位
+#define SHOCK_CTR_ENABLE_PIN                        IOID_15     //电击功能总开关使能脚
 
 #define MOTO_ENABLE_PIN                             IOID_2      //马达使能脚
 
@@ -85,7 +85,7 @@ Clock_Handle eleShockProcessClkHandle;
 
 PWM_Handle eletricShockPulseHandle = NULL;
 
-#define 	PWM_ELE_SHOCK_PULSE_FRQ			33
+#define     PWM_ELE_SHOCK_PULSE_FRQ         33
 
 uint16_t    pulseTimes_sec = 0;
 
@@ -141,9 +141,9 @@ void EletricShockPulseInit(void)
 
     PWM_Params_init(&params);
     params.dutyUnits   = PWM_DUTY_US;
-    params.dutyValue   = 1000000L / PWM_ELE_SHOCK_PULSE_FRQ / 300;	//100us 的脉冲
+    params.dutyValue   = 1000000L / PWM_ELE_SHOCK_PULSE_FRQ / 300;  //100us 的脉冲
     params.periodUnits = PWM_PERIOD_US;
-    params.periodValue = 1000000L/ PWM_ELE_SHOCK_PULSE_FRQ;	 	//1秒的周期
+    params.periodValue = 1000000L/ PWM_ELE_SHOCK_PULSE_FRQ;     //1秒的周期
     params.idleLevel   = PWM_IDLE_LOW;
     eletricShockPulseHandle       = PWM_open(Board_PWM0, &params);
 }
@@ -169,7 +169,7 @@ void EletricPulseSetTime_S(uint16_t keepTime_S)
     }
 }
 
-#define     INSERT_DECTECT_VALUE        2700
+#define     INSERT_DECTECT_VALUE        1460
 ADC_Handle   preventInsertHandle;
 uint8_t     insertOccur = 0;
 
@@ -190,18 +190,20 @@ void ElecPreventInsertMeasure(void)
 {
     uint16_t temp;
 
-    eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
-    eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
+    // eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
+    // eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
     Task_sleep(100 * CLOCK_UNIT_MS);
     ADC_convert(preventInsertHandle, &temp);
     volvalue    = ADC_convertToMicroVolts(preventInsertHandle, temp);
-    if(volvalue > INSERT_DECTECT_VALUE)
+    if((volvalue/1000) > INSERT_DECTECT_VALUE)
         insertOccur = 1;
     else
         insertOccur = 0;
 
-    // eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
-    // eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+    if(insertOccur == 0){
+        eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
+        eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+    }
 }
 
 

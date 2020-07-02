@@ -323,7 +323,7 @@ void SystemAppTaskFxn(void)
 #endif //S_G
 		if(eventId & SYS_EVT_MOTO_INT_REC){
 			eleShock_set(ELE_MOTO_ENABLE, 1);
-			Task_sleep(1000 * CLOCK_UNIT_MS);
+			Task_sleep(360 * CLOCK_UNIT_MS);
 			eleShock_set(ELE_MOTO_ENABLE, 0);
 		}
 
@@ -343,7 +343,7 @@ void SystemAppTaskFxn(void)
 		     buzzerAlarmCnt =2;
 		     g_bAlarmSensorFlag = 1;
 		}
-        
+
 		if(eventId & SYSTEMAPP_EVT_DISP && lcd_power_state == 1)
 		{
         	Disp_proc();
