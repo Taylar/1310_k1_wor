@@ -359,9 +359,10 @@ void S6KeyApp(void)
     //RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
     keyCode = Key_get();
 
-    if(get_menu_alarmOrSetting())
-    menuc_alarm_main(keyCode);
-    else
+    //if(get_menu_alarmOrSetting())
+    //menuc_alarm_main(keyCode);
+   //else
+    g_bAlarmSensorFlag = 0;
     menuc_main(keyCode);
 
 

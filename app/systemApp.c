@@ -327,17 +327,21 @@ void SystemAppTaskFxn(void)
 			eleShock_set(ELE_MOTO_ENABLE, 0);
 		}
 
-
+#ifndef ZKS_S6_6_WOR_G
 		if(eventId & SYS_EVT_SOUND_PLAY){
 			SoundDriverSet(soundEventType);
 		}		
-
+#endif
 
 #ifdef SUPPORT_DISP_SCREEN
 		if(eventId & SYS_EVT_ALARM && lcd_power_state == 1)
 		{
-		    set_meun_alarmOrSetting(1);
-		    menuc_alarm_main(_VK_DISPLAY);
+		    //set_meun_alarmOrSetting(1);
+		     menuc_main(_VK_DISPLAY);
+		     Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
+		     Clock_start(sysAlarmClkHandle);
+		     buzzerAlarmCnt =2;
+		     g_bAlarmSensorFlag = 1;
 		}
 
 		if(eventId & SYSTEMAPP_EVT_DISP && lcd_power_state == 1)
@@ -348,7 +352,7 @@ void SystemAppTaskFxn(void)
         	{
         	   g_firstStartFlag=!g_firstStartFlag;
         	   //gpio_power_en_config();
-        	   set_meun_alarmOrSetting(0);
+        	   //set_meun_alarmOrSetting(0);
         	   power_on_init_key_code();
         	   menuc_main(_VK_COMMAND);
         	   lcd_power_state = 1;
