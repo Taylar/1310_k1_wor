@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-01 19:35:15
+* @Last Modified time: 2020-07-02 11:07:56
 */
 #include "../general.h"
 
@@ -70,8 +70,16 @@ void S1HwInit(void)
 
 uint32_t lowBatCnt = 0;
 uint32_t  insertCnt = 0;
-uint32_t  insertMeasureCnt = 0;
+uint32_t  insertMeasureCnt = 3;
 uint32_t  destroyCnt = 0;
+uint8_t   insetTest = 0;
+
+void PreventiveInsertTest(void)
+{
+    insetTest = 1;
+    insertMeasureCnt = 15*60;
+}
+
 void S1AppRtcProcess(void)
 {
 	if(deviceMode == DEVICES_CONFIG_MODE && RADIOMODE_UPGRADE != RadioModeGet())
@@ -83,14 +91,15 @@ void S1AppRtcProcess(void)
         }
     }
 
-    if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT){
+    if((g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT) || insetTest){
         
-        if((insertMeasureCnt % 10) == 0){
+        if((insertMeasureCnt % (15*60)) == 0){
             eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
             eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
         }
-        if((insertMeasureCnt % 10) == 3){
+        if(((insertMeasureCnt % (15*60)) == 3) || ElecPreventInsertState()){
             ElecPreventInsertMeasure();
+            insetTest = 0;
         }
 
 
@@ -134,11 +143,11 @@ void S1AppRtcProcess(void)
 
     Battery_porcess();
     if(Battery_get_voltage() < 3600){
-        if(insertCnt%(15*60) == 0){
+        if(lowBatCnt%(15*60) == 0){
                 SoundEventSet(SOUND_TYPE_LOW_BAT);
             }
 
-            if(insertCnt%(60) == 0){
+            if(lowBatCnt%(60) == 0){
                 RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
                 // RadioCmdSetWithNoRes(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
             }

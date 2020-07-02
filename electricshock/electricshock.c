@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-01 20:14:07
+* @Last Modified time: 2020-07-02 11:07:25
 */
 #include "../general.h"
 
@@ -200,8 +200,10 @@ void ElecPreventInsertMeasure(void)
     else
         insertOccur = 0;
 
-    // eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
-    // eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+    if(insertOccur == 0){
+        eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
+        eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+    }
 }
 
 
