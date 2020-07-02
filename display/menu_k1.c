@@ -2247,6 +2247,7 @@ static void menu_setting_time( )
             }
             if(mMenuModeObject.numEnter > 2100 && mMenuModeObject.numEnter < 2010)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
+            calendar.Year = mMenuModeObject.numEnter;
             break;
         case 1:
             Lcd_set_font(8, 24, 1);
@@ -2254,6 +2255,7 @@ static void menu_setting_time( )
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
             if(mMenuModeObject.numEnter > 12)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
+            calendar.Month = mMenuModeObject.numEnter;
             break;
         case 2:
             if(!mMenuModeObject.timerefesh)
@@ -2277,6 +2279,7 @@ static void menu_setting_time( )
             }
             if(mMenuModeObject.numEnter > 31)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
+            calendar.DayOfMonth = mMenuModeObject.numEnter;
             break;
         case 3:
             Lcd_set_font(8, 16, 1);
@@ -2284,6 +2287,8 @@ static void menu_setting_time( )
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
             if(mMenuModeObject.numEnter > 23)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
+
+            calendar.Hours = mMenuModeObject.numEnter;
             break;
         case 4:
             if(!mMenuModeObject.timerefesh)
@@ -2308,6 +2313,7 @@ static void menu_setting_time( )
             }
             if(mMenuModeObject.numEnter > 60)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
+            calendar.Minutes = mMenuModeObject.numEnter;
             break;
         case 5:
             Lcd_set_font(8, 16, 1);
@@ -2315,6 +2321,7 @@ static void menu_setting_time( )
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
             if(mMenuModeObject.numEnter > 60)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
+            calendar.Seconds = mMenuModeObject.numEnter;
             break;
         case 6:
             break;
