@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-01 10:29:09
+* @Last Modified time: 2020-07-02 18:49:19
 */
 #include "../general.h"
 
@@ -215,6 +215,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 		case RADIO_PRO_CMD_TERM_TEST:
 			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_SINGLE_TEST);
+				PreventiveInsertTest();
 			}
 		break;
 
@@ -222,6 +223,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 		case RADIO_PRO_CMD_GROUP_TEST:
 			if(ground == GroudAddrGet()){
 				SoundEventSet(SOUND_TYPE_SINGLE_TEST);
+				PreventiveInsertTest();
 			}
 		break;
 

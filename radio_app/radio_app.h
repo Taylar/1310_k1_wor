@@ -49,7 +49,7 @@
 #define SET_RADIO_POWER                 (g_rSysConfigInfo.rfPA >> 4)
 
 #define BROCAST_TIME_MS                    54
-#define MAX_BROCAST_TIMES               (1000/BROCAST_TIME_MS+1)
+#define MAX_BROCAST_TIMES               (1000/BROCAST_TIME_MS)
 
 
 enum RadioOperationStatus {
