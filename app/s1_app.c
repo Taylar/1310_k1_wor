@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-02 11:07:56
+* @Last Modified time: 2020-07-02 19:05:40
 */
 #include "../general.h"
 
@@ -70,7 +70,7 @@ void S1HwInit(void)
 
 uint32_t lowBatCnt = 0;
 uint32_t  insertCnt = 0;
-uint32_t  insertMeasureCnt = 3;
+uint32_t  insertMeasureCnt = 4;
 uint32_t  destroyCnt = 0;
 uint8_t   insetTest = 0;
 
@@ -99,6 +99,14 @@ void S1AppRtcProcess(void)
         }
         if(((insertMeasureCnt % (15*60)) == 3) || ElecPreventInsertState()){
             ElecPreventInsertMeasure();
+        }
+
+        if(insetTest && (insertMeasureCnt % (15*60) == 3)){
+            if(ElecPreventInsertState()){
+                SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
+            }else{
+                SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
+            }
             insetTest = 0;
         }
 
@@ -119,7 +127,6 @@ void S1AppRtcProcess(void)
             }
             insertCnt = 0;
         }
-
 
         insertMeasureCnt++;
     }
