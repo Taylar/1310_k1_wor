@@ -2245,7 +2245,7 @@ static void menu_setting_time( )
 
                 mMenuModeObject.timerefesh = 1;
             }
-            if(mMenuModeObject.numEnter > 2100 && mMenuModeObject.numEnter < 2010)
+            if(mMenuModeObject.numEnter > 2100 || mMenuModeObject.numEnter < 2020)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
             calendar.Year = mMenuModeObject.numEnter;
             break;
@@ -2255,6 +2255,7 @@ static void menu_setting_time( )
             Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
             if(mMenuModeObject.numEnter > 12)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
+
             calendar.Month = mMenuModeObject.numEnter;
             break;
         case 2:
