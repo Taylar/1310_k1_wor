@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-01 19:10:34
+* @Last Modified time: 2020-07-03 19:01:01
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -427,7 +427,8 @@ void RadioAppTaskFxn(void)
     EasyLink_Params_init(&easyLink_params);
 
     
-    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    // easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    easyLink_params.ui32ModType = EasyLink_Phy_Custom_s1_old;
     g_rSysConfigInfo.rfBW            = FREQ_434_50;
 
     g_rSysConfigInfo.rfPA = (14 << 4);;
