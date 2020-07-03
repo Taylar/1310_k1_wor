@@ -2245,7 +2245,7 @@ static void menu_setting_time( )
 
                 mMenuModeObject.timerefesh = 1;
             }
-            if(mMenuModeObject.numEnter > 2100 || mMenuModeObject.numEnter < 2020)
+            if(mMenuModeObject.numEnter > 2100/* || mMenuModeObject.numEnter < 2020*/)
                 mMenuModeObject.numEnter= mMenuModeObject.numEnter/10;
             calendar.Year = mMenuModeObject.numEnter;
             break;
@@ -2421,14 +2421,30 @@ static void menu_setting_time( )
         else if(mMenuModeObject.keyDoing == KEY_DOING_ACK)
         {
             Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
-            Rtc_set_calendar(&calendar);
-            Disp_proc();
-            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
-            Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
-            Lcd_set_font(36, 24, 1);
-            Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 
+            if(calendar.Year >=2000)
+            {
+                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+                Rtc_set_calendar(&calendar);
+                Disp_proc();
+                Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+            }
+            else
+            {
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                Lcd_set_font(36, 24, 1);
+                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+                mMenuModeObject.numEnter = calendar.Year;
+                mMenuModeObject.selectIndex =0;
+                mMenuModeObject.timerefesh = 0;
+                mMenuModeObject.keyDoing = KEY_DOING_NULL;
+            }
         }
         mMenuModeObject.keyDoing = KEY_DOING_NULL;
     }
