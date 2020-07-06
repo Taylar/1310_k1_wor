@@ -83,6 +83,7 @@ static void menu_tik_fixed_number_subdue();
 static void menu_tik_group_subdue();
 static void menu_tik_arr_subdue();
 
+static void Display_alarm(uint32_t devicesId, uint8_t type);
 MenuMode_t MenuMode[]=
 {
     {MENU_ITEN_ADD_GROUP,NULL,menu_add_group},
@@ -2096,7 +2097,38 @@ void Menu_term_is_destroyed(uint32_t devicesId)
     //Disp_icon(START_X_LINE,3,ICON_72X24_CLEAR,1);
 
 }
+static void Display_alarm(uint32_t devicesId, uint8_t type)
+{
 
+    uint8_t numbuff[10] = {0};
+    //Lcd_clear_screen();
+    Lcd_set_font(72, 24, 1);
+    Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+    Lcd_set_font(8, 24, 1);
+    Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+    Disp_msg(START_X_NUM,1,"     ",FONT_8X24);
+    Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
+    sprintf((char*)numbuff,"%d",devicesId);
+    Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+    Lcd_set_font(72, 24, 1);
+    switch(type)
+    {
+    case ALARM_TYPE_LOW_POWER:
+           Disp_icon(START_X_LINE,2,ICON_72X24_LOW_POWER,1);
+          break;
+    case ALARM_TYPE_UNWEAR:
+           Disp_icon(START_X_LINE,2,ICON_72X24_NOT_WEARING_WELL,1);
+          break;
+    case ALARM_TYPE_DESTORY:
+           Disp_icon(START_X_LINE,2,ICON_72X24_DESTORYED,1);
+          break;
+    case ALARM_TYPE_ESCAPE:
+           Disp_icon(START_X_LINE,2,ICON_72X24_ESCAPE_ALARM,1);
+          break;
+    }
+
+}
 void Menu_term_is_no_arm()
 {
 
@@ -2135,6 +2167,7 @@ static void menu_query_alarm_info()
         if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
           {
              deviceIdHex = TransHexToInt(MenuAlarmObjectTemp.devicesId);
+#if 0
              switch(MenuAlarmObjectTemp.alarmType)
              {
                  case ALARM_TYPE_LOW_POWER:
@@ -2147,6 +2180,10 @@ static void menu_query_alarm_info()
                         Menu_term_is_destroyed(deviceIdHex);
                    break;
              }
+#else
+             Display_alarm(deviceIdHex,MenuAlarmObjectTemp.alarmType);
+
+#endif
           }
           else
           {
