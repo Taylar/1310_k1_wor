@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-06 13:43:25
+* @Last Modified time: 2020-07-06 14:29:50
 */
 #include "../general.h"
 
@@ -68,6 +68,7 @@ void S1HwInit(void)
 }
 
 
+uint32_t batmeasureCnt = 60;
 uint32_t lowBatCnt = 0;
 uint32_t  insertCnt = 0;
 uint32_t  insertMeasureCnt = 4;
@@ -97,92 +98,94 @@ void S1AppRtcProcess(void)
         }
     }
 
-    if((g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT) || insetTest){
+    // if((g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT) || insetTest){
         
-        if((insertMeasureCnt % (15*60)) == 0){
-            eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
-            eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
-        }
-        if(((insertMeasureCnt % (15*60)) == 3) || ElecPreventInsertState()){
-            ElecPreventInsertMeasure();
-        }
+    //     if((insertMeasureCnt % (15*60)) == 0){
+    //         eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
+    //         eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
+    //     }
+    //     if(((insertMeasureCnt % (15*60)) == 3) || ElecPreventInsertState()){
+    //         ElecPreventInsertMeasure();
+    //     }
 
-        if(insetTest && (insertMeasureCnt % (15*60) == 3)){
-            if(ElecPreventInsertState()){
-                SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
-            }else{
-                SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
-            }
-            insetTest = 0;
-        }
-
-
-        if(ElecPreventInsertState()){
-            if(insertCnt%(15*60) == 0){
-                SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
-            }
-
-            if(insertCnt%(60) == 0){
-                RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
-                // RadioCmdSetWithNoRes(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
-            }
-            insertCnt++;
-        }else{
-            if(insertCnt){
-                SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
-            }
-            insertCnt = 0;
-        }
-
-        insertMeasureCnt++;
-    }
-
-    if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
-        escapeTimeCnt++;
-        if(escapeTimeCnt == 10){
-            SoundEventSet(SOUND_TYPE_ESCAPE_ALARM1);
-        }
-        if(escapeTimeCnt == 20){
-            RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
-            EletricPulseSetTime_S(2);
-            SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
-        }
-        if((escapeTimeCnt > 30) && ( ( (escapeTimeCnt-30) % 13) == 0) ){
-            RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
-            SoundEventSet(SOUND_TYPE_SHOCK_START);
-            EletricPulseSetTime_S(8);
-        }
-    }
+    //     if(insetTest && (insertMeasureCnt % (15*60) == 3)){
+    //         if(ElecPreventInsertState()){
+    //             SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
+    //         }else{
+    //             SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
+    //         }
+    //         insetTest = 0;
+    //     }
 
 
-    Battery_porcess();
-    if(Battery_get_voltage() < 3600){
-        if(lowBatCnt%(15*60) == 0){
+    //     if(ElecPreventInsertState()){
+    //         if(insertCnt%(15*60) == 0){
+    //             SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
+    //         }
+
+    //         if(insertCnt%(60) == 0){
+    //             RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+    //             // RadioCmdSetWithNoRes(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+    //         }
+    //         insertCnt++;
+    //     }else{
+    //         if(insertCnt){
+    //             SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
+    //         }
+    //         insertCnt = 0;
+    //     }
+
+    //     insertMeasureCnt++;
+    // }
+
+    // if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
+    //     escapeTimeCnt++;
+    //     if(escapeTimeCnt == 10){
+    //         SoundEventSet(SOUND_TYPE_ESCAPE_ALARM1);
+    //     }
+    //     if(escapeTimeCnt == 20){
+    //         RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
+    //         EletricPulseSetTime_S(2);
+    //         SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
+    //     }
+    //     if((escapeTimeCnt > 30) && ( ( (escapeTimeCnt-30) % 13) == 0) ){
+    //         RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
+    //         SoundEventSet(SOUND_TYPE_SHOCK_START);
+    //         EletricPulseSetTime_S(8);
+    //     }
+    // }
+
+    batmeasureCnt++;
+    if(batmeasureCnt >= 60){
+        batmeasureCnt = 0;
+        Battery_porcess();
+        if(Battery_get_voltage() < 3600){
+            if(lowBatCnt%(15) == 0){
                 SoundEventSet(SOUND_TYPE_LOW_BAT);
             }
 
-            if(lowBatCnt%(60) == 0){
-                RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
-                // RadioCmdSetWithNoRes(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
-            }
-        lowBatCnt++;
-    }else{
-        lowBatCnt = 0;
+            RadioCmdSetWithNoResponBrocast(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
+            // RadioCmdSetWithNoRes(RADIO_CMD_LOW_VOL_TYPE, RADIO_CONTROLER_ADDRESS);
+            lowBatCnt++;
+        }else{
+            lowBatCnt = 0;
+        }
+        
     }
 
 
-    destroyEleShock = DestroyPinRead();
-    if(destroyEleShock){
-        if(destroyEleShock){
-            destroyCnt++;
-            if(destroyCnt%13 == 0){
-                EletricPulseSetTime_S(8);
-            }
-            // RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
-            RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
-            SoundEventSet(SOUND_TYPE_DESTROYED);
-        } 
-    }
+    // destroyEleShock = DestroyPinRead();
+    // if(destroyEleShock){
+    //     if(destroyEleShock){
+    //         destroyCnt++;
+    //         if(destroyCnt%13 == 0){
+    //             EletricPulseSetTime_S(8);
+    //         }
+    //         // RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
+    //         RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
+    //         SoundEventSet(SOUND_TYPE_DESTROYED);
+    //     } 
+    // }
 
     // for test
     // RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);
