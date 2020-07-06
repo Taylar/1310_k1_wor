@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-03 20:01:27
+* @Last Modified time: 2020-07-06 16:24:20
 */
 #include "../general.h"
 
@@ -57,7 +57,10 @@ void PeridoWakeupCb(UArg arg0)
 
 void ConcenterResetBroTimer(void)
 {
-    Clock_setPeriod(periodWakeupClockHandle, 5000 * CLOCK_UNIT_MS);
+    if(Clock_isActive(periodWakeupClockHandle))
+        Clock_stop(periodWakeupClockHandle);
+    
+    Clock_setPeriod(periodWakeupClockHandle, 4000 * CLOCK_UNIT_MS);
     Clock_start(periodWakeupClockHandle);
 }
 
@@ -70,9 +73,9 @@ void ConcenterAppInit(void)
 {
     Clock_Params clkParams;
     Clock_Params_init(&clkParams);
-    clkParams.period = 5000 * CLOCK_UNIT_MS;
+    clkParams.period = 4000 * CLOCK_UNIT_MS;
     clkParams.startFlag = TRUE;
-    Clock_construct(&periodWakeupClock, PeridoWakeupCb, 5000 * CLOCK_UNIT_MS, &clkParams);
+    Clock_construct(&periodWakeupClock, PeridoWakeupCb, 4000 * CLOCK_UNIT_MS, &clkParams);
     periodWakeupClockHandle = Clock_handle(&periodWakeupClock);
 
 
