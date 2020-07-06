@@ -57,6 +57,7 @@
 #define     RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE       32   //关终端防逃
 #define     RADIO_PRO_CMD_OPEN_GROUP_PREVENT_ESCAPE           33   //开组防逃
 #define     RADIO_PRO_CMD_CLOSE_GROUP_PREVENT_ESCAPE          34   //关组防逃
+#define     RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM		          35   //防逃报警
 
 
 #define     RADIO_PRO_CMD_ALL_RESP          		63             //命令应答
@@ -108,10 +109,10 @@ uint8_t     concenterRemainderCache;
 /***** Type declarations *****/
 
 typedef  struct {
-    uint8_t     len;
     uint8_t     command;
-    uint32_t    dstAddr;
-    uint32_t    srcAddr;
+    // uint8_t     len;
+    // uint32_t    dstAddr;
+    // uint32_t    srcAddr;
     uint8_t     load[RADIO_PROTOCAL_LOAD_MAX];
 }__attribute__((packed)) radio_protocal_t;
 

@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-02 18:49:19
+* @Last Modified time: 2020-07-03 21:23:47
 */
 #include "../general.h"
 
@@ -486,7 +486,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 }
 #ifdef S_C
 
-#define ESCAPE_RSSI		(-60)
+#define ESCAPE_RSSI		(-55)
 //***********************************************************************************
 // brief:   analysis the node protocal 
 // 
@@ -500,8 +500,9 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     uint16_t cmdType;
     uint16_t remaindTimes;
     uint32_t gourndTemp;
+    uint32_t dstAddr,srcAddr;
 
-
+    dstAddr = *((uint32_t*)protocalRxPacket->dstAddr);
     TxFrameRecord_t rxSensorDataAckRecord;
     memset(&rxSensorDataAckRecord, 0, sizeof(TxFrameRecord_t));
 
@@ -513,10 +514,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	bufTemp		= (radio_protocal_t *)protocalRxPacket->payload;
 
 	// SetRadioDstAddr(bufTemp->srcAddr);
-	if(bufTemp->srcAddr == RADIO_CONTROLER_ADDRESS){
+	// if(srcAddr == RADIO_CONTROLER_ADDRESS){
 		if(protocalRxPacket->rssi > ESCAPE_RSSI)
 			escapeTimeCnt = 0;
-	}
+	// }
 
 	HIBYTE_ZKS(remaindTimes) = bufTemp->load[0];
 	LOBYTE_ZKS(remaindTimes) = bufTemp->load[1];
@@ -528,14 +529,16 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     HIBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[6];
     LOBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[7];
 
-	while(len)
-	{
+    srcAddr = gourndTemp;
+
+	// while(len)
+	// {
 		// the receive data is not integrated
-		if((bufTemp->len > len) || (bufTemp->len == 0))
-			return;
+		// if((bufTemp->len > len) || (bufTemp->len == 0))
+			// return;
 		
 		// the resever length
-		len 	-= bufTemp->len;
+		// len 	= 0;
 
 		switch(bufTemp->command)
 		{
@@ -552,10 +555,10 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 			case RADIO_PRO_CMD_SINGLE:
 			case RADIO_PRO_CMD_GROUND:
-				RadioCmdProcess(cmdType, bufTemp->dstAddr, gourndTemp, bufTemp->srcAddr);
-				if(bufTemp->dstAddr == GetRadioSrcAddr()){
+				RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
+				if(dstAddr == GetRadioSrcAddr()){
 				// wait for the S_G send the same msg
-					Task_sleep(remaindTimes*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+					Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
 					// RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
 				}
 			break;
@@ -564,18 +567,15 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 			case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
 			case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
 				// wait for the S_G send the same msg
-				Task_sleep(remaindTimes*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-				RadioCmdProcess(cmdType, bufTemp->dstAddr, gourndTemp, bufTemp->srcAddr);
+				Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+				RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
 			break;
 
 			default:
 			return;
 
 		}
-
-		// point to new message the head
-		bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);
-	}
+	// }
 }
 
 
@@ -589,14 +589,15 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 //***********************************************************************************
 void NodeRadioSendSynReq(void)
 {
-	protocalTxBuf.len 		= 10;
-	protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
 	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME_REQ;
+	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
+	// protocalTxBuf.len 		= 10;
 
-	SetRadioDstAddr(protocalTxBuf.dstAddr);
+	SetRadioDstAddr(GetRadioDstAddr());
+	// SetRadioDstAddr(protocalTxBuf.dstAddr);
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -612,11 +613,11 @@ void RadioSendWithResp(uint16_t cmdType)
 	uint32_t addrTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE;
-	protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	protocalTxBuf.len 		= 10+8;
+	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
+	// protocalTxBuf.len 		= 10+8;
 
-	SetRadioDstAddr(protocalTxBuf.dstAddr);
+	SetRadioDstAddr(GetRadioDstAddr());
 
 	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
     protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
@@ -624,12 +625,17 @@ void RadioSendWithResp(uint16_t cmdType)
     protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
+    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
+    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
+    	(cmdType == RADIO_CMD_INSERT_TYPE))
+    	addrTemp = GetRadioSrcAddr();
+
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
     protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));     
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -646,11 +652,12 @@ void RadioSendWithNoResp(uint16_t cmdType)
 	uint32_t addrTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE_WITH_NO_RESP;
-	protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	protocalTxBuf.len 		= 10+8;
+	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
+	// protocalTxBuf.len 		= 10+8;
 
-	SetRadioDstAddr(protocalTxBuf.dstAddr);
+	SetRadioDstAddr(GetRadioDstAddr());
+	// SetRadioDstAddr(protocalTxBuf.dstAddr);
 
 	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
     protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
@@ -658,12 +665,18 @@ void RadioSendWithNoResp(uint16_t cmdType)
     protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
+
+    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
+    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
+    	(cmdType == RADIO_CMD_INSERT_TYPE))
+    	addrTemp = GetRadioSrcAddr();
+
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
     protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));   
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -679,11 +692,12 @@ void RadioSendGroundWithResp(uint16_t cmdType)
 	uint32_t addrTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND;
-	protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	protocalTxBuf.len 		= 10+8;
+	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
+	// protocalTxBuf.len 		= 10+8;
 
-	SetRadioDstAddr(protocalTxBuf.dstAddr);
+	SetRadioDstAddr(GetRadioDstAddr());
+	// SetRadioDstAddr(protocalTxBuf.dstAddr);
 
 	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
     protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
@@ -691,12 +705,18 @@ void RadioSendGroundWithResp(uint16_t cmdType)
     protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
+
+    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
+    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
+    	(cmdType == RADIO_CMD_INSERT_TYPE))
+    	addrTemp = GetRadioSrcAddr();
+
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
     protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));     
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -713,11 +733,12 @@ void RadioSendGroundWithNoResp(uint16_t cmdType)
 	uint32_t addrTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND_WITH_NO_RESP;
-	protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	protocalTxBuf.len 		= 10+8;
+	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
+	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
+	// protocalTxBuf.len 		= 10+8;
 
-	SetRadioDstAddr(protocalTxBuf.dstAddr);
+	SetRadioDstAddr(GetRadioDstAddr());
+	// SetRadioDstAddr(protocalTxBuf.dstAddr);
 
 	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
     protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
@@ -725,12 +746,18 @@ void RadioSendGroundWithNoResp(uint16_t cmdType)
     protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
 
     addrTemp = GroudAddrGet();
+
+    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
+    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
+    	(cmdType == RADIO_CMD_INSERT_TYPE))
+    	addrTemp = GetRadioSrcAddr();
+
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
     protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));   
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, 0);
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -746,7 +773,9 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     uint16_t cmdType;
     uint16_t remaindTimes;
     uint32_t gourndTemp;
+    uint32_t dstAddr,srcAddr;
 
+    dstAddr = *((uint32_t*)protocalRxPacket->dstAddr);
 
 
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
@@ -755,7 +784,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	ClearRadioSendBuf();
 
-	SetRadioDstAddr(bufTemp->srcAddr);
+	SetRadioDstAddr(srcAddr);
 	
 	HIBYTE_ZKS(remaindTimes) = bufTemp->load[0];
 	LOBYTE_ZKS(remaindTimes) = bufTemp->load[1];
@@ -767,20 +796,21 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     HIBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[6];
     LOBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[7];
 
-	while(len)
-	{
+    srcAddr = gourndTemp;
+	// while(len)
+	// {
 		// the receive data is not integrated
-		if((bufTemp->len > len) || (bufTemp->len == 0) || (len == 0))
-			break;
+		// if((bufTemp->len > len) || (bufTemp->len == 0) || (len == 0))
+		// 	break;
 		
-		len 	-= bufTemp->len;
+		// len 	-= bufTemp->len;
 		switch(bufTemp->command)
 		{
 			case RADIO_PRO_CMD_SINGLE:
 			case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
 			case RADIO_PRO_CMD_GROUND:
 			case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
-				RadioCmdProcess(cmdType, bufTemp->srcAddr, gourndTemp, bufTemp->srcAddr);
+				RadioCmdProcess(cmdType, srcAddr, gourndTemp, srcAddr);
 			break;
 
 
@@ -792,8 +822,8 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 		}
 		// point to new message the head
-		bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);
-	}
+		// bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);
+	// }
 
     Sys_event_post(SYSTEMAPP_EVT_DISP);
 }
@@ -811,36 +841,6 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 //***********************************************************************************
 void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
 {
-	Calendar	calendarTemp;
-    uint32_t temp;
-
-
-	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME;
-	protocalTxBuf.dstAddr	= dstAddr;
-	protocalTxBuf.srcAddr	= srcAddr;
-	protocalTxBuf.len 		= 10+14;
-
-
-	calendarTemp			= Rtc_get_calendar();
-
-	protocalTxBuf.load[0]	= (uint8_t)(calendarTemp.Year - 2000);
-	protocalTxBuf.load[1]	= calendarTemp.Month;
-	protocalTxBuf.load[2]	= calendarTemp.DayOfMonth;
-	protocalTxBuf.load[3]	= calendarTemp.Hours;
-	protocalTxBuf.load[4]	= calendarTemp.Minutes;
-	protocalTxBuf.load[5]	= calendarTemp.Seconds;
-
-	temp 					= g_rSysConfigInfo.collectPeriod;
-
-	protocalTxBuf.load[6]	= (uint8_t)(temp >> 24);
-	protocalTxBuf.load[7]	= (uint8_t)(temp >> 16);
-	protocalTxBuf.load[8]	= (uint8_t)(temp >> 8);
-	protocalTxBuf.load[9]	= (uint8_t)(temp);
-
-	SetRadioDstAddr(dstAddr);
-
-
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), protocalTxBuf.len, 0, 0, 0);
 }
 
 

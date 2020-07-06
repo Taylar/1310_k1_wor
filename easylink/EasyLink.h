@@ -275,7 +275,7 @@ typedef struct {
 //! \brief Structure for the TX Packet
 typedef struct
 {
-        uint8_t dstAddr[8];              //!<  Destination address
+        uint8_t dstAddr[4];              //!<  Destination address
         uint32_t absTime;                //!< Absolute time to Tx packet (0 for immediate)
                                          //!< Layer will use last SeqNum used + 1
 
@@ -286,7 +286,7 @@ typedef struct
 //! \brief Structure for the RX'ed Packet
 typedef struct
 {
-        uint8_t dstAddr[8];              //!< Dst Address of RX'ed packet
+        uint8_t dstAddr[4];              //!< Dst Address of RX'ed packet
         int8_t rssi;                     //!< rssi of RX'ed packet
         uint32_t absTime;                //!< Absolute time to turn on Rx when passed
                                          //!< (0 for immediate), Or Absolute time that packet was Rx

@@ -36,6 +36,7 @@ typedef enum {
     ALARM_TYPE_LOW_POWER,
     ALARM_TYPE_UNWEAR,
     ALARM_TYPE_DESTORY,
+    ALARM_TYPE_ESCAPE,
     ALARM_TYPE_MAX
 } ALARM_TYPE;
 void set_meun_alarmOrSetting(uint8_t flag);

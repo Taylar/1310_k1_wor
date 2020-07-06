@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-02 19:05:40
+* @Last Modified time: 2020-07-06 13:43:25
 */
 #include "../general.h"
 
@@ -74,11 +74,17 @@ uint32_t  insertMeasureCnt = 4;
 uint32_t  destroyCnt = 0;
 uint8_t   insetTest = 0;
 
+int8_t   escapeRssi;
+
+
 void PreventiveInsertTest(void)
 {
     insetTest = 1;
     insertMeasureCnt = 15*60;
 }
+
+
+
 
 void S1AppRtcProcess(void)
 {
@@ -137,14 +143,15 @@ void S1AppRtcProcess(void)
             SoundEventSet(SOUND_TYPE_ESCAPE_ALARM1);
         }
         if(escapeTimeCnt == 20){
+            RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
             EletricPulseSetTime_S(2);
             SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
         }
         if((escapeTimeCnt > 30) && ( ( (escapeTimeCnt-30) % 13) == 0) ){
+            RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
+            SoundEventSet(SOUND_TYPE_SHOCK_START);
             EletricPulseSetTime_S(8);
         }
-        if(escapeTimeCnt > 30)
-            SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
     }
 
 

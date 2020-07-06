@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-01 15:39:44
+* @Last Modified time: 2020-07-03 20:01:27
 */
 #include "../general.h"
 
@@ -52,6 +52,13 @@ Clock_Handle periodWakeupClockHandle;
 void PeridoWakeupCb(UArg arg0)
 {
     RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_WAKEUP,NULL,RADIO_CONTROLER_ADDRESS);
+}
+
+
+void ConcenterResetBroTimer(void)
+{
+    Clock_setPeriod(periodWakeupClockHandle, 5000 * CLOCK_UNIT_MS);
+    Clock_start(periodWakeupClockHandle);
 }
 
 //***********************************************************************************

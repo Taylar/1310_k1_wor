@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-03 19:01:01
+* @Last Modified time: 2020-07-03 21:31:41
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -427,8 +427,8 @@ void RadioAppTaskFxn(void)
     EasyLink_Params_init(&easyLink_params);
 
     
-    // easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
-    easyLink_params.ui32ModType = EasyLink_Phy_Custom_s1_old;
+    easyLink_params.ui32ModType = RADIO_EASYLINK_MODULATION;
+    // easyLink_params.ui32ModType = EasyLink_Phy_Custom_s1_old;
     g_rSysConfigInfo.rfBW            = FREQ_434_50;
 
     g_rSysConfigInfo.rfPA = (14 << 4);;
@@ -660,10 +660,10 @@ void RadioAppTaskFxn(void)
 
             //if(RadioCheckRssi() > -80)
             {
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(2*BROCAST_TIME_MS));
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(SNIFF_TIME_MS));
                 RadioReceiveData();
                 // 防止有其他指令打断该接收，使其不能完整接收一个数据包
-                Task_sleep(2*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+                Task_sleep(SNIFF_TIME_MS*CLOCK_UNIT_MS);
             }
         }
 
@@ -671,6 +671,11 @@ void RadioAppTaskFxn(void)
 
         if(events & RADIO_EVT_WAKEUP_SEND)
         {
+            
+#ifdef BOARD_S6_6
+            ConcenterResetBroTimer();
+#endif //BOARD_S6_6
+
             
             if(RadioWithNoRes_GroudPack() != 0){
                 brocastTimes = MAX_BROCAST_TIMES;
@@ -701,6 +706,8 @@ void RadioAppTaskFxn(void)
 
 
 #ifdef BOARD_S6_6
+            ConcenterResetBroTimer();
+
             Radio_setRxModeRfFrequency();
 
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 2*BROCAST_TIME_MS*CLOCK_UNIT_MS);
