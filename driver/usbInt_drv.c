@@ -2,13 +2,15 @@
 * @Author: justfortest
 * @Date:   2018-03-01 16:50:29
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-08 16:52:20
+* @Last Modified time: 2020-07-07 09:24:46
 */
 #include "../general.h"
 
-
+#ifdef BOARD_S3
+#define USB_INT_PIN                            IOID_4
+#else
 #define USB_INT_PIN                            IOID_11
-
+#endif
 void (*UsbIntIsrCb)(void);
 
 static Clock_Struct usbIntClkStruct;

@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-06 16:46:06
+* @Last Modified time: 2020-07-07 09:25:43
 */
 #include "../general.h"
 
@@ -56,6 +56,8 @@ void S1HwInit(void)
     SoundDriverInit();
 
     Battery_init();
+
+    UsbIntInit(SystemUsbIntEventPostIsr);
 
     Battery_voltage_measure();
     
