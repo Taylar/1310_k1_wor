@@ -225,6 +225,8 @@ void SystemAppTaskFxn(void)
 #ifdef BOARD_S6_6
         if(eventId & SYS_EVT_KEY_SCAN){
         	KeyScanFxn();
+            // clear SYS_EVT_KEY_SCAN event
+            Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
         }
 #endif // BOARD_S6_6
 

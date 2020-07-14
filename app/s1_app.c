@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-07 09:25:43
+* @Last Modified time: 2020-07-07 17:02:02
 */
 #include "../general.h"
 
@@ -106,11 +106,11 @@ void S1AppRtcProcess(void)
             eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
             eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
         }
-        if(((insertMeasureCnt % (15*60)) == 3) || ElecPreventInsertState()){
+        if(((insertMeasureCnt % (15*60)) == 5) || ElecPreventInsertState()){
             ElecPreventInsertMeasure();
         }
 
-        if(insetTest && (insertMeasureCnt % (15*60) == 3)){
+        if(insetTest && (insertMeasureCnt % (15*60) == 5)){
             if(ElecPreventInsertState()){
                 SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
             }else{

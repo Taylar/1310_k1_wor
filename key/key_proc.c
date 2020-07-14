@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-30 17:23:52
+* @Last Modified time: 2020-07-14 16:18:27
 */
 
 #include "../general.h"
@@ -193,6 +193,7 @@ void KeyScanFxn(void)
 {
     uint8_t portState;
     
+    __delay_cycles(100);
     KeyIntDisable();
 
     portState = KeyReadP0();
