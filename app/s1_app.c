@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-07 17:02:02
+* @Last Modified time: 2020-07-15 14:00:38
 */
 #include "../general.h"
 
@@ -139,7 +139,7 @@ void S1AppRtcProcess(void)
 
         insertMeasureCnt++;
     }
-
+    
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
         escapeTimeCnt++;
         if(escapeTimeCnt == 11){
