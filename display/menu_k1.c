@@ -401,8 +401,8 @@ void menuc_main(KEY_CODE_E keyCode)
         case _VK_ACTIVE://µç»÷
             if(mMenuModeObject.index >=MENU_ITEM_TIK_GROUP_SUBDUE && mMenuModeObject.index < MENU_ITEN_MAX)
                 mMenuModeObject.keyDoing = KEY_DOING_TICK;
-            //else if(mMenuModeObject.index >=MENU_ITEN_ADD_GROUP && mMenuModeObject.index <= MENU_ITEN_SETTING_TIME )
-                //mMenuModeObject.keyDoing = KEY_DOING_SWITCH;
+            else if(mMenuModeObject.index >=MENU_ITEN_ADD_GROUP && mMenuModeObject.index <= MENU_ITEN_SETTING_TIME )
+                mMenuModeObject.keyDoing = KEY_DOING_SWITCH;
         break;
 
 
