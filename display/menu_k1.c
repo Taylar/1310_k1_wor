@@ -13,7 +13,7 @@
 #define START_X_XIN  15
 #define START_X_TIP  2
 #define DELAY_COMPLETE 500
-#define ALARM_COUNT_MAX 10
+#define ALARM_COUNT_MAX 100
 typedef enum {
     MENU_ITEN_NULL=0,
     MENU_ITEN_ADD_GROUP,
@@ -1851,7 +1851,7 @@ static void menu_tik_fixed_number_subdue()
 {
 
     uint8_t numbuff[10] = {0};
-    uint32_t    eventId;
+    uint32_t  eventId,timeCnt = 0;
 //TAB_REPEAT_ADD_ARR11:
    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
    {
@@ -1901,24 +1901,38 @@ static void menu_tik_fixed_number_subdue()
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 
-               eventId = Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, 7000*CLOCK_UNIT_MS);
-               if(eventId & SYS_EVT_KEY_SCAN){
-                   KeyScanFxn();
-                   // clear SYS_EVT_KEY_SCAN event
-                   Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
-                   if(Key_get() == _VK_OK)
-                   {
-                       Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_KEY, BIOS_NO_WAIT);
-                       Lcd_set_font(72, 24, 1);
-                       Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
-                       //send data to devices
-                       RadioCmdSetWithRespon(RADIO_PRO_CMD_GROUP_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
-                       Lcd_set_font(36, 24, 1);
-                       Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
-                       Task_sleep(1000*CLOCK_UNIT_MS);
+               Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
+               KeyScanFxn();
+               while(timeCnt < 70)
+               {
+                   eventId = Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, 100*CLOCK_UNIT_MS);
+                   if(eventId & SYS_EVT_KEY_SCAN){
+                       KeyScanFxn();
+                       // clear SYS_EVT_KEY_SCAN event
+                       Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
+                       if(Key_get() == _VK_OK)
+                       {
+                           Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_KEY, BIOS_NO_WAIT);
+                           //Lcd_set_font(72, 24, 1);
+                           //Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
+                           //send data to devices
+                           RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+                           Lcd_set_font(36, 24, 1);
+                           Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
+                           Task_sleep(1000*CLOCK_UNIT_MS);
+                           break;
+                       }
+                       else if((Key_get() == _VK_SELECT) || (Key_get() == _VK_COMMAND))
+                       {
+                             break;
+                       }
+
                    }
 
+                   timeCnt++;
                }
+
+
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
                Lcd_set_font(72, 24, 1);
                Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_SUBDUE,1);
@@ -1958,8 +1972,8 @@ static void menu_tik_fixed_number_subdue()
 static void menu_tik_arr_subdue()
 {
     uint8_t numbuff[10] = {0};
-    uint32_t    eventId;
-//TAB_REPEAT_ADD_ARR12:
+    uint32_t    eventId,timeCnt = 0;
+
    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
    {
 
@@ -2005,23 +2019,35 @@ static void menu_tik_arr_subdue()
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
 
-               eventId = Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, 7000*CLOCK_UNIT_MS);
-               if(eventId & SYS_EVT_KEY_SCAN){
-                   KeyScanFxn();
-                   // clear SYS_EVT_KEY_SCAN event
-                   Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
-                   if(Key_get() == _VK_OK)
-                   {
-                       Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_KEY, BIOS_NO_WAIT);
-                       Lcd_set_font(72, 24, 1);
-                       Disp_icon(START_X_LINE,3,ICON_72X24_ARR_STOP,1);
-                       //send data to devices
-                       RadioCmdSetWithRespon(RADIO_PRO_CMD_GROUP_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
-                       Lcd_set_font(36, 24, 1);
-                       Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
-                       Task_sleep(1000*CLOCK_UNIT_MS);
+               Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
+               KeyScanFxn();
+               while(timeCnt < 70)
+               {
+                   eventId = Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, 100*CLOCK_UNIT_MS);
+                   if(eventId & SYS_EVT_KEY_SCAN){
+                       KeyScanFxn();
+                       // clear SYS_EVT_KEY_SCAN event
+                       Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
+                       if(Key_get() == _VK_OK)
+                       {
+                           Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_KEY, BIOS_NO_WAIT);
+                           //Lcd_set_font(72, 24, 1);
+                           //Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
+                           //send data to devices
+                           RadioCmdSetWithRespon(RADIO_PRO_CMD_GROUP_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+                           Lcd_set_font(36, 24, 1);
+                           Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
+                           Task_sleep(1000*CLOCK_UNIT_MS);
+                           break;
+                       }
+                       else if((Key_get() == _VK_SELECT) || (Key_get() == _VK_COMMAND))
+                       {
+                             break;
+                       }
+
                    }
 
+                   timeCnt++;
                }
 
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
