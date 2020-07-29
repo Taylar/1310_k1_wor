@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-29 18:32:45
+* @Last Modified time: 2020-07-29 20:31:31
 */
 #include "../general.h"
 
@@ -559,7 +559,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 				if(dstAddr == GetRadioSrcAddr()){
 				// wait for the S_G send the same msg
 					Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-					RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
+					RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);
 				}
 			break;
 
@@ -611,6 +611,7 @@ void NodeRadioSendSynReq(void)
 void RadioSendWithResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
+	uint16_t volTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
@@ -630,12 +631,15 @@ void RadioSendWithResp(uint16_t cmdType)
     	(cmdType == RADIO_CMD_INSERT_TYPE))
     	addrTemp = GetRadioSrcAddr();
 
-	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
-    protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));     
+	volTemp = Battery_get_voltage();
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
+    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
+
+    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
+	else
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -673,18 +677,21 @@ void RadioSendWithNoResp(uint16_t cmdType)
     	(cmdType == RADIO_CMD_INSERT_TYPE))
     	addrTemp = GetRadioSrcAddr();
 
-    volTemp = Battery_get_voltage();
 
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
     protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));
 
+    volTemp = Battery_get_voltage();
+
     protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
     protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
 
-
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
+    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
+	else
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -698,6 +705,7 @@ void RadioSendWithNoResp(uint16_t cmdType)
 void RadioSendGroundWithResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
+	uint16_t volTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
@@ -724,7 +732,15 @@ void RadioSendGroundWithResp(uint16_t cmdType)
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
     protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));     
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+    volTemp = Battery_get_voltage();
+
+    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
+    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
+
+    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
+	else
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 
@@ -739,6 +755,7 @@ void RadioSendGroundWithResp(uint16_t cmdType)
 void RadioSendGroundWithNoResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
+	uint16_t volTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND_WITH_NO_RESP;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
@@ -765,7 +782,15 @@ void RadioSendGroundWithNoResp(uint16_t cmdType)
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
     protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));   
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+    volTemp = Battery_get_voltage();
+
+    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
+    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
+
+    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
+	else
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
 uint16_t testTermVol;
@@ -936,7 +961,32 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
 	GroudAddrSet(ground);
-	SetRadioDstAddr((g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
+
+	if(
+	(cmd == RADIO_PRO_CMD_TERM_ADD_TO_GROUP) ||
+	(cmd == RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP) ||
+	(cmd == RADIO_PRO_CMD_TERM_TEST) ||
+	(cmd == RADIO_PRO_CMD_TERM_CLOSE_CTROL) ||
+	(cmd == RADIO_PRO_CMD_TERM_OPEN_CTROL) ||
+	(cmd == RADIO_PRO_CMD_TERM_UNLOCKING) ||
+	(cmd == RADIO_PRO_CMD_TERM_POWER_HIGH) ||
+	(cmd == RADIO_PRO_CMD_TERM_POWER_MID) ||
+	(cmd == RADIO_PRO_CMD_TERM_POWER_LOW) ||
+	(cmd == RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START) ||
+	(cmd == RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP) ||
+	(cmd == RADIO_PRO_CMD_TERM_CLOSE_BLOCKING) ||
+	(cmd == RADIO_PRO_CMD_TERM_OPEN_BLOCKING) ||
+	(cmd == RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE) ||
+	(cmd == RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE)){
+		if(dstAddr){
+			SetRadioDstAddr(dstAddr);
+		}
+	}
+	else{
+		SetRadioDstAddr(RADIO_BROCAST_ADDRESS);
+	}
+
+
 	cmdTypeGroud = cmd;
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
