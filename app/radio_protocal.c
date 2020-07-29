@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-29 20:31:31
+* @Last Modified time: 2020-07-29 21:00:04
 */
 #include "../general.h"
 
@@ -22,7 +22,7 @@ bool nodeParaSetting = 0;
 
 #define 		CMD_EVENT_MAX	64
 uint16_t cmdType, cmdTypeWithRespon, cmdTypeGroud;
-uint32_t cmdEvent, cmdEventWithRespon, cmdEventGroud;
+uint64_t cmdEvent, cmdEventWithRespon, cmdEventGroud;
 uint32_t groundAddr;
 
 uint16_t sendRetryTimes;
@@ -938,7 +938,7 @@ bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
 void RadioCmdClearWithNoRespon(void)
 {
 	uint8_t i;
-	cmdEvent &= 0xffffffff ^ (0x1 << cmdType);
+	cmdEvent &= 0xffffffffffffffff ^ (0x1 << cmdType);
 	cmdType = 0;
 	if(cmdEvent){
 		for(i = 0; i < CMD_EVENT_MAX; i++){
@@ -1005,7 +1005,7 @@ void RadioCmdClearWithNoRespon_Groud(void)
 {
 	uint8_t i;
 
-	cmdEventGroud &= 0xffffffff ^ (0x1 << cmdTypeGroud);
+	cmdEventGroud &= 0xffffffffffffffff ^ (0x1 << cmdTypeGroud);
 	cmdTypeGroud = 0;
 	if(cmdEventGroud){
 		for(i = 0; i < CMD_EVENT_MAX; i++){
@@ -1060,7 +1060,7 @@ void RadioCmdClearWithRespon(void)
 {
 	uint8_t i;
 	if(sendRetryTimes == 0){
-		cmdEventWithRespon &= 0xffffffff ^ (0x1 << cmdTypeWithRespon);
+		cmdEventWithRespon &= 0xffffffffffffffff ^ (0x1 << cmdTypeWithRespon);
 		cmdTypeWithRespon = 0;
 		sendRetryTimes = RETRY_TIMES;
 
