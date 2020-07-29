@@ -2,7 +2,7 @@
 * @Author: zxt
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-14 16:18:27
+* @Last Modified time: 2020-07-28 18:14:42
 */
 
 #include "../general.h"
@@ -193,6 +193,7 @@ void KeyScanFxn(void)
 {
     uint8_t portState;
     
+    delay_ms(20);
     __delay_cycles(100);
     KeyIntDisable();
 
@@ -215,6 +216,7 @@ void KeyScanFxn(void)
     Sys_event_post(SYSTEMAPP_EVT_KEY);
     KeySetP0InP1Out();
     KeyScanStop();
+    // Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
 }
 #else
 //***********************************************************************************

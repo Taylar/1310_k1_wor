@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-22 14:05:42
+* @Last Modified time: 2020-07-28 13:59:17
 */
 #include "../general.h"
 
@@ -140,7 +140,7 @@ void EletricShockPulseInit(void)
 
     PWM_Params_init(&params);
     params.dutyUnits   = PWM_DUTY_US;
-    params.dutyValue   = 1000000L / PWM_ELE_SHOCK_PULSE_FRQ / 300;  //100us 的脉冲
+    params.dutyValue   = 1000000L / PWM_ELE_SHOCK_PULSE_FRQ / 230;//230:130us 300:100us 的脉冲
     params.periodUnits = PWM_PERIOD_US;
     params.periodValue = 1000000L/ PWM_ELE_SHOCK_PULSE_FRQ;     //1秒的周期
     params.idleLevel   = PWM_IDLE_LOW;
