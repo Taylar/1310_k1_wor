@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-15 14:00:26
+* @Last Modified time: 2020-07-28 13:59:17
 */
 #include "../general.h"
 
@@ -92,12 +92,11 @@ uint16_t    pulseTimes_sec = 0;
 
 void PulseFxn(UArg arg0)
 {
+    pulseTimes_sec--;
     if(pulseTimes_sec == 0){
         ElectricShockPowerDisable();
         EletricShockPulseDisable();
         Clock_stop(pulseClkHandle);
-    }else{
-        pulseTimes_sec--;
     }
 }
 //***********************************************************************************
@@ -141,7 +140,7 @@ void EletricShockPulseInit(void)
 
     PWM_Params_init(&params);
     params.dutyUnits   = PWM_DUTY_US;
-    params.dutyValue   = 1000000L / PWM_ELE_SHOCK_PULSE_FRQ / 300;  //100us 的脉冲
+    params.dutyValue   = 1000000L / PWM_ELE_SHOCK_PULSE_FRQ / 230;//230:130us 300:100us 的脉冲
     params.periodUnits = PWM_PERIOD_US;
     params.periodValue = 1000000L/ PWM_ELE_SHOCK_PULSE_FRQ;     //1秒的周期
     params.idleLevel   = PWM_IDLE_LOW;
@@ -152,8 +151,6 @@ void EletricShockPulseInit(void)
 void EletricPulseSetTime_S(uint16_t keepTime_S)
 {
     pulseTimes_sec = keepTime_S;
-    if(keepTime_S)
-        pulseTimes_sec = keepTime_S-1;
 
     if(electricshockEnable == 0){
         EletricShockPulseDisable();
@@ -432,6 +429,7 @@ void ElectricShockInit(void)
 
     if(g_rSysConfigInfo.electricLevel > ELECTRIC_HIGH_LEVEL)
         g_rSysConfigInfo.electricLevel = ELECTRIC_HIGH_LEVEL;
+    ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
     
     // ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_SHOCK){

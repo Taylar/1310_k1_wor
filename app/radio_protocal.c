@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-15 13:37:30
+* @Last Modified time: 2020-07-29 18:32:45
 */
 #include "../general.h"
 
@@ -478,8 +478,8 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 		case RADIO_PRO_CMD_ALL_RESP:
 
 		Semaphore_post(recAckSemHandle);
-		sendRetryTimes = 0;
-		RadioCmdClearWithRespon();
+		// sendRetryTimes = 0;
+		// RadioCmdClearWithRespon();
 		break;
 #endif //S_G
 	}
@@ -559,7 +559,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 				if(dstAddr == GetRadioSrcAddr()){
 				// wait for the S_G send the same msg
 					Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-					// RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
+					RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, bufTemp->srcAddr);
 				}
 			break;
 
@@ -650,6 +650,7 @@ void RadioSendWithResp(uint16_t cmdType)
 void RadioSendWithNoResp(uint16_t cmdType)
 {
 	uint32_t addrTemp;
+	uint16_t volTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE_WITH_NO_RESP;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
@@ -668,15 +669,22 @@ void RadioSendWithNoResp(uint16_t cmdType)
 
     if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
     	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
+    	(cmdType == RADIO_PRO_CMD_ALL_RESP) ||
     	(cmdType == RADIO_CMD_INSERT_TYPE))
     	addrTemp = GetRadioSrcAddr();
+
+    volTemp = Battery_get_voltage();
 
 	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
     protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
-    protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));   
+    protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
+    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
+
+
+    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
 }
 
 
@@ -760,7 +768,12 @@ void RadioSendGroundWithNoResp(uint16_t cmdType)
     RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
 }
 
+uint16_t testTermVol;
 
+uint16_t GetTestTermVol(void)
+{
+	return testTermVol;
+}
 //***********************************************************************************
 // brief:   analysis the concenter protocal
 // 
@@ -796,6 +809,8 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     HIBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[6];
     LOBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[7];
 
+    HIBYTE_ZKS(testTermVol) = bufTemp->load[8];
+	LOBYTE_ZKS(testTermVol) = bufTemp->load[9];
     srcAddr = gourndTemp;
 	// while(len)
 	// {
@@ -911,7 +926,7 @@ void RadioCmdClearWithNoRespon(void)
 
 uint32_t RadioWithNoResPack(void)
 {
-	RadioSendWithResp(cmdType);
+	RadioSendWithNoResp(cmdType);
 	return cmdType;
 }
 
@@ -953,7 +968,7 @@ void RadioCmdClearWithNoRespon_Groud(void)
 
 uint32_t RadioWithNoRes_GroudPack(void)
 {
-	RadioSendWithNoResp(cmdTypeGroud);
+	RadioSendGroundWithNoResp(cmdTypeGroud);
 	return cmdTypeGroud;
 }
 
@@ -974,13 +989,13 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 #ifdef S_G
 
 	RadioSendBrocast();
-	// Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
-	// WdtClear();
-	// return Semaphore_pend(recAckSemHandle, 7 * CLOCK_UNIT_S);
+	Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
+	WdtClear();
 #ifdef ZKS_S6_6_WOR_G
     log_opration_record(cmd,dstAddr,ground);
 #endif
-	return true;
+	return Semaphore_pend(recAckSemHandle, 4 * CLOCK_UNIT_S);
+	// return true;
 #else
 	RadioSend();
 	return true;

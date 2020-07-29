@@ -599,7 +599,7 @@ void menu_add_group( )
                //调用发射窗口
                //display complete
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_ADD_TO_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_ADD_TO_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -728,7 +728,7 @@ static void menu_delete_group( )
                //display complete
                //Lcd_clear_screen();
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -877,7 +877,7 @@ static void menu_close_ctrol()//关闭制服
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_CLOSE_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_CLOSE_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -994,7 +994,7 @@ static void menu_open_ctrol( )
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_OPEN_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_OPEN_CTROL,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1110,7 +1110,7 @@ static void menu_terminal_unlocking()
            {
                Lcd_set_font(36, 24, 1);
 
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_UNLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                  Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                  Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1227,7 +1227,7 @@ static void menu_close_blocking( )
            if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.devicesId !=0)
            {
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_CLOSE_BLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_CLOSE_BLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1291,7 +1291,7 @@ static void menu_open_blocking( )
                Lcd_set_font(36, 24, 1);
                if(mMenuModeObject.numEnter != 0)
                {
-                   if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_OPEN_BLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+                   if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_OPEN_BLOCKING,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                    Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                    else
                    Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1338,7 +1338,7 @@ static void menu_open_prevent_escape( )
 
            {
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1385,7 +1385,7 @@ static void menu_close_prevent_escape( )
 
            {
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1446,7 +1446,7 @@ static void menu_power_select_high()
            if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.devicesId != 0)
            {
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_HIGH,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_POWER_HIGH,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1508,7 +1508,7 @@ static void menu_power_select_mid()
 
 
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_MID,mMenuModeObject.devicesId, mMenuModeObject.groudId))
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_POWER_MID,mMenuModeObject.devicesId, mMenuModeObject.groudId))
                   Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                    Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1559,7 +1559,7 @@ static void menu_power_select_low()
             if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.devicesId!= 0)
             {
                 Lcd_set_font(36, 24, 1);
-                if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+                if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_TERM_POWER_LOW,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                 Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                 else
                 Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1766,7 +1766,7 @@ static void menu_open_terminal_prevent_escape()
            if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.devicesId !=0)
            {
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1827,7 +1827,7 @@ static void menu_close_terminal_prevent_escape()
            if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.devicesId !=0)
            {
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE,mMenuModeObject.devicesId, mMenuModeObject.groudId))
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1890,7 +1890,7 @@ static void menu_tik_fixed_number_subdue()
 
                Lcd_set_font(36, 24, 1);
                //send data to devices
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_SUBDUE,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -1916,7 +1916,7 @@ static void menu_tik_fixed_number_subdue()
                            //Lcd_set_font(72, 24, 1);
                            //Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
                            //send data to devices
-                           RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+                           RadioCmdSetWithNoRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                            Lcd_set_font(36, 24, 1);
                            Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
                            Task_sleep(1000*CLOCK_UNIT_MS);
@@ -1948,7 +1948,7 @@ static void menu_tik_fixed_number_subdue()
                Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
                //send data to devices
                Lcd_set_font(36, 24, 1);
-               if(RadioCmdSetWithRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId))
+               if(RadioCmdSetWithNoRespon(RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId))
                Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
@@ -2034,7 +2034,7 @@ static void menu_tik_arr_subdue()
                            //Lcd_set_font(72, 24, 1);
                            //Disp_icon(START_X_LINE,3,ICON_72X24_FIXED_PEOPLE_STOP,1);
                            //send data to devices
-                           RadioCmdSetWithRespon(RADIO_PRO_CMD_GROUP_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+                           RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                            Lcd_set_font(36, 24, 1);
                            Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
                            Task_sleep(1000*CLOCK_UNIT_MS);
@@ -2063,7 +2063,7 @@ static void menu_tik_arr_subdue()
                Lcd_set_font(72, 24, 1);
                Disp_icon(START_X_LINE,3,ICON_72X24_ARR_STOP,1);
                //send data to devices
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_GROUP_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+               RadioCmdSetWithNoRespon(RADIO_PRO_CMD_GROUP_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
                Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
                Task_sleep(1000*CLOCK_UNIT_MS);
