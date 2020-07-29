@@ -772,7 +772,9 @@ uint16_t testTermVol;
 
 uint16_t GetTestTermVol(void)
 {
-	return testTermVol;
+    uint16_t batValue = 0;
+    batValue = ((testTermVol-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
+	return batValue;
 }
 //***********************************************************************************
 // brief:   analysis the concenter protocal
