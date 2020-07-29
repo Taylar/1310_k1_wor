@@ -152,6 +152,6 @@ uint32_t RadioWithNoRes_GroudPack(void);
 bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground);
 void RadioCmdClearWithRespon(void);
 uint32_t RadioWithResPack(void);
-
+uint16_t GetTestTermVol(void);
 
 #endif      // __RADIO_PROTOCAL_H__

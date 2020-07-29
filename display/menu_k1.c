@@ -488,6 +488,12 @@ void menuc_main(KEY_CODE_E keyCode)
 
 
         case _VK_MODE://模式
+            if(mMenuModeObject.index == MENU_ITEN_TERMINAL_TEST)
+            {
+               Lcd_set_font(72, 24, 1);
+               Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
+            }
+
            mMenuModeObject.index++;
           if(mMenuModeObject.index >= MENU_ITEM_TIK_GROUP_SUBDUE)
              mMenuModeObject.index= (MENU_ITEN_NULL+1);
@@ -496,6 +502,16 @@ void menuc_main(KEY_CODE_E keyCode)
 
             if(mMenuModeObject.index == MENU_ITEN_QUERY_ALARM_INFO)
                 mMenuModeObject.keyDoing = KEY_DOING_DISPLAY;
+
+            if(mMenuModeObject.index == MENU_ITEN_TERMINAL_TEST)
+            {
+               Lcd_set_font(72, 24, 1);
+               Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+               Lcd_set_font(36, 24, 1);
+               Disp_icon(START_X_LINE,2,ICON_36X24_VBAT,1);
+               Lcd_set_font(8, 24, 1);
+               Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
+            }
         break;
 
 
@@ -774,6 +790,7 @@ static void menu_delete_group( )
 static void menu_terminal_test_group( )
 {
     uint8_t numbuff[10] = {0};
+    uint8_t numbat[5] = {0};
    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
    {
 
@@ -815,7 +832,17 @@ static void menu_terminal_test_group( )
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
                if(RadioCmdSetWithRespon(RADIO_PRO_CMD_TERM_TEST,mMenuModeObject.devicesId, mMenuModeObject.groudId))  //添加群组
-               Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+               {
+
+                   Lcd_set_font(8, 24, 1);
+                   Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
+                   sprintf(numbat," %02d%%",GetTestTermVol());
+                   Disp_msg(START_X_NUM,2,numbat,FONT_8X24);
+                   Lcd_set_font(36, 24, 1);
+                   Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+
+
+               }
                else
                Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
 
