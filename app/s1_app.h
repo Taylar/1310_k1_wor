@@ -15,6 +15,7 @@ extern uint32_t configModeTimeCnt;          // the unit is sec
 
 /***** function declarations *****/
 
+void PreventiveInsertTest(void);
 
 void S1HwInit(void);
 

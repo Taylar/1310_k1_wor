@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-29 21:00:04
+* @Last Modified time: 2020-07-30 16:25:14
 */
 #include "../general.h"
 
@@ -20,6 +20,11 @@ radio_protocal_t   protocalTxBuf;
 uint8_t     concenterRemainderCache;
 bool nodeParaSetting = 0;
 
+uint8_t nodeSendingLog = 0;
+uint32_t nodegLogCnt;
+
+
+#define 		CMD_EVT_ALL		(0xFFFFFFFFFFFFFFFF)
 #define 		CMD_EVENT_MAX	64
 uint16_t cmdType, cmdTypeWithRespon, cmdTypeGroud;
 uint64_t cmdEvent, cmdEventWithRespon, cmdEventGroud;
@@ -28,53 +33,7 @@ uint32_t groundAddr;
 uint16_t sendRetryTimes;
 #define         RETRY_TIMES     3
 
-#ifdef ZKS_S6_6_WOR_G
-#define ADD_TO_GROUP      "Add group"
-#define DELETE_FROM_GROUP "Delete group"
-#define TERM_TEST         "Term test"
-#define GROUP_TEST        "Group test"
-#define TERM_CLOSE         ""
-/*
- #define     RADIO_PRO_CMD_TERM_ADD_TO_GROUP         5              //终端添加到组
-#define     RADIO_PRO_CMD_TERM_DELETE_FROM_GROUP    6               //从组删除
-#define     RADIO_PRO_CMD_TERM_TEST                 7               //终端测试
-#define     RADIO_PRO_CMD_GROUP_TEST                8              //群组测试
-#define     RADIO_PRO_CMD_TERM_CLOSE_CTROL          9              //关闭制服
-#define     RADIO_PRO_CMD_TERM_OPEN_CTROL           10              //打开制服
-#define     RADIO_PRO_CMD_GROUP_CLOSE_CTROL         11                //关组制服
-#define     RADIO_PRO_CMD_GROUP_OPEN_CTROL          12            //开组制服
-#define     RADIO_PRO_CMD_TERM_UNLOCKING            13              //终端解锁
-#define     RADIO_PRO_CMD_GROUP_UNLOCKING           14               //群组解锁
 
-#define     RADIO_PRO_CMD_GROUP_POWER_HIGH          15                //群组电压高
-#define     RADIO_PRO_CMD_GROUP_POWER_MID           16              //群组电压中
-#define     RADIO_PRO_CMD_GROUP_POWER_LOW           17              //群组电压低
-#define     RADIO_PRO_CMD_TERM_POWER_HIGH           18              //终端电压高
-#define     RADIO_PRO_CMD_TERM_POWER_MID            19               //终端电压中
-#define     RADIO_PRO_CMD_TERM_POWER_LOW            20              //终端电压低
-
-#define     RADIO_PRO_CMD_FIXED_TERM_SUBDUE_START   21              //定员制服
-#define     RADIO_PRO_CMD_FIXED_TERM_SUBDUE_STOP    22              //定员停止
-
-#define     RADIO_PRO_CMD_GROUP_SUBDUE_START        23               //群组制服
-#define     RADIO_PRO_CMD_GROUP_SUBDUE_STOP         24            //群组停止
-
-#define     RADIO_PRO_CMD_ALL_SUBDUE_START          25             //全员制服
-//#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                        //定员停止
-#define     RADIO_PRO_CMD_TERM_CLOSE_BLOCKING       26             //关闭防塞
-#define     RADIO_PRO_CMD_TERM_OPEN_BLOCKING        27             //打开防塞
-
-#define     RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE        28             //打开防逃
-#define     RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE       29             //关闭防逃
-
-
-#define     RADIO_PRO_CMD_ALL_WAKEUP                30             //唤醒设备，用于防逃的
-
-#define     RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE        31   //开终端防逃
-#define     RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE       32   //关终端防逃
-#define     RADIO_PRO_CMD_OPEN_GROUP_PREVENT_ESCAPE           33   //开组防逃
-#define     RADIO_PRO_CMD_CLOSE_GROUP_PREVENT_ESCAPE          34   //关组防逃
- */
 static void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
 {
     uint8_t buff[32] = {0},index = 0;
@@ -163,22 +122,28 @@ static void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
 	      return;
 
 
-   }
+   	}
    index = strlen((char*)buff);
-   buff[index++] =  'T';
-   buff[index++] =   deviceId/1000+0x30;
-   buff[index++]  =  deviceId%1000/100+0x30;
-   buff[index++]  =  deviceId%100/10+0x30;
-   buff[index++]  =  deviceId%10 + 0x30;
-   buff[index++] =  'G';
-   buff[index++] =   groupId/1000+0x30;
-   buff[index++]  =  groupId%1000/100+0x30;
-   buff[index++]  =  groupId%100/10+0x30;
-   buff[index++]  =  groupId%10 + 0x30;
-   buff[index++]  =  '\n';
-   Flash_log(buff);
+#ifdef S_G
+   	buff[index++] =  'T';
+   	index += sprintf((char*)(buff+index),"%5d", deviceId);
+   	buff[index++] =  'G';
+   	index += sprintf((char*)(buff+index),"%5d", groupId);
+   	buff[index++]  =  '\n';
+   	Flash_log(buff);
+#else
+   	buff[index++] =  'T';
+   	index += sprintf((char*)(buff+index),"%5d", deviceId);
+   	buff[index++] =  'G';
+   	index += sprintf((char*)(buff+index),"%5d", groupId);
+   	buff[index++]  =  '\n';
+   	buff[index++]  =  0;
+   	Flash_store_sensor_data(buff, index);
+   	if(Flash_get_unupload_items()> 100){
+   		Flash_moveto_offset_sensor_data(1);
+   	}
+#endif //S_G
 }
-#endif
 
 void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_t srcDev)
 {
@@ -456,6 +421,17 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 			}
 		break;
 
+		case RADIO_PRO_CMD_REQUES_TERM_LOG:
+			if(dstDev == GetRadioSrcAddr()){
+				if(Flash_get_unupload_items() > 0){
+					nodeSendingLog = 1;
+					nodegLogCnt = 0;
+					RadioCmdSetWithNoRes(RADIO_PRO_CMD_LOG_SEND, srcDev);
+				}
+			}
+		break;
+
+
 
 #endif //S_C
 
@@ -474,16 +450,20 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 		// Menu_not_wearing_well_display(srcDev);
 		break;
 
-
 		case RADIO_PRO_CMD_ALL_RESP:
-
 		Semaphore_post(recAckSemHandle);
-		// sendRetryTimes = 0;
-		// RadioCmdClearWithRespon();
+		sendRetryTimes = 0;
+		RadioCmdClearWithRespon();
 		break;
 #endif //S_G
 	}
+
+#ifdef S_C
+	log_opration_record(cmdType,srcDev,ground);
+#endif 
 }
+
+
 #ifdef S_C
 
 #define ESCAPE_RSSI		(-55)
@@ -494,7 +474,6 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 //***********************************************************************************
 void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
-	uint8_t len;
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
     uint16_t cmdType;
@@ -506,101 +485,109 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     TxFrameRecord_t rxSensorDataAckRecord;
     memset(&rxSensorDataAckRecord, 0, sizeof(TxFrameRecord_t));
 
-	len			= protocalRxPacket->len;
 
     NodeStrategyBuffClear();
 
 	// this buf may be include several message
 	bufTemp		= (radio_protocal_t *)protocalRxPacket->payload;
 
-	// SetRadioDstAddr(bufTemp->srcAddr);
-	// if(srcAddr == RADIO_CONTROLER_ADDRESS){
-		if(protocalRxPacket->rssi > ESCAPE_RSSI)
-			escapeTimeCnt = 0;
-	// }
+	if(protocalRxPacket->rssi > ESCAPE_RSSI)
+		escapeTimeCnt = 0;
 
-	HIBYTE_ZKS(remaindTimes) = bufTemp->load[0];
-	LOBYTE_ZKS(remaindTimes) = bufTemp->load[1];
-	HIBYTE_ZKS(cmdType)      = bufTemp->load[2];
-	LOBYTE_ZKS(cmdType)      = bufTemp->load[3];
+    srcAddr = bufTemp->srcAddr;
+	cmdType = bufTemp->cmdType;
+    gourndTemp = bufTemp->ground;
+    remaindTimes = bufTemp->brocastRemainder;
 
-    HIBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[4];
-    LOBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[5];
-    HIBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[6];
-    LOBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[7];
+    if(cmdType == RADIO_PRO_CMD_ALL_WAKEUP){
+    	calendarTemp.Year       = 2000 + bufTemp->rtc[0];
+		calendarTemp.Month      = bufTemp->rtc[1];
+		calendarTemp.DayOfMonth = bufTemp->rtc[2];
+		calendarTemp.Hours      = bufTemp->rtc[3];
+		calendarTemp.Minutes    = bufTemp->rtc[4];
+		calendarTemp.Seconds    = bufTemp->rtc[5];
+		Rtc_set_calendar(&calendarTemp);
+    }
 
-    srcAddr = gourndTemp;
 
-	// while(len)
-	// {
-		// the receive data is not integrated
-		// if((bufTemp->len > len) || (bufTemp->len == 0))
-			// return;
-		
-		// the resever length
-		// len 	= 0;
-
-		switch(bufTemp->command)
-		{
-			case RADIO_PRO_CMD_SYN_TIME:
-			calendarTemp.Year       = 2000 + bufTemp->load[0];
-			calendarTemp.Month      = bufTemp->load[1];
-			calendarTemp.DayOfMonth = bufTemp->load[2];
-			calendarTemp.Hours      = bufTemp->load[3];
-			calendarTemp.Minutes    = bufTemp->load[4];
-			calendarTemp.Seconds    = bufTemp->load[5];
-			Rtc_set_calendar(&calendarTemp);
-
-			break;
-
-			case RADIO_PRO_CMD_SINGLE:
-			case RADIO_PRO_CMD_GROUND:
-				RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
-				if(dstAddr == GetRadioSrcAddr()){
-				// wait for the S_G send the same msg
-					Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-					RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);
-				}
-			break;
-
-			
-			case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
-			case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
-				// wait for the S_G send the same msg
+	switch(bufTemp->command)
+	{
+		case RADIO_PRO_CMD_SINGLE:
+		case RADIO_PRO_CMD_GROUND:
+			RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
+			if(dstAddr == GetRadioSrcAddr()){
+			// wait for the S_G send the same msg
 				Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-				RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
-			break;
+				RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_ALL_RESP, RADIO_CONTROLER_ADDRESS);
+			}
+		break;
 
-			default:
-			return;
+		
+		case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
+		case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
+			// wait for the S_G send the same msg
+			Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+			RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
+		break;
 
-		}
-	// }
+		default:
+		return;
+
+	}
 }
 
 
 #endif // S_C
 
 
-//***********************************************************************************
-// brief:   send the timesyn ack to the strategy process
-// 
-// parameter: 
-//***********************************************************************************
-void NodeRadioSendSynReq(void)
+void RaidoCmdTypePack(uint16_t cmdType)
 {
-	protocalTxBuf.command	= RADIO_PRO_CMD_SYN_TIME_REQ;
-	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	// protocalTxBuf.len 		= 10;
+	Calendar calendarTemp;
+	uint8_t buff[FLASH_SENSOR_DATA_SIZE];
+	uint16_t index = 0;
+
+#ifdef S_G
+	// 遥控器请求传输log数据
+	if(cmdType == RADIO_PRO_CMD_REQUES_TERM_LOG){
+		logReceiveTimeOut = 1;
+	}
+
+	// 发送非防逃指令和请求扣子log数据，清零技术，继续发送防逃广播指令
+	if(!((cmdType == RADIO_PRO_CMD_ALL_WAKEUP) || (cmdType == RADIO_PRO_CMD_REQUES_TERM_LOG)))
+		logReceiveTimeOut = 0;
+#endif //S_G
+	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
+	// protocalTxBuf.len 		= 10+8;
 
 	SetRadioDstAddr(GetRadioDstAddr());
-	// SetRadioDstAddr(protocalTxBuf.dstAddr);
 
-    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+	protocalTxBuf.brocastRemainder = brocastTimes;
+	protocalTxBuf.cmdType          = cmdType;
+	protocalTxBuf.ground           = GroudAddrGet();
+
+    if(cmdType == RADIO_PRO_CMD_ALL_RESP){
+	    protocalTxBuf.vol 	= Battery_get_voltage();
+    }
+    else if(cmdType == RADIO_PRO_CMD_ALL_WAKEUP){
+    	calendarTemp = Rtc_get_calendar();
+    	protocalTxBuf.rtc[0] 	= calendarTemp.Year - 2000;
+    	protocalTxBuf.rtc[1] 	= calendarTemp.Month;
+    	protocalTxBuf.rtc[2] 	= calendarTemp.DayOfMonth;
+    	protocalTxBuf.rtc[3] 	= calendarTemp.Hours;
+    	protocalTxBuf.rtc[4] 	= calendarTemp.Minutes;
+    	protocalTxBuf.rtc[5] 	= calendarTemp.Seconds;
+    }
+
+    if(cmdType == RADIO_PRO_CMD_LOG_SEND){
+    	index = sprintf((char*)protocalTxBuf.load,"%d:", nodegLogCnt);
+    	Flash_load_sensor_data_history(buff, FLASH_SENSOR_DATA_SIZE, nodegLogCnt);
+    	memcpy((char*)(protocalTxBuf.load+index), buff, strlen((char*)(buff)));
+    	index += strlen((char*)(buff));
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), index+13, 0, 0, 0);
+    }else{
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 13, 0, 0, 0);
+    }
 }
-
-
 //***********************************************************************************
 // brief:   send low vol event
 // 
@@ -610,36 +597,10 @@ void NodeRadioSendSynReq(void)
 //***********************************************************************************
 void RadioSendWithResp(uint16_t cmdType)
 {
-	uint32_t addrTemp;
-	uint16_t volTemp;
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	// protocalTxBuf.len 		= 10+8;
-
-	SetRadioDstAddr(GetRadioDstAddr());
-
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
-
-    addrTemp = GroudAddrGet();
-    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
-    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
-    	(cmdType == RADIO_CMD_INSERT_TYPE))
-    	addrTemp = GetRadioSrcAddr();
-
-	volTemp = Battery_get_voltage();
-
-    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
-    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
-
-    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
-	else
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+	RaidoCmdTypePack(cmdType);
 }
 
 
@@ -653,45 +614,10 @@ void RadioSendWithResp(uint16_t cmdType)
 //***********************************************************************************
 void RadioSendWithNoResp(uint16_t cmdType)
 {
-	uint32_t addrTemp;
-	uint16_t volTemp;
-
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE_WITH_NO_RESP;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	// protocalTxBuf.len 		= 10+8;
 
-	SetRadioDstAddr(GetRadioDstAddr());
-	// SetRadioDstAddr(protocalTxBuf.dstAddr);
-
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
-
-    addrTemp = GroudAddrGet();
-
-    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
-    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
-    	(cmdType == RADIO_PRO_CMD_ALL_RESP) ||
-    	(cmdType == RADIO_CMD_INSERT_TYPE))
-    	addrTemp = GetRadioSrcAddr();
-
-
-	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
-    protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));
-
-    volTemp = Battery_get_voltage();
-
-    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
-    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
-
-    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
-	else
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+	RaidoCmdTypePack(cmdType);
 }
 
 
@@ -704,43 +630,9 @@ void RadioSendWithNoResp(uint16_t cmdType)
 //***********************************************************************************
 void RadioSendGroundWithResp(uint16_t cmdType)
 {
-	uint32_t addrTemp;
-	uint16_t volTemp;
-
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	// protocalTxBuf.len 		= 10+8;
-
-	SetRadioDstAddr(GetRadioDstAddr());
-	// SetRadioDstAddr(protocalTxBuf.dstAddr);
-
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
-
-    addrTemp = GroudAddrGet();
-
-    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
-    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
-    	(cmdType == RADIO_CMD_INSERT_TYPE))
-    	addrTemp = GetRadioSrcAddr();
-
-	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
-    protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));     
-
-    volTemp = Battery_get_voltage();
-
-    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
-    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
-
-    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
-	else
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+	RaidoCmdTypePack(cmdType);
 }
 
 
@@ -754,43 +646,9 @@ void RadioSendGroundWithResp(uint16_t cmdType)
 //***********************************************************************************
 void RadioSendGroundWithNoResp(uint16_t cmdType)
 {
-	uint32_t addrTemp;
-	uint16_t volTemp;
-
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND_WITH_NO_RESP;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	// protocalTxBuf.srcAddr	= GetRadioSrcAddr();
-	// protocalTxBuf.len 		= 10+8;
-
-	SetRadioDstAddr(GetRadioDstAddr());
-	// SetRadioDstAddr(protocalTxBuf.dstAddr);
-
-	protocalTxBuf.load[0] 	= HIBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[1] 	= LOBYTE_ZKS(brocastTimes);
-    protocalTxBuf.load[2] 	= HIBYTE_ZKS(cmdType);
-    protocalTxBuf.load[3] 	= LOBYTE_ZKS(cmdType); 
-
-    addrTemp = GroudAddrGet();
-
-    if((cmdType == RADIO_CMD_DESTROY_TYPE) ||
-    	(cmdType == RADIO_CMD_LOW_VOL_TYPE) ||
-    	(cmdType == RADIO_CMD_INSERT_TYPE))
-    	addrTemp = GetRadioSrcAddr();
-
-	protocalTxBuf.load[4] 	= HIBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[5] 	= LOBYTE_ZKS(HIWORD_ZKS(addrTemp));
-    protocalTxBuf.load[6] 	= HIBYTE_ZKS(LOWORD_ZKS(addrTemp));
-    protocalTxBuf.load[7] 	= LOBYTE_ZKS(LOWORD_ZKS(addrTemp));   
-
-    volTemp = Battery_get_voltage();
-
-    protocalTxBuf.load[8] 	= HIBYTE_ZKS(volTemp);
-    protocalTxBuf.load[9] 	= LOBYTE_ZKS(volTemp);
-
-    if(cmdType == RADIO_PRO_CMD_ALL_RESP)
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 11, 0, 0, 0);
-	else
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 9, 0, 0, 0);
+	RaidoCmdTypePack(cmdType);
 }
 
 uint16_t testTermVol;
@@ -808,83 +666,48 @@ uint16_t GetTestTermVol(void)
 //***********************************************************************************
 void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
-	uint8_t len;
 	radio_protocal_t	*bufTemp;
     uint16_t cmdType;
-    uint16_t remaindTimes;
+    //uint16_t remaindTimes;
     uint32_t gourndTemp;
-    uint32_t dstAddr,srcAddr;
-
-    dstAddr = *((uint32_t*)protocalRxPacket->dstAddr);
+    uint32_t srcAddr;
+    //uint32_t dstAdd;
+    //dstAddr = *((uint32_t*)protocalRxPacket->dstAddr);
 
 
 	concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
-	len                     = protocalRxPacket->len;
 	bufTemp                 = (radio_protocal_t *)protocalRxPacket->payload;
 
 	ClearRadioSendBuf();
 
+	srcAddr = bufTemp->srcAddr;
+	cmdType = bufTemp->cmdType;
+    gourndTemp = bufTemp->ground;
+    //remaindTimes = bufTemp->brocastRemainder;
+
 	SetRadioDstAddr(srcAddr);
 	
-	HIBYTE_ZKS(remaindTimes) = bufTemp->load[0];
-	LOBYTE_ZKS(remaindTimes) = bufTemp->load[1];
-	HIBYTE_ZKS(cmdType)      = bufTemp->load[2];
-	LOBYTE_ZKS(cmdType)      = bufTemp->load[3];
+    testTermVol = bufTemp->vol;
 
-    HIBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[4];
-    LOBYTE_ZKS(HIWORD_ZKS(gourndTemp)) = bufTemp->load[5];
-    HIBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[6];
-    LOBYTE_ZKS(LOWORD_ZKS(gourndTemp)) = bufTemp->load[7];
+	if(RADIO_PRO_CMD_LOG_SEND == cmdType){
+		UsbSend_NodeConfig(AC_Send_Voltage, bufTemp->load, strlen((char*)(bufTemp->load)));
+		return;
+	}
+	switch(bufTemp->command)
+	{
+		case RADIO_PRO_CMD_SINGLE:
+		case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
+		case RADIO_PRO_CMD_GROUND:
+		case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
+			RadioCmdProcess(cmdType, srcAddr, gourndTemp, srcAddr);
+		break;
 
-    HIBYTE_ZKS(testTermVol) = bufTemp->load[8];
-	LOBYTE_ZKS(testTermVol) = bufTemp->load[9];
-    srcAddr = gourndTemp;
-	// while(len)
-	// {
-		// the receive data is not integrated
-		// if((bufTemp->len > len) || (bufTemp->len == 0) || (len == 0))
-		// 	break;
-		
-		// len 	-= bufTemp->len;
-		switch(bufTemp->command)
-		{
-			case RADIO_PRO_CMD_SINGLE:
-			case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
-			case RADIO_PRO_CMD_GROUND:
-			case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
-				RadioCmdProcess(cmdType, srcAddr, gourndTemp, srcAddr);
-			break;
-
-
-
-			default:
-
-		    Sys_event_post(SYSTEMAPP_EVT_DISP);
-		    return;
-
-		}
-		// point to new message the head
-		// bufTemp		= (radio_protocal_t *)((uint8_t *)bufTemp + bufTemp->len);
-	// }
+		default:
+	    break;
+	}
 
     Sys_event_post(SYSTEMAPP_EVT_DISP);
 }
-
-
-
-
-
-//***********************************************************************************
-// brief:   send time to the node immediately
-// 
-// parameter: 
-// srcAddr:	the concenter radio addr
-// dstAddr:	the node radio addr
-//***********************************************************************************
-void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr)
-{
-}
-
 
 
 uint32_t IntToHex(uint32_t iData)
@@ -896,7 +719,6 @@ uint32_t IntToHex(uint32_t iData)
 		iData /= 10;
 	}
 	return hexData;
-
 }
 
 
@@ -910,7 +732,7 @@ uint32_t GroudAddrGet(void)
 	return groundAddr;
 }
 
-// 鍙戦�佷笉闇�瑕佸洖澶嶇殑鎸囦护,鍗曟鍙戦��
+//
 void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 {
 	cmdType = cmd;
@@ -934,11 +756,20 @@ bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
 }
 
 
-// 娓呴櫎涓嶉渶瑕佸洖澶嶇殑鎸囦护
+//
 void RadioCmdClearWithNoRespon(void)
 {
 	uint8_t i;
-	cmdEvent &= 0xffffffffffffffff ^ (0x1 << cmdType);
+	if(nodeSendingLog == 0)
+		cmdEvent &= CMD_EVT_ALL ^ (0x1 << cmdType);
+	else{
+		nodegLogCnt++;
+		if(nodegLogCnt >= Flash_get_unupload_items()){
+			cmdEvent &= CMD_EVT_ALL ^ (0x1 << cmdType);
+			nodeSendingLog = 0;
+		}
+	}
+
 	cmdType = 0;
 	if(cmdEvent){
 		for(i = 0; i < CMD_EVENT_MAX; i++){
@@ -957,7 +788,7 @@ uint32_t RadioWithNoResPack(void)
 	return cmdType;
 }
 
-// 鍙戦�佷笉闇�瑕佸洖澶嶇殑缇ょ粍鎸囦护锛屼互骞挎挱鐨勬柟寮忓彂鍑�
+// 
 bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
 	dstAddr = IntToHex(dstAddr);
@@ -979,17 +810,17 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	(cmd == RADIO_PRO_CMD_TERM_CLOSE_BLOCKING) ||
 	(cmd == RADIO_PRO_CMD_TERM_OPEN_BLOCKING) ||
 	(cmd == RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE) ||
-	(cmd == RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE)){
-		if(dstAddr){
-			SetRadioDstAddr(dstAddr);
-		}
+	(cmd == RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE) ||
+	(cmd == RADIO_PRO_CMD_LOG_SEND) ||
+	(cmd == RADIO_PRO_CMD_REQUES_TERM_LOG)){
+		SetRadioDstAddr(dstAddr);
 	}
 	else{
 		SetRadioDstAddr(RADIO_BROCAST_ADDRESS);
 	}
 
 
-	cmdTypeGroud = cmd;
+	cmdTypeGroud  = cmd;
 	cmdEventGroud |= (0x1 << cmd);
 	RadioSendBrocast();
 
@@ -1000,12 +831,12 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	return true;
 }
 
-// 娓呴櫎涓嶉渶瑕佸洖澶嶇殑缇ょ粍鎸囦护
+// 
 void RadioCmdClearWithNoRespon_Groud(void)
 {
 	uint8_t i;
 
-	cmdEventGroud &= 0xffffffffffffffff ^ (0x1 << cmdTypeGroud);
+	cmdEventGroud &= CMD_EVT_ALL ^ (0x1 << cmdTypeGroud);
 	cmdTypeGroud = 0;
 	if(cmdEventGroud){
 		for(i = 0; i < CMD_EVENT_MAX; i++){
@@ -1060,7 +891,7 @@ void RadioCmdClearWithRespon(void)
 {
 	uint8_t i;
 	if(sendRetryTimes == 0){
-		cmdEventWithRespon &= 0xffffffffffffffff ^ (0x1 << cmdTypeWithRespon);
+		cmdEventWithRespon &= CMD_EVT_ALL ^ (0x1 << cmdTypeWithRespon);
 		cmdTypeWithRespon = 0;
 		sendRetryTimes = RETRY_TIMES;
 

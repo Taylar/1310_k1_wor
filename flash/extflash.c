@@ -442,22 +442,18 @@ void Flash_init(void)
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     sysInfo.printRecordAddr.start = 0xffffffff;
     sysInfo.printRecordAddr.end = 0xffffffff;
-    //Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
+    Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
     Semaphore_post(spiSemHandle);
 
     if (g_rSysConfigInfo.swVersion != FW_VERSION) {
         Flash_reset_data();
         g_rSysConfigInfo.swVersion = FW_VERSION;
         Rtc_set_calendar((Calendar *)&g_rSysConfigInfo.rtc);
-       // Flash_store_config();
+       Flash_store_config();
     }
 
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
-    //Flash_load_sensor_ptr();
-
-#ifdef SUPPORT_TCP_MULTIL_LINK
-    Flash_load_sensor_link2_ptr();
-#endif //SUPPORT_TCP_MULTIL_LINK
+    Flash_load_sensor_ptr();
 
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
     //Flash_load_deviced_state_ptr();

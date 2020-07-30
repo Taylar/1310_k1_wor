@@ -96,7 +96,7 @@
 // FW version define.
 //
 //***********************************************************************************
-#define FW_VERSION              0x0007
+#define FW_VERSION              0x0008
 
 //***********************************************************************************
 //
@@ -485,8 +485,8 @@ error
 //***********************************************************************************
 #define CONFIG_DECEIVE_ID_DEFAULT       0XFFFFFFFA
 #define RADIO_UPGRADE_ADDRESS           0x99999999
-#define RADIO_BROCAST_ADDRESS           0x00000000
-#define RADIO_CONTROLER_ADDRESS           0x0000FFDD
+#define RADIO_BROCAST_ADDRESS           0x00000000			//所有扣子均能接收到数据的地址
+#define RADIO_CONTROLER_ADDRESS           0x0000FFDD		//所有遥控器均能接收到数据的地址
 
 #define DECEIVE_ID_DEFAULT              0X00008886
 

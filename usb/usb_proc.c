@@ -840,6 +840,15 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
               g_rSysConfigInfo.DeviceId[3] = pData[3];
              len = Usb_group_package(AC_Ack, pData, 1);
              break;
+#ifdef S_G
+        case EV_Get_Term_Log:
+            HIBYTE_ZKS(HIWORD_ZKS(readAddr)) = pData[3];
+            LOBYTE_ZKS(HIWORD_ZKS(readAddr)) = pData[4];
+            HIBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[5];
+            LOBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[6];
+            RadioCmdSetWithNoRespon(RADIO_PRO_CMD_REQUES_TERM_LOG, readAddr, NULL);
+            break;
+#endif //S_G
         default:
             pData[0] = 2;
             len = Usb_group_package(AC_Ack, pData, 1);
@@ -911,6 +920,13 @@ void UsbSend_NodeConfig(USB_TX_MSG_ID msgId, uint8_t* buff, uint8_t bufLen)
         memcpy((char *)bUsbBuff, buff, bufLen);
         len = Usb_group_package(AC_Send_SensorData, bUsbBuff, bufLen);
         InterfaceSendImmediately(bUsbBuff, len);
+        break;
+
+        case EV_Send_Term_Log:
+        memcpy((char *)bUsbBuff, buff, bufLen);
+        len = Usb_group_package(AC_Send_SensorData, bUsbBuff, bufLen);
+        InterfaceSendImmediately(bUsbBuff, len);
+        break;        
     }
 }
 

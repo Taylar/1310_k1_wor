@@ -59,6 +59,9 @@
 #define     RADIO_PRO_CMD_CLOSE_GROUP_PREVENT_ESCAPE          34   //关组防逃
 #define     RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM		          35   //防逃报警
 
+#define     RADIO_PRO_CMD_REQUES_TERM_LOG		          	  36   //请求传输扣子日志
+#define     RADIO_PRO_CMD_LOG_SEND		          		      37   //传输扣子日志
+
 
 #define     RADIO_PRO_CMD_ALL_RESP          		63             //命令应答
 
@@ -67,6 +70,7 @@
 #define     RADIO_PRO_CMD_SYN_TIME              	0XC1
 
 #define     RADIO_PRO_CMD_SINGLE              		0XB2
+#define     RADIO_PRO_CMD_SINGLE_RESP              	0XC2
 
 
 #define     RADIO_PRO_CMD_SINGLE_WITH_NO_RESP       0XB3
@@ -78,43 +82,36 @@
 #define     RADIO_PRO_CMD_GROUND_WITH_NO_RESP       0XB5
 
 
-// #define     RADIO_PRO_CMD_LOW_VOL_EVT               0XB2
-// #define     RADIO_PRO_CMD_LOW_VOL_ACK               0XC2
-
-// #define     RADIO_PRO_CMD_DESTROY_EVT               0XB3
-// #define     RADIO_PRO_CMD_DESTROY_ACK               0XC3
-
-// #define     RADIO_PRO_CMD_INSERT_EVT                0XB4
-// #define     RADIO_PRO_CMD_INSERT_ACK                0XC4
 
 
-// #define     RADIO_PRO_CMD_SINGEL_SHORCK_EVT         0XB5
-// #define     RADIO_PRO_CMD_SINGEL_SHORCK_ACK         0XC5
-
-// #define     RADIO_PRO_CMD_SINGEL_STOP_EVT           0XB6
-// #define     RADIO_PRO_CMD_SINGEL_STOP_ACK           0XC6
-
-// #define     RADIO_PRO_CMD_GROUD_SET_EVT             0XB7
-// #define     RADIO_PRO_CMD_GROUD_SET_ACK             0XC7
-
-// #define     RADIO_PRO_CMD_GROUD_SHORCK_EVT          0XC8
-
-// #define     RADIO_PRO_CMD_GROUD_STOP_EVT            0XC9
-
-
-
-
-uint8_t     concenterRemainderCache;
-
+extern uint8_t     	concenterRemainderCache;
+extern uint8_t 		nodeSendingLog;
+extern uint32_t 	nodegLogCnt;
 /***** Type declarations *****/
 
 typedef  struct {
     uint8_t     command;
     // uint8_t     len;
     // uint32_t    dstAddr;
-    // uint32_t    srcAddr;
+    uint32_t    srcAddr;
+    uint16_t	cmdType;
+    union{
+    	uint8_t 	rtc[6];
+    	struct
+    	{
+		    uint32_t    ground;
+		    uint16_t	brocastRemainder;
+    	};
+    	struct
+    	{
+	    	uint16_t 	vol;
+    		uint32_t    resever;
+    	};
+    };
     uint8_t     load[RADIO_PROTOCAL_LOAD_MAX];
 }__attribute__((packed)) radio_protocal_t;
+
+#define  RADIO_BUF_LEN		15
 
 
 /***** Prototypes *****/
@@ -129,11 +126,6 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket);
 
 
 void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket);
-
-void NodeRadioSendSynReq(void);
-
-void ConcenterRadioSendSynTime(uint32_t srcAddr, uint32_t dstAddr);
-
 
 
 #define  INVALID_GROUND				0xFFFFFFFF
