@@ -16,6 +16,7 @@
 /***** Variable declarations *****/
 extern extflash_queue_s extflashWriteQ;
 
+extern uint32_t   logReceiveTimeOut;
 
 
 

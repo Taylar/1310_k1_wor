@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-28 10:09:45
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-06 16:24:20
+* @Last Modified time: 2020-07-30 14:01:53
 */
 #include "../general.h"
 
@@ -51,7 +51,8 @@ Clock_Handle periodWakeupClockHandle;
 
 void PeridoWakeupCb(UArg arg0)
 {
-    RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_WAKEUP,NULL,RADIO_CONTROLER_ADDRESS);
+    if(logReceiveTimeOut == 0)
+        RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_WAKEUP,NULL,RADIO_BROCAST_ADDRESS);
 }
 
 
@@ -89,15 +90,16 @@ void ConcenterAppInit(void)
     ExtflashRingQueueInit(&extflashWriteQ);
 
 
+    SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+                     g_rSysConfigInfo.DeviceId[3]);
 
-// *******************************for test*************************
-    // g_rSysConfigInfo.DeviceId[0] = (uint8_t)((DECEIVE_ID_DEFAULT>>24)&0xff);
-    // g_rSysConfigInfo.DeviceId[1] = (uint8_t)((DECEIVE_ID_DEFAULT>>16)&0xff);
-    // g_rSysConfigInfo.DeviceId[2] = (uint8_t)((DECEIVE_ID_DEFAULT>>8)&0xff);
-    // g_rSysConfigInfo.DeviceId[3] = (uint8_t)((DECEIVE_ID_DEFAULT)&0xff);;
-// *******************************
+    // 该地址未使用到
+    SetRadioSubSrcAddr(0xffff0000 | (g_rSysConfigInfo.customId[0] << 8) | g_rSysConfigInfo.customId[1]);
 
-    SetRadioSrcAddr(RADIO_CONTROLER_ADDRESS);
+    // 所有遥控器的通用接收地址
+    SetRadioBrocastSrcAddr(RADIO_CONTROLER_ADDRESS);
 }
 
 
@@ -312,8 +314,10 @@ uint8_t ConcenterReadSynTimeFlag(void)
     return concenterParameter.synTimeFlag;
 }
 
+#define LOG_REC_TIMEOUT         15
 uint8_t   rtcReadCnt;
 uint32_t   rtcSaveCnt;
+uint32_t   logReceiveTimeOut;
 //***********************************************************************************
 // brief:the concenter rtc process
 // 
@@ -329,6 +333,12 @@ void ConcenterRtcProcess(void)
     rtcSaveCnt++;
     if(rtcSaveCnt > 3600){
         Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+    }
+
+    if(logReceiveTimeOut){
+        logReceiveTimeOut++;
+        if(logReceiveTimeOut > LOG_REC_TIMEOUT)
+            logReceiveTimeOut = 0;
     }
 }
 

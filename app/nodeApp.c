@@ -210,17 +210,6 @@ void NodeBroadcasting(void)
 }
 
 //***********************************************************************************
-// brief:   open the timer to send the device testing result
-// 
-// parameter: 
-//***********************************************************************************
-void NodeBroadcastTestResult(void)
-{
-    NodeStrategySetPeriod(NODE_BROADCAST_TESTRESUT_TIME);
-    NodeRadioSendSynReq();
-}
-
-//***********************************************************************************
 // brief:   start broadcast
 // 
 // parameter: 

@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-03 21:31:41
+* @Last Modified time: 2020-07-30 15:20:42
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -416,8 +416,6 @@ RadioOperationMode RadioModeGet(void)
 //***********************************************************************************
 void RadioAppTaskFxn(void)
 {
-    int8_t rssi;
-
 
     // the sys task process first, should read the g_rSysConfigInfo
     Task_sleep(50 * CLOCK_UNIT_MS);
@@ -518,65 +516,35 @@ void RadioAppTaskFxn(void)
                 if(radioMode == RADIOMODE_SENDPORT)
                 {
                     NodeProtocalDispath(&radioRxPacket);
-
                 }
 
             }
         }
 
+        // 发送单条指令，需要回复
         if (events & RADIO_EVT_TX)
         {
-
-
-#ifdef SUPPORT_RSSI_CHECK
-            Radio_setTxModeRfFrequency();
-            if (RADIOMODE_UPGRADE != RadioModeGet() && (deviceMode != DEVICES_CONFIG_MODE) && (NodeContinueFlagRead() == 0)) {
-                //i = 2;
-                rssi = RadioCheckRssi();
-            }
-            else
-            {
-                rssi  = RADIO_RSSI_FLITER - 1;
-            }
-#else
-            rssi  = RADIO_RSSI_FLITER - 1;
-#endif  // SUPPORT_RSSI_CHECK
-
-
-#ifdef SUPPORT_RSSI_CHECK            
-            if(rssi > RADIO_RSSI_FLITER)
-            {
-                StrategyCheckRssiBusyProcess();
-            }
-            else 
-#endif // SUPPORT_RSSI_CHECK
-
-#ifdef SUPPORT_RSSI_CHECK            
-            Task_sleep(RADIO_DOWNLOAD_TIMEOUT * CLOCK_UNIT_MS);
-#endif // SUPPORT_RSSI_CHECK
+#ifdef BOARD_S6_6
+            // 遥控器不发送单条指令
+            Radio_setRxModeRfFrequency();
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            radioStatus = RADIOSTATUS_RECEIVING;
+            RadioReceiveData();
+#else            
             ClearRadioSendBuf();
             if(RadioWithResPack()){
                 RadioSendData();
-            }
-            else{
-#ifdef BOARD_S6_6
                 Radio_setRxModeRfFrequency();
 
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
                 radioStatus = RADIOSTATUS_RECEIVING;
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(BROCAST_TIME_MS*2));
                 RadioReceiveData();
-#endif //BOARD_S6_6
-                continue;
+                // 防止有其他指令打断该接收，使其产生不了超时中断
+                Task_sleep(BROCAST_TIME_MS*2*CLOCK_UNIT_MS);
             }
-
-            Radio_setRxModeRfFrequency();
-
-            radioStatus = RADIOSTATUS_RECEIVING;
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(BROCAST_TIME_MS*2));
-            RadioReceiveData();
-            // 防止有其他指令打断该接收，使其产生不了超时中断
-            Task_sleep(BROCAST_TIME_MS*CLOCK_UNIT_MS);
-
+            else{
+            }
+#endif //BOARD_S6_6
         }
 
 
@@ -592,6 +560,7 @@ void RadioAppTaskFxn(void)
 #endif //BOARD_S6_6
         }
 
+
         if((events & RADIO_EVT_SET_RX_MODE))
         {
             radioMode = RADIOMODE_RECEIVEPORT;
@@ -599,7 +568,6 @@ void RadioAppTaskFxn(void)
             {
                 RadioAbort();
             }
-
 #ifdef S_G
             EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
 #else
@@ -608,6 +576,7 @@ void RadioAppTaskFxn(void)
             Radio_setRxModeRfFrequency();
             RadioReceiveData();
         }
+
 
 
         if((events & RADIO_EVT_SET_TX_MODE))
@@ -623,6 +592,8 @@ void RadioAppTaskFxn(void)
             EasyLink_setRfPower(SET_RADIO_POWER);
         }
 
+
+
         if((events & RADIO_EVT_DISABLE))
         {
             if(radioStatus == RADIOSTATUS_RECEIVING)
@@ -633,50 +604,35 @@ void RadioAppTaskFxn(void)
         }
 
 
-
-        if((events & (RADIO_EVT_SEND_CONFIG|RADIO_EVT_FAIL | RADIO_EVT_RX_FAIL)))
-        {
-
-#ifdef   BOARD_S6_6
-            ClearRadioSendBuf();
-            concenterRemainderCache = EASYLINK_MAX_DATA_LENGTH;
-            ConcenterRadioSendSynTime(0xabababab, 0xbabababa);
-            Event_post(radioOperationEventHandle, RADIO_EVT_TX);
-#endif
-        }
-
-        if((events & RADIO_EVT_SEND_SYC))
-        {
-            if ( (deviceMode != DEVICES_CONFIG_MODE) && ( g_rSysConfigInfo.rfStatus&STATUS_1310_MASTER))
-            {
-                NodeRadioSendSynReq();
-            }
-        }
-
 #ifdef ZKS_S3_WOR
         if(events & RADIO_EVT_START_SNIFF)
         {
-            Radio_setRxModeRfFrequency();
+            if(nodeSendingLog){
+                RadioSingleSend();
+            }
+            else{
+                Radio_setRxModeRfFrequency();
 
-            //if(RadioCheckRssi() > -80)
-            {
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(SNIFF_TIME_MS));
-                RadioReceiveData();
-                // 防止有其他指令打断该接收，使其不能完整接收一个数据包
-                Task_sleep(SNIFF_TIME_MS*CLOCK_UNIT_MS);
+                //if(RadioCheckRssi() > -80)
+                {
+                    EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(SNIFF_TIME_MS));
+                    RadioReceiveData();
+                    // 防止有其他指令打断该接收，使其不能完整接收一个数据包
+                    Task_sleep(SNIFF_TIME_MS*CLOCK_UNIT_MS);
+                }
             }
         }
 
 #endif //ZKS_S3_WOR
 
+        // 持续一秒连续发送
         if(events & RADIO_EVT_WAKEUP_SEND)
         {
-            
 #ifdef BOARD_S6_6
             ConcenterResetBroTimer();
 #endif //BOARD_S6_6
-
             
+            // 不需要回复
             if(RadioWithNoRes_GroudPack() != 0){
                 brocastTimes = MAX_BROCAST_TIMES;
                 while(brocastTimes){
@@ -690,7 +646,8 @@ void RadioAppTaskFxn(void)
                 }
                 RadioCmdClearWithNoRespon_Groud();
             }
-            
+
+            // 需要回复
             if(RadioWithResPack() != 0){
                 brocastTimes = MAX_BROCAST_TIMES;
                 while(brocastTimes){
@@ -710,14 +667,16 @@ void RadioAppTaskFxn(void)
 
             Radio_setRxModeRfFrequency();
 
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 2*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+            // 无论发送需要反馈与不需要反馈的命令，均等待8个广播长度周期等待，接收不到数据则会发生超时事件
+            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 8*BROCAST_TIME_MS*CLOCK_UNIT_MS);
             radioStatus = RADIOSTATUS_RECEIVING;
             RadioReceiveData();
-            
 #endif //BOARD_S6_6
         }
 
 
+
+        // 单次发送，不需要反馈
         if(events & RADIO_EVT_TX_NO_RESPON){
             ClearRadioSendBuf();
             if(RadioWithNoResPack() != 0){

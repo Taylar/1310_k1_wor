@@ -330,7 +330,7 @@
 //External flash sensor data store position
 #define FLASH_SENSOR_DATA_POS           (FLASH_SENSOR_PTR_POS + FLASH_SENSOR_PTR_AREA_SIZE)
 //External flash sensor data size
-#define FLASH_SENSOR_DATA_SIZE          16
+#define FLASH_SENSOR_DATA_SIZE          32
 //External flash sensor data number
 #define FLASH_SENSOR_DATA_NUMBER        (11520L)         // the max store data   //180 *1024
 //External flash sensor data position offset
