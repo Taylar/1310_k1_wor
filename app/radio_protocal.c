@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-30 16:25:14
+* @Last Modified time: 2020-08-03 17:26:40
 */
 #include "../general.h"
 
@@ -34,9 +34,9 @@ uint16_t sendRetryTimes;
 #define         RETRY_TIMES     3
 
 
-static void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
+void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
 {
-    uint8_t buff[32] = {0},index = 0;
+    uint8_t buff[64] = {0},index = 0;
    switch(cmd)
    {
       case RADIO_PRO_CMD_TERM_ADD_TO_GROUP:
@@ -132,6 +132,20 @@ static void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
    	buff[index++]  =  '\n';
    	Flash_log(buff);
 #else
+   	Calendar currentTime;
+   	currentTime            = Rtc_get_calendar();
+   	currentTime.Year       = TransHexToBcd(currentTime.Year%100)+0x2000;
+   	currentTime.Month      = TransHexToBcd(currentTime.Month);
+   	currentTime.DayOfMonth = TransHexToBcd(currentTime.DayOfMonth);
+   	currentTime.Hours      = TransHexToBcd(currentTime.Hours);
+   	currentTime.Minutes    = TransHexToBcd(currentTime.Minutes);
+   	currentTime.Seconds    = TransHexToBcd(currentTime.Seconds);
+   	index += sprintf((char*)(buff+index), "T%04x%02x%02x%02x%02x%02x:",currentTime.Year,
+   	                                               currentTime.Month,
+   	                                               currentTime.DayOfMonth,
+   	                                               currentTime.Hours,
+   	                                               currentTime.Minutes,
+   	                                               currentTime.Seconds);
    	buff[index++] =  'T';
    	index += sprintf((char*)(buff+index),"%5d", deviceId);
    	buff[index++] =  'G';
@@ -139,15 +153,16 @@ static void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
    	buff[index++]  =  '\n';
    	buff[index++]  =  0;
    	Flash_store_sensor_data(buff, index);
+   	Flash_load_sensor_data_history(buff, FLASH_SENSOR_DATA_SIZE, Flash_get_unupload_items()-1);
    	if(Flash_get_unupload_items()> 100){
    		Flash_moveto_offset_sensor_data(1);
    	}
 #endif //S_G
 }
 
-void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_t srcDev)
+void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uint32_t srcDev)
 {
-	switch(cmdType){
+	switch(cmdTypeTemp){
 
 #ifdef S_C
 
@@ -459,7 +474,7 @@ void RadioCmdProcess(uint32_t cmdType, uint32_t dstDev, uint32_t ground, uint32_
 	}
 
 #ifdef S_C
-	log_opration_record(cmdType,srcDev,ground);
+	log_opration_record(cmdTypeTemp,srcDev,ground);
 #endif 
 }
 
@@ -476,7 +491,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	radio_protocal_t	*bufTemp;
     Calendar    calendarTemp;
-    uint16_t cmdType;
+    uint16_t cmdTypeTemp;
     uint16_t remaindTimes;
     uint32_t gourndTemp;
     uint32_t dstAddr,srcAddr;
@@ -495,11 +510,11 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		escapeTimeCnt = 0;
 
     srcAddr = bufTemp->srcAddr;
-	cmdType = bufTemp->cmdType;
+	cmdTypeTemp = bufTemp->cmdType;
     gourndTemp = bufTemp->ground;
     remaindTimes = bufTemp->brocastRemainder;
 
-    if(cmdType == RADIO_PRO_CMD_ALL_WAKEUP){
+    if(cmdTypeTemp == RADIO_PRO_CMD_ALL_WAKEUP){
     	calendarTemp.Year       = 2000 + bufTemp->rtc[0];
 		calendarTemp.Month      = bufTemp->rtc[1];
 		calendarTemp.DayOfMonth = bufTemp->rtc[2];
@@ -507,6 +522,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		calendarTemp.Minutes    = bufTemp->rtc[4];
 		calendarTemp.Seconds    = bufTemp->rtc[5];
 		Rtc_set_calendar(&calendarTemp);
+		return;
     }
 
 
@@ -514,7 +530,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	{
 		case RADIO_PRO_CMD_SINGLE:
 		case RADIO_PRO_CMD_GROUND:
-			RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
+			RadioCmdProcess(cmdTypeTemp, dstAddr, gourndTemp, srcAddr);
 			if(dstAddr == GetRadioSrcAddr()){
 			// wait for the S_G send the same msg
 				Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
@@ -527,7 +543,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
 			// wait for the S_G send the same msg
 			Task_sleep((remaindTimes+2)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-			RadioCmdProcess(cmdType, dstAddr, gourndTemp, srcAddr);
+			RadioCmdProcess(cmdTypeTemp, dstAddr, gourndTemp, srcAddr);
 		break;
 
 		default:
@@ -540,7 +556,7 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 #endif // S_C
 
 
-void RaidoCmdTypePack(uint16_t cmdType)
+void RaidoCmdTypePack(uint16_t cmdTypeTemp)
 {
 	Calendar calendarTemp;
 	uint8_t buff[FLASH_SENSOR_DATA_SIZE];
@@ -548,12 +564,12 @@ void RaidoCmdTypePack(uint16_t cmdType)
 
 #ifdef S_G
 	// 遥控器请求传输log数据
-	if(cmdType == RADIO_PRO_CMD_REQUES_TERM_LOG){
+	if(cmdTypeTemp == RADIO_PRO_CMD_REQUES_TERM_LOG){
 		logReceiveTimeOut = 1;
 	}
 
 	// 发送非防逃指令和请求扣子log数据，清零技术，继续发送防逃广播指令
-	if(!((cmdType == RADIO_PRO_CMD_ALL_WAKEUP) || (cmdType == RADIO_PRO_CMD_REQUES_TERM_LOG)))
+	if(!((cmdTypeTemp == RADIO_PRO_CMD_ALL_WAKEUP) || (cmdTypeTemp == RADIO_PRO_CMD_REQUES_TERM_LOG)))
 		logReceiveTimeOut = 0;
 #endif //S_G
 	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
@@ -562,13 +578,13 @@ void RaidoCmdTypePack(uint16_t cmdType)
 	SetRadioDstAddr(GetRadioDstAddr());
 
 	protocalTxBuf.brocastRemainder = brocastTimes;
-	protocalTxBuf.cmdType          = cmdType;
+	protocalTxBuf.cmdType          = cmdTypeTemp;
 	protocalTxBuf.ground           = GroudAddrGet();
 
-    if(cmdType == RADIO_PRO_CMD_ALL_RESP){
+    if(cmdTypeTemp == RADIO_PRO_CMD_ALL_RESP){
 	    protocalTxBuf.vol 	= Battery_get_voltage();
     }
-    else if(cmdType == RADIO_PRO_CMD_ALL_WAKEUP){
+    else if(cmdTypeTemp == RADIO_PRO_CMD_ALL_WAKEUP){
     	calendarTemp = Rtc_get_calendar();
     	protocalTxBuf.rtc[0] 	= calendarTemp.Year - 2000;
     	protocalTxBuf.rtc[1] 	= calendarTemp.Month;
@@ -578,12 +594,12 @@ void RaidoCmdTypePack(uint16_t cmdType)
     	protocalTxBuf.rtc[5] 	= calendarTemp.Seconds;
     }
 
-    if(cmdType == RADIO_PRO_CMD_LOG_SEND){
+    if(cmdTypeTemp == RADIO_PRO_CMD_LOG_SEND){
     	index = sprintf((char*)protocalTxBuf.load,"%d:", nodegLogCnt);
     	Flash_load_sensor_data_history(buff, FLASH_SENSOR_DATA_SIZE, nodegLogCnt);
     	memcpy((char*)(protocalTxBuf.load+index), buff, strlen((char*)(buff)));
     	index += strlen((char*)(buff));
-	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), index+13, 0, 0, 0);
+	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), index+15, 0, 0, 0);
     }else{
 	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 13, 0, 0, 0);
     }
@@ -595,12 +611,12 @@ void RaidoCmdTypePack(uint16_t cmdType)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendWithResp(uint16_t cmdType)
+void RadioSendWithResp(uint16_t cmdTypeTemp)
 {
 
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	RaidoCmdTypePack(cmdType);
+	RaidoCmdTypePack(cmdTypeTemp);
 }
 
 
@@ -612,12 +628,12 @@ void RadioSendWithResp(uint16_t cmdType)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendWithNoResp(uint16_t cmdType)
+void RadioSendWithNoResp(uint16_t cmdTypeTemp)
 {
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE_WITH_NO_RESP;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
 
-	RaidoCmdTypePack(cmdType);
+	RaidoCmdTypePack(cmdTypeTemp);
 }
 
 
@@ -628,11 +644,11 @@ void RadioSendWithNoResp(uint16_t cmdType)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendGroundWithResp(uint16_t cmdType)
+void RadioSendGroundWithResp(uint16_t cmdTypeTemp)
 {
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	RaidoCmdTypePack(cmdType);
+	RaidoCmdTypePack(cmdTypeTemp);
 }
 
 
@@ -644,11 +660,11 @@ void RadioSendGroundWithResp(uint16_t cmdType)
 // srcAddr:	the concenter radio addr
 // dstAddr:	the node radio addr
 //***********************************************************************************
-void RadioSendGroundWithNoResp(uint16_t cmdType)
+void RadioSendGroundWithNoResp(uint16_t cmdTypeTemp)
 {
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND_WITH_NO_RESP;
 	// protocalTxBuf.dstAddr	= GetRadioDstAddr();
-	RaidoCmdTypePack(cmdType);
+	RaidoCmdTypePack(cmdTypeTemp);
 }
 
 uint16_t testTermVol;
@@ -667,7 +683,7 @@ uint16_t GetTestTermVol(void)
 void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	radio_protocal_t	*bufTemp;
-    uint16_t cmdType;
+    uint16_t cmdTypeTemp;
     //uint16_t remaindTimes;
     uint32_t gourndTemp;
     uint32_t srcAddr;
@@ -681,7 +697,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	ClearRadioSendBuf();
 
 	srcAddr = bufTemp->srcAddr;
-	cmdType = bufTemp->cmdType;
+	cmdTypeTemp = bufTemp->cmdType;
     gourndTemp = bufTemp->ground;
     //remaindTimes = bufTemp->brocastRemainder;
 
@@ -689,8 +705,8 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	
     testTermVol = bufTemp->vol;
 
-	if(RADIO_PRO_CMD_LOG_SEND == cmdType){
-		UsbSend_NodeConfig(AC_Send_Voltage, bufTemp->load, strlen((char*)(bufTemp->load)));
+	if(RADIO_PRO_CMD_LOG_SEND == cmdTypeTemp){
+		UsbSend_NodeConfig(EV_Send_Term_Log, bufTemp->load, strlen((char*)(bufTemp->load)));
 		return;
 	}
 	switch(bufTemp->command)
@@ -699,7 +715,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 		case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
 		case RADIO_PRO_CMD_GROUND:
 		case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
-			RadioCmdProcess(cmdType, srcAddr, gourndTemp, srcAddr);
+			RadioCmdProcess(cmdTypeTemp, srcAddr, gourndTemp, srcAddr);
 		break;
 
 		default:
@@ -736,7 +752,7 @@ uint32_t GroudAddrGet(void)
 void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 {
 	cmdType = cmd;
-	cmdEvent |= (0x1 << cmd);
+	cmdEvent |= ((uint64_t)(0x1) << cmd);
 	if(dstAddr){
 		SetRadioDstAddr(dstAddr);
 	}
@@ -749,7 +765,7 @@ bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
 		SetRadioDstAddr(dstAddr);
 	}
 	cmdTypeGroud = cmd;
-	cmdEventGroud |= (0x1 << cmd);
+	cmdEventGroud |= ((uint64_t)(0x1) << cmd);
 	RadioSendBrocast();
 
 	return true;
@@ -761,11 +777,12 @@ void RadioCmdClearWithNoRespon(void)
 {
 	uint8_t i;
 	if(nodeSendingLog == 0)
-		cmdEvent &= CMD_EVT_ALL ^ (0x1 << cmdType);
+		cmdEvent &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdType);
 	else{
 		nodegLogCnt++;
+		Task_sleep(50*CLOCK_UNIT_MS);
 		if(nodegLogCnt >= Flash_get_unupload_items()){
-			cmdEvent &= CMD_EVT_ALL ^ (0x1 << cmdType);
+			cmdEvent &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdType);
 			nodeSendingLog = 0;
 		}
 	}
@@ -773,7 +790,7 @@ void RadioCmdClearWithNoRespon(void)
 	cmdType = 0;
 	if(cmdEvent){
 		for(i = 0; i < CMD_EVENT_MAX; i++){
-			if(cmdEvent & (0x1 << i)){
+			if(cmdEvent & ((uint64_t)(0x1) << i)){
 				cmdType = i;
 				break;
 			}
@@ -821,7 +838,7 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 
 
 	cmdTypeGroud  = cmd;
-	cmdEventGroud |= (0x1 << cmd);
+	cmdEventGroud |= ((uint64_t)(0x1) << cmd);
 	RadioSendBrocast();
 
 #ifdef ZKS_S6_6_WOR_G
@@ -836,11 +853,11 @@ void RadioCmdClearWithNoRespon_Groud(void)
 {
 	uint8_t i;
 
-	cmdEventGroud &= CMD_EVT_ALL ^ (0x1 << cmdTypeGroud);
+	cmdEventGroud &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdTypeGroud);
 	cmdTypeGroud = 0;
 	if(cmdEventGroud){
 		for(i = 0; i < CMD_EVENT_MAX; i++){
-			if(cmdEventGroud & (0x1 << i)){
+			if(cmdEventGroud & ((uint64_t)(0x1) << i)){
 				cmdTypeGroud = i;
 				break;
 			}
@@ -864,7 +881,7 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	ground  = IntToHex(ground);
 	GroudAddrSet(ground);
 	cmdTypeWithRespon = cmd;
-	cmdEventWithRespon |= (0x1 << cmd);
+	cmdEventWithRespon |= ((uint64_t)(0x1) << cmd);
 	if(dstAddr){
 		SetRadioDstAddr(dstAddr);
 	}
@@ -891,13 +908,13 @@ void RadioCmdClearWithRespon(void)
 {
 	uint8_t i;
 	if(sendRetryTimes == 0){
-		cmdEventWithRespon &= CMD_EVT_ALL ^ (0x1 << cmdTypeWithRespon);
+		cmdEventWithRespon &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdTypeWithRespon);
 		cmdTypeWithRespon = 0;
 		sendRetryTimes = RETRY_TIMES;
 
 		if(cmdEventWithRespon){
 			for(i = 0; i < CMD_EVENT_MAX; i++){
-				if(cmdEventWithRespon & (0x1 << i)){
+				if(cmdEventWithRespon & ((uint64_t)(0x1) << i)){
 					cmdTypeWithRespon = i;
 					break;
 				}

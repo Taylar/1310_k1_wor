@@ -924,7 +924,7 @@ void UsbSend_NodeConfig(USB_TX_MSG_ID msgId, uint8_t* buff, uint8_t bufLen)
 
         case EV_Send_Term_Log:
         memcpy((char *)bUsbBuff, buff, bufLen);
-        len = Usb_group_package(AC_Send_SensorData, bUsbBuff, bufLen);
+        len = Usb_group_package(EV_Send_Term_Log, bUsbBuff, bufLen);
         InterfaceSendImmediately(bUsbBuff, len);
         break;        
     }

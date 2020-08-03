@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-30 15:20:42
+* @Last Modified time: 2020-08-03 10:37:17
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -470,21 +470,30 @@ void RadioAppTaskFxn(void)
     // set the default para
     RadioDefaultParaInit();
 
+    // 等待射频内核初始化完成
+    Task_sleep(300 * CLOCK_UNIT_MS);
+
     if(radioMode == RADIOMODE_SENDPORT)
     {
         NodeAppInit();
-
-#if (defined(BOARD_S6_6))
-        NodeWakeup();
-#endif // BOARD_S6_6
     }
     else
     {
         ConcenterAppInit();
     }
 
-    // 等待射频内核初始化完成
-    Task_sleep(100 * CLOCK_UNIT_MS);
+#ifdef BOARD_S6_6       
+    S6Wakeup();
+
+    WdtInit(WdtResetCb);
+#endif // BOARD_S6_6
+
+
+#ifdef BOARD_S3
+    // 等待射频任务初始化完成
+    Task_sleep(400 * CLOCK_UNIT_MS);
+    S1Wakeup();
+#endif //
 
 
 

@@ -352,7 +352,8 @@ static void Flash_load_alarm_record_ptr(void);
 static void Flash_reset_data(void)
 {
     FlashSysInfo_t sysInfo;
-
+    Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
+    
     Flash_external_erase(FLASH_SYS_POS, FLASH_EXT_SECTOR_ERASE);
     Flash_external_erase(FLASH_SENSOR_PTR_POS, FLASH_EXT_SECTOR_ERASE);
     Flash_external_erase(FLASH_SENSOR_DATA_POS, FLASH_EXT_SECTOR_ERASE);
@@ -400,6 +401,7 @@ static void Flash_reset_data(void)
 
 
 #endif
+    Semaphore_post(spiSemHandle);
 }
 
 #ifdef SUPPORT_START_LOGO
@@ -445,12 +447,12 @@ void Flash_init(void)
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
     Semaphore_post(spiSemHandle);
 
-    if (g_rSysConfigInfo.swVersion != FW_VERSION) {
+   // if (g_rSysConfigInfo.swVersion != FW_VERSION) {
         Flash_reset_data();
         g_rSysConfigInfo.swVersion = FW_VERSION;
         Rtc_set_calendar((Calendar *)&g_rSysConfigInfo.rtc);
        Flash_store_config();
-    }
+  //  }
 
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     Flash_load_sensor_ptr();

@@ -174,8 +174,8 @@ void SystemAppTaskFxn(void)
 #endif
    	RtcInit(RtcEventSet);
 
-
-    Task_sleep(10 * CLOCK_UNIT_MS);
+    // 等待射频初始化完成
+    Task_sleep(1000 * CLOCK_UNIT_MS);
 
 #ifdef BOARD_S3
     RtcStart();
@@ -193,17 +193,7 @@ void SystemAppTaskFxn(void)
 #endif  // SUPPORT_ENGMODE
 
 
-#ifdef BOARD_S6_6		
-		S6Wakeup();
 
-    WdtInit(WdtResetCb);
-#endif // BOARD_S6_6
-
-
-#ifdef BOARD_S3
-	Task_sleep(100 * CLOCK_UNIT_MS);
-	S1Wakeup();
-#endif //
 
 	// uint32_t RestStatus;
  //    uint8_t logtest[6] = {0};
