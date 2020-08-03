@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-03 17:26:40
+* @Last Modified time: 2020-08-03 17:57:09
 */
 #include "../general.h"
 
@@ -597,8 +597,8 @@ void RaidoCmdTypePack(uint16_t cmdTypeTemp)
     if(cmdTypeTemp == RADIO_PRO_CMD_LOG_SEND){
     	index = sprintf((char*)protocalTxBuf.load,"%d:", nodegLogCnt);
     	Flash_load_sensor_data_history(buff, FLASH_SENSOR_DATA_SIZE, nodegLogCnt);
-    	memcpy((char*)(protocalTxBuf.load+index), buff, strlen((char*)(buff)));
-    	index += strlen((char*)(buff));
+    	memcpy((char*)(protocalTxBuf.load+index), buff, strlen((char*)(buff))+1);
+    	index += strlen((char*)(buff))+1;
 	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), index+15, 0, 0, 0);
     }else{
 	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 13, 0, 0, 0);
@@ -780,7 +780,7 @@ void RadioCmdClearWithNoRespon(void)
 		cmdEvent &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdType);
 	else{
 		nodegLogCnt++;
-		Task_sleep(50*CLOCK_UNIT_MS);
+		Task_sleep(10*CLOCK_UNIT_MS);
 		if(nodegLogCnt >= Flash_get_unupload_items()){
 			cmdEvent &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdType);
 			nodeSendingLog = 0;

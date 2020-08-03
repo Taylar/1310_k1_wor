@@ -447,12 +447,12 @@ void Flash_init(void)
     Flash_external_read(FLASH_SYS_POS, (uint8_t *)&sysInfo, FLASH_SYS_LENGTH);
     Semaphore_post(spiSemHandle);
 
-   // if (g_rSysConfigInfo.swVersion != FW_VERSION) {
+    if (g_rSysConfigInfo.swVersion != FW_VERSION) {
         Flash_reset_data();
         g_rSysConfigInfo.swVersion = FW_VERSION;
         Rtc_set_calendar((Calendar *)&g_rSysConfigInfo.rtc);
        Flash_store_config();
-  //  }
+    }
 
     Semaphore_pend(spiSemHandle, BIOS_WAIT_FOREVER);
     Flash_load_sensor_ptr();
