@@ -506,7 +506,12 @@ void display_star_mssage(void)
     time_buff[8] =':';
     sprintf((char*)(time_buff+9),"%02d",calendar.Minutes);
 
+    if(batValue > 99)
+        batValue = 99;
+    if(batValue < 0)
+        batValue = 0;
     sprintf(time_buff+11," %02d%%",batValue);
+
     //time_buff[11] = ' ';
     //time_buff[12] = '9';
     //time_buff[13] = '8';

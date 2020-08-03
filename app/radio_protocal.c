@@ -657,6 +657,10 @@ uint16_t GetTestTermVol(void)
 {
     uint16_t batValue = 0;
     batValue = ((testTermVol-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
+    if(batValue > 99)
+        batValue = 99;
+    if(batValue < 0)
+        batValue = 0;
 	return batValue;
 }
 //***********************************************************************************
@@ -690,7 +694,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
     testTermVol = bufTemp->vol;
 
 	if(RADIO_PRO_CMD_LOG_SEND == cmdType){
-		UsbSend_NodeConfig(AC_Send_Voltage, bufTemp->load, strlen((char*)(bufTemp->load)));
+		UsbSend_NodeConfig(EV_Send_Term_Log, bufTemp->load, strlen((char*)(bufTemp->load)));
 		return;
 	}
 	switch(bufTemp->command)
