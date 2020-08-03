@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-03 10:37:17
+* @Last Modified time: 2020-08-03 18:09:34
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -639,6 +639,8 @@ void RadioAppTaskFxn(void)
         {
 #ifdef BOARD_S6_6
             ConcenterResetBroTimer();
+            if(logReceiveTimeOut)
+                continue;
 #endif //BOARD_S6_6
             
             // 不需要回复
