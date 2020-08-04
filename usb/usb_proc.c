@@ -846,6 +846,8 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
             LOBYTE_ZKS(HIWORD_ZKS(readAddr)) = pData[4];
             HIBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[5];
             LOBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[6];
+            readAddr = HexToInt(readAddr);
+            logReceiveTimeOut = 0;
             RadioCmdSetWithNoRespon(RADIO_PRO_CMD_REQUES_TERM_LOG, readAddr, NULL);
             break;
 #endif //S_G

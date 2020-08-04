@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-03 18:26:28
+* @Last Modified time: 2020-08-04 11:39:34
 */
 #include "../general.h"
 
@@ -569,7 +569,7 @@ void RaidoCmdTypePack(uint16_t cmdTypeTemp)
 	}
 
 	// 发送非防逃指令和请求扣子log数据，清零技术，继续发送防逃广播指令
-	if(!((cmdTypeTemp == RADIO_PRO_CMD_ALL_WAKEUP) || (cmdTypeTemp == RADIO_PRO_CMD_REQUES_TERM_LOG)))
+	if(!((cmdTypeTemp == RADIO_PRO_CMD_ALL_WAKEUP) || (cmdTypeTemp == RADIO_PRO_CMD_REQUES_TERM_LOG) || (cmdTypeTemp == 0)))
 		logReceiveTimeOut = 0;
 #endif //S_G
 	protocalTxBuf.srcAddr	= GetRadioSrcAddr();
@@ -740,6 +740,19 @@ uint32_t IntToHex(uint32_t iData)
 	}
 	return hexData;
 }
+
+uint32_t HexToInt(uint32_t hexData)
+{
+	uint32_t iData = 0;
+	uint8_t i;
+	iData = TransBcdToHex(hexData&0xff);
+	iData += TransBcdToHex((hexData>>8)&0xff) * 100;
+	iData += TransBcdToHex((hexData>>16)&0xff) * 10000;
+	iData += TransBcdToHex((hexData>>24)&0xff) * 1000000;
+	return hexData;
+}
+
+
 
 
 void GroudAddrSet(uint32_t ground)

@@ -177,9 +177,9 @@ void SystemAppTaskFxn(void)
     // 等待射频初始化完成
     Task_sleep(1000 * CLOCK_UNIT_MS);
 
-#ifdef BOARD_S3
+
     RtcStart();
-#endif
+
 
 
 
