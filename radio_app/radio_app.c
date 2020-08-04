@@ -629,6 +629,8 @@ void RadioAppTaskFxn(void)
         if(events & RADIO_EVT_WAKEUP_SEND)
         {
 #ifdef BOARD_S6_6
+            if(logReceiveTimeOut)
+              continue;
             ConcenterResetBroTimer();
 #endif //BOARD_S6_6
             
