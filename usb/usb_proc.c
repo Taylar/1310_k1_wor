@@ -842,10 +842,10 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
              break;
 #ifdef S_G
         case EV_Get_Term_Log:
-            HIBYTE_ZKS(HIWORD_ZKS(readAddr)) = pData[3];
-            LOBYTE_ZKS(HIWORD_ZKS(readAddr)) = pData[4];
-            HIBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[5];
-            LOBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[6];
+            HIBYTE_ZKS(HIWORD_ZKS(readAddr)) = pData[6];
+            LOBYTE_ZKS(HIWORD_ZKS(readAddr)) = pData[5];
+            HIBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[4];
+            LOBYTE_ZKS(LOWORD_ZKS(readAddr)) = pData[3];
             readAddr = HexToInt(readAddr);
             logReceiveTimeOut = 0;
             RadioCmdSetWithNoRespon(RADIO_PRO_CMD_REQUES_TERM_LOG, readAddr, NULL);

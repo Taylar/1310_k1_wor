@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-04 11:39:34
+* @Last Modified time: 2020-08-04 11:51:53
 */
 #include "../general.h"
 
@@ -442,6 +442,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 					nodeSendingLog = 1;
 					nodegLogCnt = 0;
 					RadioCmdSetWithNoRes(RADIO_PRO_CMD_LOG_SEND, srcDev);
+					Task_sleep(10*CLOCK_UNIT_MS);
 				}
 			}
 		break;
@@ -749,7 +750,7 @@ uint32_t HexToInt(uint32_t hexData)
 	iData += TransBcdToHex((hexData>>8)&0xff) * 100;
 	iData += TransBcdToHex((hexData>>16)&0xff) * 10000;
 	iData += TransBcdToHex((hexData>>24)&0xff) * 1000000;
-	return hexData;
+	return iData;
 }
 
 
