@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-04 11:51:53
+* @Last Modified time: 2020-08-04 14:19:55
 */
 #include "../general.h"
 
@@ -779,6 +779,11 @@ void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 
 bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
 {
+#ifdef S_C
+	// 发送log时，其他指令不发送
+	if(nodeSendingLog)
+		return;
+#endif //
 	if(dstAddr){
 		SetRadioDstAddr(dstAddr);
 	}
