@@ -75,10 +75,12 @@ void NodeAppInit(void)
     uploadSemHandle = Semaphore_handle(&uploadSemStruct);
 
     
-    SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
-                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
-                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
-                     g_rSysConfigInfo.DeviceId[3]);
+    // SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+    //                  (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+    //                  (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+    //                  g_rSysConfigInfo.DeviceId[3]);
+    //
+    SetRadioSrcAddr(DECEIVE_ID_DEFAULT);
 
     GroudAddrSet(nodeParameter.customId);
     SetRadioSubSrcAddr(nodeParameter.customId );
@@ -92,6 +94,16 @@ void NodeAppInit(void)
     NodeStrategySetPeriod(1);
     NodeResetAPC();
     // NodeWakeup();
+
+    // uint16_t i;
+    // while(1){
+
+    // for(i = 0; i < 180; i++){
+    //     log_opration_record(i%36, 8886,1234);
+    // }
+    //     if(Flash_get_unupload_items() >= 100)
+    //         break;
+    // }
 }
 
 
