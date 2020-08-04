@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:15:03
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-06-19 10:37:09
+* @Last Modified time: 2020-08-04 11:42:22
 */
 #include "../general.h"
 
@@ -358,6 +358,7 @@ void S6KeyApp(void)
     KEY_CODE_E keyCode;
     //RadioCmdSetWithNoRes_Groud(RADIO_CMD_GROUD_SHOCK_TYPE);
     keyCode = Key_get();
+    logReceiveTimeOut = 0;
 
     //if(get_menu_alarmOrSetting())
     //menuc_alarm_main(keyCode);

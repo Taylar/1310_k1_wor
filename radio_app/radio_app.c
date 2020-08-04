@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-03 18:09:34
+* @Last Modified time: 2020-08-04 11:46:17
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -409,6 +409,8 @@ RadioOperationMode RadioModeGet(void)
     return (RadioOperationMode)radioMode;
 }
 
+
+extern void WdtResetCb(uintptr_t handle);
 //***********************************************************************************
 // brief:   radio task 
 // 

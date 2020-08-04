@@ -66,5 +66,6 @@ extern uint16_t CrcCheckCode_JSLL(uint8_t *pData, uint16_t length);
 extern uint32_t RtcTransUtc(uint8_t *timeTemp);
 extern uint16_t docrc16(uint8_t *pSrcData, uint16_t lenght);
 extern void TimeTransformUtc(uint8_t *timeTemp, uint32_t *utcTemp);
+extern uint32_t HexToInt(uint32_t hexData);
 #endif	/* __ZKSIOT_FUNCTION_H__ */
 
