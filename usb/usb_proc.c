@@ -833,12 +833,17 @@ int Usb_data_parse(uint8_t *pData, uint16_t length)
 
             break;            
         case EV_Set_DevicesId:
-              memcpy((char *)&g_rSysConfigInfo.DeviceId, (char *)&pData[3], 4);
-              g_rSysConfigInfo.DeviceId[0] = pData[6];
-              g_rSysConfigInfo.DeviceId[1] = pData[5];
-              g_rSysConfigInfo.DeviceId[2] = pData[4];
-              g_rSysConfigInfo.DeviceId[3] = pData[3];
-             len = Usb_group_package(AC_Ack, pData, 1);
+            memcpy((char *)&g_rSysConfigInfo.DeviceId, (char *)&pData[3], 4);
+            g_rSysConfigInfo.DeviceId[0] = pData[6];
+            g_rSysConfigInfo.DeviceId[1] = pData[5];
+            g_rSysConfigInfo.DeviceId[2] = pData[4];
+            g_rSysConfigInfo.DeviceId[3] = pData[3];
+            SetRadioSrcAddr( (((uint32_t)(g_rSysConfigInfo.DeviceId[0])) << 24) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[1])) << 16) |
+                     (((uint32_t)(g_rSysConfigInfo.DeviceId[2])) << 8) |
+                     g_rSysConfigInfo.DeviceId[3]);
+            Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+            len = Usb_group_package(AC_Ack, pData, 1);
              break;
 #ifdef S_G
         case EV_Get_Term_Log:

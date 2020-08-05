@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-04 11:46:17
+* @Last Modified time: 2020-08-05 16:44:06
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -156,7 +156,7 @@ radio_reSend:
         case EasyLink_Status_Config_Error:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_FREQ_SEND_ERROR;
-        Flash_log("TX R\n");
+        // Flash_log("TX R\n");
         SystemResetAndSaveRtc();
         break;
     }
@@ -192,7 +192,7 @@ radio_reReceive:
         case EasyLink_Status_Config_Error:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_FREQ_RECIEVE_ERROR;
-        Flash_log("RX R\n");
+        // Flash_log("RX R\n");
         SystemResetAndSaveRtc();
         break;
     }
@@ -224,7 +224,7 @@ radio_reSetFreq:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_FREQ_SWITCH_ERROR;
 
-        Flash_log("SF R\n");
+        // Flash_log("SF R\n");
         SystemResetAndSaveRtc();
         break;
     }
@@ -252,7 +252,7 @@ radio_reAbort:
         // should be reset
         g_rSysConfigInfo.sysState.wtd_restarts |= RADIO_ABORT_ERROR;
 
-        Flash_log("RF ST R\n");
+        // Flash_log("RF ST R\n");
         SystemResetAndSaveRtc();
         break;
     }
@@ -277,7 +277,7 @@ radio_reSetPower:
         goto radio_reSetPower;
 
         case EasyLink_Status_Config_Error:
-        Flash_log("RF SP R\n");
+        // Flash_log("RF SP R\n");
         SystemResetAndSaveRtc();
         break;
     }
