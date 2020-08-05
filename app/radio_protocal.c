@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-04 14:19:55
+* @Last Modified time: 2020-08-05 10:08:58
 */
 #include "../general.h"
 
@@ -605,13 +605,7 @@ void RaidoCmdTypePack(uint16_t cmdTypeTemp)
 	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), 13, 0, 0, 0);
     }
 }
-//***********************************************************************************
-// brief:   send low vol event
-// 
-// parameter: 
-// srcAddr:	the concenter radio addr
-// dstAddr:	the node radio addr
-//***********************************************************************************
+
 void RadioSendWithResp(uint16_t cmdTypeTemp)
 {
 
@@ -622,13 +616,7 @@ void RadioSendWithResp(uint16_t cmdTypeTemp)
 
 
 
-//***********************************************************************************
-// brief:   send insert event
-// 
-// parameter: 
-// srcAddr:	the concenter radio addr
-// dstAddr:	the node radio addr
-//***********************************************************************************
+
 void RadioSendWithNoResp(uint16_t cmdTypeTemp)
 {
 	protocalTxBuf.command	= RADIO_PRO_CMD_SINGLE_WITH_NO_RESP;
@@ -638,13 +626,7 @@ void RadioSendWithNoResp(uint16_t cmdTypeTemp)
 }
 
 
-//***********************************************************************************
-// brief:   send low vol event
-// 
-// parameter: 
-// srcAddr:	the concenter radio addr
-// dstAddr:	the node radio addr
-//***********************************************************************************
+
 void RadioSendGroundWithResp(uint16_t cmdTypeTemp)
 {
 	protocalTxBuf.command	= RADIO_PRO_CMD_GROUND;
@@ -766,7 +748,7 @@ uint32_t GroudAddrGet(void)
 	return groundAddr;
 }
 
-//
+//单次发送，不需要反馈
 void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 {
 	cmdType = cmd;
