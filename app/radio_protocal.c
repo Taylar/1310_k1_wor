@@ -749,7 +749,7 @@ uint32_t HexToInt(uint32_t hexData)
 	iData += TransBcdToHex((hexData>>8)&0xff) * 100;
 	iData += TransBcdToHex((hexData>>16)&0xff) * 10000;
 	iData += TransBcdToHex((hexData>>24)&0xff) * 1000000;
-	return hexData;
+	return iData;
 }
 
 
