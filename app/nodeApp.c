@@ -95,15 +95,15 @@ void NodeAppInit(void)
     NodeResetAPC();
     // NodeWakeup();
 
-    uint16_t i;
-    while(1){
+    // uint16_t i;
+    // while(1){
 
-    for(i = 0; i < 180; i++){
-        log_opration_record(i%36, 8886,1234);
-    }
-        if(Flash_get_unupload_items() >= 100)
-            break;
-    }
+    // for(i = 0; i < 180; i++){
+    //     log_opration_record(i%36, 8886,1234);
+    // }
+    //     if(Flash_get_unupload_items() >= 100)
+    //         break;
+    // }
 }
 
 

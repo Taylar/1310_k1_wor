@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-06 14:18:50
+* @Last Modified time: 2020-08-06 15:43:09
 */
 #include "../general.h"
 
@@ -117,7 +117,9 @@ void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
       case RADIO_PRO_CMD_CLOSE_GROUP_PREVENT_ESCAPE:
            sprintf((char*)buff,"%s","close group escape");
            break;
-
+      case RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM:
+      	   sprintf((char*)buff,"%s","escape alarm");
+      	   break;
       default:
 	      return;
 
@@ -448,7 +450,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 					nodeSendingLog = 1;
 					nodegLogCnt = 0;
 					Task_sleep(10*CLOCK_UNIT_MS);
-					logDstAddr = srcDev;
+					logDstAddr = HexToInt(srcDev);
 					RadioCmdSetWithRespon(RADIO_PRO_CMD_LOG_SEND, logDstAddr, NULL);
 					// RadioCmdSetWithNoRes(RADIO_PRO_CMD_LOG_SEND, srcDev);
 				}
@@ -460,13 +462,16 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 			nodegLogCnt++;
 			if(nodegLogCnt >= Flash_get_unupload_items()){
 				// log 传输完毕，清空数据
+				sendRetryTimes = 0;
+				RadioCmdClearWithRespon();
 			}
 			else{
 				// log 未传输完
 				RadioCmdSetWithRespon(RADIO_PRO_CMD_LOG_SEND, logDstAddr, NULL);
-				sendRetryTimes = 0;
-				RadioCmdClearWithRespon();
 			}
+		}else{
+			sendRetryTimes = 0;
+			RadioCmdClearWithRespon();
 		}
 		break;
 
@@ -475,6 +480,11 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 #endif //S_C
 
 #ifdef S_G
+		case RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM:
+		insertAlarm(srcDev, ALARM_TYPE_ESCAPE);
+		break;
+
+
 		case RADIO_CMD_DESTROY_TYPE:
 		insertAlarm(srcDev, ALARM_TYPE_DESTORY);
 		break;
@@ -711,6 +721,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	if(RADIO_PRO_CMD_LOG_SEND == cmdTypeTemp){
 		UsbSend_NodeConfig(EV_Send_Term_Log, bufTemp->load, strlen((char*)(bufTemp->load)));
+		RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, srcAddr);
 		return;
 	}
 	switch(bufTemp->command)
@@ -932,7 +943,7 @@ void RadioCmdClearWithRespon(void)
 	if(sendRetryTimes == 0){
 		if(nodeSendingLog)
 			nodeSendingLog = 0;
-		
+
 		cmdEventWithRespon &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdTypeWithRespon);
 		cmdTypeWithRespon = 0;
 		sendRetryTimes = RETRY_TIMES;

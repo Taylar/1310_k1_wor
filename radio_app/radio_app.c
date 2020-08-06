@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-06 14:22:11
+* @Last Modified time: 2020-08-06 15:13:41
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -548,10 +548,10 @@ void RadioAppTaskFxn(void)
                 Radio_setRxModeRfFrequency();
 
                 radioStatus = RADIOSTATUS_RECEIVING;
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(500));
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(2*BROCAST_TIME_MS));
                 RadioReceiveData();
                 // 防止有其他指令打断该接收，使其产生不了超时中断
-                Task_sleep(500*CLOCK_UNIT_MS);
+                Task_sleep(2*BROCAST_TIME_MS*CLOCK_UNIT_MS);
             }
             else{
             }
@@ -628,6 +628,9 @@ void RadioAppTaskFxn(void)
                     // 防止有其他指令打断该接收，使其不能完整接收一个数据包
                     Task_sleep(SNIFF_TIME_MS*CLOCK_UNIT_MS);
                 }
+            }
+            else{
+                RadioSend();
             }
         }
 
