@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-06 09:40:02
+* @Last Modified time: 2020-08-06 11:49:44
 */
 #include "../general.h"
 
@@ -126,8 +126,10 @@ void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
    index = strlen((char*)buff);
 #ifdef S_G
    	buff[index++] =  'T';
+   	buff[index++] =  ':';
    	index += sprintf((char*)(buff+index),"%5d", deviceId);
    	buff[index++] =  'G';
+   	buff[index++] =  ':';
    	index += sprintf((char*)(buff+index),"%5d", groupId);
    	buff[index++]  =  '\n';
    	Flash_log(buff);
@@ -147,13 +149,15 @@ void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
    	                                               currentTime.Minutes,
    	                                               currentTime.Seconds);
    	buff[index++] =  'T';
+   	buff[index++] =  ':';
    	index += sprintf((char*)(buff+index),"%5d", deviceId);
    	buff[index++] =  'G';
+   	buff[index++] =  ':';
    	index += sprintf((char*)(buff+index),"%5d", groupId);
    	buff[index++]  =  '\n';
    	buff[index++]  =  0;
    	Flash_store_sensor_data(buff, index);
-   	Flash_load_sensor_data_history(buff, FLASH_SENSOR_DATA_SIZE, Flash_get_unupload_items()-1);
+   	Flash_load_sensor_data_by_offset(buff, FLASH_SENSOR_DATA_SIZE, Flash_get_unupload_items()-1);
    	if(Flash_get_unupload_items()> 100){
    		Flash_moveto_offset_sensor_data(1);
    	}
@@ -599,7 +603,7 @@ void RaidoCmdTypePack(uint16_t cmdTypeTemp)
 
     if(cmdTypeTemp == RADIO_PRO_CMD_LOG_SEND){
     	index = sprintf((char*)protocalTxBuf.load,"%d:", nodegLogCnt);
-    	Flash_load_sensor_data_history(buff, FLASH_SENSOR_DATA_SIZE, nodegLogCnt);
+    	Flash_load_sensor_data_by_offset(buff, FLASH_SENSOR_DATA_SIZE, nodegLogCnt);
     	memcpy((char*)(protocalTxBuf.load+index), buff, strlen((char*)(buff))+1);
     	index += strlen((char*)(buff))+1;
 	    RadioCopyPacketToBuf(((uint8_t*)&protocalTxBuf), index+15, 0, 0, 0);
@@ -846,7 +850,6 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 #ifdef ZKS_S6_6_WOR_G
     log_opration_record(cmd,dstAddr,ground);
 #endif
-    Task_sleep(1050*CLOCK_UNIT_MS);
 	return true;
 }
 
