@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-06 11:49:44
+* @Last Modified time: 2020-08-06 14:18:50
 */
 #include "../general.h"
 
@@ -22,7 +22,7 @@ bool nodeParaSetting = 0;
 
 uint8_t nodeSendingLog = 0;
 uint32_t nodegLogCnt;
-
+uint32_t logDstAddr;
 
 #define 		CMD_EVT_ALL		(0xFFFFFFFFFFFFFFFF)
 #define 		CMD_EVENT_MAX	64
@@ -31,7 +31,7 @@ uint64_t cmdEvent, cmdEventWithRespon, cmdEventGroud;
 uint32_t groundAddr;
 
 uint16_t sendRetryTimes;
-#define         RETRY_TIMES     0
+#define         RETRY_TIMES     3
 
 
 void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
@@ -447,10 +447,27 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 				if(Flash_get_unupload_items() > 0){
 					nodeSendingLog = 1;
 					nodegLogCnt = 0;
-					RadioCmdSetWithNoRes(RADIO_PRO_CMD_LOG_SEND, srcDev);
 					Task_sleep(10*CLOCK_UNIT_MS);
+					logDstAddr = srcDev;
+					RadioCmdSetWithRespon(RADIO_PRO_CMD_LOG_SEND, logDstAddr, NULL);
+					// RadioCmdSetWithNoRes(RADIO_PRO_CMD_LOG_SEND, srcDev);
 				}
 			}
+		break;
+
+		case RADIO_PRO_CMD_ALL_RESP:
+		if(nodeSendingLog){
+			nodegLogCnt++;
+			if(nodegLogCnt >= Flash_get_unupload_items()){
+				// log 传输完毕，清空数据
+			}
+			else{
+				// log 未传输完
+				RadioCmdSetWithRespon(RADIO_PRO_CMD_LOG_SEND, logDstAddr, NULL);
+				sendRetryTimes = 0;
+				RadioCmdClearWithRespon();
+			}
+		}
 		break;
 
 
@@ -913,6 +930,9 @@ void RadioCmdClearWithRespon(void)
 {
 	uint8_t i;
 	if(sendRetryTimes == 0){
+		if(nodeSendingLog)
+			nodeSendingLog = 0;
+		
 		cmdEventWithRespon &= CMD_EVT_ALL ^ ((uint64_t)(0x1) << cmdTypeWithRespon);
 		cmdTypeWithRespon = 0;
 		sendRetryTimes = RETRY_TIMES;
