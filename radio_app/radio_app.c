@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-05 16:44:06
+* @Last Modified time: 2020-08-06 14:22:11
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -548,10 +548,10 @@ void RadioAppTaskFxn(void)
                 Radio_setRxModeRfFrequency();
 
                 radioStatus = RADIOSTATUS_RECEIVING;
-                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(BROCAST_TIME_MS*2));
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(500));
                 RadioReceiveData();
                 // 防止有其他指令打断该接收，使其产生不了超时中断
-                Task_sleep(BROCAST_TIME_MS*2*CLOCK_UNIT_MS);
+                Task_sleep(500*CLOCK_UNIT_MS);
             }
             else{
             }
@@ -618,10 +618,7 @@ void RadioAppTaskFxn(void)
 #ifdef ZKS_S3_WOR
         if(events & RADIO_EVT_START_SNIFF)
         {
-            if(nodeSendingLog){
-                RadioSingleSend();
-            }
-            else{
+            if(nodeSendingLog == 0){
                 Radio_setRxModeRfFrequency();
 
                 //if(RadioCheckRssi() > -80)
@@ -676,16 +673,24 @@ void RadioAppTaskFxn(void)
 
             }
 
-
 #ifdef BOARD_S6_6
             ConcenterResetBroTimer();
 
             Radio_setRxModeRfFrequency();
 
-            // 无论发送需要反馈与不需要反馈的命令，均等待8个广播长度周期等待，接收不到数据则会发生超时事件
-            EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 8*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+            // 等待等待数据反馈
+            if(RadioWithResPack() != 0){
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(500));
+            }else{
+                EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, 0);
+            }
+
             radioStatus = RADIOSTATUS_RECEIVING;
             RadioReceiveData();
+            if(RadioWithResPack() != 0){
+                // 防止被其他事件打断进入不了接收状态
+                Task_sleep(500*CLOCK_UNIT_MS);
+            }
 #endif //BOARD_S6_6
         }
 
