@@ -234,7 +234,7 @@ void Menu_restart(void)
 {    
     // ConcenterSleep();
     Flash_store_config();
-    Flash_log("RST\n");
+    // Flash_log("RST\n");
 #ifdef SUPPORT_DEVICED_STATE_UPLOAD
     Flash_store_devices_state(TYPE_POWER_RESTART);
 #endif// SUPPORT_DEVICED_STATE_UPLOAD

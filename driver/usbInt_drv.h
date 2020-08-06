@@ -3,13 +3,13 @@
 
 
 
-#ifdef BOARD_S3
-#define		USB_LINK_STATE			0
-#define		USB_UNLINK_STATE		1
-#else
+// #ifdef BOARD_S3
+// #define		USB_LINK_STATE			0
+// #define		USB_UNLINK_STATE		1
+// #else
 #define		USB_LINK_STATE			1
 #define		USB_UNLINK_STATE		0
-#endif 
+// #endif 
 
 typedef enum {
    NO_CHARGE = 0,

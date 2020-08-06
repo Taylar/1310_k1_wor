@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-15 14:00:38
+* @Last Modified time: 2020-08-04 17:18:47
 */
 #include "../general.h"
 
@@ -177,15 +177,15 @@ void S1AppRtcProcess(void)
 
 
     destroyEleShock = DestroyPinRead();
-    if(destroyEleShock){
+    if(destroyEleShock && electricshockEnable){
         if(destroyEleShock){
             destroyCnt++;
             if(destroyCnt%13 == 0){
                 EletricPulseSetTime_S(8);
+                RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
+                // RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
+                SoundEventSet(SOUND_TYPE_DESTROYED);
             }
-            // RadioCmdSetWithNoResponBrocast(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
-            RadioCmdSetWithNoRes(RADIO_CMD_DESTROY_TYPE, RADIO_CONTROLER_ADDRESS);
-            SoundEventSet(SOUND_TYPE_DESTROYED);
         } 
     }
 

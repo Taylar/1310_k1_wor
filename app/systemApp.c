@@ -273,7 +273,7 @@ void SystemAppTaskFxn(void)
 		{
 			if(ExtflashRingQueueIsEmpty((&extflashWriteQ)))
 			{
-				Flash_log("TX Tout R\n");
+				// Flash_log("TX Tout R\n");
 		        SystemResetAndSaveRtc();
 			}
 			else

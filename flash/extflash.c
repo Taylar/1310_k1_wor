@@ -8,7 +8,6 @@
 // board node
 #ifdef BOARD_S3
 
-#define FLASH_POWER_PIN         IOID_8
 #define FLASH_SPI_CS_PIN        IOID_9
 #define FLASH_WP_PIN            IOID_11
 #define FLASH_HOLD_PIN          IOID_5
@@ -28,7 +27,6 @@ const PIN_Config extFlashComPinTable[] = {
 };
 
 const PIN_Config extFlashPinTable[] = {
-    FLASH_POWER_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,      /*          */
     FLASH_SPI_CS_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
     FLASH_WP_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,       /*          */
     FLASH_HOLD_PIN | PIN_GPIO_OUTPUT_EN | PIN_GPIO_HIGH | PIN_PUSHPULL | PIN_DRVSTR_MAX,    /*          */
