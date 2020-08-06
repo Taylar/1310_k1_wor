@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-05 16:44:30
+* @Last Modified time: 2020-08-06 09:40:02
 */
 #include "../general.h"
 
@@ -31,7 +31,7 @@ uint64_t cmdEvent, cmdEventWithRespon, cmdEventGroud;
 uint32_t groundAddr;
 
 uint16_t sendRetryTimes;
-#define         RETRY_TIMES     3
+#define         RETRY_TIMES     0
 
 
 void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
@@ -391,6 +391,8 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 		case RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE:
 			g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
+			// 打开防逃后把计数清零
+			escapeTimeCnt = 0;
 			SoundEventSet(SOUND_TYPE_OPEN_ESCAPE);
 			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 		break;
@@ -844,7 +846,7 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 #ifdef ZKS_S6_6_WOR_G
     log_opration_record(cmd,dstAddr,ground);
 #endif
-
+    Task_sleep(1050*CLOCK_UNIT_MS);
 	return true;
 }
 
@@ -894,7 +896,7 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 #ifdef ZKS_S6_6_WOR_G
     log_opration_record(cmd,dstAddr,ground);
 #endif
-	return Semaphore_pend(recAckSemHandle, 4 * CLOCK_UNIT_S);
+	return Semaphore_pend(recAckSemHandle, 1300 * CLOCK_UNIT_MS);
 	// return true;
 #else
 	RadioSend();
