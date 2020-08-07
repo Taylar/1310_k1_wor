@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-04 17:18:47
+* @Last Modified time: 2020-08-07 09:32:26
 */
 #include "../general.h"
 
@@ -117,6 +117,10 @@ void S1AppRtcProcess(void)
                 SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
             }
             insetTest = 0;
+            if(!(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT)){
+                eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
+                eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+            }
         }
 
 
