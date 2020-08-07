@@ -2200,6 +2200,10 @@ static void menu_tik_group_subdue()
        {
            if(mMenuModeObject.selectIndex == 0)
            {
+               mMenuModeObject.selectIndex = 1;
+           }
+           else if(mMenuModeObject.selectIndex == 1)
+           {
                Lcd_set_font(36, 24, 1);
                //send data to devices
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_SUBDUE_START,mMenuModeObject.devicesId, mMenuModeObject.groudId);
