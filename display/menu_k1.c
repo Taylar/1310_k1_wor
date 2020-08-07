@@ -2336,23 +2336,9 @@ static void menu_query_alarm_info()
         if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
           {
              deviceIdHex = TransHexToInt(MenuAlarmObjectTemp.devicesId);
-#if 0
-             switch(MenuAlarmObjectTemp.alarmType)
-             {
-                 case ALARM_TYPE_LOW_POWER:
-                      Menu_low_power_display(deviceIdHex);
-                      break;
-                  case ALARM_TYPE_UNWEAR:
-                       Menu_not_wearing_well_display(deviceIdHex);
-                       break;
-                   case ALARM_TYPE_DESTORY:
-                        Menu_term_is_destroyed(deviceIdHex);
-                   break;
-             }
-#else
+
              Display_alarm(deviceIdHex,MenuAlarmObjectTemp.alarmType);
 
-#endif
           }
           else
           {
@@ -2384,18 +2370,7 @@ static void menu_query_alarm_info()
         if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
         {
             deviceIdHex = TransHexToInt(MenuAlarmObjectTemp.devicesId);
-            switch(MenuAlarmObjectTemp.alarmType)
-            {
-                case ALARM_TYPE_LOW_POWER:
-                     Menu_low_power_display(deviceIdHex);
-                     break;
-                case ALARM_TYPE_UNWEAR:
-                     Menu_not_wearing_well_display(deviceIdHex);
-                     break;
-                case ALARM_TYPE_DESTORY:
-                    Menu_term_is_destroyed(deviceIdHex);
-                     break;
-            }
+            Display_alarm(deviceIdHex,MenuAlarmObjectTemp.alarmType);
         }
         else
         {
