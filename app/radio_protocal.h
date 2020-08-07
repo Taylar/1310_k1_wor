@@ -60,7 +60,9 @@
 #define     RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM		          35   //防逃报警
 
 #define     RADIO_PRO_CMD_REQUES_TERM_LOG		          	  36   //请求传输扣子日志
-#define     RADIO_PRO_CMD_LOG_SEND		          		      37   //传输扣子日志
+#define     RADIO_PRO_CMD_LOG_SEND                            37   //传输扣子日志
+
+#define     RADIO_PRO_CMD_MOTO_RUN		          		      38   //扣子马达打开100ms
 
 
 #define     RADIO_PRO_CMD_ALL_RESP          		63             //命令应答

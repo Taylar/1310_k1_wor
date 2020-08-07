@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-06 15:43:09
+* @Last Modified time: 2020-08-07 09:46:54
 */
 #include "../general.h"
 
@@ -381,6 +381,8 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 			if(dstDev == GetRadioSrcAddr()){
 				g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_INSERT;
 				SoundEventSet(SOUND_TYPE_INSERT_DETECT_DISABLE);
+				eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
+                eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
 				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 			}
 		break;
@@ -454,6 +456,15 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 					RadioCmdSetWithRespon(RADIO_PRO_CMD_LOG_SEND, logDstAddr, NULL);
 					// RadioCmdSetWithNoRes(RADIO_PRO_CMD_LOG_SEND, srcDev);
 				}
+			}
+		break;
+
+		case RADIO_PRO_CMD_MOTO_RUN:
+			if(dstDev == GetRadioSrcAddr()){
+				SoundEventSet(SOUND_TYPE_UNLOCK);
+				eleShock_set(ELE_MOTO_ENABLE, 1);
+				Task_sleep(100 * CLOCK_UNIT_MS);
+				eleShock_set(ELE_MOTO_ENABLE, 0);
 			}
 		break;
 
@@ -863,6 +874,7 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	(cmd == RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE) ||
 	(cmd == RADIO_PRO_CMD_CLOSE_TERMINAL_PREVENT_ESCAPE) ||
 	(cmd == RADIO_PRO_CMD_LOG_SEND) ||
+	(cmd == RADIO_PRO_CMD_MOTO_RUN) ||
 	(cmd == RADIO_PRO_CMD_REQUES_TERM_LOG)){
 		SetRadioDstAddr(dstAddr);
 	}
