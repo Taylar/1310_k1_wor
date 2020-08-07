@@ -1690,7 +1690,7 @@ static void menu_lock_check()
            {
                mMenuModeObject.devicesId = mMenuModeObject.numEnter;
                Lcd_set_font(36, 24, 1);
-               RadioCmdSetWithRespon(RADIO_PRO_CMD_MOTO_RUN,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //添加群组
+               RadioCmdSetWithNoRespon(RADIO_PRO_CMD_MOTO_RUN,mMenuModeObject.devicesId, mMenuModeObject.groudId);  //添加群组
                Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
 
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
