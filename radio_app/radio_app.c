@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-21 17:36:18
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-06 15:13:41
+* @Last Modified time: 2020-08-07 17:22:36
 */
 #include "../general.h"
 #include "zks/easylink/EasyLink.h"
@@ -1061,11 +1061,13 @@ void Radio_setRxModeRfFrequency(void)
 
     if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
 #ifdef  S_C//閲囬泦鍣�?
-        dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        // dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        dstFreq = 433500000;
 #endif  // S_C//閲囬泦鍣�?
 
 #ifdef  S_G//缃戝�?
-        dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        dstFreq = 432500000;
+        // dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 
 #endif  // S_G//缃戝�?
 
@@ -1102,11 +1104,13 @@ void Radio_setTxModeRfFrequency(void)
     if ((radioMode != RADIOMODE_UPGRADE) && (deviceMode != DEVICES_CONFIG_MODE)) {
         
 #ifdef  S_C//
-        dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        // dstFreq = RADIO_BASE_FREQ + ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        dstFreq = 432500000;
 #endif  // 
 
 #ifdef  S_G//
-        dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ +  ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
+        dstFreq = 433500000;
+        // dstFreq = RADIO_BASE_FREQ + RADIO_DIFF_UNIT_FREQ +  ((g_rSysConfigInfo.rfBW>>4)*RADIO_BASE_UNIT_FREQ);
 #endif  // S_G
 
 

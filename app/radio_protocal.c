@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-07 15:15:54
+* @Last Modified time: 2020-08-07 17:25:59
 */
 #include "../general.h"
 
@@ -23,6 +23,7 @@ bool nodeParaSetting = 0;
 uint8_t nodeSendingLog = 0;
 uint32_t nodegLogCnt;
 uint32_t logDstAddr;
+uint32_t controlerId;
 
 #define 		CMD_EVT_ALL		(0xFFFFFFFFFFFFFFFF)
 #define 		CMD_EVENT_MAX	64
@@ -175,6 +176,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 		case RADIO_PRO_CMD_TERM_ADD_TO_GROUP:
 			if(dstDev == GetRadioSrcAddr()){
 				GroudAddrSet(ground);
+				controlerId = srcDev;
 				g_rSysConfigInfo.customId[0] = (uint8_t)(ground >> 24);
 				g_rSysConfigInfo.customId[1] = (uint8_t)(ground >> 16);
 				g_rSysConfigInfo.customId[2] = (uint8_t)(ground >> 8);
@@ -189,6 +191,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_CLEAR_GROUP_SUSCESS);
 				GroudAddrSet(INVALID_GROUND);
+				controlerId = 0;
 				g_rSysConfigInfo.customId[0] = (uint8_t)(INVALID_GROUND >> 24);
 				g_rSysConfigInfo.customId[1] = (uint8_t)(INVALID_GROUND >> 16);
 				g_rSysConfigInfo.customId[2] = (uint8_t)(INVALID_GROUND >> 8);
@@ -207,7 +210,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_TEST:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_SINGLE_TEST);
 				PreventiveInsertTest();
 			}
@@ -238,7 +241,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_CLOSE_CTROL:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_CONTROL_DISABLE);
 				electricshockEnable = 0;
 				ElectricShockPowerDisable();
@@ -250,7 +253,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_OPEN_CTROL:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_CONTROL_ENABLE);
 				electricshockEnable = 1;
 				// ElectricShockPowerEnable();
@@ -271,7 +274,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_UNLOCKING:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_UNLOCK);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
 				// Task_sleep(3000 * CLOCK_UNIT_MS);
@@ -281,7 +284,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_POWER_HIGH:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_SET_POWER_HIGH_SUCCESS);
 				ElectricShockLevelSet(ELECTRIC_HIGH_LEVEL);
 				g_rSysConfigInfo.electricLevel = ELECTRIC_HIGH_LEVEL;
@@ -291,7 +294,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_POWER_MID:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_SET_POWER_MID_SUCCESS);
 				ElectricShockLevelSet(ELECTRIC_MID_LEVEL);
 				g_rSysConfigInfo.electricLevel = ELECTRIC_MID_LEVEL;
@@ -301,7 +304,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_POWER_LOW:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_SET_POWER_LOW_SUCCESS);
 				ElectricShockLevelSet(ELECTRIC_LOW_LEVEL);
 				g_rSysConfigInfo.electricLevel = ELECTRIC_LOW_LEVEL;
@@ -357,7 +360,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_SUBDUE_START:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_SHOCK_START);
 				EletricPulseSetTime_S(ELECTRIC_SHOCK_TIME);
 			}
@@ -365,7 +368,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_GROUP_SUBDUE_STOP:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_SHOCK_STOP);
 				EletricPulseSetTime_S(0);
 			}
@@ -430,7 +433,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 		break;
 
 		case RADIO_PRO_CMD_OPEN_GROUP_PREVENT_ESCAPE:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 				SoundEventSet(SOUND_TYPE_OPEN_ESCAPE);
 				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
@@ -439,7 +442,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_CLOSE_GROUP_PREVENT_ESCAPE:
-			if(ground == GroudAddrGet()){
+			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				g_rSysConfigInfo.electricFunc &= 0xffffffff^ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 				SoundEventSet(SOUND_TYPE_CLOSE_ESCAPE);
 				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
