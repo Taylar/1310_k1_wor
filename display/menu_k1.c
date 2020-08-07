@@ -613,8 +613,8 @@ void menu_add_group( )
            {
                //mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(8, 24, 1);
-               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
-               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                //调用发射窗口
                //display complete
                Lcd_set_font(36, 24, 1);
@@ -740,8 +740,8 @@ static void menu_delete_group( )
            {
                //mMenuModeObject.groudId = mMenuModeObject.numEnter;
                Lcd_set_font(8, 24, 1);
-               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
-               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               //Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               //Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
 
                //调用发射窗口
                //display complete
