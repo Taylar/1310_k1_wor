@@ -711,6 +711,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 
 	if(RADIO_PRO_CMD_LOG_SEND == cmdTypeTemp){
 		UsbSend_NodeConfig(EV_Send_Term_Log, bufTemp->load, strlen((char*)(bufTemp->load)));
+		RadioCmdSetWithNoRes(RADIO_PRO_CMD_ALL_RESP, srcAddr);
 		return;
 	}
 	switch(bufTemp->command)
