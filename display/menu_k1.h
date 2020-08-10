@@ -49,5 +49,6 @@ void power_on_init_key_code(void);
 void Menu_term_is_no_arm(void);
 extern void menuc_alarm_main(KEY_CODE_E keyCode);
 uint8_t get_menu_alarmOrSetting(void);
+void have_alarm_extern(void);
 #endif
 #endif /* ZKS_DISPLAY_MENU_K1_H_ */

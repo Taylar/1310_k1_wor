@@ -305,6 +305,7 @@ void SystemAppTaskFxn(void)
             else
             {
                 lcd_power_state = 1;
+                KeyIcInit();
                 Disp_init();
                 Disp_poweron();
                 Sys_event_post(SYSTEMAPP_EVT_DISP);
@@ -329,7 +330,8 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYS_EVT_ALARM && lcd_power_state == 1)
 		{
 		    //set_meun_alarmOrSetting(1);
-		     menuc_main(_VK_DISPLAY);
+		     //menuc_main(_VK_DISPLAY);
+		     have_alarm_extern();
 		     Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
 		     Clock_start(sysAlarmClkHandle);
 		     buzzerAlarmCnt =2;
