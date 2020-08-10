@@ -22,6 +22,9 @@
 #define  	SOUND_TYPE_UNLOCK					0X12
 #define  	SOUND_TYPE_INSERT_DETECT_ENABLE		0X13
 #define  	SOUND_TYPE_INSERT_DETECT_DISABLE	0X14
+#define  	SOUND_TYPE_DI						0X15
+#define  	SOUND_TYPE_DI_DI					0X16
+#define  	SOUND_TYPE_ELESHOCK_ALARM			0X17
 
 
 // #define  	SOUND_TYPE_LOW_BAT					0X00
@@ -48,9 +51,9 @@
 
 
 
-#define  	SOUND_TYPE_DI					0X07
-#define  	SOUND_TYPE_DI_DI				0X08
-#define  	SOUND_TYPE_DI_DI_DI				0X09
+// #define  	SOUND_TYPE_DI					0X07
+// #define  	SOUND_TYPE_DI_DI				0X08
+// #define  	SOUND_TYPE_DI_DI_DI				0X09
 
 
 #define  	SOUND_TYPE_VOLUME_MAX			0XC1

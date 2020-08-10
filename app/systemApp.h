@@ -27,6 +27,7 @@
 
 #define         SYS_EVT_TIME_OUT                        Event_Id_19
 
+#define 		SYS_EVT_SOUND_ELE_SHOCK_ALARM			Event_Id_20
 //#define         SYS_EVT_WOR_ABNORMAL                    Event_Id_18
 
 #define         SYSTEMAPP_EVT_ALL                       0xffffffff

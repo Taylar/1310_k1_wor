@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-10 15:24:46
+* @Last Modified time: 2020-08-10 16:37:04
 */
 #include "../general.h"
 
@@ -97,7 +97,10 @@ void PulseFxn(UArg arg0)
         ElectricShockPowerDisable();
         EletricShockPulseDisable();
         Clock_stop(pulseClkHandle);
+    }else{
+        Sys_event_post(SYS_EVT_SOUND_ELE_SHOCK_ALARM);
     }
+
 }
 //***********************************************************************************
 //
@@ -150,18 +153,21 @@ void EletricShockPulseInit(void)
 
 void EletricPulseSetTime_S(uint16_t keepTime_S)
 {
-    pulseTimes_sec = keepTime_S;
-
     if(electricshockEnable == 0){
         EletricShockPulseDisable();
         Clock_stop(pulseClkHandle);
+        pulseTimes_sec = 0;
         return;
     }
+    
+    pulseTimes_sec = keepTime_S;
+
     if(pulseTimes_sec == 0){
         EletricShockPulseDisable();
         Clock_stop(pulseClkHandle);
     }
     else{
+        Sys_event_post(SYS_EVT_SOUND_ELE_SHOCK_ALARM);
         Clock_start(pulseClkHandle);
         ElectricShockPowerEnable();
         EletricShockPulseEnable();
