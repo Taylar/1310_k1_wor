@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-07-28 13:59:17
+* @Last Modified time: 2020-08-10 15:24:46
 */
 #include "../general.h"
 
@@ -26,7 +26,7 @@
 
 
 const PIN_Config motoIntPinTable[] = {
-    MOTO_INT_PIN | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_POSEDGE,       /* 马达中断          */
+    MOTO_INT_PIN | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_NEGEDGE,       /* 马达中断          */
     PIN_TERMINATE
 };
 

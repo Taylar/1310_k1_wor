@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-07 17:25:59
+* @Last Modified time: 2020-08-10 15:27:48
 */
 #include "../general.h"
 
@@ -267,8 +267,8 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 			if(dstDev == GetRadioSrcAddr()){
 				SoundEventSet(SOUND_TYPE_UNLOCK);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
-				// Task_sleep(3000 * CLOCK_UNIT_MS);
-				// eleShock_set(ELE_MOTO_ENABLE, 0);
+				Task_sleep(3000 * CLOCK_UNIT_MS);
+				eleShock_set(ELE_MOTO_ENABLE, 0);
 			}
 		break;
 
@@ -277,8 +277,8 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 			if(ground == GroudAddrGet() && (controlerId == srcDev)){
 				SoundEventSet(SOUND_TYPE_UNLOCK);
 				eleShock_set(ELE_MOTO_ENABLE, 1);
-				// Task_sleep(3000 * CLOCK_UNIT_MS);
-				// eleShock_set(ELE_MOTO_ENABLE, 0);
+				Task_sleep(3000 * CLOCK_UNIT_MS);
+				eleShock_set(ELE_MOTO_ENABLE, 0);
 			}
 		break;
 
