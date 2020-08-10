@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-07 09:32:26
+* @Last Modified time: 2020-08-10 14:08:08
 */
 #include "../general.h"
 
@@ -130,7 +130,8 @@ void S1AppRtcProcess(void)
             }
 
             if(insertCnt%(60) == 0){
-                RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+                if(insetTest == 0)
+                    RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
                 // RadioCmdSetWithNoRes(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
             }
             insertCnt++;
@@ -154,10 +155,10 @@ void S1AppRtcProcess(void)
             EletricPulseSetTime_S(2);
             SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
         }
-        if((escapeTimeCnt > 30) && ( ( (escapeTimeCnt-30) % 13) == 0) ){
+        if((escapeTimeCnt > 30) && ( ( (escapeTimeCnt-30) % 5) == 0) ){
             RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
             SoundEventSet(SOUND_TYPE_SHOCK_START);
-            EletricPulseSetTime_S(8);
+            EletricPulseSetTime_S(3);
         }
     }
 
