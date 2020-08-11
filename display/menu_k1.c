@@ -36,11 +36,11 @@ typedef enum {
     MENU_ITEN_CLOSE_TERMINQL_PREVENT_ESCAPE,
     MENU_ITEN_LOCK_CHECK,
     MENU_ITEN_QUERY_ALARM_INFO,
-    MENU_ITEN_SETTING_TIME_Y,
-    MENU_ITEN_SETTING_TIME_M,
-    MENU_ITEN_SETTING_TIME_D,
-    MENU_ITEN_SETTING_TIME_H,
-    MENU_ITEN_SETTING_TIME_MM,
+    //MENU_ITEN_SETTING_TIME_Y,
+    //MENU_ITEN_SETTING_TIME_M,
+    //MENU_ITEN_SETTING_TIME_D,
+    //MENU_ITEN_SETTING_TIME_H,
+    //MENU_ITEN_SETTING_TIME_MM,
     MENU_ITEN_SETTING_TIME,
     MENU_ITEM_TIK_GROUP_SUBDUE,
     MENU_ITEM_TIK_FIXED_NUMBER_SUBDUE,
@@ -117,11 +117,11 @@ MenuMode_t MenuMode[]=
     {MENU_ITEN_CLOSE_TERMINQL_PREVENT_ESCAPE,NULL,menu_close_terminal_prevent_escape},
     {MENU_ITEN_LOCK_CHECK,NULL,menu_lock_check},
     {MENU_ITEN_QUERY_ALARM_INFO,NULL,menu_query_alarm_info},
-    {MENU_ITEN_SETTING_TIME_Y,NULL,menu_setting_time},
-    {MENU_ITEN_SETTING_TIME_M,NULL,menu_setting_time},
-    {MENU_ITEN_SETTING_TIME_D,NULL,menu_setting_time},
-    {MENU_ITEN_SETTING_TIME_H,NULL,menu_setting_time},
-    {MENU_ITEN_SETTING_TIME_MM,NULL,menu_setting_time},
+    //{MENU_ITEN_SETTING_TIME_Y,NULL,menu_setting_time},
+    //{MENU_ITEN_SETTING_TIME_M,NULL,menu_setting_time},
+    //{MENU_ITEN_SETTING_TIME_D,NULL,menu_setting_time},
+    //{MENU_ITEN_SETTING_TIME_H,NULL,menu_setting_time},
+    //{MENU_ITEN_SETTING_TIME_MM,NULL,menu_setting_time},
     {MENU_ITEN_SETTING_TIME,NULL,menu_setting_time},
     {MENU_ITEM_TIK_GROUP_SUBDUE,NULL,menu_tik_group_subdue},
     {MENU_ITEM_TIK_FIXED_NUMBER_SUBDUE,NULL,menu_tik_fixed_number_subdue},
@@ -232,6 +232,7 @@ static void menuModeObject_data_reinit(void)
 
     switch(mMenuModeObject.index)
     {
+#if 0
     case MENU_ITEN_SETTING_TIME_Y:
             calendar =Rtc_get_calendar();
             mMenuModeObject.numEnter = calendar.Year;
@@ -253,10 +254,19 @@ static void menuModeObject_data_reinit(void)
             mMenuModeObject.numEnter = calendar.Minutes;
             mMenuModeObject.timerefesh = 1;
          break;
+
     case MENU_ITEN_SETTING_TIME:
              mMenuModeObject.numEnter = calendar.Seconds;
              mMenuModeObject.timerefesh = 1;
          break;
+#else
+    case MENU_ITEN_SETTING_TIME:
+            mMenuModeObject.numEnter = 0;
+            mMenuModeObject.timerefesh = 0;
+            calendar =Rtc_get_calendar();
+            mMenuModeObject.numEnter = calendar.Year;
+         break;
+#endif
     case MENU_ITEN_ADD_GROUP:
     case MENU_ITEN_DELETE_GROUP:
     case MENU_ITEN_TERMINAL_TEST:
@@ -290,164 +300,177 @@ static void menuModeObject_data_reinit(void)
 
 void have_alarm_extern(void)
 {
-    mMenuModeObject.index = MENU_ITEN_LOCK_CHECK;
-    menuc_main(_VK_COMMAND);
+    //mMenuModeObject.index = MENU_ITEN_LOCK_CHECK;
+    mMenuModeObject.JumpByAlarm = 1;
+    mMenuModeObject.preIndex = mMenuModeObject.index;
+    menuc_main(_VK_DISPLAY);
 }
+
+void menu_tip_alarm(KEY_CODE_E keyCode);
 
 void menuc_main(KEY_CODE_E keyCode)
 {
     KEY_CODE_E keyCodeIn = keyCode;
-    //Disp_proc();
-    switch(keyCodeIn)
+    if(mMenuModeObject.JumpByAlarm)
     {
-        case _VK_COMMAND://命令
-             if((mMenuModeObject.index >= MENU_ITEM_TIK_GROUP_SUBDUE) && (mMenuModeObject.index<MENU_ITEM_TIK_ARR_SUBDUE))
-             {
-                mMenuModeObject.index++;
-             }
-            else
+
+        menu_tip_alarm(keyCode);
+    }
+    else {
+    //Disp_proc();
+            switch(keyCodeIn)
             {
-                mMenuModeObject.index=MENU_ITEM_TIK_GROUP_SUBDUE;
+                case _VK_COMMAND://命令
+                     if((mMenuModeObject.index >= MENU_ITEM_TIK_GROUP_SUBDUE) && (mMenuModeObject.index<MENU_ITEM_TIK_ARR_SUBDUE))
+                     {
+                        mMenuModeObject.index++;
+                     }
+                    else
+                    {
+                        mMenuModeObject.index=MENU_ITEM_TIK_GROUP_SUBDUE;
+                    }
+                    if(mMenuModeObject.JumpByAlarm)
+                        mMenuModeObject.JumpByAlarm = 0;
+                    menuModeObject_data_reinit();
+                break;
+
+
+                case _VK_ACTIVE://电击
+                    if(mMenuModeObject.index >=MENU_ITEM_TIK_GROUP_SUBDUE && mMenuModeObject.index < MENU_ITEN_MAX)
+                        mMenuModeObject.keyDoing = KEY_DOING_TICK;
+                    else if(mMenuModeObject.index >=MENU_ITEN_ADD_GROUP && mMenuModeObject.index <= MENU_ITEN_SETTING_TIME )
+                        mMenuModeObject.keyDoing = KEY_DOING_SWITCH;
+                break;
+
+
+                case _VK_DELETE:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter > 0)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter/10;
+                        mMenuModeObject.keyDoing = KEY_DOING_DELETE;
+                    }
+                break;
+
+
+                case _VK_NUM1:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+1;
+                    }
+                break;
+
+
+                case _VK_NUM2:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+2;
+                    }
+                break;
+
+
+                case _VK_NUM3:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+3;
+                    }
+                break;
+
+
+                case _VK_NUM4:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+4;
+                    }
+                break;
+
+
+                case _VK_NUM5:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+5;
+                    }
+                break;
+
+
+                case _VK_NUM6:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+6;
+                    }
+                    //alarm_data();
+                break;
+
+
+                case _VK_NUM7:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+7;
+                    }
+                break;
+
+
+                case _VK_NUM8:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+8;
+                    }
+                break;
+
+
+                case _VK_NUM9:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+9;
+                    }
+                break;
+
+
+                case _VK_MODE://模式
+                    if(mMenuModeObject.index == MENU_ITEN_TERMINAL_TEST)
+                    {
+                       Lcd_set_font(72, 24, 1);
+                       Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
+                    }
+
+                   mMenuModeObject.index++;
+                  if(mMenuModeObject.index >= MENU_ITEM_TIK_GROUP_SUBDUE)
+                     mMenuModeObject.index= (MENU_ITEN_NULL+1);
+
+                    menuModeObject_data_reinit();
+
+                    if(mMenuModeObject.index == MENU_ITEN_QUERY_ALARM_INFO)
+                        mMenuModeObject.keyDoing = KEY_DOING_DISPLAY;
+
+                    if(mMenuModeObject.index == MENU_ITEN_TERMINAL_TEST)
+                    {
+                       Lcd_set_font(72, 24, 1);
+                       Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+                       Lcd_set_font(36, 24, 1);
+                       Disp_icon(START_X_LINE,2,ICON_36X24_VBAT,1);
+                       Lcd_set_font(8, 24, 1);
+                       Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
+                    }
+
+                break;
+
+
+                case _VK_NUM0:
+                    if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 1000 && mMenuModeObject.numEnter !=0)
+                    {
+                        mMenuModeObject.numEnter=mMenuModeObject.numEnter*10;
+                    }
+                break;
+
+
+                case _VK_OK://确认
+                    if(mMenuModeObject.index >MENU_ITEN_NULL && mMenuModeObject.index < MENU_ITEM_TIK_GROUP_SUBDUE)
+                        mMenuModeObject.keyDoing = KEY_DOING_ACK;
+                    break;
+                case _VK_DISPLAY:
+                     mMenuModeObject.index = MENU_ITEN_QUERY_ALARM_INFO;
+                     mMenuModeObject.keyDoing = KEY_DOING_DISPLAY;
+                     break;
             }
-
-            menuModeObject_data_reinit();
-        break;
-
-
-        case _VK_ACTIVE://电击
-            if(mMenuModeObject.index >=MENU_ITEM_TIK_GROUP_SUBDUE && mMenuModeObject.index < MENU_ITEN_MAX)
-                mMenuModeObject.keyDoing = KEY_DOING_TICK;
-            else if(mMenuModeObject.index >=MENU_ITEN_ADD_GROUP && mMenuModeObject.index <= MENU_ITEN_SETTING_TIME )
-                mMenuModeObject.keyDoing = KEY_DOING_SWITCH;
-        break;
-
-
-        case _VK_DELETE:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter > 0)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter/10;
-                mMenuModeObject.keyDoing = KEY_DOING_DELETE;
-            }
-        break;
-
-
-        case _VK_NUM1:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+1;
-            }
-        break;
-
-
-        case _VK_NUM2:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+2;
-            }
-        break;
-
-
-        case _VK_NUM3:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+3;
-            }
-        break;
-
-
-        case _VK_NUM4:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+4;
-            }
-        break;
-
-
-        case _VK_NUM5:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+5;
-            }
-        break;
-
-
-        case _VK_NUM6:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+6;
-            }
-            //alarm_data();
-        break;
-
-
-        case _VK_NUM7:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+7;
-            }
-        break;
-
-
-        case _VK_NUM8:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+8;
-            }
-        break;
-
-
-        case _VK_NUM9:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 10000)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10+9;
-            }
-        break;
-
-
-        case _VK_MODE://模式
-            if(mMenuModeObject.index == MENU_ITEN_TERMINAL_TEST)
-            {
-               Lcd_set_font(72, 24, 1);
-               Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
-            }
-
-           mMenuModeObject.index++;
-          if(mMenuModeObject.index >= MENU_ITEM_TIK_GROUP_SUBDUE)
-             mMenuModeObject.index= (MENU_ITEN_NULL+1);
-
-            menuModeObject_data_reinit();
-
-            if(mMenuModeObject.index == MENU_ITEN_QUERY_ALARM_INFO)
-                mMenuModeObject.keyDoing = KEY_DOING_DISPLAY;
-
-            if(mMenuModeObject.index == MENU_ITEN_TERMINAL_TEST)
-            {
-               Lcd_set_font(72, 24, 1);
-               Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
-               Lcd_set_font(36, 24, 1);
-               Disp_icon(START_X_LINE,2,ICON_36X24_VBAT,1);
-               Lcd_set_font(8, 24, 1);
-               Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
-            }
-        break;
-
-
-        case _VK_NUM0:
-            if(mMenuModeObject.index !=MENU_ITEN_NULL && mMenuModeObject.numEnter < 1000 && mMenuModeObject.numEnter !=0)
-            {
-                mMenuModeObject.numEnter=mMenuModeObject.numEnter*10;
-            }
-        break;
-
-
-        case _VK_OK://确认
-            if(mMenuModeObject.index >MENU_ITEN_NULL && mMenuModeObject.index < MENU_ITEM_TIK_GROUP_SUBDUE)
-                mMenuModeObject.keyDoing = KEY_DOING_ACK;
-            break;
-        case _VK_DISPLAY:
-             mMenuModeObject.index = MENU_ITEN_QUERY_ALARM_INFO;
-             mMenuModeObject.keyDoing = KEY_DOING_DISPLAY;
-             break;
     }
     if(mMenuModeObject.index !=MENU_ITEN_NULL)
     {
@@ -497,7 +520,7 @@ void menu_add_group( )
                }
            }
 
-
+           Lcd_set_font(8, 24, 1);
            if(mMenuModeObject.groudId != 0)
            {
                sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
@@ -563,11 +586,11 @@ void menu_add_group( )
           else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.devicesId != 0)
           {
               Lcd_set_font(8, 24, 1);
-              Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
-              Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+              Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+              Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
 
-              mMenuModeObject.numEnter = mMenuModeObject.devicesId;
-              mMenuModeObject.selectIndex = 0;
+              mMenuModeObject.numEnter = mMenuModeObject.groudId;
+              mMenuModeObject.selectIndex = 1;
 
           }
            //mMenuModeObject.numEnter = 0;
@@ -618,7 +641,7 @@ static void menu_delete_group( )
            Lcd_set_font(8, 24, 1);
 
            Disp_msg(START_X_NUM,1,"     ",FONT_8X24);
-           Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
+           //Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
 
 
            Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
@@ -631,17 +654,10 @@ static void menu_delete_group( )
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
 
-               if(mMenuModeObject.numEnter >=10000)
-               {
-
-                   mMenuModeObject.selectIndex =1;
-                   Lcd_set_font(8, 24, 1);
-                   Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
-                   Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
-
-                   mMenuModeObject.numEnter = mMenuModeObject.groudId;
-               }
            }
+
+           mMenuModeObject.devicesId = mMenuModeObject.numEnter;
+
 
 
            if(mMenuModeObject.groudId != 0)
@@ -651,8 +667,18 @@ static void menu_delete_group( )
                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
 
+           if(mMenuModeObject.devicesId >=10000)
+           {
 
-           mMenuModeObject.devicesId = mMenuModeObject.numEnter;
+               mMenuModeObject.selectIndex =1;
+               Lcd_set_font(8, 24, 1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+           }
+
+
 
        }
        else if(mMenuModeObject.selectIndex == 1)
@@ -664,7 +690,7 @@ static void menu_delete_group( )
            Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
            //Disp_icon(START_X_LINE,3,ICON_72X24_DELETE_ARR,1);
 
-
+           Lcd_set_font(8, 24, 1);
            if(mMenuModeObject.keyDoing ==KEY_DOING_DELETE)
            {
                sprintf((char*)numbuff,"%s","     ");
@@ -721,11 +747,11 @@ static void menu_delete_group( )
            else if(mMenuModeObject.selectIndex == 0 && mMenuModeObject.devicesId != 0)
            {
                Lcd_set_font(8, 24, 1);
-               Disp_icon(START_X_XIN,1,ICON_8X24_ARROW,1);
-               Disp_icon(START_X_XIN,2,ICON_8X24_DISPLAY_CLEAR,1);
+               Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
+               Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
 
-               mMenuModeObject.numEnter = mMenuModeObject.devicesId;
-               mMenuModeObject.selectIndex = 0;
+               mMenuModeObject.numEnter = mMenuModeObject.groudId;
+               mMenuModeObject.selectIndex = 1;
 
            }
            //mMenuModeObject.numEnter = 0;
@@ -2395,7 +2421,7 @@ static void menu_query_alarm_info()
     mMenuModeObject.keyDoing = KEY_DOING_NULL;
 }
 
-#if 0
+#if 1
 static void menu_setting_time( )
 {
     uint8_t numbuff[10] = {0};
@@ -2596,6 +2622,28 @@ static void menu_setting_time( )
             }
             else if(mMenuModeObject.selectIndex == 5 && mMenuModeObject.numEnter !=0)
             {
+                Lcd_set_font(36, 24, 1);
+
+                if(calendar.Year >=2000)
+                {
+                    Disp_icon(START_X_TIP,3,ICON_36X24_COMPLETE,1);
+                    Rtc_set_calendar(&calendar);
+                    Disp_proc();
+                    Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+                    Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                    Lcd_set_font(36, 24, 1);
+                    Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+                }
+                else
+                {
+                    Lcd_set_font(36, 24, 1);
+                    Disp_icon(START_X_TIP,3,ICON_36X24_FAIL,1);
+                    Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
+                    Lcd_set_font(36, 24, 1);
+                    Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+
+                }
+
                 calendar.Seconds = mMenuModeObject.numEnter;
                 mMenuModeObject.numEnter = calendar.Year;
                 mMenuModeObject.selectIndex =0;
@@ -2611,6 +2659,7 @@ static void menu_setting_time( )
                 goto TAB_REPEAT_ADD_ARR30;
             }
         }
+#if 0
         else if(mMenuModeObject.keyDoing == KEY_DOING_ACK)
         {
             Lcd_set_font(36, 24, 1);
@@ -2639,6 +2688,7 @@ static void menu_setting_time( )
                 mMenuModeObject.keyDoing = KEY_DOING_NULL;
             }
         }
+#endif
         mMenuModeObject.keyDoing = KEY_DOING_NULL;
     }
 
@@ -2907,4 +2957,123 @@ static void menu_setting_time( )
 }
 #endif
 
+
+
+static void menu_query_alarm_info_tip(KEY_CODE_E keyCode)
+{
+    uint32_t deviceIdHex = 0;
+    uint8_t i = 0;
+    uint8_t buff[10] = {0};
+    if(keyCode == _VK_DISPLAY)
+    {
+        MenuAlarmObjectTemp.alarmType = 0;
+        MenuAlarmObjectTemp.devicesId = 0;
+
+        MenuAlarmObjectTemp.alarmType =   mMenuAlarmObject[0].alarmType;
+        MenuAlarmObjectTemp.devicesId =   mMenuAlarmObject[0].devicesId;
+        Lcd_set_font(72, 24, 1);
+        Disp_icon(START_X_LINE,3,ICON_72X24_ALARM_INFO_NUM,1);
+        if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
+          {
+             deviceIdHex = TransHexToInt(MenuAlarmObjectTemp.devicesId);
+
+             Display_alarm(deviceIdHex,MenuAlarmObjectTemp.alarmType);
+
+             Lcd_set_font(8, 24, 1);
+             sprintf(buff,"%d",get_alarm_count());
+             Disp_msg(START_X_XIN-1,3,buff,FONT_8X24);
+             mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+          }
+          else
+          {
+             Menu_term_is_no_arm();
+          }
+    }
+    else if(keyCode == _VK_OK)
+    {
+
+        if(MenuAlarmObjectTemp.alarmType != 0 && MenuAlarmObjectTemp.devicesId != 0)
+        {
+            MenuAlarmObjectTemp.alarmType = 0;
+            MenuAlarmObjectTemp.devicesId  = 0;
+
+            mMenuAlarmObject[0].alarmType = 0;
+            mMenuAlarmObject[0].devicesId = 0;
+
+            for(i = 0 ; i < ALARM_COUNT_MAX-1;i++)
+            {
+                mMenuAlarmObject[i].alarmType = mMenuAlarmObject[i+1].alarmType;
+                mMenuAlarmObject[i].devicesId = mMenuAlarmObject[i+1].devicesId;
+            }
+
+            MenuAlarmObjectTemp.alarmType =   mMenuAlarmObject[0].alarmType;
+            MenuAlarmObjectTemp.devicesId =   mMenuAlarmObject[0].devicesId;
+        }
+
+
+        if(MenuAlarmObjectTemp.alarmType != 0 &&  MenuAlarmObjectTemp.devicesId != 0)
+        {
+            deviceIdHex = TransHexToInt(MenuAlarmObjectTemp.devicesId);
+            Display_alarm(deviceIdHex,MenuAlarmObjectTemp.alarmType);
+
+            Lcd_set_font(8, 24, 1);
+            sprintf(buff,"%d",get_alarm_count());
+            Disp_msg(START_X_XIN-1,3,buff,FONT_8X24);
+            mMenuModeObject.keyDoing = KEY_DOING_NULL;
+        }
+        else
+        {
+             Menu_term_is_no_arm();
+             Task_sleep(1000*CLOCK_UNIT_MS);
+             mMenuModeObject.JumpByAlarm = 0;
+             mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+             if(mMenuModeObject.index !=MENU_ITEN_NULL)
+             {
+
+                 MenuMode[mMenuModeObject.index-1].func();
+             }
+        }
+
+    }
+    else if(keyCode == _VK_MODE ||keyCode == _VK_COMMAND)
+    {
+        if(mMenuModeObject.index !=MENU_ITEN_NULL)
+        {
+           MenuMode[mMenuModeObject.index-1].func();
+        }
+
+    }
+
+}
+
+void menu_tip_alarm(KEY_CODE_E keyCode)
+{
+    KEY_CODE_E keyCodeIn = keyCode;
+     switch(keyCodeIn)
+     {
+         case _VK_COMMAND://命令
+         case _VK_ACTIVE://电击
+         case _VK_DELETE:
+         case _VK_NUM1:
+         case _VK_NUM2:
+         case _VK_NUM3:
+         case _VK_NUM4:
+         case _VK_NUM5:
+         case _VK_NUM6:
+         case _VK_NUM7:
+         case _VK_NUM8:
+         case _VK_NUM9:
+         case _VK_MODE://模式
+              break;
+         case _VK_NUM0:
+         case _VK_OK://确认
+             break;
+         case _VK_DISPLAY:
+              break;
+     }
+     menu_query_alarm_info_tip(keyCodeIn);
+
+}
 #endif
