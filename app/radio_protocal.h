@@ -63,6 +63,7 @@
 #define     RADIO_PRO_CMD_LOG_SEND                            37   //传输扣子日志
 
 #define     RADIO_PRO_CMD_MOTO_RUN		          		      38   //扣子马达打开100ms
+#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                     39     //全员停止
 
 
 #define     RADIO_PRO_CMD_ALL_RESP          		63             //命令应答

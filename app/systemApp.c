@@ -324,6 +324,10 @@ void SystemAppTaskFxn(void)
 		if(eventId & SYS_EVT_SOUND_PLAY){
 			SoundDriverSet(soundEventType);
 		}		
+
+        if(eventId & SYS_EVT_SOUND_ELE_SHOCK_ALARM){
+            SoundDriverSet(SOUND_TYPE_ELESHOCK_ALARM);
+        }
 #endif
 
 #ifdef SUPPORT_DISP_SCREEN
