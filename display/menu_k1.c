@@ -660,6 +660,7 @@ static void menu_delete_group( )
            //numToBuff(numbuff,mMenuModeObject.numEnter);
 
            //Disp_icon(0,1,ICON_72X24_TERMINAL_NUM,1);
+           Lcd_set_font(72, 24, 1);
            Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
            //Disp_icon(START_X_LINE,3,ICON_72X24_DELETE_ARR,1);
 
@@ -670,7 +671,7 @@ static void menu_delete_group( )
              Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
 
            }
-
+           Lcd_set_font(8, 24, 1);
            Disp_icon(START_X_XIN,1,ICON_8X24_DISPLAY_CLEAR,1);
            Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
 
@@ -2147,7 +2148,7 @@ static void menu_tik_group_subdue()
 {
     //uint8_t numbuff[10] = {0};
 
-//TAB_REPEAT_ADD_ARR13:
+    uint32_t    eventId,timeCnt = 0;
    if((!mMenuModeObject.keyDoing) || (mMenuModeObject.keyDoing ==KEY_DOING_DELETE))
    {
 
@@ -2177,7 +2178,7 @@ static void menu_tik_group_subdue()
                Lcd_set_font(36, 24, 1);
                //send data to devices
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_SUBDUE_START,mMenuModeObject.devicesId, mMenuModeObject.groudId);
-               Disp_icon(START_X_TIP,3,ICON_36X24_SUBDUE,1);
+               Disp_icon(START_X_TIP,3,ICON_36X24_ALL_SHOCK,1);
 
                Task_sleep(1000*CLOCK_UNIT_MS);
                Lcd_set_font(72, 24, 1);
@@ -2212,10 +2213,10 @@ static void menu_tik_group_subdue()
 
                                timeCnt++;
                      }
-
+                       Lcd_set_font(36, 24, 1);
                        Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
                        Lcd_set_font(72, 24, 1);
-                       Disp_icon(START_X_LINE,3,ICON_36X24_ALL_SHOCK,1);
+                       Disp_icon(START_X_LINE,3,ICON_72X24_GROUP_SUBDUE,1);
 
                        mMenuModeObject.selectIndex = 0;
            }
