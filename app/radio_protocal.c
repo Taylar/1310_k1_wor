@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-11 09:32:54
+* @Last Modified time: 2020-08-11 16:34:29
 */
 #include "../general.h"
 
@@ -701,11 +701,11 @@ uint16_t testTermVol;
 uint16_t GetTestTermVol(void)
 {
     uint16_t batValue = 0;
+    if(testTermVol < BAT_VOLTAGE_LOW)
+    	testTermVol = BAT_VOLTAGE_LOW;
     batValue = ((testTermVol-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
     if(batValue > 99)
         batValue = 99;
-    if(batValue < 0)
-        batValue = 0;
 	return batValue;
 }
 //***********************************************************************************
