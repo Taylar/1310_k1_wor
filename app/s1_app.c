@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-10 18:29:06
+* @Last Modified time: 2020-08-11 16:30:02
 */
 #include "../general.h"
 
@@ -124,14 +124,13 @@ void S1AppRtcProcess(void)
         }
 
 
-        if(ElecPreventInsertState()){
+        if(ElecPreventInsertState() && (g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT)){
             if(insertCnt%(15*60) == 0){
                 SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
             }
 
             if(insertCnt%(60) == 0){
-                if(insetTest == 0)
-                    RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
+                RadioCmdSetWithNoResponBrocast(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
                 // RadioCmdSetWithNoRes(RADIO_CMD_INSERT_TYPE, RADIO_CONTROLER_ADDRESS);
             }
             insertCnt++;
