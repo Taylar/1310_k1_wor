@@ -24,6 +24,7 @@
 #define  	SOUND_TYPE_INSERT_DETECT_DISABLE	0X14
 #define  	SOUND_TYPE_DI						0X15
 #define  	SOUND_TYPE_DI_DI					0X16
+// #define  	SOUND_TYPE_DI_DI					0X17
 #define  	SOUND_TYPE_ELESHOCK_ALARM			0X17
 
 

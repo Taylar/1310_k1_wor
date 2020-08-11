@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-10 15:27:48
+* @Last Modified time: 2020-08-11 09:32:54
 */
 #include "../general.h"
 
@@ -376,8 +376,13 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 
 
 		case RADIO_PRO_CMD_ALL_SUBDUE_START:
-			EletricPulseSetTime_S(ELECTRIC_SHOCK_TIME);
 			SoundEventSet(SOUND_TYPE_SHOCK_START);
+			EletricPulseSetTime_S(ELECTRIC_SHOCK_TIME);
+		break;
+
+		case RADIO_PRO_CMD_ALL_SUBDUE_STOP:
+			SoundEventSet(SOUND_TYPE_SHOCK_STOP);
+			EletricPulseSetTime_S(0);
 		break;
 
 		case RADIO_PRO_CMD_TERM_CLOSE_BLOCKING:

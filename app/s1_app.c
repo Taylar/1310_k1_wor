@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-10 15:25:03
+* @Last Modified time: 2020-08-10 18:29:06
 */
 #include "../general.h"
 
@@ -201,6 +201,7 @@ void S1AppRtcProcess(void)
     // ElectricShockLevelSet(0);
     // ElectricShockLevelSet(1);
     // ElectricShockLevelSet(2);
+    // EletricPulseSetTime_S(1);
 }
 
 
