@@ -55,7 +55,8 @@ typedef enum {
     KEY_DOING_DELETE=0x02,
     KEY_DOING_TICK=0x03,
     KEY_DOING_SWITCH=0x04,
-    KEY_DOING_DISPLAY,
+    KEY_DOING_DISPLAY=0x05,
+    KEY_DOING_MODE=0x06,
     KEY_DOING_MAX
 } KEY_DOING;
 
@@ -296,6 +297,7 @@ static void menuModeObject_data_reinit(void)
 
     }
     //Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+    mMenuModeObject.firstIn = 1;
 }
 
 void have_alarm_extern(void)
@@ -471,12 +473,14 @@ void menuc_main(KEY_CODE_E keyCode)
                      mMenuModeObject.keyDoing = KEY_DOING_DISPLAY;
                      break;
             }
-    }
-    if(mMenuModeObject.index !=MENU_ITEN_NULL)
-    {
 
-           MenuMode[mMenuModeObject.index-1].func();
+            if(mMenuModeObject.index !=MENU_ITEN_NULL)
+            {
+
+                   MenuMode[mMenuModeObject.index-1].func();
+            }
     }
+
 }
 
 void menu_add_group( )
@@ -509,7 +513,7 @@ void menu_add_group( )
                sprintf((char*)numbuff,"%d",mMenuModeObject.numEnter);
                Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
 
-               if(mMenuModeObject.devicesId >= 10000)
+               if((mMenuModeObject.devicesId >= 10000) && (mMenuModeObject.firstIn == 0))
                {
                    mMenuModeObject.selectIndex =1;
 
@@ -518,6 +522,7 @@ void menu_add_group( )
                    Disp_icon(START_X_XIN,2,ICON_8X24_ARROW,1);
                    mMenuModeObject.numEnter = mMenuModeObject.groudId;
                }
+               mMenuModeObject.firstIn = 0;
            }
 
            Lcd_set_font(8, 24, 1);
@@ -667,7 +672,7 @@ static void menu_delete_group( )
                Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
            }
 
-           if(mMenuModeObject.devicesId >=10000)
+           if((mMenuModeObject.devicesId >= 10000) && (mMenuModeObject.firstIn == 0))
            {
 
                mMenuModeObject.selectIndex =1;
@@ -677,7 +682,7 @@ static void menu_delete_group( )
 
                mMenuModeObject.numEnter = mMenuModeObject.groudId;
            }
-
+           mMenuModeObject.firstIn = 0;
 
 
        }
@@ -2957,7 +2962,50 @@ static void menu_setting_time( )
 }
 #endif
 
+static void recover_index_ui()
+{
+    char numbuff[10] = {0};
 
+    if(mMenuModeObject.index == MENU_ITEN_TERMINAL_TEST)
+    {
+       Lcd_set_font(72, 24, 1);
+       Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+       Disp_icon(START_X_LINE,2,ICON_72X24_CLEAR,1);
+       Lcd_set_font(36, 24, 1);
+       Disp_icon(START_X_LINE,2,ICON_36X24_VBAT,1);
+       Lcd_set_font(8, 24, 1);
+       Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
+    }
+    else if(mMenuModeObject.index >=  MENU_ITEN_ADD_GROUP && mMenuModeObject.index <= MENU_ITEN_DELETE_GROUP)
+    {
+        Lcd_set_font(72, 24, 1);
+        Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+        Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
+
+        Lcd_set_font(8, 24, 1);
+        sprintf((char*)numbuff,"%d",mMenuModeObject.devicesId);
+        Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+
+        sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
+        Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+    }
+    else if(mMenuModeObject.index ==  MENU_ITEN_SETTING_TIME)
+    {
+
+    }
+    else if(mMenuModeObject.index >  MENU_ITEN_DELETE_GROUP && mMenuModeObject.index <= MENU_ITEN_LOCK_CHECK)
+    {
+        Lcd_set_font(72, 24, 1);
+        Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+        Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
+    }
+    else if(mMenuModeObject.index >=  MENU_ITEM_TIK_GROUP_SUBDUE && mMenuModeObject.index <= MENU_ITEM_TIK_ARR_SUBDUE)
+    {
+        Lcd_set_font(72, 24, 1);
+        Disp_icon(START_X_LINE,1,ICON_72X24_TERMINAL_NUM,1);
+        Disp_icon(START_X_LINE,2,ICON_72X24_GROUP_NUM,1);
+    }
+}
 
 static void menu_query_alarm_info_tip(KEY_CODE_E keyCode)
 {
@@ -3028,7 +3076,10 @@ static void menu_query_alarm_info_tip(KEY_CODE_E keyCode)
              Task_sleep(1000*CLOCK_UNIT_MS);
              mMenuModeObject.JumpByAlarm = 0;
              mMenuModeObject.keyDoing = KEY_DOING_NULL;
-
+             Lcd_set_font(8, 24, 1);
+             sprintf(buff,"%s","   ");
+             Disp_msg(START_X_XIN-1,3,buff,FONT_8X24);
+             recover_index_ui();
              if(mMenuModeObject.index !=MENU_ITEN_NULL)
              {
 
@@ -3039,6 +3090,11 @@ static void menu_query_alarm_info_tip(KEY_CODE_E keyCode)
     }
     else if(keyCode == _VK_MODE ||keyCode == _VK_COMMAND)
     {
+        mMenuModeObject.JumpByAlarm = 0;
+        Lcd_set_font(8, 24, 1);
+        sprintf(buff,(char*)"%s","   ");
+        Disp_msg(START_X_XIN-1,3,buff,FONT_8X24);
+        recover_index_ui();
         if(mMenuModeObject.index !=MENU_ITEN_NULL)
         {
            MenuMode[mMenuModeObject.index-1].func();
@@ -3051,28 +3107,6 @@ static void menu_query_alarm_info_tip(KEY_CODE_E keyCode)
 void menu_tip_alarm(KEY_CODE_E keyCode)
 {
     KEY_CODE_E keyCodeIn = keyCode;
-     switch(keyCodeIn)
-     {
-         case _VK_COMMAND://命令
-         case _VK_ACTIVE://电击
-         case _VK_DELETE:
-         case _VK_NUM1:
-         case _VK_NUM2:
-         case _VK_NUM3:
-         case _VK_NUM4:
-         case _VK_NUM5:
-         case _VK_NUM6:
-         case _VK_NUM7:
-         case _VK_NUM8:
-         case _VK_NUM9:
-         case _VK_MODE://模式
-              break;
-         case _VK_NUM0:
-         case _VK_OK://确认
-             break;
-         case _VK_DISPLAY:
-              break;
-     }
      menu_query_alarm_info_tip(keyCodeIn);
 
 }

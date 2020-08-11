@@ -26,6 +26,7 @@ typedef struct _MenuModeObject {
    uint8_t  alarmOrSetting;
    uint8_t  JumpByAlarm;
    uint8_t  preIndex;
+   uint8_t firstIn;
 } MenuModeObject;
 
 typedef struct _MenuAlarmObject {

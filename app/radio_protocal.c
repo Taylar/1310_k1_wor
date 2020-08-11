@@ -519,6 +519,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 		break;
 
 		case RADIO_PRO_CMD_ALL_RESP:
+	    Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
 		Semaphore_post(recAckSemHandle);
 		sendRetryTimes = 0;
 		RadioCmdClearWithRespon();
