@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-11 16:30:02
+* @Last Modified time: 2020-08-11 16:56:30
 */
 #include "../general.h"
 
@@ -102,29 +102,20 @@ void S1AppRtcProcess(void)
 
     if((g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT) || insetTest){
         
+        // 提前5秒开启防塞检测的电源
         if((insertMeasureCnt % (15*60)) == 0){
             eleShock_set(ELE_PREVENT_INSERT_ENABLE, 1);
             eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 1);
         }
+
+        // 5秒后或发现出现东西塞入进行防塞检测
         if(((insertMeasureCnt % (15*60)) == 5) || ElecPreventInsertState()){
             ElecPreventInsertMeasure();
         }
 
-        if(insetTest && (insertMeasureCnt % (15*60) == 5)){
-            if(ElecPreventInsertState()){
-                SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
-            }else{
-                SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
-            }
-            insetTest = 0;
-            if(!(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT)){
-                eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
-                eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
-            }
-        }
 
-
-        if(ElecPreventInsertState() && (g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT)){
+        // 在测试模式下不发报警
+        if(ElecPreventInsertState() && (!insetTest)){
             if(insertCnt%(15*60) == 0){
                 SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
             }
@@ -141,6 +132,20 @@ void S1AppRtcProcess(void)
             insertCnt = 0;
         }
 
+        // 在测试模式下只进行语音播报
+        if(insetTest && (insertMeasureCnt % (15*60) == 5)){
+            if(ElecPreventInsertState()){
+                SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
+            }else{
+                SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
+            }
+            insetTest = 0;
+            if(!(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT)){
+                eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
+                eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+            }
+        }
+
         insertMeasureCnt++;
     }
     
@@ -154,10 +159,15 @@ void S1AppRtcProcess(void)
             EletricPulseSetTime_S(2);
             SoundEventSet(SOUND_TYPE_ESCAPE_ALARM2);
         }
-        if((escapeTimeCnt > 30) && ( ( (escapeTimeCnt-30) % 5) == 0) ){
-            RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
-            SoundEventSet(SOUND_TYPE_SHOCK_START);
-            EletricPulseSetTime_S(3);
+        if((escapeTimeCnt >= 30)){
+            if(((escapeTimeCnt-30) % 5) == 0){
+                SoundEventSet(SOUND_TYPE_SHOCK_START);
+                EletricPulseSetTime_S(3);
+                
+            }
+            if(((escapeTimeCnt-30) % 10) == 0){
+                RadioCmdSetWithNoResponBrocast(RADIO_PRO_CMD_PREVENT_ESCAPE_ALARM, RADIO_CONTROLER_ADDRESS);
+            }
         }
     }
 
