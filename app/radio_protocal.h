@@ -43,7 +43,7 @@
 #define     RADIO_PRO_CMD_GROUP_SUBDUE_STOP         24            //群组停止
 
 #define     RADIO_PRO_CMD_ALL_SUBDUE_START          25             //全员制服
-//#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                        //定员停止
+//#define     RADIO_PRO_CMD_ALL_SUBDUE_STOP                        //全员制服
 #define     RADIO_PRO_CMD_TERM_CLOSE_BLOCKING       26             //关闭防塞
 #define     RADIO_PRO_CMD_TERM_OPEN_BLOCKING        27             //打开防塞
 

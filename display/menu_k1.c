@@ -2177,10 +2177,47 @@ static void menu_tik_group_subdue()
                Lcd_set_font(36, 24, 1);
                //send data to devices
                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_SUBDUE_START,mMenuModeObject.devicesId, mMenuModeObject.groudId);
-               Disp_icon(START_X_TIP,3,ICON_36X24_ALL_SHOCK,1);
+               Disp_icon(START_X_TIP,3,ICON_36X24_SUBDUE,1);
+
                Task_sleep(1000*CLOCK_UNIT_MS);
+               Lcd_set_font(72, 24, 1);
+               Disp_icon(START_X_LINE,3,ICON_72X24_ALL_TICK_STOP,1);
+               Lcd_set_font(36, 24, 1);
                Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
-               mMenuModeObject.selectIndex = 0;
+
+               Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
+               KeyScanFxn();
+               while(timeCnt < 70)
+                    {
+                      eventId = Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, 100*CLOCK_UNIT_MS);
+                      if(eventId & SYS_EVT_KEY_SCAN){
+                         KeyScanFxn();
+                                      // clear SYS_EVT_KEY_SCAN event
+                         Event_pend(systemAppEvtHandle, 0, SYS_EVT_KEY_SCAN, BIOS_NO_WAIT);
+                         if(Key_get() == _VK_ACTIVE)
+                           {
+                                Event_pend(systemAppEvtHandle, 0, SYSTEMAPP_EVT_KEY, BIOS_NO_WAIT);
+                                RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_SUBDUE_STOP,mMenuModeObject.devicesId, mMenuModeObject.groudId);
+                                Lcd_set_font(36, 24, 1);
+                                Disp_icon(START_X_TIP,3,ICON_36X24_STOP,1);
+                                Task_sleep(1000*CLOCK_UNIT_MS);
+                                break;
+                            }
+                            else if((Key_get() == _VK_SELECT) || (Key_get() == _VK_COMMAND))
+                            {
+                               break;
+                            }
+
+                          }
+
+                               timeCnt++;
+                     }
+
+                       Disp_icon(START_X_TIP,3,ICON_36X24_CLEAR,1);
+                       Lcd_set_font(72, 24, 1);
+                       Disp_icon(START_X_LINE,3,ICON_36X24_ALL_SHOCK,1);
+
+                       mMenuModeObject.selectIndex = 0;
            }
 
        }
