@@ -60,6 +60,7 @@
 #define  	SOUND_TYPE_VOLUME_MAX			0XC1
 
 void SoundDriverInit(void);
+bool IsSoundDriverIdle(void);
 void SoundEventSet(uint8_t event);
 void SoundDriverSet(uint8_t soundType);
 extern uint8_t soundEventType;
