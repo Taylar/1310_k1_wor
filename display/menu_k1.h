@@ -27,6 +27,7 @@ typedef struct _MenuModeObject {
    uint8_t  JumpByAlarm;
    uint8_t  preIndex;
    uint8_t firstIn;
+   uint8_t cnt;
 } MenuModeObject;
 
 typedef struct _MenuAlarmObject {
@@ -53,5 +54,7 @@ void Menu_term_is_no_arm(void);
 extern void menuc_alarm_main(KEY_CODE_E keyCode);
 uint8_t get_menu_alarmOrSetting(void);
 void have_alarm_extern(void);
+uint8_t get_Key_cnt(void);
+void set_key_cnt_zero(void);
 #endif
 #endif /* ZKS_DISPLAY_MENU_K1_H_ */
