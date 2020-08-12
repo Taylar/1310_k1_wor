@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2018-03-09 11:13:28
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-11 16:56:30
+* @Last Modified time: 2020-08-12 17:43:00
 */
 #include "../general.h"
 
@@ -69,11 +69,12 @@ void S1HwInit(void)
     SoundEventSet(SOUND_TYPE_VOLUME_MAX);
 }
 
+#define    PREVENTVIE_INSERT_TIMES      5
 
 uint32_t batmeasureCnt = 60;
 uint32_t lowBatCnt = 0;
 uint32_t  insertCnt = 0;
-uint32_t  insertMeasureCnt = 4;
+uint32_t  insertMeasureCnt = PREVENTVIE_INSERT_TIMES+1;
 uint32_t  destroyCnt = 0;
 uint8_t   insetTest = 0;
 
@@ -84,6 +85,13 @@ void PreventiveInsertTest(void)
 {
     insetTest = 1;
     insertMeasureCnt = 15*60;
+}
+
+
+void PreventiveInsertCntClear(void)
+{
+    insertMeasureCnt = 15*60;
+    insertCnt = 0;
 }
 
 
@@ -109,7 +117,7 @@ void S1AppRtcProcess(void)
         }
 
         // 5秒后或发现出现东西塞入进行防塞检测
-        if(((insertMeasureCnt % (15*60)) == 5) || ElecPreventInsertState()){
+        if(((insertMeasureCnt % (15*60)) == PREVENTVIE_INSERT_TIMES) || ElecPreventInsertState()){
             ElecPreventInsertMeasure();
         }
 
@@ -133,7 +141,7 @@ void S1AppRtcProcess(void)
         }
 
         // 在测试模式下只进行语音播报
-        if(insetTest && (insertMeasureCnt % (15*60) == 5)){
+        if(insetTest && (insertMeasureCnt % (15*60) == PREVENTVIE_INSERT_TIMES)){
             if(ElecPreventInsertState()){
                 SoundEventSet(SOUND_TYPE_WEAR_ABNORMAL);
             }else{
@@ -143,6 +151,7 @@ void S1AppRtcProcess(void)
             if(!(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_INSERT)){
                 eleShock_set(ELE_PREVENT_INSERT_ENABLE, 0);
                 eleShock_set(ELE_PREVENT_INSERT2_ENABLE, 0);
+                ClearElecPreventInsertState();
             }
         }
 
