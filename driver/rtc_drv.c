@@ -78,7 +78,7 @@ uint8_t MonthMaxDay(uint16_t year_1, uint8_t month_1)
         return 0xff;
 }
 
-
+static uint8_t key_cnt  = 0;
 void RtcSecondsIsrCb(UArg arg0)
 {
     rtc.Seconds++;
@@ -107,6 +107,17 @@ void RtcSecondsIsrCb(UArg arg0)
             }
         }
     }
+
+    if(get_Key_cnt()!=0)
+    {
+
+        if(key_cnt > 1)
+            set_key_cnt_zero();
+        key_cnt++;
+    }
+    else
+        key_cnt = 0;
+
     RtcSecIsbCB();
 }
 

@@ -2202,9 +2202,13 @@ static void menu_tik_group_subdue()
        {
            if(mMenuModeObject.selectIndex == 0)
            {
-               mMenuModeObject.selectIndex = 1;
+
+               mMenuModeObject.cnt++;
+               if(mMenuModeObject.cnt == 2)
+                   mMenuModeObject.selectIndex = 1;
            }
-           else if(mMenuModeObject.selectIndex == 1)
+
+           if(mMenuModeObject.selectIndex == 1)
            {
                Lcd_set_font(36, 24, 1);
                //send data to devices
@@ -3113,6 +3117,16 @@ void menu_tip_alarm(KEY_CODE_E keyCode)
 {
     KEY_CODE_E keyCodeIn = keyCode;
      menu_query_alarm_info_tip(keyCodeIn);
+
+}
+uint8_t get_Key_cnt(void)
+{
+
+    return mMenuModeObject.cnt;
+}
+void set_key_cnt_zero(void)
+{
+    mMenuModeObject.cnt = 0;
 
 }
 #endif
