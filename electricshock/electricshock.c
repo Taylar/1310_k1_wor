@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-10 18:32:17
+* @Last Modified time: 2020-08-12 13:38:29
 */
 #include "../general.h"
 
@@ -174,7 +174,7 @@ void EletricPulseSetTime_S(uint16_t keepTime_S)
     }
 }
 
-#define     INSERT_DECTECT_VALUE        1430
+#define     INSERT_DECTECT_VALUE        1410
 ADC_Handle   preventInsertHandle;
 uint8_t     insertOccur = 0;
 
