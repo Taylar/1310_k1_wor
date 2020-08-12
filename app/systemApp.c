@@ -322,6 +322,14 @@ void SystemAppTaskFxn(void)
 
 #ifndef ZKS_S6_6_WOR_G
 		if(eventId & SYS_EVT_SOUND_PLAY){
+            uint16_t waitIdle;
+            waitIdle = 50;
+            // 等待语音芯片空闲
+            while(waitIdle--){
+                if(IsSoundDriverIdle())
+                    break;
+                Task_sleep(100*CLOCK_UNIT_MS);
+            }
 			SoundDriverSet(soundEventType);
 		}		
 

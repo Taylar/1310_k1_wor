@@ -33,6 +33,14 @@ void SoundDriverInit(void)
 }
 
 
+bool IsSoundDriverIdle(void)
+{
+	if(PIN_getInputValue(SOUND_BUSY_PIN) == SOUND_STATE_IDLE)
+		return true;
+	else
+		return false;
+}
+
 
 void SoundDriverSet(uint8_t soundType)
 {

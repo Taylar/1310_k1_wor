@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-12 14:20:53
+* @Last Modified time: 2020-08-12 14:45:33
 */
 #include "../general.h"
 
@@ -35,7 +35,7 @@ uint16_t sendRetryTimes;
 #define         RETRY_TIMES     3
 
 
-void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
+void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId, uint32_t controlerId)
 {
     uint8_t buff[64] = {0},index = 0;
     uint8_t temp[4];
@@ -153,12 +153,16 @@ void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
    	                                               currentTime.Hours,
    	                                               currentTime.Minutes,
    	                                               currentTime.Seconds);
+   	
+   	buff[index++] =  'C';
+   	buff[index++] =  ':';
+   	index += sprintf((char*)(buff+index),"%05x", controlerId);
    	buff[index++] =  'T';
    	buff[index++] =  ':';
-   	index += sprintf((char*)(buff+index),"%5d", deviceId);
+   	index += sprintf((char*)(buff+index),"%05x", deviceId);
    	buff[index++] =  'G';
    	buff[index++] =  ':';
-   	index += sprintf((char*)(buff+index),"%5d", groupId);
+   	index += sprintf((char*)(buff+index),"%05x", groupId);
    	buff[index++]  =  '\n';
    	buff[index++]  =  0;
    	Flash_store_sensor_data(buff, index);
@@ -530,7 +534,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 	}
 
 #ifdef S_C
-	log_opration_record(cmdTypeTemp,srcDev,ground);
+	log_opration_record(cmdTypeTemp,dstDev,ground, srcDev);
 #endif 
 }
 
@@ -903,7 +907,7 @@ bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	RadioSendBrocast();
 
 #ifdef ZKS_S6_6_WOR_G
-    log_opration_record(cmd,dstAddr,ground);
+    log_opration_record(cmd,dstAddr,ground, GetRadioSrcAddr());
 #endif
 	return true;
 }
@@ -953,7 +957,7 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 	Semaphore_pend(recAckSemHandle, BIOS_NO_WAIT);
 	WdtClear();
 #ifdef ZKS_S6_6_WOR_G
-    log_opration_record(cmd,dstAddr,ground);
+    log_opration_record(cmd,dstAddr,ground, GetRadioSrcAddr());
 #endif
 	return Semaphore_pend(recAckSemHandle, 2000 * CLOCK_UNIT_MS);
 	// return true;
