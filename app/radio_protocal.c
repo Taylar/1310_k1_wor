@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-12 09:19:46
+* @Last Modified time: 2020-08-12 14:20:53
 */
 #include "../general.h"
 
@@ -38,6 +38,7 @@ uint16_t sendRetryTimes;
 void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
 {
     uint8_t buff[64] = {0},index = 0;
+    uint8_t temp[4];
    switch(cmd)
    {
       case RADIO_PRO_CMD_TERM_ADD_TO_GROUP:
@@ -130,10 +131,11 @@ void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId)
 #ifdef S_G
    	buff[index++] =  'T';
    	buff[index++] =  ':';
-   	index += sprintf((char*)(buff+index),"%5d", deviceId);
+   	temp[0] = 
+   	index += sprintf((char*)(buff+index),"%05x", deviceId);
    	buff[index++] =  'G';
    	buff[index++] =  ':';
-   	index += sprintf((char*)(buff+index),"%5d", groupId);
+   	index += sprintf((char*)(buff+index),"%05x", groupId);
    	buff[index++]  =  '\n';
    	Flash_log(buff);
 #else
@@ -748,8 +750,10 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	{
 		case RADIO_PRO_CMD_GROUND:
 		case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
+		RadioCmdProcess(cmdTypeTemp, srcAddr, gourndTemp, srcAddr);
 		Task_sleep((remaindTimes)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
-		
+		break;
+
 		case RADIO_PRO_CMD_SINGLE:
 		case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
 			RadioCmdProcess(cmdTypeTemp, srcAddr, gourndTemp, srcAddr);
@@ -935,7 +939,8 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
-	GroudAddrSet(ground);
+	if(ground)
+		GroudAddrSet(ground);
 	cmdTypeWithRespon = cmd;
 	cmdEventWithRespon |= ((uint64_t)(0x1) << cmd);
 	if(dstAddr){
