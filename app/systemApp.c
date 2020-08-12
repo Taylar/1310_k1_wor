@@ -301,6 +301,7 @@ void SystemAppTaskFxn(void)
             {
                 Lcd_poweroff();
                 lcd_power_state = 0;
+                g_bAlarmSensorFlag = 0;
             }
             else
             {
@@ -310,6 +311,7 @@ void SystemAppTaskFxn(void)
                 Disp_poweron();
                 Sys_event_post(SYSTEMAPP_EVT_DISP);
                 g_firstStartFlag = 0;
+
             }
 
         }
@@ -339,10 +341,19 @@ void SystemAppTaskFxn(void)
 #endif
 
 #ifdef SUPPORT_DISP_SCREEN
-		if(eventId & SYS_EVT_ALARM && lcd_power_state == 1)
+		if(eventId & SYS_EVT_ALARM )
 		{
 		    //set_meun_alarmOrSetting(1);
 		     //menuc_main(_VK_DISPLAY);
+		     if(lcd_power_state == 0)
+		     {
+		          lcd_power_state = 1;
+	                KeyIcInit();
+	                Disp_init();
+	                Disp_poweron();
+	                Sys_event_post(SYSTEMAPP_EVT_DISP);
+	                g_firstStartFlag = 0;
+		     }
 		     have_alarm_extern();
 		     Clock_setPeriod(sysAlarmClkHandle, 500*CLOCK_UNIT_MS);//500MS
 		     Clock_start(sysAlarmClkHandle);
