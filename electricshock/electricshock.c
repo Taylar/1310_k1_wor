@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2020-01-10 17:39:17
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-12 13:38:29
+* @Last Modified time: 2020-08-12 17:17:25
 */
 #include "../general.h"
 
@@ -215,6 +215,11 @@ void ElecPreventInsertMeasure(void)
 uint8_t ElecPreventInsertState(void)
 {
     return insertOccur;
+}
+
+void ClearElecPreventInsertState(void)
+{
+    insertOccur = 0;
 }
 
 

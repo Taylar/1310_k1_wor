@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-12 14:45:33
+* @Last Modified time: 2020-08-12 17:44:06
 */
 #include "../general.h"
 
@@ -407,6 +407,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_INSERT;
 				SoundEventSet(SOUND_TYPE_INSERT_DETECT_ENABLE);
 				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
+				PreventiveInsertCntClear();
 			}
 		break;
 
