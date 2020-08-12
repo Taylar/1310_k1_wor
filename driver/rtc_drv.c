@@ -107,7 +107,7 @@ void RtcSecondsIsrCb(UArg arg0)
             }
         }
     }
-
+#ifdef S_G
     if(get_Key_cnt()!=0)
     {
 
@@ -117,6 +117,7 @@ void RtcSecondsIsrCb(UArg arg0)
     }
     else
         key_cnt = 0;
+#endif //S_G
 
     RtcSecIsbCB();
 }
