@@ -2,7 +2,7 @@
 * @Author: justfortest
 * @Date:   2017-12-26 16:36:20
 * @Last Modified by:   zxt
-* @Last Modified time: 2020-08-11 16:34:29
+* @Last Modified time: 2020-08-12 09:19:46
 */
 #include "../general.h"
 
@@ -718,7 +718,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 {
 	radio_protocal_t	*bufTemp;
     uint16_t cmdTypeTemp;
-    //uint16_t remaindTimes;
+    uint16_t remaindTimes;
     uint32_t gourndTemp;
     uint32_t srcAddr;
     //uint32_t dstAdd;
@@ -733,7 +733,7 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	srcAddr = bufTemp->srcAddr;
 	cmdTypeTemp = bufTemp->cmdType;
     gourndTemp = bufTemp->ground;
-    //remaindTimes = bufTemp->brocastRemainder;
+    remaindTimes = bufTemp->brocastRemainder;
 
 	SetRadioDstAddr(srcAddr);
 	
@@ -746,10 +746,12 @@ void ConcenterProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	}
 	switch(bufTemp->command)
 	{
-		case RADIO_PRO_CMD_SINGLE:
-		case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
 		case RADIO_PRO_CMD_GROUND:
 		case RADIO_PRO_CMD_GROUND_WITH_NO_RESP:
+		Task_sleep((remaindTimes)*BROCAST_TIME_MS*CLOCK_UNIT_MS);
+		
+		case RADIO_PRO_CMD_SINGLE:
+		case RADIO_PRO_CMD_SINGLE_WITH_NO_RESP:
 			RadioCmdProcess(cmdTypeTemp, srcAddr, gourndTemp, srcAddr);
 		break;
 
