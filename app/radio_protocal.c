@@ -948,7 +948,7 @@ bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 #ifdef ZKS_S6_6_WOR_G
     log_opration_record(cmd,dstAddr,ground);
 #endif
-	return Semaphore_pend(recAckSemHandle, 1300 * CLOCK_UNIT_MS);
+	return Semaphore_pend(recAckSemHandle, 2000 * CLOCK_UNIT_MS);
 	// return true;
 #else
 	RadioSend();

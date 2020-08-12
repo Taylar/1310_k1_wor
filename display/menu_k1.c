@@ -2987,11 +2987,16 @@ static void recover_index_ui()
         Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
 
         sprintf((char*)numbuff,"%d",mMenuModeObject.groudId);
-        Disp_msg(START_X_NUM,1,numbuff,FONT_8X24);
+        Disp_msg(START_X_NUM,2,numbuff,FONT_8X24);
+        mMenuModeObject.selectIndex = 0;
+        mMenuModeObject.numEnter = mMenuModeObject.devicesId;
+
     }
     else if(mMenuModeObject.index ==  MENU_ITEN_SETTING_TIME)
     {
-
+        mMenuModeObject.selectIndex = 0;
+        mMenuModeObject.timerefesh = 0;
+        mMenuModeObject.numEnter = calendar.Year;
     }
     else if(mMenuModeObject.index >  MENU_ITEN_DELETE_GROUP && mMenuModeObject.index <= MENU_ITEN_LOCK_CHECK)
     {
