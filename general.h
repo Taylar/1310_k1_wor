@@ -756,6 +756,9 @@ typedef struct {
 
     //total size 276+9*2 = 294
     int8_t deepTempAdjust; // 0.1C
+    //Network upload period
+	uint32_t controlerId;
+
 
 } ConfigInfo_t;
 #pragma pack ()
