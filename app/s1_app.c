@@ -134,7 +134,8 @@ void S1AppRtcProcess(void)
             }
             insertCnt++;
         }else{
-            if(insertCnt){
+            // 防塞恢复或者每15分钟常规检测均响闹一次
+            if(insertCnt || ((insertMeasureCnt % (15*60)) == PREVENTVIE_INSERT_TIMES)){
                 SoundEventSet(SOUND_TYPE_WEAR_NORMAL);
             }
             insertCnt = 0;
