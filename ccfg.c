@@ -47,7 +47,7 @@
  *        remain unmodified.
  */
 #include "general.h"
-#ifdef S_G
+#if 0//def S_G
 #define SET_CCFG_MODE_CONF_DCDC_RECHARGE 0x1 // Do not use the DC/DC during recharge in powerdown
 
 #define SET_CCFG_MODE_CONF_DCDC_ACTIVE 0x1 // Do not use the DC/DC during active mode

@@ -67,8 +67,8 @@
 
 // #define ZKS_S6_6_G
 // #define ZKS_S6_6_CONFIG
-//#define ZKS_S3_WOR
- #define ZKS_S6_6_WOR_G
+#define ZKS_S3_WOR
+// #define ZKS_S6_6_WOR_G
 
 
 
@@ -98,7 +98,7 @@
 //
 //***********************************************************************************
 
-#define FW_VERSION              0x0012
+#define FW_VERSION              0x0014
 //***********************************************************************************
 //
 // protocal version define.
@@ -756,6 +756,9 @@ typedef struct {
 
     //total size 276+9*2 = 294
     int8_t deepTempAdjust; // 0.1C
+    //Network upload period
+	uint32_t controlerId;
+
 
 } ConfigInfo_t;
 #pragma pack ()
