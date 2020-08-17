@@ -136,6 +136,9 @@ void log_opration_record(uint8_t cmd,uint32_t deviceId,uint32_t groupId, uint32_
    	buff[index++] =  'G';
    	buff[index++] =  ':';
    	index += sprintf((char*)(buff+index),"%05x", groupId);
+    buff[index++] =  'C';
+    buff[index++] =  ':';
+    index += sprintf((char*)(buff+index),"%05x", g_rSysConfigInfo.DeviceId);
    	buff[index++]  =  '\n';
    	Flash_log(buff);
 #else
