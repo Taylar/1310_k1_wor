@@ -61,7 +61,7 @@ void Sys_buzzer_init(void)
 //***********************************************************************************
 void Sys_buzzer_enable(void)
 {
-    //PWM_start(buzzerHandle);
+    PWM_start(buzzerHandle);
 }
 
 
@@ -72,7 +72,7 @@ void Sys_buzzer_enable(void)
 //***********************************************************************************
 void Sys_buzzer_disable(void)
 {
-    //PWM_stop(buzzerHandle);
+    PWM_stop(buzzerHandle);
 }
 
 
