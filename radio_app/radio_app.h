@@ -48,8 +48,8 @@
 
 #define SET_RADIO_POWER                 (g_rSysConfigInfo.rfPA >> 4)
 
-#define SNIFF_TIME_MS                    40
-#define BROCAST_TIME_MS                  30
+#define SNIFF_TIME_MS                    60
+#define BROCAST_TIME_MS                  45
 #define MAX_BROCAST_TIMES               (1000/BROCAST_TIME_MS)
 
 
