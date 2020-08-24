@@ -419,6 +419,7 @@ void Lcd_write_character(uint8_t xStart, uint8_t yStart, const uint8_t *pChar)
     //ALLDDR();
     //Lcd_clear_screen();
     inXstart =  (128-((xStart+1)*W_th))/2;
+     //inXstart =  (128-((xStart+1)))/2;
     inYstart = yStart;
     //inXstart = 0;
     buffcharChange(pChar,W_th,H_th,xStart,yStart);

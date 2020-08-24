@@ -61,6 +61,9 @@ const uint8_t menu36x24[]= {
 const uint8_t menu8x24[]= {
     #include "font\menu8x24.txt"
 };
+const uint8_t menu32x24[]= {
+    #include "font\menu32x24.txt"
+};
 //Calendar icon gap
 #define CAICON_GAP              1
 //Calendar icon digit wide and high
@@ -284,6 +287,13 @@ void Disp_icon(uint8_t col, uint8_t row, uint8_t icon, uint8_t light)
             } else {
                 Lcd_clear_area(col, row);
             }
+             break;
+        case ICON_32X24_COMPLETE...ICON_32X24_CLEAR:
+                if (light) {
+                    Lcd_write_character(col, row, &menu32x24[(icon - ICON_32X24_COMPLETE) * FONT_32X24_OFS]);
+                } else {
+                    Lcd_clear_area(col, row);
+                }
              break;
         case ICON_8X24_ARROW...ICON_8X24_DISPLAY_CLEAR:
             if (light) {

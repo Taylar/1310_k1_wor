@@ -27,6 +27,7 @@
 #define FONT_7X24_OFS               21
 #define FONT_72X24_OFS              216
 #define FONT_36X24_OFS              120
+#define FONT_32X24_OFS              96
 #define FONT_8X24_OFS               24
 
 #ifdef SUPPORT_SFKJ_UI
@@ -182,6 +183,13 @@ typedef enum {
     ICON_36X24_MINUTE,
     ICON_36X24_SECOND,
     ICON_36X24_VBAT,
+
+    ICON_32X24_COMPLETE,
+    ICON_32X24_FAIL,
+    ICON_32X24_STOP,
+    ICON_32X24_ALL_SHOCK,
+    ICON_32X24_SUBDUE,
+    ICON_32X24_CLEAR,
 
     ICON_8X24_ARROW,
     ICON_8X24_DISPLAY_CLEAR,
