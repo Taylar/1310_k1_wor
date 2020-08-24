@@ -25,7 +25,11 @@ static PIN_Handle  usbIntPinHandle;
 static uint8_t usbIntState;
 
 const PIN_Config usbIntPinTable[] = {
+#ifdef BOARD_S3
+    USB_INT_PIN | PIN_INPUT_EN | PIN_PULLDOWN | PIN_IRQ_BOTHEDGES,       /* key isr enable          */
+#else
     USB_INT_PIN | PIN_INPUT_EN | PIN_PULLUP | PIN_IRQ_BOTHEDGES,       /* key isr enable          */
+#endif
     PIN_TERMINATE
 };
 
