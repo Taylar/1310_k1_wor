@@ -620,8 +620,10 @@ void RadioAppTaskFxn(void)
         {
             if(nodeSendingLog == 0){
                 Radio_setRxModeRfFrequency();
+				#define WOR_RSSI_THRESHOLD      ((int8_t)(-111))	
+			
+                if(RadioCheckRssi() > WOR_RSSI_THRESHOLD)
 
-                //if(RadioCheckRssi() > -80)
                 {
                     EasyLink_setCtrl(EasyLink_Ctrl_AsyncRx_TimeOut, EasyLink_ms_To_RadioTime(SNIFF_TIME_MS));
                     RadioReceiveData();
@@ -649,7 +651,12 @@ void RadioAppTaskFxn(void)
             
             // 不需要回复
             if(RadioWithNoRes_GroudPack() != 0){
+				#ifdef S_G
                 brocastTimes = MAX_BROCAST_TIMES;
+				#endif
+				#ifdef S_C
+                brocastTimes = MAX_BROCAST_TIMES/2;
+				#endif
                 while(brocastTimes){
                     brocastTimes--;
                     ClearRadioSendBuf();
@@ -664,7 +671,13 @@ void RadioAppTaskFxn(void)
 
             // 需要回复
             if(RadioWithResPack() != 0){
+				#ifdef S_G
                 brocastTimes = MAX_BROCAST_TIMES;
+				#endif
+				#ifdef S_C
+                brocastTimes = MAX_BROCAST_TIMES/2;
+				#endif
+
                 while(brocastTimes){
                     brocastTimes--;
                     ClearRadioSendBuf();

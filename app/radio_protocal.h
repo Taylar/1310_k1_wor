@@ -47,8 +47,8 @@
 #define     RADIO_PRO_CMD_TERM_CLOSE_BLOCKING       26             //关闭防塞
 #define     RADIO_PRO_CMD_TERM_OPEN_BLOCKING        27             //打开防塞
 
-#define     RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE        28             //打开防逃
-#define     RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE       29             //关闭防逃
+//#define     RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE        28             //打开防逃
+//#define     RADIO_PRO_CMD_CLOSE_PREVENT_ESCAPE       29             //关闭防逃
 
 
 #define     RADIO_PRO_CMD_ALL_WAKEUP          		30             //唤醒设备，用于防逃的

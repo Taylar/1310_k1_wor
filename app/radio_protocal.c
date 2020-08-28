@@ -417,7 +417,7 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 			}
 		break;
 
-
+/*
 		case RADIO_PRO_CMD_OPEN_PREVENT_ESCAPE:
 			g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 			// 打开防逃后把计数清零
@@ -432,9 +432,10 @@ void RadioCmdProcess(uint32_t cmdTypeTemp, uint32_t dstDev, uint32_t ground, uin
 			SoundEventSet(SOUND_TYPE_CLOSE_ESCAPE);
 			Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
 		break;
-
+*/
 		case RADIO_PRO_CMD_OPEN_TERMINAL_PREVENT_ESCAPE:
 			if(dstDev == GetRadioSrcAddr()){
+				g_rSysConfigInfo.controlerId = srcDev;
 				g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 				SoundEventSet(SOUND_TYPE_OPEN_ESCAPE);
 				Sys_event_post(SYSTEMAPP_EVT_STORE_SYS_CONFIG);
@@ -573,13 +574,17 @@ void NodeProtocalDispath(EasyLink_RxPacket * protocalRxPacket)
 	// this buf may be include several message
 	bufTemp		= (radio_protocal_t *)protocalRxPacket->payload;
 
-	if(protocalRxPacket->rssi > ESCAPE_RSSI)
-		escapeTimeCnt = 0;
+//	if(protocalRxPacket->rssi > ESCAPE_RSSI)
+//		escapeTimeCnt = 0;
 
     srcAddr = bufTemp->srcAddr;
 	cmdTypeTemp = bufTemp->cmdType;
     gourndTemp = bufTemp->ground;
     remaindTimes = bufTemp->brocastRemainder;
+	if(g_rSysConfigInfo.controlerId == srcAddr){
+		if(protocalRxPacket->rssi > ESCAPE_RSSI)
+			escapeTimeCnt = 0;
+	}
 
     if(cmdTypeTemp == RADIO_PRO_CMD_ALL_WAKEUP){
     	calendarTemp.Year       = 2000 + bufTemp->rtc[0];
@@ -816,6 +821,9 @@ uint32_t GroudAddrGet(void)
 //命令设置，单次发送，不需要反馈
 void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 {
+#ifdef S_G
+	ConcenterResetBroTimer();
+#endif
 	cmdType = cmd;
 	cmdEvent |= ((uint64_t)(0x1) << cmd);
 	if(dstAddr){
@@ -827,6 +835,9 @@ void RadioCmdSetWithNoRes(uint16_t cmd, uint32_t dstAddr)
 //命令设置，广播发送，不需要反馈
 bool RadioCmdSetWithNoResponBrocast(uint16_t cmd, uint32_t dstAddr)
 {
+#ifdef S_G
+		ConcenterResetBroTimer();
+#endif
 #ifdef S_C
 	// 发送log时，其他指令不发送
 	if(nodeSendingLog)
@@ -879,6 +890,9 @@ uint32_t RadioWithNoResPack(void)
 // 
 bool RadioCmdSetWithNoRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
+	#ifdef S_G
+	ConcenterResetBroTimer();
+	#endif
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
 	GroudAddrSet(ground);
@@ -948,6 +962,9 @@ uint32_t RadioWithNoRes_GroudPack(void)
 // 鍙戦�佺殑闇�瑕佸洖澶嶅懡浠�
 bool RadioCmdSetWithRespon(uint16_t cmd, uint32_t dstAddr, uint32_t ground)
 {
+	#ifdef S_G
+	ConcenterResetBroTimer();
+	#endif
 	dstAddr = IntToHex(dstAddr);
 	ground  = IntToHex(ground);
 	if(ground)

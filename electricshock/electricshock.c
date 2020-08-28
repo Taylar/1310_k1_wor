@@ -440,7 +440,7 @@ void ElectricShockInit(void)
 
     if(g_rSysConfigInfo.electricLevel > ELECTRIC_HIGH_LEVEL)
         g_rSysConfigInfo.electricLevel = ELECTRIC_HIGH_LEVEL;
-    ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
+    //ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
     
     // ElectricShockLevelSet(g_rSysConfigInfo.electricLevel);
     if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_SHOCK){
