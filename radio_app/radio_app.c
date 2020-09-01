@@ -620,7 +620,7 @@ void RadioAppTaskFxn(void)
         {
             if(nodeSendingLog == 0){
                 Radio_setRxModeRfFrequency();
-				#define WOR_RSSI_THRESHOLD      ((int8_t)(-111))	
+				#define WOR_RSSI_THRESHOLD      ((int8_t)(-120))
 			
                 if(RadioCheckRssi() > WOR_RSSI_THRESHOLD)
 
