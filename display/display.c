@@ -504,7 +504,7 @@ void display_star_mssage(void)
     uint8_t time_buff[20]={0};
     Calendar calendar;
     uint8_t batValue = 0;
-    batValue = ((Battery_get_voltage()-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
+    
     calendar = Rtc_get_calendar();
     //sprintf(time_buff,"%02d",(calendar.Year-2000));
     //time_buff[2] ='-';
@@ -516,11 +516,16 @@ void display_star_mssage(void)
     time_buff[8] =':';
     sprintf((char*)(time_buff+9),"%02d",calendar.Minutes);
 
-    if(batValue > 99)
-        batValue = 99;
-    if(batValue < 0)
+
+	if(Battery_get_voltage()>= BAT_VOLTAGE_LOW )
+		batValue = ((Battery_get_voltage()-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
+	else 
         batValue = 0;
-    sprintf(time_buff+11," %02d%%",batValue);
+	
+    if(batValue > 100)
+        batValue = 100;
+    
+    sprintf(time_buff+11," %3d%%",batValue);
 
     //time_buff[11] = ' ';
     //time_buff[12] = '9';

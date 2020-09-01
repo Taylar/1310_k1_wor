@@ -185,7 +185,7 @@ void S1AppRtcProcess(void)
     if(batmeasureCnt >= 60){
         batmeasureCnt = 0;
         Battery_porcess();
-        if(Battery_get_voltage() < 3600){
+        if(Battery_get_voltage() < BAT_VOLTAGE_LOW){
             if(lowBatCnt%(15) == 0){
                 SoundEventSet(SOUND_TYPE_LOW_BAT);
             }

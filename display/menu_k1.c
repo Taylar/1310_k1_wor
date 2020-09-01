@@ -843,7 +843,7 @@ static void menu_terminal_test_group( )
 
                    Lcd_set_font(8, 24, 1);
                    Disp_msg(START_X_NUM,2,"     ",FONT_8X24);
-                   sprintf(numbat," %02d%%",GetTestTermVol());
+                   sprintf(numbat," %3d%%",GetTestTermVol());
                    Disp_msg(START_X_NUM,2,numbat,FONT_8X24);
                    Lcd_set_font(32, 24, 1);
                    Disp_icon(START_X_TIP32X24,3,ICON_32X24_COMPLETE,1);
@@ -1755,8 +1755,10 @@ static void menu_open_group_prevent_escape()
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP32X24,3,ICON_32X24_CLEAR,1);
 
-
                mMenuModeObject.selectIndex = 0;
+
+			   //open the switch of prevent escape signal
+			  g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
            }
            //mMenuModeObject.numEnter = 0;
 
@@ -1815,6 +1817,10 @@ static void menu_close_group_prevent_escape()
 
                mMenuModeObject.selectIndex = 0;
                mMenuModeObject.keyDoing = KEY_DOING_NULL;
+
+			   
+			   //close the switch of prevent escape signal
+				g_rSysConfigInfo.electricFunc &= ~ELE_FUNC_ENABLE_PREVENT_ESCAPE;
            }
            //mMenuModeObject.numEnter = 0;
 
@@ -1872,6 +1878,8 @@ static void menu_open_terminal_prevent_escape()
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP32X24,3,ICON_32X24_CLEAR,1);
 
+			  //open the switch of prevent escape signal
+			  g_rSysConfigInfo.electricFunc |= ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 
            }
            mMenuModeObject.numEnter = 0;
@@ -1933,6 +1941,8 @@ static void menu_close_terminal_prevent_escape()
                Task_sleep(DELAY_COMPLETE*CLOCK_UNIT_MS);
                Disp_icon(START_X_TIP32X24,3,ICON_32X24_CLEAR,1);
 
+			  //close the switch of prevent escape signal
+			  g_rSysConfigInfo.electricFunc &= ~ELE_FUNC_ENABLE_PREVENT_ESCAPE;
 
            }
 

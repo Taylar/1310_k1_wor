@@ -723,8 +723,8 @@ uint16_t GetTestTermVol(void)
     if(testTermVol < BAT_VOLTAGE_LOW)
     	testTermVol = BAT_VOLTAGE_LOW;
     batValue = ((testTermVol-BAT_VOLTAGE_LOW )*100)/ (BAT_VOLTAGE_FULL-BAT_VOLTAGE_LOW);
-    if(batValue > 99)
-        batValue = 99;
+    if(batValue > 100)
+        batValue = 100;
 	return batValue;
 }
 //***********************************************************************************

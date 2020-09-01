@@ -51,8 +51,11 @@ Clock_Handle periodWakeupClockHandle;
 
 void PeridoWakeupCb(UArg arg0)
 {
-    if(logReceiveTimeOut == 0)
-        RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_WAKEUP,NULL,RADIO_BROCAST_ADDRESS);
+    if(logReceiveTimeOut == 0){
+		if(g_rSysConfigInfo.electricFunc & ELE_FUNC_ENABLE_PREVENT_ESCAPE){
+        RadioCmdSetWithNoRespon(RADIO_PRO_CMD_ALL_WAKEUP,NULL,RADIO_BROCAST_ADDRESS);		
+}
+	}
 }
 
 
